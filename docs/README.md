@@ -75,8 +75,8 @@
 |-------|--------|
 | 部署系统 | [部署指南](06-operations/01-deployment.md) |
 | 配置服务器 | [配置管理](06-operations/02-configuration.md) |
-| 备份恢复 | [备份恢复](06-operations/07-backup-recovery.md) |
-| 监控告警 | [监控告警](06-operations/08-monitoring-alerting.md) |
+| 备份恢复 | [备份恢复](06-operations/06-backup-recovery.md) |
+| 监控告警 | [监控告警](06-operations/07-monitoring-alerting.md) |
 
 ---
 

@@ -2,7 +2,7 @@
 
 > Controllers: `MedicalCasesController`, `MedicalCaseProcessingController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 >
-> ⚠️ **权限目标态（2026-08-04 终局裁决）**：医案**创建端点 = DoctorOnly**（`PolicyConstants` 已有 `DoctorOnly` 常量，`MedicalCasesController.cs:98` 已使用）；查看/查询 = Doctor(自己)+Admin(全部，数据所有权过滤)，前台不可见；审计日志 = Doctor/Admin。代码已按此实现。
+> ⚠️ **权限详见** [04-permissions.md](../01-product/04-permissions.md) §医案管理。代码已按此实现（`MedicalCasesController.cs:98` 使用 `DoctorOnly`），前台不可见。
 
 ## 概述
 
@@ -20,7 +20,7 @@
 
 创建新医案。
 
-- **权限**: `[Authorize(Policy = "DoctorOrAdmin")]`
+- **权限**: `[Authorize(Policy = "DoctorOrAdmin")]`（目标态详见 [04-permissions.md](../01-product/04-permissions.md) §医案管理）
 - 支持创建时同时包含 Consultation 和 Prescription 数据
 - `Id=null` 触发创建逻辑
 

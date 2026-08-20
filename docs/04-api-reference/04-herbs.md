@@ -2,7 +2,7 @@
 
 > Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`（代码实际，前台不可查）
 >
-> ⚠️ **权限目标态（2026-08-04 终局裁决）**：药材 GET 不含前台（Doctor/Admin 可查）；POST/PUT/DELETE/批量 = `AdminOrSuperAdmin`（写操作仅 Admin+）；恢复 = Admin（业务管理）。代码已按此实现（类级 `DoctorOrAdmin` + 写操作 `AdminOrSuperAdmin`），前台不可查已落地。
+> ⚠️ **权限详见** [04-permissions.md](../01-product/04-permissions.md) §药材管理。代码已按此实现（类级 `DoctorOrAdmin` + 写操作 `AdminOrSuperAdmin`），前台不可查已落地。
 
 ## 概述
 

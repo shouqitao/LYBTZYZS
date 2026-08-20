@@ -205,7 +205,8 @@ Controller → MedicalCaseStateService.CancelAsync
 | BR-MC-LOCK | Completed 同日可编辑，次日锁定 | MC-008 |
 | BR-004 | Admin 可跳过工作流验证 | MC-006 |
 | 编号规则 | MC{yyyyMMdd}{seq:3}，RX{yyyyMMdd}{seq:4} | MC-002 |
-| 软删除 | Cancel=IsDeleted=true，Restore 恢复 | MC-010 |
+| 取消（Active/Suspended） | 物理删除，级联清除聚合（2026-08-03 决策） | MC-010 |
+| 删除（Completed） | 软删除（IsDeleted=true），Admin 清理 | MC-015 |
 | 注册联动 | Create→关联Registration，Complete→Registration.Completed，Cancel→回滚 | MC-012 |
 
 ## 模块交互

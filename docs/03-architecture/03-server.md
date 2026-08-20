@@ -95,8 +95,8 @@ LYBT.Entities/
 - `AppDbContext` -- EF Core 数据库上下文
 - `BaseRepository<T>` -- Repository 基类 (5 个核心方法：GetByIdAsync/AddAsync/UpdateAsync/DeleteAsync/SaveChangesAsync，复杂查询由各模块 Repository 自定义)
 - 跨模块服务接口 (ISP 原则，D5-1 设计，位于 `Services/CrossModule/`):
-  - `ICrossModuleService` -- 统一接口，替代旧的 `IPatientCrossModuleService`/`IHerbCrossModuleService`/`IUserCrossModuleService`；实现 `CrossModuleService` 委托各域服务
-  - `IPatientCrossModuleService` / `IHerbCrossModuleService` / `IUserCrossModuleService` -- 域接口 (旧接口文件保留，由统一接口委托/并存)
+  - 域接口（`ICatalogCrossModuleService`/`IPatientCrossModuleService`/`IUserCrossModuleService`/`IMedicalCaseCrossModuleService`/`IRegistrationCrossModuleService`）——2026-08-08 统一门面已删除，只留域接口
+  - 各域接口详见上方列表（`ICatalogCrossModuleService` 替代原 `IHerbCrossModuleService`，2026-08-09 Herbs+Formula→Catalog 合并）
   - `IMedicalCaseCrossModuleService` -- 医案域接口 (供 Patients 引用检查)
   - `IRegistrationCrossModuleService` -- 挂号域接口 (供 MedicalCase)
 - `IRepository<T>` -- Repository 接口定义
@@ -159,12 +159,12 @@ LYBT.Module.Reports/
 
 | 模块 | 架构模式 | 跨模块通信 |
 |------|----------|------------|
-| Auth | MediatR CQRS | ICrossModuleService |
+| Auth | MediatR CQRS | IUserCrossModuleService |
 | Users | Service + MediatR | IUserCrossModuleService（供 MedicalCase/Auth） |
 | Patients | Service + MediatR | IMedicalCaseCrossModuleService（引用检查） |
-| Herbs | Service + MediatR | IHerbCrossModuleService |
-| Formula | Service + MediatR | ICrossModuleService |
-| MedicalCase | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICrossModuleService |
+| Herbs (Catalog) | Service + MediatR | ICatalogCrossModuleService |
+| Formula | Service + MediatR | ICatalogCrossModuleService |
+| MedicalCase | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICatalogCrossModuleService |
 | Registration | 纯 MediatR CQRS | IRegistrationCrossModuleService |
 | Reports | Service + Repository（只读聚合） | - |
 

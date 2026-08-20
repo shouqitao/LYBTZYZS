@@ -2,7 +2,7 @@
 
 > Controller: `FormulasController` | 路由前缀: `/api/v1/formulas` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`（代码实际，前台不可查）
 >
-> ⚠️ **权限目标态（2026-08-04 终局裁决）**：验方 GET 不含前台（Doctor/Admin 可查）；写操作 = Admin+Doctor（Doctor 仅自己创建）；批量/启停 = Admin+；恢复 = Admin（业务管理）。代码已按此实现（类级 `DoctorOrAdmin` + 批量 `AdminOrSuperAdmin`），前台不可查已落地。
+> ⚠️ **权限详见** [04-permissions.md](../01-product/04-permissions.md) §验方管理。代码已按此实现（类级 `DoctorOrAdmin` + 批量 `AdminOrSuperAdmin`），前台不可查已落地。
 
 ## 概述
 

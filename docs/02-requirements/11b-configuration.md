@@ -118,7 +118,7 @@
 1. v1.0 `FeatureToggleOptions` 仅含 `OverwriteConflicts` 与 `DuplicateHerbMergeStrategy`（"Max"）。
 2. 早期定义的 18 个布尔开关已废弃（2026-06-28 清理），UI 可见性由各模块 ViewModel 按角色/业务状态自管。
 3. FeatureToggle 仅控 UI 层，API 端点不受影响。
-4. FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T>`（`PrismConfigurationExtensions.cs`）实现热更新——配置文件保存后自动生效，无需重启。其他配置（JWT/ApiClient/ClinicSettings/CardReader）仍需重启。
+FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T>`（`PrismConfigurationExtensions.cs`）实现热更新——配置文件保存后自动生效，无需重启 Desktop。ClinicSettings 通过 `reloadOnChange` 实现热更新（US-CFG-006）。JWT/ApiClient/CardReader 仍需重启。
 
 **双模式差异**:
 
