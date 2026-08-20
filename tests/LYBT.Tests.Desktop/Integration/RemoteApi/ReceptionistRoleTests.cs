@@ -10,17 +10,60 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 [Trait("Category", "RemoteApi")]
 public class ReceptionistRoleTests : RemoteApiTestBase
 {
-    protected override string Username => "sysadmin";
-    protected override string Password => "SysAdmin@2026!";
+    private string _doctorName = "";
+    private string _receptionistName = "";
+    private Guid _doctorId = Guid.Empty;
 
-    [Fact(Skip = "Role not available on remote")]
+    protected override async Task SetupRoleAsync()
+    {
+        // sysadmin 创建 Admin → Admin 创建 Doctor + Receptionist → 登录 Receptionist
+        var adminName = UniqueUsername("e2eadmin");
+        var admin = await CreateUserAsync(adminName, RolePassword, UserRole.Admin, "E2E管理员");
+        if (admin == null) throw new InvalidOperationException("sysadmin 创建 Admin 失败");
+
+        await LoginAsAsync(adminName, RolePassword);
+        _doctorName = UniqueUsername("e2edoctor");
+        var doctor = await CreateUserAsync(_doctorName, RolePassword, UserRole.Doctor, "E2E医生");
+        if (doctor == null) throw new InvalidOperationException("Admin 创建 Doctor 失败");
+        _doctorId = doctor.Id;
+
+        _receptionistName = UniqueUsername("e2erecp");
+        var rec = await CreateUserAsync(_receptionistName, RolePassword, UserRole.Receptionist, "E2E前台");
+        if (rec == null) throw new InvalidOperationException("Admin 创建 Receptionist 失败");
+
+        await LoginAsAsync(_receptionistName, RolePassword);
+    }
+
+    [Fact]
+    [Trait("US", "US-PAT-003")]
+    public async Task CreatePatient_AsReceptionist_Succeeds()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var input = new PatientInputDto
+        {
+            Name = UniqueName("E2E患者"),
+            Gender = Gender.Female,
+            PhoneNumber = UniquePhone()
+        };
+        var created = await PatientApi.CreatePatientAsync(input);
+        created.Success.Should().BeTrue(created.Message);
+        created.Data.Should().NotBeNull();
+        if (created.Data != null)
+        {
+            CreatedPatientIds.Add(created.Data.Id); // 交由 DisposeAsync 清理
+        }
+    }
+
+    [Fact]
     [Trait("US", "US-REG-002")]
     public async Task CreateRegistration_Succeeds()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var doctorId = _doctorId; // 角色创建阶段已获取，Receptionist 无用户列表权限
+
         var patient = await PatientApi.CreatePatientAsync(new PatientInputDto
         {
-            Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
+            Name = UniqueName("E2E患者"),
             Gender = Gender.Male,
             PhoneNumber = UniquePhone()
         });
@@ -31,49 +74,32 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         {
             PatientId = patientId,
             PatientName = patient.Data.Name,
-            DoctorId = Guid.NewGuid()
+            DoctorId = doctorId,
+            DoctorName = _doctorName
         };
         var resp = await RegistrationApi.CreateAsync(input);
-        resp.Should().NotBeNull();
+        resp.Success.Should().BeTrue(resp.Message);
+        resp.Data.Should().NotBeNull();
+
         if (resp.Data != null)
         {
-            await RegistrationApi.CancelAsync(resp.Data.Id);
+            CreatedRegistrationIds.Add(resp.Data.Id); // 交由 DisposeAsync 清理
         }
-        await PatientApi.DeletePatientAsync(patientId);
+        CreatedPatientIds.Add(patientId);
     }
 
-    [Fact(Skip = "Role not available on remote")]
+    [Fact]
     [Trait("US", "US-REG-003")]
     public async Task GetPendingQueue_ReturnsData()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var resp = await RegistrationApi.GetListAsync(1, 10);
+        var resp = await RegistrationApi.GetQueueAsync();
         resp.Should().NotBeNull();
         resp.Success.Should().BeTrue(resp.Message);
         resp.Data.Should().NotBeNull();
     }
 
-    [Fact(Skip = "Role not available on remote")]
-    [Trait("US", "US-PAT-003")]
-    public async Task CreatePatient_Succeeds()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var input = new PatientInputDto
-        {
-            Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
-            Gender = Gender.Female,
-            PhoneNumber = UniquePhone()
-        };
-        var created = await PatientApi.CreatePatientAsync(input);
-        created.Success.Should().BeTrue(created.Message);
-        created.Data.Should().NotBeNull();
-        if (created.Data != null)
-        {
-            await PatientApi.DeletePatientAsync(created.Data.Id);
-        }
-    }
-
-    [Fact(Skip = "Role not available on remote")]
+    [Fact]
     [Trait("US", "US-PAT-005")]
     public async Task GetPatientByIdNumber_FindsPatient()
     {
@@ -81,7 +107,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         var idNumber = UniqueIdNumber();
         var input = new PatientInputDto
         {
-            Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
+            Name = UniqueName("E2E患者"),
             Gender = Gender.Male,
             PhoneNumber = UniquePhone(),
             IdNumber = idNumber
@@ -94,6 +120,6 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         resp.Success.Should().BeTrue(resp.Message);
         resp.Data.Should().NotBeNull();
 
-        await PatientApi.DeletePatientAsync(patientId);
+        CreatedPatientIds.Add(patientId); // 交由 DisposeAsync 清理
     }
 }

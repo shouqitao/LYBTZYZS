@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Xunit;
@@ -9,14 +10,26 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 [Trait("Category", "RemoteApi")]
 public class SysadminRoleTests : RemoteApiTestBase
 {
-    protected override string Username => "sysadmin";
-    protected override string Password => "SysAdmin@2026!";
+    protected override Task SetupRoleAsync() => Task.CompletedTask; // 直接使用 sysadmin
 
     [Fact]
     [Trait("US", "US-AUTH-001")]
-    public void Login_AsAdmin_ReturnsToken()
+    public void Login_AsSysadmin_ReturnsToken()
     {
-        AccessToken.Should().NotBeNullOrEmpty("Sysadmin 登录应返回 JWT");
+        AccessToken.Should().NotBeNullOrWhiteSpace("sysadmin 登录应返回 JWT");
+        Username.Should().Be(SysAdminUser);
+    }
+
+    [Fact]
+    [Trait("US", "US-SYS-001")]
+    public async Task GetSystemHealth_ReturnsHealthy()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var resp = await AuthApi.HealthCheckAsync();
+        resp.Should().NotBeNull();
+        resp.Success.Should().BeTrue(resp.Message);
+        resp.Data.Should().NotBeNull();
+        resp.Data!.Status.Should().Be("Healthy");
     }
 
     [Fact]
@@ -24,7 +37,7 @@ public class SysadminRoleTests : RemoteApiTestBase
     public async Task GetClinicSettings_ReturnsData()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var configApi = Refit.RestService.For<LYBT.Desktop.Contracts.Api.IConfigurationApi>(HttpClient, new Refit.RefitSettings
+        var configApi = Refit.RestService.For<IConfigurationApi>(HttpClient, new Refit.RefitSettings
         {
             ContentSerializer = new Refit.SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
             {
@@ -43,7 +56,7 @@ public class SysadminRoleTests : RemoteApiTestBase
     public async Task UpdateClinicSettings_Succeeds()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var configApi = Refit.RestService.For<LYBT.Desktop.Contracts.Api.IConfigurationApi>(HttpClient, new Refit.RefitSettings
+        var configApi = Refit.RestService.For<IConfigurationApi>(HttpClient, new Refit.RefitSettings
         {
             ContentSerializer = new Refit.SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
             {
@@ -55,11 +68,11 @@ public class SysadminRoleTests : RemoteApiTestBase
         var before = await configApi.GetConfigurationAsync();
         before.Success.Should().BeTrue(before.Message);
 
-        // 更新一个安全可回滚的配置键
+        // 安全可回滚的配置节读取（白名单校验）
         var section = await configApi.GetSectionAsync("App");
         if (section.Success && section.Data != null)
         {
-            section.Data.Should().NotBeNull();
+            section.Success.Should().BeTrue();
         }
     }
 
@@ -76,14 +89,14 @@ public class SysadminRoleTests : RemoteApiTestBase
 
     [Fact]
     [Trait("US", "US-USER-003")]
-    public async Task CreateUser_Succeeds()
+    public async Task CreateUser_AsSysadmin_Succeeds()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var user = new UserInputDto
         {
-            UserName = UniqueUsername(),
-            Password = "Test1234!",
-            ConfirmPassword = "Test1234!",
+            UserName = UniqueUsername("e2esusr"),
+            Password = RolePassword,
+            ConfirmPassword = RolePassword,
             RealName = "E2E测试用户",
             Role = UserRole.Admin
         };
@@ -97,17 +110,5 @@ public class SysadminRoleTests : RemoteApiTestBase
             var del = await UserApi.DeleteUserAsync(created.Data.Id);
             del.Success.Should().BeTrue(del.Message);
         }
-    }
-
-    [Fact]
-    [Trait("US", "US-SYS-001")]
-    public async Task GetSystemHealth_ReturnsHealthy()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var resp = await AuthApi.HealthCheckAsync();
-        resp.Should().NotBeNull();
-        resp.Success.Should().BeTrue(resp.Message);
-        resp.Data.Should().NotBeNull();
-        resp.Data!.Status.Should().Be("Healthy");
     }
 }

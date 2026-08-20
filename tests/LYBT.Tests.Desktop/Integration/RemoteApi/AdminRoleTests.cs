@@ -1,6 +1,6 @@
 using FluentAssertions;
-using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Xunit;
@@ -11,8 +11,11 @@ namespace LYBT.Tests.Desktop.Integration.RemoteApi;
 [Trait("Category", "RemoteApi")]
 public class AdminRoleTests : RemoteApiTestBase
 {
-    protected override string Username => "sysadmin";
-    protected override string Password => "SysAdmin@2026!";
+    protected override async Task SetupRoleAsync()
+    {
+        // sysadmin 创建 Admin 账号并登录该 Admin
+        await LoginAsCreatedAdminAsync();
+    }
 
     [Fact]
     [Trait("US", "US-PAT-001")]
@@ -32,7 +35,7 @@ public class AdminRoleTests : RemoteApiTestBase
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var input = new PatientInputDto
         {
-            Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
+            Name = UniqueName("E2E患者"),
             Gender = Gender.Male,
             PhoneNumber = UniquePhone(),
             IdNumber = UniqueIdNumber()
@@ -54,7 +57,7 @@ public class AdminRoleTests : RemoteApiTestBase
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var input = new PatientInputDto
         {
-            Name = $"E2E患者{Guid.NewGuid():N}".Substring(0, 10),
+            Name = UniqueName("E2E患者"),
             Gender = Gender.Female,
             PhoneNumber = UniquePhone()
         };
@@ -65,7 +68,8 @@ public class AdminRoleTests : RemoteApiTestBase
 
         var updated = new PatientInputDto
         {
-            Name = $"E2E患者更新{Guid.NewGuid():N}".Substring(0, 10),
+            Id = id,
+            Name = UniqueName("E2E更新"),
             Gender = Gender.Female,
             PhoneNumber = UniquePhone()
         };
@@ -94,7 +98,7 @@ public class AdminRoleTests : RemoteApiTestBase
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var input = new HerbInputDto
         {
-            Name = $"E2E药材{Guid.NewGuid():N}".Substring(0, 12),
+            Name = UniqueName("E2E药材"),
             PinYinCode = "EYYC",
             Category = "补气药",
             Unit = "g",
