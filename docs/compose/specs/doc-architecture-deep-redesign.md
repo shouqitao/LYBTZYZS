@@ -34,7 +34,7 @@
 
 ### 架构文档按 C4 层级组织
 
-| C4 层 | 内容 | 当前文档 | 行数目标 |
+| C4 层 | 内容 | 对应文档 | 行数目标 |
 |-------|------|---------|---------|
 | **L1 上下文** | 系统边界、角色、外部依赖 | `00-architecture-summary.md` | ≤100 |
 | **L2 容器** | 模块划分、数据流 | `01-system-overview.md` + `03-server.md` | ≤300 |
@@ -42,9 +42,8 @@
 | **L4 代码** | 实现细节 | 代码本身 + ADR | 不在文档中 |
 
 ### 当前问题
-- `03-server.md`（668 行）混合了 L2+L3+L4
-- `14-structure-design-blueprint.md`（367 行）与 `03-server.md` 重叠 → **已完成合并删除**
-- `01-system-overview.md`（276 行）与 `03-server.md` 重叠
+- `03-server.md` 混合了 L2+L3+L4
+- `14-structure-design-blueprint.md` 与 `03-server.md` 重叠
 
 ### 新设计：每个 C4 层一个文档
 
@@ -61,7 +60,7 @@ decisions/*.md                → ADR（历史决策）
 
 ### US 模板精简
 
-**当前模板**（每 US ~40 行）：
+**当前模板**：
 ```
 ## US-AUTH-001: 用户名密码登录
 **角色**: 所有用户
@@ -74,7 +73,7 @@ decisions/*.md                → ADR（历史决策）
 **实现参考**: AuthController.cs:44
 ```
 
-**新模板**（每 US ~25 行）：
+**新模板**：
 ```
 ## US-AUTH-001: 用户名密码登录
 **角色**: 所有用户 | **优先级**: Must | **状态**: ✅
@@ -96,29 +95,28 @@ decisions/*.md                → ADR（历史决策）
 
 ### 预期效果
 
-| 目录 | 当前行数 | 目标行数 | 减少 |
-|------|---------|---------|------|
-| 02-requirements | 7,060 | ~6,100 | -14% |
-| 03-architecture | 10,510 | ~8,500 | -19% |
-| **总计** | **33,235** | **~31,000** | **-7%** |
+| 目录 | 目标行数 | 减少 |
+|------|---------|------|
+| 02-requirements | ~6,100 | -14% |
+| 03-architecture | ~8,500 | -19% |
 
 ## 五、架构文档合并方案
 
 ### 三合一：01 + 03 + 14 → 新 03-server.md
 
 当前重叠：
-- `01-system-overview.md`（276 行）— 系统概览+模块图
-- `03-server.md`（668 行）— Server 架构+模块详情
-- `14-structure-design-blueprint.md`（367 行）— ~~合规表+DTO 约定~~ **已合并删除**
+- `01-system-overview.md` — 系统概览+模块图
+- `03-server.md` — Server 架构+模块详情
+- `14-structure-design-blueprint.md` — ~~合规表+DTO 约定~~
 
 合并为：
 - `01-system-overview.md` — L1+L2（上下文+容器），≤300 行
 - `03-server.md` — L3（组件详情），≤400 行
-- `14-structure-design-blueprint.md` → **✅ 已完成**，内容分散到 01（设计原则+技术栈）/02（Desktop 层）/03（Server 分层规则+Tests+设计依据索引）
+- `14-structure-design-blueprint.md` → 内容分散到 01（设计原则+技术栈）/02（Desktop 层）/03（Server 分层规则+Tests+设计依据索引）
 
 ### 模块文档精简
 
-当前 `modules/*.md` 每个 100-200 行，但大部分是重复的架构模式描述。
+当前 `modules/*.md` 每个模块描述了大量重复的架构模式。
 
 精简为：
 - 每个模块 ≤100 行
