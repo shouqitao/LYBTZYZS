@@ -27,13 +27,9 @@
 3. 敏感配置（SecretKey/Password）脱敏展示。
 
 **双模式差异**:
+模式差异：远程: `GET` 服务端配置；本地: 完全一致（LocalWebAPI 复用 Service 层）
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | `GET` 服务端配置 |
-| 本地 | 完全一致（LocalWebAPI 复用 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ConfigurationController.cs:15`、`ISystemConfigurationService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ConfigurationController.cs`、`ISystemConfigurationService`
 
 ---
 
@@ -57,13 +53,9 @@
 2. 客户端 `ClinicSettings`（Name/Department/Address/Phone）驱动处方打印标题区。
 
 **双模式差异**:
+模式差异：远程: 服务端读取；本地: 完全一致
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 服务端读取 |
-| 本地 | 完全一致 |
-
-**实现参考**: `ConfigurationController.cs:15`、Options 类（`LYBT.Shared.Configuration`）
+**实现参考**: `ConfigurationController.cs`、Options 类（`LYBT.Shared.Configuration`）
 
 ---
 
@@ -89,11 +81,7 @@
 3. 验证失败 → 控制台输出 + Fatal 日志 + `Environment.Exit(1)`。
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 服务端启动时验证 |
-| 本地 | 不适用 |
+模式差异：远程: 服务端启动时验证；本地: 不适用
 
 **实现参考**: `ProductionConfigurationValidator`、`Program.cs`
 
@@ -121,13 +109,9 @@
 FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T>`（`PrismConfigurationExtensions.cs`）实现热更新——配置文件保存后自动生效，无需重启 Desktop。ClinicSettings 通过 `reloadOnChange` 实现热更新（US-CFG-006）。JWT/ApiClient/CardReader 仍需重启。
 
 **双模式差异**:
+模式差异：远程: 客户端 appsettings.json 配置 API 连接；本地: `ApiClient` 配置无效，使用本地数据源
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 客户端 appsettings.json 配置 API 连接 |
-| 本地 | `ApiClient` 配置无效，使用本地数据源 |
-
-**实现参考**: `FeatureToggleOptions`、`ConfigurationOptionsMonitor`（`PrismConfigurationExtensions.cs:80`）、`OptionsMonitorWrapper`（`PrismConfigurationExtensions.cs:133`）
+**实现参考**: `FeatureToggleOptions`、`ConfigurationOptionsMonitor`（`PrismConfigurationExtensions.cs`）、`OptionsMonitorWrapper`（`PrismConfigurationExtensions.cs`）
 
 ---
 
