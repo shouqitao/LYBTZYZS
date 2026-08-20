@@ -80,12 +80,12 @@ public class DesktopUpdateService : IDesktopUpdateService
     }
 
     /// <inheritdoc />
-    public void ApplyUpdateAndRestart()
+    public async Task ApplyUpdateAndRestartAsync()
     {
         if (!IsEnabled) return;
         try
         {
-            var update = GetManager().CheckForUpdatesAsync().GetAwaiter().GetResult();
+            var update = await GetManager().CheckForUpdatesAsync();
             if (update?.TargetFullRelease is null) return;
             GetManager().ApplyUpdatesAndRestart(update.TargetFullRelease, Array.Empty<string>());
         }
@@ -93,5 +93,13 @@ public class DesktopUpdateService : IDesktopUpdateService
         {
             _logger.LogError(ex, "[UPDATE] 应用更新失败");
         }
+    }
+
+    /// <inheritdoc />
+    [Obsolete("Use ApplyUpdateAndRestartAsync instead")]
+    public void ApplyUpdateAndRestart()
+    {
+        // Task.Run 隔离避免 WPF Dispatcher sync-over-async 死锁（R4 P3）
+        Task.Run(() => ApplyUpdateAndRestartAsync()).GetAwaiter().GetResult();
     }
 }

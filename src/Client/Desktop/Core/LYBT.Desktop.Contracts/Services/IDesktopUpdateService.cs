@@ -12,6 +12,10 @@ public interface IDesktopUpdateService
     Task<bool> DownloadUpdateAsync();
 
     /// <summary>应用更新并重启应用（提示用户保存后调用）</summary>
+    Task ApplyUpdateAndRestartAsync();
+
+    /// <summary>应用更新并重启应用（同步兼容——内部 Task.Run 隔离避免 Dispatcher 死锁，已废弃请用 Async）</summary>
+    [Obsolete("Use ApplyUpdateAndRestartAsync instead")]
     void ApplyUpdateAndRestart();
 }
 

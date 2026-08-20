@@ -71,7 +71,7 @@ public class DesktopUpdateStartupStep : IStartupStep
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
             if (restart == System.Windows.MessageBoxResult.Yes)
-                _updateService.ApplyUpdateAndRestart();
+                await _updateService.ApplyUpdateAndRestartAsync();
         }
         catch (Exception ex)
         {
