@@ -269,12 +269,12 @@ JSON 批量导入药材（直接 DTO 数组，非 Excel）。
 
 > 完整定义见 [herbs.md PRD](../02-requirements/05-herbs.md)。分区: 5xxxx。
 
-| 错误码 | HTTP | 用户消息 | 触发端点 |
-|--------|------|----------|----------|
-| ERR-50101 | 404 | 药材不存在 | GET/PUT/DELETE /{id} |
-| ERR-50102 | 400 | 验证失败 | POST /, PUT /{id}, batch-import |
-| ERR-50103 | 403 | 无权限操作此药材 | PUT/DELETE /{id}, toggle-status |
-| ERR-50104 | 200 | 该药材未被删除 | POST /{id}/restore |
-| ERR-50106 | 400 | 分页参数无效 | GET / |
-| ERR-50201 | 400 | 请至少选择一个药材 | POST /batch-delete |
-| ERR-50202 | 400 | 批量导入最多10000条 | POST /batch-import |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-50101 | HerbNotFound | 404 | 药材不存在 | GET/PUT/DELETE /{id} |
+| ERR-50102 | HerbValidationFailed | 400 | 验证失败 | POST /, PUT /{id}, batch-import |
+| ERR-50103 | HerbNoPermission | 403 | 无权限操作此药材 | PUT/DELETE /{id}, toggle-status |
+| ERR-50104 | HerbNotDeleted | 200 | 该药材未被删除 | POST /{id}/restore |
+| ERR-50106 | HerbInvalidPagination | 400 | 分页参数无效 | GET / |
+| ERR-50201 | HerbBatchEmpty | 400 | 请至少选择一个药材 | POST /batch-delete |
+| ERR-50202 | HerbBatchImportExceeded | 400 | 批量导入最多10000条 | POST /batch-import |

@@ -270,17 +270,17 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 > 完整定义见 [patients.md PRD](../02-requirements/04-patients.md)。分区: 2xxxx。
 
-| 错误码 | HTTP | 用户消息 | 触发端点 |
-|--------|------|----------|----------|
-| ERR-20001 | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
-| ERR-20002 | 409 | 身份证号已存在 | POST /, PUT /{id} |
-| ERR-20003 | 409 | 患者电话已存在 | POST /, PUT /{id} |
-| ERR-20004 | 422 | 患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
-| ERR-20005 | 403/422 | 患者已被禁用/有进行中医案 | 需启用状态的操作 |
-| ERR-00003 | 400 | 参数验证失败 | POST /, PUT /{id} |
-| ERR-20702 | 200 | 该患者未被删除 | POST /{id}/restore |
-| ERR-20703 | 400 | 请至少选择一个患者 | POST /batch-delete |
-| ERR-20704 | 400 | 批量检查最多支持100条 | POST /batch-check-reference |
-| ERR-20705 | 400 | 分页参数无效 | GET / |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-20001 | PatientNotFound | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
+| ERR-20002 | PatientIdCardExists | 409 | 身份证号已存在 | POST /, PUT /{id} |
+| ERR-20003 | PatientPhoneDuplicate | 409 | 患者电话已存在 | POST /, PUT /{id} |
+| ERR-20004 | PatientHasActiveCases | 422 | 患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
+| ERR-20005 | PatientDisabled | 403/422 | 患者已被禁用/有进行中医案 | 需启用状态的操作 |
+| ERR-00003 | ValidationFailed | 400 | 参数验证失败 | POST /, PUT /{id} |
+| ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除 | POST /{id}/restore |
+| ERR-20703 | PatientBatchOperationEmpty | 400 | 请至少选择一个患者 | POST /batch-delete |
+| ERR-20704 | PatientBatchCheckExceeded | 400 | 批量检查最多支持100条 | POST /batch-check-reference |
+| ERR-20705 | PatientInvalidPagination | 400 | 分页参数无效 | GET / |
 
 > 客户端导入错误码 (ERR-20801~20805) 用于前端 Excel 导入流程，非服务端端点触发。

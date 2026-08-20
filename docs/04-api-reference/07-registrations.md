@@ -343,11 +343,11 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 ## 错误码
 
-| 错误码 | HTTP | 触发条件 |
-|--------|------|----------|
-| ERR-80001 | 404 | 挂号不存在 |
-| ERR-80002 | 422 | 非法状态转换 |
-| ERR-80003 | 422 | 有活跃/已完成医案，不允许取消 |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-80001 | RegistrationNotFound | 404 | 挂号不存在 | GET/PUT/DELETE /{id} |
+| ERR-80002 | RegistrationInvalidStatusTransition | 422 | 非法状态转换 | PUT /{id}/start-visit, PUT /{id}/cancel |
+| ERR-80003 | RegistrationCancelNotAllowed | 422 | 有活跃/已完成医案，不允许取消 | PUT /{id}/cancel |
 
 ---
 

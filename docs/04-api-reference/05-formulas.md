@@ -290,24 +290,24 @@ JSON 批量导入验方（Server 端只处理 DTO，Excel 解析由 Client 端�
 
 ### 核心错误 (601xx)
 
-| 错误码 | HTTP | 用户消息 | 触发端点 |
-|--------|------|----------|----------|
-| ERR-60101 | 404 | 验方不存在 | GET/PUT/DELETE /{id}, toggle-status |
-| ERR-60102 | 400 | 验方ID不能为空 | 传入 Guid.Empty |
-| ERR-60103 | 403 | 无权限操作此验方 | PUT/DELETE /{id}, toggle-status |
-| ERR-60108 | 400 | 分页参数无效 | GET / |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60101 | FormulaNotFound | 404 | 验方不存在 | GET/PUT/DELETE /{id}, toggle-status |
+| ERR-60102 | FormulaIdInvalid | 400 | 验方ID不能为空 | 传入 Guid.Empty |
+| ERR-60103 | FormulaNoPermission | 403 | 无权限操作此验方 | PUT/DELETE /{id}, toggle-status |
+| ERR-60108 | FormulaInvalidPagination | 400 | 分页参数无效 | GET / |
 
 ### 药材验证错误 (602xx)
 
-| 错误码 | HTTP | 用户消息 | 触发端点 |
-|--------|------|----------|----------|
-| ERR-60201 | 400 | 参数不能为空 | POST /{id}/herbs/{herbItemId}/validate |
-| ERR-60202 | 404 | 药材项不存在 | POST /{id}/herbs/{herbItemId}/validate |
-| ERR-60204 | 404 | 所选药材不存在 | POST /{id}/herbs/{herbItemId}/validate |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60201 | FormulaHerbItemIdInvalid | 400 | 参数不能为空 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60202 | FormulaHerbItemNotFound | 404 | 药材项不存在 | POST /{id}/herbs/{herbItemId}/validate |
+| ERR-60204 | FormulaSystemHerbNotFound | 404 | 所选药材不存在 | POST /{id}/herbs/{herbItemId}/validate |
 
 ### 批量操作错误 (603xx)
 
-| 错误码 | HTTP | 用户消息 | 触发端点 |
-|--------|------|----------|----------|
-| ERR-60301 | 400 | 请至少选择一个验方 | POST /batch-delete |
-| ERR-60302 | 400 | 导入数据不能为空 | POST /batch-import |
+| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
+|--------|--------|------|----------|----------|
+| ERR-60301 | FormulaBatchEmpty | 400 | 请至少选择一个验方 | POST /batch-delete |
+| ERR-60302 | FormulaBatchImportEmpty | 400 | 导入数据不能为空 | POST /batch-import |
