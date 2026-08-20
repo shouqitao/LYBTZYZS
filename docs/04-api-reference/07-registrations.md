@@ -360,4 +360,4 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 | 2026-06-12 | v1.2 | 新增错误码章节 (ERR-40101~40104) |
 | 2026-06-25 | v2.0 | 全面重写：为全部 7 个端点补充完整请求/响应 JSON 示例、curl 命令、参数表；使用真实 GUID 和中文姓名 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin，影响 Receptionist 挂号） |
-| 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
+| 2026-06-28 | v1.3 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
