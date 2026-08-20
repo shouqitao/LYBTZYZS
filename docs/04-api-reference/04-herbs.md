@@ -1,183 +1,85 @@
 # 药材 API
 
-> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`（代码实际，前台不可查）
+> Controller: `HerbsController` | 路由前缀: `/api/v1/herbs` | 默认权限: `DoctorOrAdmin`
 >
 > ⚠️ **权限详见** [04-permissions.md](../01-product/04-permissions.md) §药材管理。代码已按此实现（类级 `DoctorOrAdmin` + 写操作 `AdminOrSuperAdmin`），前台不可查已落地。
 
 ## 概述
 
-药材管理 CRUD、分类筛选、JSON 批量导入、状态切换、批量操作。启用 OutputCache (`HerbsCache`)。
-Doctor 只能编辑自己创建的药材，Admin 可操作全部。
-
-> **注意**: 药材导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `POST /herbs/batch-import`（JSON 批量导入）、`GET /herbs/import-template`（JSON 模板）、`GET /herbs/export`（JSON 数组，筛选导出，US-HERB-013）、`GET /herbs/export-all`（JSON 数组，全量导出，US-HERB-007）。**双端一致**：Remote（LYBT.WebAPI）与 LocalWebAPI 均提供以上 4 个端点（2026-08-19 P1 修复：Local 补 export/import-template/export-all——此前缺失导致 Desktop 本地模式 404）。服务端 Excel 解析路径（`import-excel`）已移除。
+药材管理 CRUD、分类筛选、JSON 批量导入、状态切换、批量操作。启用 OutputCache。
+Doctor 只能编辑自己创建的药材，Admin 可操作全部。导入/导出为 JSON 格式（Remote 与 LocalWebAPI 均提供）。
 
 ---
 
-## GET /herbs
+## 端点列表
 
-获取药材分页列表。启用 OutputCache。
+### GET /herbs
+
+获取药材分页列表。
 
 - **权限**: `Doctor/Admin`（前台不可查）
 
-**查询参数**:
-
 | 参数 | 类型 | 默认值 | 说明 |
-| ------ | ------ | -------- | ------ |
+|------|------|--------|------|
 | `page` | int | 1 | 页码 (>0) |
 | `pageSize` | int | 20 | 每页大小 (1-100) |
 | `keyword` | string? | null | 搜索关键词 (名称/拼音码) |
 | `category` | string? | null | 分类筛选 |
 
-**成功响应** (200): `ApiResponse<PagedResult<HerbListDto>>`
+**响应**: `ApiResponse<PagedResult<HerbListDto>>`
 
 ```json
 {
   "items": [
-    {
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "name": "黄芪",
-      "pinYinCode": "HQ",
-      "category": "补气药",
-      "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-      "spec": "统货",
-      "unit": "克",
-      "price": 28.50,
-      "status": "Enabled",
-      "createdAt": "2026-01-10T08:00:00Z"
-    },
-    {
-      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-      "name": "当归",
-      "pinYinCode": "DG",
-      "category": "补血药",
-      "origin": "当归的干燥根",
-      "spec": "精选",
-      "unit": "克",
-      "price": 45.00,
-      "status": "Enabled",
-      "createdAt": "2026-01-10T08:00:00Z"
-    },
-    {
-      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-      "name": "金银花",
-      "pinYinCode": "JYH",
-      "category": "清热解毒药",
-      "origin": "忍冬的干燥花蕾",
-      "spec": "特级",
-      "unit": "克",
-      "price": 68.00,
-      "status": "Enabled",
-      "createdAt": "2026-02-15T10:00:00Z"
-    }
+    { "id": "...", "name": "黄芪", "pinYinCode": "HQ", "category": "补气药", "origin": "...", "spec": "统货", "unit": "克", "price": 28.50, "status": "Enabled", "createdAt": "..." },
+    { "id": "...", "name": "当归", "pinYinCode": "DG", "category": "补血药", "price": 45.00, "status": "Enabled", "createdAt": "..." }
   ],
-  "totalCount": 230,
-  "page": 1,
-  "pageSize": 20,
-  "totalPages": 12
+  "totalCount": 230, "page": 1, "pageSize": 20, "totalPages": 12
 }
 ```
 
-**curl 示例：**
-
-```bash
-# 获取药材列表
-curl -X GET "http://localhost:5000/api/v1/herbs?page=1&pageSize=20" \
-  -H "Authorization: Bearer $TOKEN"
-
-# 按关键词搜索
-curl -X GET "http://localhost:5000/api/v1/herbs?keyword=黄芪&page=1&pageSize=10" \
-  -H "Authorization: Bearer $TOKEN"
-
-# 按分类筛选
-curl -X GET "http://localhost:5000/api/v1/herbs?category=补气药&page=1&pageSize=20" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 分页参数无效 (ERR-50106) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50106 | 400 | 分页参数无效 |
 
 ---
 
-## GET /herbs/{id}
+### GET /herbs/{id}
 
 获取药材详情。
 
 - **权限**: `Doctor/Admin`（前台不可查）
+- **路径参数**: `id` (Guid)
 
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<HerbDetailDto>`
+**响应**: `ApiResponse<HerbDetailDto>`
 
 ```json
 {
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "黄芪",
-  "pinYinCode": "HQ",
-  "category": "补气药",
-  "properties": "甘，微温。归脾、肺经。",
-  "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-  "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-  "spec": "统货",
-  "costPrice": 18.00,
-  "price": 28.50,
-  "unit": "克",
-  "usage": "9～30g",
-  "remark": "蜜炙增强补中益气作用",
-  "status": "Enabled",
-  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "createdAt": "2026-01-10T08:00:00Z",
-  "updatedAt": "2026-06-15T14:30:00Z"
+  "id": "...", "name": "黄芪", "pinYinCode": "HQ", "category": "补气药",
+  "properties": "甘，微温。归脾、肺经。", "effect": "补气升阳，固表止汗...",
+  "origin": "蒙古黄芪或膜荚黄芪的干燥根", "spec": "统货",
+  "costPrice": 18.00, "price": 28.50, "unit": "克", "usage": "9～30g",
+  "remark": "蜜炙增强补中益气作用", "status": "Enabled",
+  "createdBy": "...", "createdAt": "...", "updatedAt": "..."
 }
 ```
 
-**错误响应** (404): 见错误码表 ERR-50101。
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；404 详见 ERR-50101 |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50101 | 404 | 药材不存在 |
 
 ---
 
-## POST /herbs
+### POST /herbs
 
 创建新药材。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
 
 **请求体** (`HerbInputDto`):
 
-```json
-{
-  "name": "白术",
-  "pinYinCode": "BZ",
-  "category": "补气药",
-  "properties": "苦、甘，温。归脾、胃经。",
-  "origin": "白术的干燥根茎",
-  "spec": "统货",
-  "unit": "克",
-  "price": 32.00,
-  "costPrice": 20.00,
-  "effect": "健脾益气，燥湿利水，止汗，安胎。",
-  "usage": "6～12g",
-  "remark": null
-}
-```
-
 | 字段 | 类型 | 必填 | 说明 |
-| ------ | ------ | ------ | ------ |
+|------|------|------|------|
 | `name` | string | 是 | 药材名称，最大 100 字符 |
 | `pinYinCode` | string | 否 | 拼音码 |
 | `category` | string | 否 | 分类 |
@@ -191,422 +93,147 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 | `usage` | string | 否 | 用法用量 |
 | `remark` | string | 否 | 备注 |
 
-**成功响应** (201 Created): `ApiResponse<HerbDetailDto>`
+**响应** (201): `ApiResponse<HerbDetailDto>` — 同 GET /herbs/{id}
 
-```json
-{
-  "id": "d4e5f6a7-b8c9-0123-def4-567890abcdef",
-  "name": "白术",
-  "pinYinCode": "BZ",
-  "category": "补气药",
-  "properties": "苦、甘，温。归脾、胃经。",
-  "effect": "健脾益气，燥湿利水，止汗，安胎。",
-  "origin": "白术的干燥根茎",
-  "spec": "统货",
-  "costPrice": 20.00,
-  "price": 32.00,
-  "unit": "克",
-  "usage": "6～12g",
-  "remark": null,
-  "status": "Enabled",
-  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "createdAt": "2026-06-25T10:00:00Z",
-  "updatedAt": null
-}
-```
-
-**错误响应** (400 — 验证失败): 见错误码表 ERR-50102。
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/herbs" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "白术",
-    "pinYinCode": "BZ",
-    "category": "补气药",
-    "properties": "苦、甘，温。归脾、胃经。",
-    "origin": "白术的干燥根茎",
-    "spec": "统货",
-    "unit": "克",
-    "price": 32.00,
-    "costPrice": 20.00,
-    "effect": "健脾益气，燥湿利水，止汗，安胎。",
-    "usage": "6～12g"
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 验证失败 (ERR-50102) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50102 | 400 | 验证失败 |
 
 ---
 
-## PUT /herbs/{id}
+### PUT /herbs/{id}
 
 更新药材信息。执行所有权检查。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
+- **路径参数**: `id` (Guid)
+- **请求体**: `HerbInputDto`（同 POST）
+- **响应**: `ApiResponse<HerbDetailDto>` — 返回更新后详情
 
-**路径参数**: `id` (Guid)
-
-**请求体**: `HerbInputDto` (同创建)
-
-```json
-{
-  "name": "黄芪",
-  "pinYinCode": "HQ",
-  "category": "补气药",
-  "properties": "甘，微温。归脾、肺经。",
-  "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-  "spec": "精选",
-  "unit": "克",
-  "price": 30.00,
-  "costPrice": 19.00,
-  "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-  "usage": "9～30g",
-  "remark": "价格已更新"
-}
-```
-
-**成功响应** (200): `ApiResponse<HerbDetailDto>` — 返回更新后的完整药材详情。
-
-**错误响应** (403): 见错误码表 ERR-50103。
-
-**curl 示例：**
-
-```bash
-curl -X PUT "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "黄芪",
-    "pinYinCode": "HQ",
-    "category": "补气药",
-    "properties": "甘，微温。归脾、肺经。",
-    "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-    "spec": "精选",
-    "unit": "克",
-    "price": 30.00,
-    "costPrice": 19.00,
-    "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-    "usage": "9～30g",
-    "remark": "价格已更新"
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 验证失败 (ERR-50102) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50102 | 400 | 验证失败 |
+| ERR-50103 | 403 | 无权限操作此药材 |
+| ERR-50101 | 404 | 药材不存在 |
 
 ---
 
-## DELETE /herbs/{id}
+### DELETE /herbs/{id}
 
-删除药材 (软删除)。执行所有权检查。
+软删除药材。执行所有权检查。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<bool>` → `true`
 
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<bool>`
-
-```json
-true
-```
-
-**curl 示例：**
-
-```bash
-curl -X DELETE "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50103 | 403 | 无权限操作此药材 |
+| ERR-50101 | 404 | 药材不存在 |
 
 ---
 
-## POST /herbs/{id}/toggle-status
+### POST /herbs/{id}/toggle-status
 
-切换药材状态 (启用/禁用)。执行所有权检查。
+切换药材状态（启用/禁用），无请求体。执行所有权检查。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<HerbDetailDto>` — 返回切换后详情
 
-**路径参数**: `id` (Guid)
-
-**请求体**: 无
-
-**成功响应** (200): `ApiResponse<HerbDetailDto>`
-
-```json
-{
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "黄芪",
-  "pinYinCode": "HQ",
-  "category": "补气药",
-  "properties": "甘，微温。归脾、肺经。",
-  "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-  "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-  "spec": "统货",
-  "costPrice": 18.00,
-  "price": 28.50,
-  "unit": "克",
-  "usage": "9～30g",
-  "remark": "蜜炙增强补中益气作用",
-  "status": "Disabled",
-  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "createdAt": "2026-01-10T08:00:00Z",
-  "updatedAt": "2026-06-25T10:00:00Z"
-}
-```
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/toggle-status" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-50103，404 详见 ERR-50101 |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50103 | 403 | 无权限操作此药材 |
+| ERR-50101 | 404 | 药材不存在 |
 
 ---
 
-## POST /herbs/batch-delete
+### POST /herbs/batch-delete
 
-批量删除药材。
+批量软删除药材。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
 
 **请求体** (`BatchDeleteInputDto`):
-
-```json
-{
-  "ids": [
-    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
-  ]
-}
-```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `ids` | Guid[] | 是 | 药材 ID 列表，不能为空 |
 
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+**响应**: `ApiResponse<BatchOperationResultDto>`
 
 ```json
-{
-  "totalCount": 2,
-  "successCount": 2,
-  "failureCount": 0,
-  "errors": []
-}
+{ "totalCount": 2, "successCount": 2, "failureCount": 0, "errors": [] }
 ```
 
-**错误响应** (400 — 空列表): 见错误码表 ERR-50201。
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/herbs/batch-delete" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "ids": [
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
-    ]
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 请至少选择一个药材 (ERR-50201) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50201 | 400 | 请至少选择一个药材 |
 
 ---
 
-## POST /herbs/batch-import
+### POST /herbs/batch-import
 
-JSON 批量导入药材 (非 Excel，直接 DTO 数组)。
+JSON 批量导入药材（直接 DTO 数组，非 Excel）。
 
-- **权限**: `Admin+`（写操作仅 Admin）
+- **权限**: `Admin+`
 
 **请求体** (`HerbBatchImportInputDto`):
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `herbs` | HerbInputDto[] | 是 | 药材列表，最多 10000 条 |
+| `strategy` | enum | 是 | 重复策略: `Skip` / `Overwrite` / `Error` |
 
 ```json
 {
   "herbs": [
-    {
-      "name": "黄芪",
-      "pinYinCode": "HQ",
-      "category": "补气药",
-      "properties": "甘，微温。归脾、肺经。",
-      "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-      "spec": "统货",
-      "unit": "克",
-      "price": 28.50,
-      "costPrice": 18.00,
-      "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-      "usage": "9～30g",
-      "remark": null
-    },
-    {
-      "name": "当归",
-      "pinYinCode": "DG",
-      "category": "补血药",
-      "properties": "甘、辛，温。归肝、心、脾经。",
-      "origin": "当归的干燥根",
-      "spec": "精选",
-      "unit": "克",
-      "price": 45.00,
-      "costPrice": 30.00,
-      "effect": "补血活血，调经止痛，润肠通便。",
-      "usage": "6～12g",
-      "remark": null
-    }
+    { "name": "黄芪", "pinYinCode": "HQ", "category": "补气药", "price": 28.50, "costPrice": 18.00, ... },
+    { "name": "当归", "pinYinCode": "DG", "category": "补血药", "price": 45.00, "costPrice": 30.00, ... }
   ],
   "strategy": "Skip"
 }
 ```
 
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `herbs` | HerbInputDto[] | 是 | 药材列表，最多 10000 条 |
-| `strategy` | enum | 是 | 重复策略: `Skip`(跳过) / `Overwrite`(覆盖) / `Error`(报错) |
-
-**成功响应** (200): `ApiResponse<HerbBatchImportResultDto>`
+**响应**: `ApiResponse<HerbBatchImportResultDto>`
 
 ```json
-{
-  "totalCount": 2,
-  "successCount": 2,
-  "failureCount": 0,
-  "skippedCount": 0
-}
+{ "totalCount": 2, "successCount": 2, "failureCount": 0, "skippedCount": 0 }
 ```
 
-**错误响应** (400 — 超限): 见错误码表 ERR-50202。
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/herbs/batch-import" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "herbs": [
-      {
-        "name": "黄芪",
-        "pinYinCode": "HQ",
-        "category": "补气药",
-        "properties": "甘，微温。归脾、肺经。",
-        "origin": "蒙古黄芪或膜荚黄芪的干燥根",
-        "spec": "统货",
-        "unit": "克",
-        "price": 28.50,
-        "costPrice": 18.00,
-        "effect": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。",
-        "usage": "9～30g"
-      },
-      {
-        "name": "当归",
-        "pinYinCode": "DG",
-        "category": "补血药",
-        "properties": "甘、辛，温。归肝、心、脾经。",
-        "origin": "当归的干燥根",
-        "spec": "精选",
-        "unit": "克",
-        "price": 45.00,
-        "costPrice": 30.00,
-        "effect": "补血活血，调经止痛，润肠通便。",
-        "usage": "6～12g"
-      }
-    ],
-    "strategy": "Skip"
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 验证失败 (ERR-50102) |
-| 400 | 批量导入最多10000条 (ERR-50202) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50102 | 400 | 验证失败 |
+| ERR-50202 | 400 | 批量导入最多10000条 |
 
 ---
 
-## POST /herbs/{id}/restore
+### POST /herbs/{id}/restore
 
-> ✅ **已实现**（2026-08-03 补充文档）
+恢复已软删除的药材（绕过软删除全局过滤器）。
 
-恢复已软删除的药材。绕过软删除全局过滤器。
+- **权限**: `Admin`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<HerbDetailDto>`
 
-- **权限**: `Admin`（业务管理）
-
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<HerbDetailDto>`
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/restore" \
-  -H "Authorization: Bearer ***"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 200 | 该药材未被删除 (ERR-50104) |
-| 404 | 药材不存在 (ERR-50101) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-50104 | 200 | 该药材未被删除 |
+| ERR-50101 | 404 | 药材不存在 |
 
 ---
 
-## GET /herbs/{id}/check-reference
+### GET /herbs/{id}/check-reference
 
-> ✅ **已实现**（2026-08-03 补充文档）
-
-检查药材是否被处方/验方引用，用于删除前确认。
+检查药材是否被处方/验方引用（删除前确认）。
 
 - **权限**: `Doctor/Admin`（前台不可查）
-
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<HerbReferenceCheckDto>`
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/check-reference" \
-  -H "Authorization: Bearer ***"
-```
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<HerbReferenceCheckDto>`
 
 ---
 
-## POST /herbs/batch-check-reference
-
-> ✅ **已实现**（2026-08-03 补充文档）
+### POST /herbs/batch-check-reference
 
 批量检查多个药材的引用关系。
 
@@ -614,88 +241,40 @@ curl -X GET "http://localhost:5000/api/v1/herbs/a1b2c3d4-e5f6-7890-abcd-ef123456
 
 **请求体**:
 
-```json
-{
-  "herbIds": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
-}
-```
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `herbIds` | Guid[] | 是 | 药材 ID 列表 |
 
-**成功响应** (200): `ApiResponse<List<HerbReferenceCheckDto>>`
+- **响应**: `ApiResponse<List<HerbReferenceCheckDto>>`
 
 ---
 
-## POST /herbs/batch-enable
+### POST /herbs/batch-enable / batch-disable
 
-> ✅ **已实现**（2026-08-03 补充文档）
-
-批量启用药材。
+批量启用或禁用药材。
 
 - **权限**: `AdminOrSuperAdmin`
 
-**请求体**:
+**请求体** (两个端点相同):
 
-```json
-{
-  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
-}
-```
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `ids` | Guid[] | 是 | 药材 ID 列表 |
 
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+- **响应**: `ApiResponse<BatchOperationResultDto>`
 
 ---
 
-## POST /herbs/batch-disable
+## 错误码汇总
 
-> ✅ **已实现**（2026-08-03 补充文档）
+> 完整定义见 [herbs.md PRD](../02-requirements/05-herbs.md)。分区: 5xxxx。
 
-批量禁用药材。
-
-- **权限**: `AdminOrSuperAdmin`
-
-**请求体**:
-
-```json
-{
-  "ids": ["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
-}
-```
-
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
-
----
-
-## 错误码
-
-> 完整错误码定义见 [herbs.md PRD](../02-requirements/05-herbs.md)。错误码分区: 5xxxx。
-
-### 核心错误 (501xx)
-
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-| -------- | -------- | ------ | ---------- | ---------- |
-| ERR-50101 | HerbNotFound | 404 | 药材不存在 | GET/PUT/DELETE /{id} |
-| ERR-50102 | HerbValidationFailed | 400 | 验证失败 | POST /, PUT /{id} |
-| ERR-50103 | HerbNoPermission | 403 | 无权限操作此药材 | PUT/DELETE /{id}, POST /{id}/toggle-status |
-| ERR-50104 | HerbNotDeleted | 200 | 该药材未被删除 | POST /{id}/restore |
-| ERR-50106 | HerbInvalidPagination | 400 | 分页参数无效 | GET / |
-
-### 批量操作错误 (502xx)
-
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-|--------|--------|------|----------|----------|
-| ERR-50201 | HerbBatchEmpty | 400 | 请至少选择一个药材 | POST /batch-delete |
-| ERR-50202 | HerbBatchImportExceeded | 400 | 批量导入最多10000条 | POST /batch-import |
-
----
-
-## 变更记录
-
-| 日期 | 版本 | 变更内容 |
-| ------ | ------ | ---------- |
-| 2026-02-10 | v1.0 | 初始版本 |
-| 2026-02-18 | v1.1 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-50101~50203)，含核心/批量/导入三类 |
-| 2026-06-12 | v1.2 | 标注 POST /herbs/import 为客户端功能; 服务端仅提供 batch-import (JSON) |
-| 2026-06-12 | v1.3 | HerbDetailDto: 新增 origin/spec/costPrice/usage/remark 字段 |
-| 2026-06-25 | v2.0 | 移除不存在的端点 (export/export-all/import-template)；补充 8 个核心端点的完整请求/响应 JSON 示例、curl 命令 |
-| 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin） |
-| 2026-06-28 | vX.Y | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
-| 2026-08-03 | v2.2 | **端点修正**：恢复 restore/check-reference/batch-check-reference/batch-enable/batch-disable 5 个端点文档（代码实际存在，`HerbsController` 共 13 个端点）；changelog 此前误称「已移除」 |
+| 错误码 | HTTP | 用户消息 | 触发端点 |
+|--------|------|----------|----------|
+| ERR-50101 | 404 | 药材不存在 | GET/PUT/DELETE /{id} |
+| ERR-50102 | 400 | 验证失败 | POST /, PUT /{id}, batch-import |
+| ERR-50103 | 403 | 无权限操作此药材 | PUT/DELETE /{id}, toggle-status |
+| ERR-50104 | 200 | 该药材未被删除 | POST /{id}/restore |
+| ERR-50106 | 400 | 分页参数无效 | GET / |
+| ERR-50201 | 400 | 请至少选择一个药材 | POST /batch-delete |
+| ERR-50202 | 400 | 批量导入最多10000条 | POST /batch-import |
