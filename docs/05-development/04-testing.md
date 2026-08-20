@@ -263,7 +263,6 @@ Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Deskto
 
 ## 断言、命名与 Builder 补充（原 10-testing-standards.md 合并，2026-08-20）
 
-> 本节合并自 `10-testing-standards.md`（历史命名/断言 Helper/Builder），原文件已删除。
 
 **历史命名（可保留）**：现有 `US_MC_001_CreateCase_WithValidData_ReturnsCreatedCase` 格式可保留，新增测试应使用简短 `{Method}_{Scenario}_{Expected}`。
 
