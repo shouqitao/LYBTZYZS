@@ -16,7 +16,7 @@ namespace LYBT.Shared.Models.Validators.Auth
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("密码不能为空")
-                .MinimumLength(6).WithMessage("密码长度不能少于6个字符");
+                .MinimumLength(8).WithMessage("密码长度不能少于8个字符");
         }
     }
 }

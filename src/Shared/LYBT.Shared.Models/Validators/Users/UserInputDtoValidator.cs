@@ -36,8 +36,8 @@ public class UserInputDtoValidator : AbstractValidator<UserInputDto>
         // ========== 密码（创建时可选，更新时禁止） ==========
 
         RuleFor(x => x.Password)
-            .Length(6, 128)
-            .WithMessage("密码长度必须在6-128个字符之间")
+            .Length(8, 128)
+            .WithMessage("密码长度必须在8-128个字符之间")
             .When(x => !string.IsNullOrEmpty(x.Password));
 
         RuleFor(x => x.ConfirmPassword)

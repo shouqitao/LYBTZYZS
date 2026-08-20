@@ -42,22 +42,13 @@ public class CatalogCrossModuleService : ICatalogCrossModuleService
         var idList = herbIds.ToList();
         if (idList.Count == 0) return new Dictionary<Guid, decimal>();
 
-        var result = new Dictionary<Guid, decimal>();
-        foreach (var herbId in idList)
-        {
-            var herb = await _context.Herbs
-                .AsNoTracking()
-                .Where(h => h.Id == herbId && !h.IsDeleted)
-                .Select(h => new { h.Id, h.Price })
-                .FirstOrDefaultAsync(cancellationToken);
+        var herbs = await _context.Herbs
+            .AsNoTracking()
+            .Where(h => idList.Contains(h.Id) && !h.IsDeleted)
+            .Select(h => new { h.Id, h.Price })
+            .ToListAsync(cancellationToken);
 
-            if (herb != null)
-            {
-                result[herb.Id] = herb.Price;
-            }
-        }
-
-        return result;
+        return herbs.ToDictionary(h => h.Id, h => h.Price);
     }
 
     public async Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
@@ -66,16 +57,16 @@ public class CatalogCrossModuleService : ICatalogCrossModuleService
         if (idList.Count == 0) return new HashSet<Guid>();
 
         var disabledIds = new HashSet<Guid>();
-        foreach (var herbId in idList)
-        {
-            var herb = await _context.Herbs
-                .AsNoTracking()
-                .IgnoreQueryFilters()
-                .Where(h => h.Id == herbId)
-                .Select(h => new { h.Id, h.Status, h.IsDeleted })
-                .FirstOrDefaultAsync(cancellationToken);
+        var herbs = await _context.Herbs
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Where(h => idList.Contains(h.Id))
+            .Select(h => new { h.Id, h.Status, h.IsDeleted })
+            .ToListAsync(cancellationToken);
 
-            if (herb != null && (herb.IsDeleted || herb.Status == CommonStatus.Disabled))
+        foreach (var herb in herbs)
+        {
+            if (herb.Status == CommonStatus.Disabled || herb.IsDeleted)
             {
                 disabledIds.Add(herb.Id);
             }
