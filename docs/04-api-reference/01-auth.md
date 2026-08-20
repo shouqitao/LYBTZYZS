@@ -311,5 +311,5 @@ curl -X GET http://localhost:5000/api/v1/auth
 |------|------|----------|
 | 2026-02-10 | v1.0 | 初始版本，5 个端点 |
 | 2026-06-25 | v2.0 | 补充全部端点的请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
-| 2026-06-28 | v2.1 | 文档对齐基线：删除 refresh/auto-login「尚未实现」声明（两端点已在 AuthController 实现，:116/:128）；AccessToken 有效期标注 60 分钟（代码 `AddMinutes(60)`）；错误码表已在 README 精简 |
+| 2026-06-28 | v2.1 | 文档对齐基线：删除 refresh/auto-login「尚未实现」声明（两端点已在 AuthController 实现，:116/:128）；AccessToken 有效期标注为配置驱动（base 480/Dev·Test 60/Prod 30 分钟）；错误码表已在 README 精简 |
 | 2026-06-28 | v2.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
