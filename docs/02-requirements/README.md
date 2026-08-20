@@ -1,6 +1,6 @@
 # 需求文档 (02-requirements)
 
-> 版本: v3.0 | 日期: 2026-08-02 | 状态: ✅ 已更新
+> 版本: v3.0 | 日期: 2026-08-06 | 状态: ✅ 已更新
 >
 > **权威文档在哪**：业务规则/US 需求即本目录（按模块）；术语 → [03-glossary.md](../01-product/03-glossary.md)；权限 → [04-permissions.md](../01-product/04-permissions.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
