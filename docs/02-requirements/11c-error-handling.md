@@ -143,7 +143,7 @@
 
 **角色**: 开发人员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（FluentValidation→400 映射✅；自定义 ValidationException 链缺失）
+**状态**: ✅ 已实现（FluentValidation ValidationBehavior + ErrorCodeExtensions.ToHttpStatusCode 映射）
 
 **作为** 开发人员，**我想要** 验证错误以统一格式返回（含字段级 errors 字典），**以便** 客户端能在表单内精确高亮错误字段。
 

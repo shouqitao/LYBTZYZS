@@ -360,7 +360,7 @@
 
 **角色**: 医生/管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（`DesktopCacheManager.InvalidateHerbCaches` 已实现；需求文档 2026-08-13 补充定义）
+**状态**: ✅ 已实现（`DesktopCacheManager.InvalidateHerbCaches` + 需求文档 2026-08-13 补充定义）
 
 **作为** 医生，**我想要** 在开方/验方编辑时快速选择药材且不重复请求服务器，**以便** 编辑体验流畅、减少网络往返。
 

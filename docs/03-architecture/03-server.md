@@ -2,7 +2,7 @@
 
 ## 概述
 
-Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 8 个业务模块。6 个模块 (Auth/Users/Patients/Herbs/Formula/Registration) 使用 MediatR CQRS，其中 Users/Patients/Herbs/Formula 由 Service 处理简单 CRUD、MediatR 处理复杂命令；MedicalCase 采用 Command/Query/State 三 Service 拆分（无 MediatR）；Reports 为只读聚合查询模块。Prescriptions 模块已于 2026-01-05 移除，处方功能迁移到 MedicalCase 聚合根内。
+Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 7 个业务模块。Identity (认证+用户)、Catalog (药材+验方)、Patients、MedicalCases、Registration 使用 MediatR CQRS；Reports 为只读聚合查询模块。
 
 ## 请求生命周期
 
@@ -63,12 +63,12 @@ sequenceDiagram
 
 | 模块 | 架构模式 | 跨模块通信 |
 |------|----------|------------|
-| Auth | MediatR CQRS | IUserCrossModuleService |
-| Users | Service + MediatR | IUserCrossModuleService（供 MedicalCase/Auth） |
-| Patients | Service + MediatR | IMedicalCaseCrossModuleService（引用检查） |
-| Herbs (Catalog) | Service + MediatR | ICatalogCrossModuleService |
-| Formula | Service + MediatR | ICatalogCrossModuleService |
-| MedicalCase | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICatalogCrossModuleService |
+| Identity (Auth+Users) | MediatR CQRS | IUserCrossModuleService |
+| Catalog (Herbs+Formula) | Service + MediatR | ICatalogCrossModuleService |
+| Patients | Service + MediatR | IMedicalCaseCrossModuleService |
+| MedicalCases | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICatalogCrossModuleService |
+| Registration | MediatR CQRS | IRegistrationCrossModuleService |
+| Reports | 只读聚合查询 | — |
 | Registration | 纯 MediatR CQRS | IRegistrationCrossModuleService |
 | Reports | Service + Repository（只读聚合） | - |
 
