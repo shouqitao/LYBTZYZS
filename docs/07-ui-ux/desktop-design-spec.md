@@ -1,5 +1,7 @@
 # Desktop UI/UX 设计规范
 
+> ⚠️ 本文档超 400 行（822 行），建议拆分。
+
 > **文档性质**：设计态（系统应该是什么）——SSOT  
 > **版本**：v1.0.0 | 2026-08-14  
 > **适用范围**：LYBTZYZS Desktop（WPF/Prism.DryIoc/MaterialDesignInXAML）  
