@@ -69,8 +69,6 @@ sequenceDiagram
 | MedicalCases | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICatalogCrossModuleService |
 | Registration | MediatR CQRS | IRegistrationCrossModuleService |
 | Reports | 只读聚合查询 | — |
-| Registration | 纯 MediatR CQRS | IRegistrationCrossModuleService |
-| Reports | Service + Repository（只读聚合） | - |
 
 > 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，`LYBT.Module.Sync` 不在 v1.0 范围。
 
