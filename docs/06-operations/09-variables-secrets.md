@@ -8,7 +8,7 @@
 | `Jwt:SecretKey` | Server | Server | appsettings.json | **高 — JWT 签名密钥** |
 | `Jwt:Issuer` | Server | Server | appsettings.json | 低 |
 | `Jwt:Audience` | Server | Server | appsettings.json | 低 |
-| `Jwt:AccessTokenExpirationMinutes` | Server | Server | 代码硬编码（非 appsettings） | 低 — Token 有效期，当前硬编码 60 分钟，可配属 v2.0 |
+| `Jwt:AccessTokenExpirationMinutes` | Server | Server | appsettings.json（JwtOptions） | 低 — Token 有效期，配置驱动：base 480/Dev·Test 60/Prod 30 分钟 |
 | `Security:AccountLockout:MaxFailedCount` | Server | Server | 设计扩展（未在 appsettings 暴露） | 低 — 锁定阈值 |
 | `Security:AccountLockout:LockoutMinutes` | Server | Server | 设计扩展（未在 appsettings 暴露） | 低 — 锁定时长 |
 | `DefaultPasswords:AdminPassword` | Server | Server | appsettings.json | **高 — 默认密码** |
