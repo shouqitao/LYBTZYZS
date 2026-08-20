@@ -50,6 +50,7 @@
 | [modules/printing.md](modules/printing.md) | 打印模块 |
 | [modules/reports.md](modules/reports.md) | 报表模块 |
 | | [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
+| [shared-layer.md](shared-layer.md) | Shared 层设计（补充文档，无编号） |
 | [16-desktop-architecture-spec.md](16-desktop-architecture-spec.md) | Desktop 架构规格 |
 
 > 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/README.md)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
