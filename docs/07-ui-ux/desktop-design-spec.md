@@ -48,14 +48,7 @@
 
 ## 2. 技术栈与工具链
 
-| 层级 | 技术 | 版本/备注 |
-|------|------|-----------|
-| UI 框架 | WPF (.NET 8) | `net8.0-windows` |
-| 组件库 | MaterialDesignInXAML (MDIX) | 5.3.2 |
-| MVVM | Prism.DryIoc | 区域导航、DI、模块化 |
-| 数据绑定 | CommunityToolkit.Mvvm | `[ObservableProperty]` / `[RelayCommand]` |
-| 打印 | QuestPDF | A5 处方笺 |
-| 主题 | BundledTheme (Light) | Primary=Brown, Secondary=Amber |
+> 技术栈详见 [[00-architecture-summary]]
 
 ---
 
