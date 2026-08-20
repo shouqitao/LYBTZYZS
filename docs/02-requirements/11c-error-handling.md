@@ -1,4 +1,4 @@
-# Error Handling (异常处理)
+# 异常处理 (Error Handling)
 
 > 版本: v1.0 | 日期: 2026-08-20 | 状态: ✅ 已完成
 > Split from 11-platform.md (2026-06-28)

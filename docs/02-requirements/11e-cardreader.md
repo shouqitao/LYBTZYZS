@@ -1,4 +1,4 @@
-# Card Reader (身份证读卡器)
+# 身份证读卡器 (Card Reader)
 
 > 版本: v1.1 | 日期: 2026-08-20 | 状态: ⚠️ 部分完成（US-CARD-001 已实现 / US-CARD-002 待完善）
 > Split from 11-platform.md (2026-06-28)

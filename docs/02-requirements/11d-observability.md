@@ -1,4 +1,4 @@
-# Observability (可观测性: 日志与健康诊断)
+# 可观测性 (Observability)
 
 > 版本: v1.1 | 日期: 2026-08-20（v1.1 2026-08-11 校准） | 状态: ✅ 已完成
 > Split from 11-platform.md (2026-06-28)
