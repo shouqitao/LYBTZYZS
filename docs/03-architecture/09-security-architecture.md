@@ -67,8 +67,8 @@ sequenceDiagram
 | 约束 | 值 | 强制 | 说明 |
 |------|-----|:---:|------|
 | Password WorkFactor | 12 | 是 | BCrypt 代价因子，不可降低 |
-| AccessToken 默认过期 | 30 分钟 | 是 | 可配置 5-1440，生产环境建议 ≤60 |
-| RefreshToken 有效期 | 7 天滑动 + 30 天绝对 | 是 | 滑动续期，绝对过期强制重登录 |
+| AccessToken 过期 | 配置驱动（base 480/Dev 60/Prod 30 分钟） | 是 | `JwtOptions.AccessTokenExpirationMinutes` |
+| RefreshToken 有效期 | 7 天（滑动过期） | 是 | `JwtOptions.RefreshTokenExpirationDays` |
 | 登录失败锁定 | 5 次/15 分钟 | 是 | 可配置，生产环境不可禁用 |
 | 登录速率限制 | 5 次/60 秒/IP | 是 | 防暴力破解 |
 | 旧会话清理 | 新登录时 | 是 | 防止 Token 泄漏后持续有效 |
@@ -87,7 +87,7 @@ sequenceDiagram
 
 | Token 类型 | 有效期 | 存储 | 用途 |
 |-----------|--------|------|------|
-| AccessToken (JWT) | 30 分钟（可配置，5-1440 分钟） | Client 内存 | API 请求授权 |
+| AccessToken (JWT) | 配置驱动（base 480 分钟） | Client 内存 | API 请求授权 |
 | RefreshToken | 7 天滑动 + 30 天绝对过期 | Server 数据库 | 无感刷新 AccessToken |
 | AutoLoginToken | 长期（可撤销） | Client DPAPI 加密 | 自动登录（RememberMe） |
 

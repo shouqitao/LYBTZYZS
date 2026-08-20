@@ -127,7 +127,7 @@ View(XAML) ← binding ← ViewModel（[ObservableProperty]/[RelayCommand]）
 
 **依赖方向**: Shell -> Roles -> Modules -> Infrastructure -> Foundation -> Contracts
 
-## Modules 层 (8 个业务模块)
+## Modules 层 (6 个业务模块)
 
 ### 标准目录结构
 
