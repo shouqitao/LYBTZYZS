@@ -36,12 +36,9 @@
 5. P/Invoke `AccessViolationException` 捕获转错误码 -100，不传播崩溃。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 不适用（纯客户端硬件交互） |
-| 本地 | 不适用（纯客户端硬件交互） |
+模式差异：------: ------；远程: 不适用（纯客户端硬件交互）；本地: 不适用（纯客户端硬件交互）
 
-**实现参考**: `src/Client/Desktop/Core/LYBT.Desktop.CardReader/Services/ICardReaderService.cs:10`、`HuaDaHD100CardReader`、`MockCardReader`
+**实现参考**: `src/Client/Desktop/Core/LYBT.Desktop.CardReader/Services/ICardReaderService.cs`、`HuaDaHD100CardReader`、`MockCardReader`
 
 ---
 
@@ -67,10 +64,7 @@
 4. 在患者列表页通过 `ReadCardCommand` 触发。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 读卡后通过 API 查询/创建患者 |
-| 本地 | 读卡后通过本地数据源查询/创建患者 |
+模式差异：------: ------；远程: 读卡后通过 API 查询/创建患者；本地: 读卡后通过本地数据源查询/创建患者
 
 **实现参考**: `IPatientCardReaderIntegration`、`DpapiPhotoStorageService`
 
