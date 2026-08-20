@@ -174,16 +174,32 @@
 
 ## 六、共享控件
 
-| 控件 | 状态 | 功能 |
-|------|------|------|
-| ToastControl | ✅ | 操作反馈提示 |
-| SearchBox | ✅ | 搜索输入框 |
-| LoadingOverlay | ✅ | 加载遮罩 |
-| BreadcrumbBar | ✅ | 面包屑导航 |
-| MasterDetailLayout | ✅ | 主从详情布局 |
-| ConfirmationDialog | ✅ | 确认对话框 |
-| InputDialog | ✅ | 输入对话框 |
-| MessageDialog | ✅ | 消息对话框 |
+> **控件清单权威来源**: [desktop-design-spec.md §8.1 共享控件规范](./desktop-design-spec.md)。
+> 下表仅列实现状态。
+
+| 控件 | 状态 |
+|------|------|
+| MasterDetailLayout | ✅ |
+| BaseDetailContainer | ✅ |
+| DataGridToolbar | ✅ |
+| DetailToolbar | ✅ |
+| SearchBox | ✅ |
+| StatusBadge | ✅ |
+| InfoCard | ✅ |
+| EmptyState | ✅ |
+| LoadingOverlay | ✅ |
+| BreadcrumbBar | ✅ |
+| UnifiedPaginationBar | ✅ |
+| PatientInfoCardControl | ✅ |
+| ToastControl | ✅ |
+| WorkflowStepIndicator | ✅ |
+| HerbListControl | ✅ |
+| HerbItemControl | ✅ |
+| FormulaViewControl | ✅ |
+| PatientSelectionControl | ✅ |
+| ConfirmationDialog | ✅ |
+| InputDialog | ✅ |
+| MessageDialog | ✅ |
 
 ---
 
