@@ -7,7 +7,7 @@
 | `Jwt:SecretKey` | string | — | ≥32 字符 | JWT 签名密钥，生产必须修改 |
 | `Jwt:Issuer` | string | `LYBT.WebAPI` | 任意字符串 | 签发者标识（appsettings.json 实际值） |
 | `Jwt:Audience` | string | `LYBT.Client` | 任意字符串 | 接收者标识（appsettings.json 实际值） |
-| `Jwt:AccessTokenExpirationMinutes` | int | `60`（硬编码） | 5-1440（v2.0） | AccessToken 有效期（分钟）。当前由 `AuthController.cs` 硬编码 `AddMinutes(60)`，**未在 appsettings 暴露**，可配置化属 v2.0 待办 |
+| `Jwt:AccessTokenExpirationMinutes` | int | `480`（base） | 5-1440（v2.0） | AccessToken 有效期（分钟）。从 `JwtOptions` 配置读取（`JwtService.cs:110`）：base 480/Dev·Test 60/Prod 30。环境覆盖见 `appsettings.{Environment}.json` |
 
 ## 安全配置
 
