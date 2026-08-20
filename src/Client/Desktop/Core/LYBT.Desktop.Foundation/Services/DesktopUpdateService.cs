@@ -99,7 +99,7 @@ public class DesktopUpdateService : IDesktopUpdateService
     [Obsolete("Use ApplyUpdateAndRestartAsync instead")]
     public void ApplyUpdateAndRestart()
     {
-        // Task.Run 隔离避免 WPF Dispatcher sync-over-async 死锁（R4 P3）
-        Task.Run(() => ApplyUpdateAndRestartAsync()).GetAwaiter().GetResult();
+        // Task.Run 隔离避免 WPF Dispatcher sync-over-async 死锁（R4 P3）——同步兼容层，内部以 Task.Run 隔离后阻塞等待
+        Task.Run(() => ApplyUpdateAndRestartAsync()).Wait();
     }
 }
