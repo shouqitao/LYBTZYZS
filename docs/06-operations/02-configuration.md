@@ -341,9 +341,9 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 
 ---
 
-## sysadmin 远程配置管理 🧲 v1.0 待实现
+## sysadmin 远程配置管理
 
-> 🚧 **v1.0 待实现**（[ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。sysadmin 在远程模式通过 Configuration API 管理服务端配置，无需登录服务器改文件。
+> sysadmin 在远程模式通过 Configuration API 管理服务端配置，无需登录服务器改文件（见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。
 
 ### 服务端配置 API 边界
 

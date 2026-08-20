@@ -130,9 +130,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ---
 
-## PUT /configuration/{section} 🧲 v1.0 待实现
-
-> 🚧 **v1.0 待实现**（[ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。当前 `ConfigurationController` 仅提供只读 GET；本端点及白/黑名单、写回、延迟重启属待实施范围。
+## PUT /configuration/{section}
 
 更新单个配置节（仅业务参数，敏感配置返回 403）。sysadmin 在远程模式配置中心修改服务端业务参数时调用。
 
@@ -186,9 +184,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ---
 
-## POST /configuration/restart 🧲 v1.0 待实现
-
-> 🚧 **v1.0 待实现**（[ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。延迟重启端点属待实施范围。
+## POST /configuration/restart
 
 延迟 30 秒重启服务端 WebAPI 进程，用于配置变更后生效。sysadmin 在配置中心点击「应用并重启」时触发（二次确认后）。
 
