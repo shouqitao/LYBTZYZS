@@ -338,7 +338,7 @@
 
 ## US-SHELL-017: 生产环境安全门控（SystemAdminOptions）
 
-**角色**: sysadmin / 运维
+**角色**: sysadmin
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -489,7 +489,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ## US-SHELL-021: 上线数据迁移（历史数据导入）
 
-**角色**: sysadmin / Admin
+**角色**: 管理员
 **优先级**: Should
 **状态**: 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编）
 
@@ -560,7 +560,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ## US-SHELL-024: Server 单实例与端口防护
 
-**角色**: 运维（部署）
+**角色**: 运维
 **优先级**: Must
 **状态**: ✅ 已实现（2026-08-13 P2-07——start.sh 四层防护 + Program.cs Mutex 双保险；真机实测通过）
 
@@ -589,7 +589,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 ## US-SHELL-025: HTTP/HTTPS 双协议支持
 
-**角色**: 运维/部署
+**角色**: 运维
 **优先级**: Should
 **状态**: ✅ 已实现（2026-08-14 P2-09——Kestrel 多端点 + 配置开关；真机验证 health 200）
 
