@@ -4,7 +4,7 @@
 
 本文件定义四角色的权限矩阵、当前代码策略映射、已知问题与修复计划。
 
-**图例**：✅ 已实现 | 📋 已设计未实现 | 🔴 未实现/缺失
+
 
 > 角色定位与工作流程详见 [02-personas.md](02-personas.md)。
 > 角色交接与协同流程详见 [05-role-interactions.md](05-role-interactions.md)。
@@ -71,7 +71,7 @@
 | `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
 | `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
 | `ReportsController` | `DoctorOrAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**） | 2026-08-08 统一双端策略（A-31-C0） |
-| `ConfigurationController` | `SysAdminOnly` | 配置读写/生产验证/restart/validate：**仅 SuperAdmin（sysadmin）**——业务管理员不碰系统配置（2026-08-13 权限隔离修复 CONFIG-PERM-FIX） | ✅ 2026-08-13 已对齐（原 AdminOrSuperAdmin 误放行 Admin——真机 testadmin 200 应 403） |
+| `ConfigurationController` | `SysAdminOnly` | 配置读写/生产验证/restart/validate：**仅 SuperAdmin（sysadmin）**——业务管理员不碰系统配置 | — |
 | `HerbsController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 🔴 前台不可查看药材（2026-08-03 决策）；写操作仅 Admin |
 | `FormulasController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 🔴 前台不可查看验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
 
