@@ -158,7 +158,7 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 
 更新医案状态。支持 Suspended/Active 状态流转。
 
-> **注意**: 远程/本地模式的行为差异见 [05-dual-mode.md](../03-architecture/05-dual-mode.md)。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (软删除)。
+> **注意**: 远程/本地模式的行为差异见 [05-dual-mode.md](../03-architecture/05-dual-mode.md)。`Cancelled` 状态已移除，取消操作请使用 `PUT /{id}/cancel` (物理删除)。
 
 **路径参数**: `id` (Guid)
 
@@ -218,13 +218,13 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 
 ### PUT /medicalcases/{id}/cancel
 
-取消医案 (统一为软删除 + 审计日志)。需要审计理由 (非当天本人操作时)。
+取消医案 (物理删除 + 审计日志)。需要审计理由 (非当天本人操作时)。
 
 **路径参数**: `id` (Guid)
 
 **请求体** (可选) (`CancelMedicalCaseRequestDto`): `{ "reason": "患者要求取消挂号" }`
 
-**成功响应** (204): 无内容 (取消操作统一为软删除，不再返回 DTO)
+**成功响应** (204): 无内容 (取消操作统一为物理删除，不再返回 DTO)
 
 ---
 
