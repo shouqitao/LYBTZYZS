@@ -32,6 +32,8 @@ Registration 管理挂号流程，连接前台/医生与医案。支持前台挂
 
 ## 状态机
 
+> **权威定义**: 见 [04-data-model.md「Registration 状态机」](../../03-architecture/04-data-model.md) L268-272 及 [07-medical-cases.md「状态机」](../../02-requirements/07-medical-cases.md) §状态机。
+
 ```
 Waiting → InProgress → Completed
    ↓          ↓
