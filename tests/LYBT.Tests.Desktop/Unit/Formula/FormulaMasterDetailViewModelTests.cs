@@ -13,7 +13,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
-using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;

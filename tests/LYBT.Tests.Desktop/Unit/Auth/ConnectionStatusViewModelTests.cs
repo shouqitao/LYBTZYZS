@@ -4,7 +4,6 @@ using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
-using LYBT.Tests.Desktop.Infrastructure;
 using NSubstitute;
 using Xunit;
 

@@ -33,7 +33,7 @@ tests/
     LocalData/                        # 本地数据层 DataSource 测试
     PureLogic/                        # 纯逻辑 (状态机、事件、模型)
 
-  LYBT.Tests.Architecture/            # 架构防护测试 (net8.0, 76 tests)
+  LYBT.Tests.Architecture/            # 架构防护测试 (net8.0, 87 tests)
     ServerArchTests                   # 层依赖、命名规范
     CustomControlArchTests            # WPF 控件规范
     AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock

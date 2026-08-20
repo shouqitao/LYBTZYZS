@@ -12,7 +12,6 @@ using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
-using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 

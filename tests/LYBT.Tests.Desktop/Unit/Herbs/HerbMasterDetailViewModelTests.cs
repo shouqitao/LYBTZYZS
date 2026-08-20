@@ -15,7 +15,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;
 
 namespace LYBT.Tests.Desktop;
