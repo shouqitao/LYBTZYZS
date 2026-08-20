@@ -2,7 +2,7 @@
 
 > **用户速览**：给开发者看的。从 01-setup 开始，5 分钟跑起来。
 >
-> **权威文档在哪**：编码规范 → [02-code-standards.md](02-code-standards.md)；测试指南 → [04-testing.md](04-testing.md)（原 10-testing-standards 已合并）。完整查询指南见 [docs/README.md](../README.md#ai-查询指南）。
+> **权威文档在哪**：编码规范 → [02-code-standards.md](02-code-standards.md)；测试指南 → [04-testing.md](04-testing.md)（原 10-testing-standards 已合并）。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
 
 ## 前置条件
 

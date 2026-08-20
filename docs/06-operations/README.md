@@ -20,10 +20,9 @@
 
 | # | 文档 | 一句话说明 |
 |---|------|-----------|
-| 01 | [部署指南](01-deployment.md) | 服务端+客户端+数据库部署 |
+| 01 | [部署指南](01-deployment.md) | 服务端+客户端+数据库部署（含 Windows 补充与 Newman 验证） |
 | 02 | [配置管理](02-configuration.md) | 完整配置项说明 |
-| 03 | [WebAPI 部署摘要](03-webapi-deployment-summary.md) | 快速部署参考 |
-| 04 | [Windows 部署](04-windows-deployment.md) | Windows 环境部署 |
+| 03 | [故障排查](03-troubleshooting.md) | 错误日志定位与修复 |
 | 05 | [开发环境规格](05-development-environment-spec.md) | 环境要求 |
 | 06 | [API 测试](06-api-tests.md) | 测试用例 |
 | 07 | [备份恢复](07-backup-recovery.md) | 备份策略+灾难恢复 |
@@ -31,9 +30,7 @@
 | 09 | [部署回滚](09-deployment-rollback.md) | 回滚策略+决策矩阵 |
 | 10 | [变量与密钥](10-variables-secrets.md) | 配置变量清单 |
 | 11 | [变量值域](11-variables-value-ranges.md) | 取值范围+默认值 |
-| 12 | [部署流程](12-deployment-flow.md) | 远程/本地部署步骤 |
 | 13 | [服务器配置参考](13-server-config-reference.md) | 生产环境速查 |
-| 14 | [测试环境](14-deployment-test-environment.md) | 测试环境配置 |
 
 ## 日志系统
 

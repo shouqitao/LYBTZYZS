@@ -220,7 +220,7 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 
 ## 恢复流程
 
-> ⚠️ **服务管理命令适用环境**：下方 `sc stop/start LYBT-API` 适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（SCM 1053 超时），须改用 `schtasks /end /run /tn LYBT-API`，详见 [03](./03-webapi-deployment-summary.md) / [05](./05-development-environment-spec.md)。
+> ⚠️ **服务管理命令适用环境**：下方 `sc stop/start LYBT-API` 适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（SCM 1053 超时），须改用 `schtasks /end /run /tn LYBT-API`，详见 [01](./01-deployment.md) / [05](./05-development-environment-spec.md)。
 
 ### 场景 1：服务端数据库恢复
 

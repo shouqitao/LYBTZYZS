@@ -84,18 +84,18 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
-| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 3 |
+| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 4 |
 | [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
 | [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
-| [03-architecture](03-architecture/) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 52 |
+| [03-architecture](03-architecture/) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 57 |
 | [04-api-reference](04-api-reference/) | API 端点文档 | 15 |
-| [05-development](05-development/) | 开发指南、编码规范、测试标准 | 27 |
-| [06-operations](06-operations/) | 部署、配置、监控、备份 | 15 |
-| [compose](compose/) | 过程文档归档：plans/reports/specs（5/22/13） | 40 |
+| [05-development](05-development/) | 开发指南、编码规范、测试指南 | 17 |
+| [06-operations](06-operations/) | 部署、配置、监控、备份 | 12 |
+| [compose](compose/) | 过程文档归档：specs（图表资产） | 3 |
 | [prompts](prompts/) | Prompt 模板 | 2 |
 | [training](training/) | 培训材料 | 1 |
 
-**总计：143 个文档**（历史报告已完成使命删除，2026-08-06）
+**总计：约 140 个文档**（compose 41 报告/计划已清理，06-operations 4 部署文档已收敛，03-architecture 编号已修复，05-development 9 测试文档已整合，2026-08-20）
 
 ---
 
