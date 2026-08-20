@@ -425,6 +425,23 @@ Write-Host "DB Status: $($details.database.status), Duration: $($details.databas
 netstat -ano | findstr ":5000"
 ```
 
+### Newman 自动化测试验证（原 14-deployment-test-environment.md 合并）
+
+测试集合位置：`tests/newman/lybt-full-api-collection.json` + `tests/newman/env-full-test.json`
+
+```powershell
+# 全量（30s 超时，100ms 间隔）
+npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-full-test.json --reporters cli --timeout-request 15000 --delay-request 100
+
+# 按角色
+npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-full-test.json --folder "Phase 1: SysAdmin"
+npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-full-test.json --folder "Phase 2: Admin"
+npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-full-test.json --folder "Phase 4: Doctor"
+npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-full-test.json --folder "Phase 3: Receptionist"
+```
+
+测试账号（与 [S4] 部署步骤联动，验证登录）：`sysadmin/SysAdmin@2026!`（SuperAdmin）、`admin/Admin@123456`（Admin，待创建 doctor1/reception1）。
+
 ### 发布踩坑清单（Pitfalls）
 
 > **2026-08-12 测试发布实战记录**——以下问题均在真实部署中发生，按「问题 → 现象 → 原因 → 规避」记录，供后续发布（含正式发布）直接参考。
@@ -457,6 +474,32 @@ netstat -ano | findstr ":5000"
 5. **WebSocket** — 如使用 SignalR（未来扩展），需启用 WebSocket 协议
 
 > **注意**：本项目推荐使用 Windows Service 直接运行 Kestrel，IIS 仅作为备选方案。
+
+### Windows Server 部署补充（原 04-windows-deployment.md 合并）
+
+> 详细 Windows 部署（Server 2019/2022）与 01 的 Linux Runbook 互补：Linux 为生产（60.190.215.86），Windows 为内网/历史环境（192.168.190.7）。
+
+**系统要求**：Windows Server 2019/2022，2 核 4GB，.NET 8 Hosting Bundle，SQL Server 2019/2022。
+
+**Windows Service（推荐，Server 2016+）**：
+
+```powershell
+dotnet publish src/Server/Services/LYBT.WebAPI -c Release -o C:\Services\LYBT-API --self-contained false
+sc.exe create LYBT-API binPath= "C:\Services\LYBT-API\LYBT.WebAPI.exe" start= auto displayName= "凌隐宝堂 WebAPI 服务"
+sc.exe description LYBT-API "凌隐宝堂中医诊所管理系统 WebAPI 服务"
+sc.exe start LYBT-API
+New-NetFirewallRule -DisplayName "LYBT-API-5000" -Direction Inbound -Protocol TCP -LocalPort 5000 -Action Allow
+```
+
+**计划任务（Server 2012 R2 兼容，SC 1053 绕过）**：`schtasks /create /tn "LYBT-API" /tr "C:\Services\LYBT-API\start-service.bat" /sc onstart /ru SYSTEM /rl HIGHEST /f` + `schtasks /run /tn "LYBT-API"`。
+
+**SQL Server 与迁移**：`CREATE DATABASE LYBTDB_Dev` → `dotnet ef database update --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI`
+
+**Desktop 自动升级配置**（`appsettings.Production.json:DesktopUpdate`）：`Enabled/ReleasesPath="C:\\Services\\LYBT-releases"/MaxRetentionCount/DownloadBaseUrl="/releases"`，发布包与 WebAPI 目录独立。
+
+**SSL**：测试用自签名 `New-SelfSignedCertificate -DnsName lybt.local`；生产用正式证书 `Kestrel:Endpoints:Https:Certificate:Path`。
+
+**生产检查清单**：Hosting Bundle、SQL、防火墙、JWT_SECRET 强随机、默认密码已改、CORS、SSL、日志轮转、备份。
 
 ### 目录结构
 
