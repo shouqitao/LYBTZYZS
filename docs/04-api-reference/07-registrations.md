@@ -144,7 +144,7 @@ curl -X GET "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 分页查询挂号记录。
 
 - **权限**: DoctorOrReceptionist
-- US-REG-007: 支持按日期范围、患者、医生过滤
+- US-REG-004: 支持按日期范围、患者、医生过滤
 
 **查询参数**:
 
