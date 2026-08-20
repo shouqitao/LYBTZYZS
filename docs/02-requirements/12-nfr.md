@@ -261,7 +261,7 @@ Server 端（ASP.NET Core）理论上跨平台，但当前部署目标为 Window
 | ASP.NET Core | 8.0 |
 | EF Core | 8.0 |
 | WPF | .NET 8 Desktop |
-| Prism | 9.x（MVVM 框架） |
+| Prism | 8.1.97（MVVM 框架） |
 
 ### NFR-COMP-003: 数据库
 
