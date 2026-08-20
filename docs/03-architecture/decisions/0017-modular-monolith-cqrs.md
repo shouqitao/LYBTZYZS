@@ -29,7 +29,7 @@ Services(WebAPI)
         │   ├── Domain/          # Patient (IAggregateRoot), Domain Events
         │   ├── Application/     # Commands/, Queries/, Validators/, Mappers/
         │   ├── Infrastructure/  # PatientsDbContext, PatientRepository
-        │   ├── Interfaces/      # ICrossModuleService contracts
+        │   ├── Interfaces/      # ~~ICrossModuleService~~ → 域接口（IXxxCrossModuleService）
         │   └── PatientsModule.cs # DI registration
         ├── Herbs/
         │   ├── Domain/          # Herb (IAggregateRoot), Domain Events
@@ -43,7 +43,7 @@ Services(WebAPI)
 
 | 规则 | 约束 | 说明 |
 |------|------|------|
-| 模块隔离 | 禁止模块间直接引用 | 跨模块通信通过 SharedKernel 的 `ICrossModuleService` 或领域事件 |
+| 模块隔离 | 禁止模块间直接引用 | 跨模块通信通过 ~~SharedKernel 的 `ICrossModuleService`~~ → 域接口（`IXxxCrossModuleService`）或领域事件 |
 | 数据隔离 | 每个模块独立 DbContext | 每个模块注册自己的 `<Module>DbContext`，不共享 `AppDbContext` |
 | CQRS | Command/Query 分离 | 写操作用 `IRequestHandler<TCommand, TResponse>`，读操作用 `IRequestHandler<TQuery, TResponse>` |
 | 领域事件 | `IDomainEvent : INotification` | 状态变更通过 MediatR 领域事件传播，Outbox 保证可靠投递 |
@@ -84,7 +84,7 @@ services.AddMediatR(cfg =>
 ### 权衡
 - 每个模块需维护独立的 DbContext 和 Repository
 - MediatR 增加了间接层，调试时需跟踪 handler 链
-- 跨模块查询需通过 `ICrossModuleService` 接口，不能直接 JOIN
+- 跨模块查询需通过 ~~`ICrossModuleService`~~ → 域接口（`IXxxCrossModuleService`），不能直接 JOIN
 - 模块间数据一致性依赖领域事件，最终一致性模型
 
 ## 关联

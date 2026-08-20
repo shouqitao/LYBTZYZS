@@ -248,7 +248,7 @@ stateDiagram-v2
 
 1. 每个验方包含名称、功效、用法和药材列表
 2. 导入的药材默认 `IsValidated=false`
-3. 药材匹配机制：通过 `ICrossModuleService.GetHerbByNameOrPinyinAsync()` 匹配系统药材；匹配失败则 `HerbId=null`、`IsValidated=false`，保留供后续手动绑定
+3. 药材匹配机制：通过 `ICatalogCrossModuleService.GetHerbByNameOrPinyinAsync()` 匹配系统药材；匹配失败则 `HerbId=null`、`IsValidated=false`，保留供后续手动绑定
 4. 返回成功列表和失败详情（含匹配/未匹配药材数）
 5. 客户端本地解析 Excel（2026-08-13：后端不涉及 Excel——服务端收 JSON/DTO，Excel 解析由前端负责，如 NPOI 类库已移除）
 
@@ -509,7 +509,7 @@ stateDiagram-v2
 ## 交叉引用
 
 - [医案管理 US-MC-016 验方导入到处方](07-medical-cases.md)（MC-D08 过滤条件：仅 `Validated` 且 `Enabled` 验方可导入）
-- [药材管理](05-herbs.md)（跨模块查询 `ICrossModuleService.GetHerbBasicInfoAsync`）
+- [药材管理](05-herbs.md)（跨模块查询 `ICatalogCrossModuleService.GetHerbBasicInfoAsync`）
 - [术语表 Formula = 验方/经验方（NOT 公式）](../01-product/03-glossary.md)
 
 ---

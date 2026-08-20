@@ -82,7 +82,6 @@ Desktop 应用典型内存占用 ~90-160 MB（WPF + Prism + 数据 + 缓存 < 5 
 | SQL Server（远程） | ~200MB 数据 + ~50MB 索引 | 含日志表定期清理后 |
 | SQL Server LocalDB（本地） | ~100MB | 同步数据子集，不含完整日志 |
 
-> **注**: 本地模式当前使用 SQL Server LocalDB（Sprint 2 起从 SQLite 迁移而来）。早期 SQLite 方案已废弃，不再支持。
 
 数据量级别（万级）不需要分区策略或读写分离。默认分页 20 条/页，可选 [10, 20, 50, 100]，覆盖所有列表场景。
 
@@ -270,7 +269,6 @@ Server 端（ASP.NET Core）理论上跨平台，但当前部署目标为 Window
 | SQL Server | 远程主库 | 2019+（含 Express） |
 | SQL Server LocalDB | 本地模式 | 2019+（随 Desktop 安装） |
 
-> **废弃说明**: 早期本地模式使用 SQLite，自 Sprint 2 起迁移至 SQL Server LocalDB。SQLite 不再受支持，相关代码与文档已移除。
 
 ### NFR-COMP-004: 双模式兼容
 

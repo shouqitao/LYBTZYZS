@@ -128,7 +128,7 @@ LYBT.Shared.Models/
 **ListDto/DetailDto 字段选择标准**（约定，非强约束）：
 - **ListDto**: 主键 + 名称 + 状态 + 关键业务字段。排除大文本、非必要审计字段。
 - **DetailDto**: Entity 的全部业务字段 + 状态 + 审计字段。
-- **BasicDto**: 仅 ICrossModuleService 所需的最少字段。
+- **BasicDto**: 仅跨模块域接口（`IXxxCrossModuleService`）所需的最少字段。
 
 ## LYBT.Entities
 

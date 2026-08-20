@@ -165,7 +165,9 @@ graph LR
 **规则**:
 - WebAPI -> Modules -> Infrastructure -> Entities (单向)
 - 所有层可引用 Shared.Models
-- Module 之间禁止直接依赖，跨模块通过 ICrossModuleService 通信
+- Module 之间禁止直接依赖，跨模块通过域接口（`IXxxCrossModuleService`）通信
+
+> **注意**：`AuthService` 为死代码（Controller 绕过直接用 UserManager），详见 [[auth]]
 
 ### Client 层依赖
 
@@ -205,7 +207,7 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant MC as MedicalCaseService
-    participant CMS as ICrossModuleService
+    participant CMS as IXxxCrossModuleService
     participant PS as PatientRepository
 
     MC->>CMS: GetPatientBasicInfoAsync(patientId)
@@ -219,7 +221,7 @@ sequenceDiagram
   - `IHerbCrossModuleService` -- 药材查询 + 引用检查
   - `IUserCrossModuleService` -- 用户查询 + 凭证操作
   - `ICrossModuleAuthService` -- Token 撤销 (独立接口，6 个触发场景)
-- 旧 `ICrossModuleService` 标记 `[Obsolete]`，渐进迁移到域专用接口 (S3 实施，详见 d2-d5-design)
+- ~~旧 `ICrossModuleService` 标记 `[Obsolete]`~~ → **已删除（A-31-C8 定案）**，模块间通信统一走域接口（`IPatient/IHerb/IUser/IAuth/IMedicalCase/IRegistrationCrossModuleService`）
 - 禁止直接注入其他模块的 Repository
 - 返回轻量级 BasicInfo DTO
 

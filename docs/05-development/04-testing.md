@@ -38,7 +38,7 @@ tests/
     AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock
 ```
 
-> **注意**: Desktop 测试使用 **SQL Server LocalDB**（`tests/LYBT.Tests.Desktop` 全部 `UseSqlServer("(localdb)\MSSQLLocalDB...")`），与生产环境一致——**非 SQLite InMemory**。
+> **注意**: Desktop 测试使用 **SQL Server LocalDB**（`tests/LYBT.Tests.Desktop` 全部 `UseSqlServer("(localdb)\MSSQLLocalDB...")`），与生产环境一致。
 
 **Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
 
