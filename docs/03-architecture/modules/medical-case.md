@@ -1,224 +1,59 @@
 # MedicalCase 模块设计
 
-> 日期: 2026-06-29
-> US 数量: 18 (PRD)
-> 复杂度: 8/10
-> 状态: 草稿
+> 复杂度: 8/10 | 状态: 草稿
 
-## 模块概述
+## 概述
 
 MedicalCase 是系统核心聚合根，承载中医诊疗全流程：挂号→就诊→诊断→开方→打印→取药。
 
-**职责边界**:
-- 医案的创建、保存、查询、删除（软删）
-- 诊断记录（Consultation）和处方（Prescription）的聚合管理
-- 医案状态流转（Suspended ↔ Active → Completed）
-- 与 Registration 模块联动（创建/完成/取消时同步状态）
+**职责**: 医案 CRUD、诊断记录(Consultation)+处方(Prescription)聚合管理、状态流转、与 Registration 联动。
 
-**依赖关系**:
-- 上游: Registration（创建时关联）、Patients（患者信息）、Herbs（药材价格）
-- 下游: Printing（打印处方）、Formula（导入验方）
-- 无模块间直接引用（通过接口/DTO 通信）
+**依赖**: 上游 Registration/Patients/Herbs，下游 Printing/Formula。
 
-**关键 US 清单**:
-MC-001 ~ MC-018（详见 PRD）
+## 服务拆分（非 MediatR，A-03 定案）
 
-## 接口契约
+| 接口 | 职责 |
+|------|------|
+| IMedicalCaseCommandService | 写操作（含 `.Deletion` partial） |
+| IMedicalCaseQueryService | 读操作 |
+| IMedicalCaseStateService | 状态变更 |
+| IMedicalCaseReferenceRepository | 医案引用检查 |
+| IMedicalCaseFacade | 组合以上三接口 |
 
-### Service 接口（Server 端）
+## API 端点（关键）
 
-```
-IMedicalCaseQueryService
-├── GetByIdAsync(Guid id) → MedicalCaseDetailDto?
-├── GetListAsync(MedicalCaseQueryDto) → PagedResult<MedicalCaseListDto>
-├── GetPendingListAsync() → List<PendingMedicalCaseDto>
-├── SearchAsync(string keyword) → List<MedicalCaseListDto>
-└── GetConsultationListAsync(Guid id) → List<ConsultationDetailDto>
-
-IMedicalCaseCommandService
-├── CreateAsync(MedicalCaseInputDto) → MedicalCaseDetailDto
-├── SaveAsync(Guid id, MedicalCaseInputDto) → MedicalCaseDetailDto
-├── DeleteAsync(Guid id) → bool
-├── BatchDeleteAsync(List<Guid>) → int
-└── SetPrescriptionFlagAsync(Guid id, bool needs) → MedicalCaseDetailDto?
-
-IMedicalCaseStateService
-├── UpdateStatusAsync(Guid id, MedicalCaseStatus) → MedicalCase?
-├── CompleteAsync(Guid id, Guid operatorId, bool isAdmin, bool skipWorkflow) → MedicalCase?
-├── CloseCaseAsync(Guid id) → MedicalCase?
-├── SuspendAsync(Guid id, ConsultationInputDto?, Guid operatorId, bool isAdmin) → MedicalCase?
-└── CancelAsync(Guid id, Guid operatorId, bool isAdmin, string? reason) → MedicalCase?
-
-IMedicalCaseFacade（组合以上三个接口）
-└── 所有方法合并暴露
-```
-
-### API 端点映射
-
-| HTTP | 路由 | 方法 | 权限 |
-|------|------|------|------|
-| POST | `/api/v1/medicalcases` | CreateMedicalCase | DoctorOnly（创建仅 Doctor） |
-| PUT | `/api/v1/medicalcases/{id}` | Save | Doctor（仅自己的）；Admin（纠偏已完成需 EditReason） |
-| PUT | `/api/v1/medicalcases/{id}/prescription-flag` | SetPrescriptionFlag | Doctor |
-| DELETE | `/api/v1/medicalcases/{id}` | DeleteMedicalCase | Doctor/Admin |
-| POST | `/api/v1/medicalcases/batch-delete` | BatchDelete | Doctor/Admin |
-| GET | `/api/v1/medicalcases/{id}` | GetById | Doctor(自己)/Admin(全部) |
-| GET | `/api/v1/medicalcases` | GetList | Doctor(自己)/Admin(全部) |
-| GET | `/api/v1/medicalcases/query` | GetMedicalCases | Doctor(自己)/Admin(全部) |
-| GET | `/api/v1/medicalcases/search` | SearchMedicalCases | Doctor(自己)/Admin(全部) |
-| GET | `/api/v1/medicalcases/{id}/consultations` | GetConsultationList | Doctor(自己)/Admin(全部) |
-| GET | `/api/v1/medicalcases/{id}/prescriptions` | GetPrescriptionList | Doctor(自己)/Admin(全部) |
-| PUT | `/api/v1/medicalcases/{id}/status` | UpdateStatus | Doctor/Admin |
-| PUT | `/api/v1/medicalcases/{id}/close` | CloseMedicalCase | Doctor（仅自己的）；Admin（仅状态变更） |
-| PUT | `/api/v1/medicalcases/{id}/suspend` | Suspend | Doctor（仅自己的） |
-| PUT | `/api/v1/medicalcases/{id}/cancel` | CancelMedicalCase | Doctor（仅自己的） |
-
-### DTO 结构
-
-```
-MedicalCaseInputDto（统一输入）
-├── Id: Guid?（null=创建，有值=更新）
-├── PatientId: Guid
-├── DoctorId: Guid?
-├── DiagnosisType: DiagnosisType
-├── Consultation: ConsultationInputDto?
-│   ├── ChiefComplaint, PresentIllness, PastHistory
-│   ├── TcmDiagnostic, TcmPattern, TcmSyndrome
-│   ├── TongueInspection, PulseCondition
-│   └── PhysicalExam, AuxiliaryExam, TreatmentPrinciple
-└── Prescription: PrescriptionInputDto?
-    ├── Diagnosis: string
-    ├── Items: List<PrescriptionItemInputDto>
-    │   └── HerbId, HerbName, Dosage, Unit, Usage, Note
-    └── TotalPrice: decimal
-
-MedicalCaseDetailDto（详情输出）
-├── 所有 MedicalCase 字段
-├── Consultation: ConsultationDetailDto?
-└── Prescription: PrescriptionDetailDto?
-    └── Items: List<PrescriptionItemDetailDto>
-
-MedicalCaseListDto（列表输出）
-├── Id, CaseNumber, PatientId, PatientName
-├── Status, CreatedAt, LastModifiedAt
-└── HasConsultation, HasPrescription, NeedsPrescription
-
-PendingMedicalCaseDto（待诊队列）
-├── PatientId, PatientName, PhoneMasked
-├── QueueNumber, MedicalCaseId
-```
+| HTTP | 路由 | 权限 |
+|------|------|------|
+| POST | `/api/v1/medicalcases` | DoctorOnly |
+| PUT | `/api/v1/medicalcases/{id}` | Doctor(自己的)/Admin |
+| DELETE | `/api/v1/medicalcases/{id}` | Doctor/Admin |
+| PUT | `/api/v1/medicalcases/{id}/status` | Doctor/Admin |
+| PUT | `/api/v1/medicalcases/{id}/close` | Doctor(自己的) |
+| PUT | `/api/v1/medicalcases/{id}/cancel` | Doctor(自己的) |
 
 ## 状态机
 
-> **权威定义**：完整状态机（守卫条件/转换规则/联动）见 [07-medical-cases.md](../../02-requirements/07-medical-cases.md)；状态枚举见 [04-data-model.md](../04-data-model.md)。下图为模块视图。
-
 ```
-┌─────────────┐
-│  Suspended   │◄──────────────┐
-│  (暂停)      │               │
-└──────┬──────┘               │
-       │ UpdateStatus         │ Suspend
-       ▼                      │
-┌─────────────┐               │
-│   Active     │──────────────┘
-│  (进行中)    │
-└──────┬──────┘
-       │ Complete
-       ▼
-┌─────────────┐
-│  Completed   │
-│  (已完成)    │──── 同日可编辑(IsLocked=false)，次日锁定(IsLocked=true)
-└──────────────┘
-
-特殊: **取消 = 物理删除**（2026-08-03 决策），无独立 Cancelled 状态；已完成医案仅可软删除（Admin 清理）
+Suspended ↔ Active → Completed
+特殊: 取消 = 物理删除（2026-08-03 决策），无独立 Cancelled 状态
 ```
-
-**业务规则**:
-- BR-001: 同一患者同一时间只能有一个未完成医案
-- BR-003: Complete 前必须设置 NeedsPrescription + 填写处方（如需）+ TcmDiagnosis 非空
-- BR-MC-LOCK: Completed 同日可编辑，次日锁定
-- BR-004: Admin 可跳过工作流验证强制完成
-
-## 数据流
-
-### 创建医案
-```
-Desktop → POST /api/v1/medicalcases
-Controller → MedicalCaseCommandService.CreateAsync
-  → 生成医案编号(MC{yyyyMMdd}{seq:3})
-  → 创建 MedicalCase 实体（Status=Active；接诊即建：StartVisit/QuickVisit/本地选患者时原子创建，2026-08-03 决策）
-  → 关联 Registration（如提供 RegistrationId）
-  → 保存 Consultation + Prescription（如有）
-  → 返回 MedicalCaseDetailDto
-```
-
-> **编号并发说明（G-02 补写，2026-08-04）**：`GenerateCaseNumberAsync`（`MedicalCaseCommandService.cs:349`）= `MC{yyyyMMdd}{CountByPrefix+1:D3}`，count **包含软删除**（避免编号重复）。并发风险同队列号（读计数+1 非原子）；缓解：诊所并发量低 + 计数含软删兜底。若需严格唯一可加唯一索引。处方编号 `RX{yyyyMMdd}{seq:4}` 同理。
-
-### 聚合保存（诊断+处方）
-```
-Desktop → PUT /api/v1/medicalcases/{id}
-Controller → MedicalCaseCommandService.SaveAsync
-  → GetByIdWithDetailsFreshAsync（ChangeTracker 脱离后重新查询）
-  → 更新 MedicalCase 字段
-  → 更新/新增/删除 Consultation
-  → 更新/新增/删除 Prescription + PrescriptionItems
-  → ExecuteWithConcurrencyRetryAsync（乐观锁重试，最多3次）
-  → 返回 MedicalCaseDetailDto
-```
-
-### 完成医案
-```
-Desktop → PUT /api/v1/medicalcases/{id}/status (Status=Completed)
-Controller → MedicalCaseStateService.CompleteAsync
-  → 校验 BR-003（NeedsPrescription、TcmDiagnosis）
-  → 设置 Status=Completed, CompletedAt=now
-  → 更新关联 Registration 状态为 Completed
-  → 返回更新后实体
-```
-
-### 取消医案
-```
-Desktop → PUT /api/v1/medicalcases/{id}/cancel
-Controller → MedicalCaseStateService.CancelAsync
-  → 物理删除医案记录（2026-08-03 决策：不判内容，审计记录「取消」用于统计）
-  → 级联清除聚合（Consultation/Prescription）
-  → 更新关联 Registration 状态为 Cancelled
-  → 返回 null（已删除）
-```
-
-## 异常处理
-
-| 异常类型 | 场景 | 处理 |
-|----------|------|------|
-| BusinessException | BR-001 违反（重复未完成医案） | 返回 400 + 错误消息 |
-| BusinessException | BR-003 违反（Complete 缺必要字段） | 返回 400 + 具体缺字段 |
-| DbUpdateConcurrencyException | 乐观锁冲突 | 重试最多3次，最终返回 409 |
-| NotFoundException | GetById 找不到 | 返回 404 |
-| ArgumentException | Create 输入无效 | 返回 400 |
 
 ## 业务规则
 
-| 规则 | 描述 | 与 US 映射 |
-|------|------|-----------|
-| BR-001 | 同一患者同时只能有一个未完成医案 | MC-001 |
-| BR-003 | Complete 前必须设置 NeedsPrescription + 处方 + TcmDiagnosis | MC-005 |
-| BR-MC-LOCK | Completed 同日可编辑，次日锁定 | MC-008 |
-| BR-004 | Admin 可跳过工作流验证 | MC-006 |
-| 编号规则 | MC{yyyyMMdd}{seq:3}，RX{yyyyMMdd}{seq:4} | MC-002 |
-| 取消（Active/Suspended） | 物理删除，级联清除聚合（2026-08-03 决策） | MC-010 |
-| 删除（Completed） | 软删除（IsDeleted=true），Admin 清理 | MC-015 |
-| 注册联动 | Create→关联Registration，Complete→Registration.Completed，Cancel→回滚 | MC-012 |
+| 规则 | 描述 |
+|------|------|
+| BR-001 | 同一患者同时只能有一个未完成医案 |
+| BR-003 | Complete 前必须设置 NeedsPrescription + 处方 + TcmDiagnosis |
+| BR-MC-LOCK | Completed 同日可编辑，次日锁定 |
+| BR-004 | Admin 可跳过工作流验证 |
+| 编号 | MC{yyyyMMdd}{seq:3}，RX{yyyyMMdd}{seq:4} |
+| 取消 | 物理删除，级联清除聚合（2026-08-03 决策） |
+| 联动 | Complete→Registration.Completed，Cancel→Registration.Cancelled |
 
-## 模块交互
+## 聚合保存
 
-| 交互模块 | 方式 | 方向 |
-|----------|------|------|
-| Registration | 接口调用（状态同步） | MedicalCase → Registration |
-| Patients | 查询患者信息 | MedicalCase → Patients |
-| Herbs | 查询药材价格（处方计算） | MedicalCase → Herbs |
-| Formula | 导入验方到处方 | Formula → MedicalCase |
-| Printing | 打印处方 | MedicalCase → Printing |
+PUT 保存时：更新 MedicalCase + Consultation + Prescription + Items，乐观锁重试（最多3次）。
 
-**架构违规（待修复）**:
-- MedicalCase csproj 直接 ProjectReference Registration（违反模块隔离原则）
-- 应通过接口或 MediatR 解耦
+## 架构违规（待修复）
+
+- MedicalCase csproj 直接 ProjectReference Registration（违反模块隔离），应通过接口解耦
