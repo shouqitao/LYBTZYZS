@@ -70,11 +70,6 @@
 - [ ] 管理员创建成功后提示交权
 - [ ] 未完成初始化不能使用系统
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
 ---
 
@@ -99,13 +94,9 @@
 3. 保留用户名（admin/administrator/root/system/superadmin/sysadmin）拒绝普通注册
 4. 超管凭证统一存储于 Users 表（Role=100），AdminSecrets 已移除（Issue #1909）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | JWT 配置驱动（开发 480/生产 30 分钟）+ Refresh 7d（族旋转）+ 安全审计 |
-| 本地 | JWT 1 年 + 限流 5 次/分 + 无 refresh |
+**双模式**: 远程 JWT 配置驱动（开发 480/生产 30 分钟）+ Refresh 7d（族旋转）+ 安全审计；本地 JWT 1 年 + 限流 5 次/分 + 无 refresh
 
-**实现参考**: `AuthController.cs:44` (LoginAsync), `AuthService.cs`, `LocalWebAPI/Controllers/AuthController.cs`
+**实现参考**: `AuthController.cs`, `AuthService.cs`, `LocalWebAPI/Controllers/AuthController.cs`
 
 ---
 
@@ -129,13 +120,8 @@
 2. 锁定时长由 `SecurityOptions.AccountLockout.LockoutMinutes` 配置
 3. 锁定状态持久化，重启服务不重置
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `AuthController.cs:44`, `ITokenManagementService`, `SecurityOptions`
+**实现参考**: `AuthController.cs`, `ITokenManagementService`, `SecurityOptions`
 
 ---
 
@@ -157,13 +143,9 @@
 1. 远程限流策略由 ASP.NET Core RateLimiter 配置
 2. 本地模式固定 5 次/分
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 按 `Login` 策略配置（可调） |
-| 本地 | 固定 5 次/分 |
+**双模式**: 远程按 `Login` 策略配置（可调）；本地固定 5 次/分
 
-**实现参考**: `AuthController.cs:41` (`[EnableRateLimiting("Login")]`), `AuthController.cs:74`
+**实现参考**: `AuthController.cs`, `AuthController.cs`
 
 ---
 
@@ -187,13 +169,9 @@
 2. 刷新采用族旋转机制：每次刷新签发新令牌，旧令牌标记为已使用
 3. 重放检测：已废弃令牌再次出现 → 撤销整个家族
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | RefreshToken 族旋转 + 重放检测 |
-| 本地 | 不适用（1 年令牌，无 refresh） |
+**双模式**: 远程 RefreshToken 族旋转 + 重放检测；本地不适用（1 年令牌，无 refresh）
 
-**实现参考**: `AuthController.cs:128` (RefreshTokenAsync), `ITokenManagementService`
+**实现参考**: `AuthController.cs`, `ITokenManagementService`
 
 ---
 
@@ -216,13 +194,8 @@
 1. JWT Bearer 中间件自动校验每个受保护请求
 2. 显式 validate 端点用于前端会话健康检查
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 JWT 中间件） |
 
-**实现参考**: `AuthController.cs:151` (ValidateTokenFromHeaderAsync), JWT Bearer 中间件
+**实现参考**: `AuthController.cs`, JWT Bearer 中间件
 
 ---
 
@@ -246,11 +219,7 @@
 2. 撤销操作不可逆，要求所有客户端重新认证
 3. 安全审计日志记录重放事件
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 完整族旋转 + 重放撤销 |
-| 本地 | 不适用（无 refresh） |
+**双模式**: 远程完整族旋转 + 重放撤销；本地不适用（无 refresh）
 
 ### 令牌族 DB 设计（RefreshTokens 表）
 
@@ -282,7 +251,7 @@
 
 **实现位置**：`JwtService.cs`（签发/校验）、`RefreshTokenCommandHandler.cs`（刷新逻辑）、`LogoutCommandHandler.cs`（撤销）。
 
-**实现参考**: `AuthController.cs:128`, `ITokenRevocationService`, `ITokenManagementService`
+**实现参考**: `AuthController.cs`, `ITokenRevocationService`, `ITokenManagementService`
 
 ---
 
@@ -306,11 +275,7 @@
 2. 审计日志不可篡改，独立于业务日志
 3. 本地模式审计记录简化（无 IP/设备维度）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 完整审计（含 IP/设备） |
-| 本地 | 简化审计（单机环境） |
+**双模式**: 远程完整审计（含 IP/设备）；本地简化审计（单机环境）
 
 **实现参考**: `ISecurityAuditService`, `AuthService.cs`
 
@@ -336,13 +301,9 @@
 2. 登出后服务端标记令牌为已撤销
 3. 本地模式登出同样撤销 AutoLoginToken
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 撤销 access + refresh + 记录审计 |
-| 本地 | 撤销 JWT + AutoLoginToken |
+**双模式**: 远程撤销 access + refresh + 记录审计；本地撤销 JWT + AutoLoginToken
 
-**实现参考**: `AuthController.cs:104` (LogoutAsync, `[AllowAnonymous]`)
+**实现参考**: `AuthController.cs`
 
 ---
 
@@ -366,13 +327,9 @@
 2. 服务端撤销后，本地自动登录立即失效
 3. auto-login 端点同样应用 `[EnableRateLimiting("Login")]`
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 签发 + 管理 + 可撤销 |
-| 本地 | 提交 AutoLoginToken 完成无密码登录 |
+**双模式**: 远程签发 + 管理 + 可撤销；本地提交 AutoLoginToken 完成无密码登录
 
-**实现参考**: `AuthController.cs:79` (AutoLoginAsync), `IAutoLoginService`
+**实现参考**: `AuthController.cs`, `IAutoLoginService`
 
 ---
 
@@ -395,13 +352,8 @@
 2. 轮换由服务端 `ITokenManagementService` 执行
 3. 客户端需正确处理令牌更新（避免使用过期令牌）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
-**实现参考**: `AuthController.cs:79`, `ITokenManagementService`
+**实现参考**: `AuthController.cs`, `ITokenManagementService`
 
 ---
 
@@ -424,11 +376,6 @@
 2. 校验不区分大小写
 3. SuperAdmin 账户通过受控流程创建，不走普通注册
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `AuthService.cs`, 保留用户名校验逻辑
 
@@ -454,13 +401,9 @@
 2. `LocalJwtConfig` 独立配置签发参数（密钥、签发方、有效期）
 3. 本地令牌不参与族旋转与重放检测（无 refresh）
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 不适用 |
-| 本地 | `LocalJwtConfig` 签发 1 年 JWT，无 refresh |
+**双模式**: 远程不适用；本地 `LocalJwtConfig` 签发 1 年 JWT，无 refresh
 
-**实现参考**: `LocalWebAPI/Controllers/AuthController.cs:19`, `LocalJwtConfig`
+**实现参考**: `LocalWebAPI/Controllers/AuthController.cs`, `LocalJwtConfig`
 
 ---
 
@@ -482,10 +425,6 @@
 1. 本地限流策略独立于远程，固定为 5 次/分
 2. 限流防止本地环境下密码暴力枚举
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 不适用（使用远程 `Login` 策略） |
-| 本地 | 固定 5 次/分 |
+**双模式**: 远程不适用（使用远程 `Login` 策略）；本地固定 5 次/分
 
-**实现参考**: `LocalWebAPI/Controllers/AuthController.cs:19`, 本地限流中间件配置
+**实现参考**: `LocalWebAPI/Controllers/AuthController.cs`, 本地限流中间件配置
