@@ -393,9 +393,7 @@ stateDiagram-v2
 
 > 完整安全审计事件类型与用户故事详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-007。
 
-`SecurityAuditService` 记录所有认证相关事件（Login/LoginFailed/Logout/RefreshToken/RefreshTokenRejected/TokenReplayAttack/TokenRevoked）。
-
-审计记录包含：IP 地址（脱敏，如 `192.168.1.*`）、UserAgent（截断至 500 字符）、时间戳。审计日志保留 365 天（`SecurityOptions.AuditRetentionDays`）。
+审计事件类型、记录字段与保留策略详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-007。
 
 **存储与清理（G-02 补写，2026-08-04）**：
 - **存储位置**：`SecurityAuditLogs` 表（`AppDbContext.cs:74`），与业务数据同库。字段：`Id/EventType/UserId/UserType/UserName/IpAddress/UserAgent/Success/ErrorMessage/Metadata/CreatedAt`（11 字段，`InitialCreate.cs:154`）；索引 `IX_SecurityAuditLogs_EventType_CreatedAt`、`IX_SecurityAuditLogs_UserId_CreatedAt`。
