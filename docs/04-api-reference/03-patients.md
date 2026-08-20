@@ -143,7 +143,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 - **路径参数**: `id` (Guid)
 - **响应**: `ApiResponse<PatientDetailDto>` — 返回切换后详情
 
-**业务规则**: 禁用时检查是否有 Draft/Active 医案（有则拒绝）；禁用后禁止创建新医案，历史医案可查阅但 PatientName 按角色脱敏；启用后限制解除。
+**业务规则**: 详见 [04-patients.md US-PAT-006 业务规则](../02-requirements/04-patients.md#us-pat-006-启用禁用患者)（禁用前检查未完成医案、禁用后限制、启用后解除）。
 
 > 交叉引用: 禁用联动见 [medical-cases.md](06-medical-cases.md) MC-D16
 
