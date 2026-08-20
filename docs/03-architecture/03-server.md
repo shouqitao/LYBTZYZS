@@ -38,7 +38,7 @@ sequenceDiagram
 
 > **例外**: `MedicalCaseModel` 作为唯一 DDD 聚合根，包含域方法 (`Complete()`, `Suspend()`, `SoftDelete()`, `UpdateConsultation()`)，采用充血模型；另有计算属性 `IsLocked / IsActive / IsCompleted`。其他实体保持贫血模型。
 
-**关键目录**: `Auth/`, `Common/` (BaseEntity), `Formulas/`, `Herbs/`, `MedicalCases/`, `Patients/`, `Registrations/`, `Users/`。
+**关键目录**: `Auth/`, `Common/` (BaseEntity), `Consultations/`, `Formulas/`, `Herbs/`, `MedicalCases/`, `Patients/`, `Prescriptions/`, `Registrations/`, `Users/`。
 
 **BaseEntity 通用字段**: Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted。详见 [data-model.md](04-data-model.md)。
 
