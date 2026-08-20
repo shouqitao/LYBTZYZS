@@ -282,7 +282,7 @@ stateDiagram-v2
 |------|------|------|------|
 | `Id` | Guid | PK | 主键 |
 | `MedicalCaseId` | Guid | Required, FK | 关联医案 |
-| `PrintType` | PrintType | Required | 打印类型（Prescription=1, Formula=2） |
+| `PrintType` | PrintType | Required | 打印类型（Prescription=0, Formula=1） |
 | `PrintVersion` | int | — | 打印时的 PrintVersion 快照 |
 | `PrintedAt` | DateTime | — | 打印时间 |
 | `PrintedBy` | Guid? | — | 操作人 ID |
@@ -379,8 +379,8 @@ sequenceDiagram
 
 | 值 | 名称 | 说明 |
 |----|------|------|
-| 1 | Prescription | 处方打印（已实现） |
-| 2 | Formula | 验方打印（已实现） |
+| 0 | Prescription | 处方打印（已实现） |
+| 1 | Formula | 验方打印（预留） |
 
 > PRD 中规划了 `Consultation` 和 `CaseSummary` 类型，尚未实现。
 

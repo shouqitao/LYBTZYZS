@@ -16,7 +16,7 @@
 | 本地控制器 | `MedicalCasesController`（内嵌打印端点） |
 | 服务层 | `MedicalCasePrintService` → `IMedicalCasePrintService` |
 | 认证 | 远程: `[Authorize(Policy = "DoctorOnly")]`（2026-08-03 决策：打印仅 Doctor）/ 本地: JWT |
-| 打印类型 | `PrintType` 枚举: `Prescription=1`, `Formula=2` |
+| 打印类型 | `PrintType` 枚举: `Prescription=0`, `Formula=1` |
 
 ---
 
@@ -37,7 +37,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `printType` | int (PrintType) | 是 | `1`=处方, `2`=验方 |
+| `printType` | int (PrintType) | 是 | `0`=处方, `1`=验方 |
 | `printerName` | string? | 否 | 打印机名称，最大100字符 |
 
 **响应**: `MedicalCaseDetailDto` — 更新后的医案详情
@@ -120,7 +120,7 @@ curl -X PUT http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-ef
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `printType` | int (PrintType) | 是 | `1`=处方, `2`=验方 |
+| `printType` | int (PrintType) | 是 | `0`=处方, `1`=验方 |
 | `isSuccess` | bool | 是 | 是否成功 |
 | `printerName` | string? | 否 | 打印机名称，最大100字符 |
 | `errorMessage` | string? | 否 | 失败原因，最大500字符 |

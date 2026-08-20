@@ -119,7 +119,7 @@
 
 **业务规则**:
 1. `MedicalCasePrintLog` 与 `MedicalCase` 关联（FK `MedicalCaseId`），继承 `BaseEntity`。
-2. `PrintType` 枚举：`Prescription`(0) 已实现；`Consultation`(1)、`CaseSummary`(2) 预留。
+2. `PrintType` 枚举：`Prescription`(0) 已实现；`Formula`(1) 预留（验方打印）。
 3. `PrintVersion` 记录打印时的聚合根版本快照，用于事后溯源。
 4. 回写端点：`PUT /print-completed`、`POST /print-log`（`MedicalCasePrintController`）。
 
