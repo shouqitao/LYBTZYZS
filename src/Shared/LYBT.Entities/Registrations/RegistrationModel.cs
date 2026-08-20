@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Entities.Registrations
 {
@@ -91,10 +93,13 @@ namespace LYBT.Entities.Registrations
     }
 
     /// <summary>
-    /// 完成就诊
+    /// 完成就诊 — 仅 InProgress → Completed（P0-10）
     /// </summary>
     public void Complete()
     {
+        if (Status != RegistrationStatus.InProgress)
+            throw new BusinessException(ErrorCode.RegistrationInvalidStatusTransition, "只有进行中的挂号可以完成");
+
         Status = RegistrationStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
     }

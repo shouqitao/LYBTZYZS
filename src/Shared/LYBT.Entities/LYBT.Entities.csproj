@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
   </ItemGroup>
 
   <!-- 构建时复制文档文件到统一文档目录 -->
