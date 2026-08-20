@@ -345,7 +345,7 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 | 项目 | 职责 | 依据 |
 |------|------|------|
 | **LYBT.Tests.Architecture** | 架构守卫（分层/依赖/DbContext/命名/映射）| 架构测试是设计决策的强制约束（2026-08-06 规则）|
-| **LYBT.Tests.Server** | Server 集成/单元测试（含 Respawn）| ADR-0003（Integration-first）|
+| **LYBT.Tests.Server** | Server 集成/单元测试（含 Respawn）| [ADR-0003](decisions/0003-integration-first-testing.md)（Integration-first）|
 | **LYBT.Tests.Desktop** | Desktop 测试（LocalDB）| 需运行中 WebAPI（C-01 已知环境项）|
 
 > **守卫计数口径（2026-08-08 A-26 定案）**：蓝图「守卫数」= `[Fact]/[Theory]` **方法数**（单方法计 1）。2026-08-09 实测：81 方法（80 Fact + 1 Theory）；**Theory 数据展开后多于方法数**（dotnet test 实际执行 88 用例）。早期蓝图版本（v1.2 起）记 86 为口径演变前的估算值，以实测为准。
@@ -353,18 +353,18 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 ## 设计依据索引（决策 → 文档追溯）
 
 | 设计决策 | 依据文档 |
-|---------|---------|
-| 每模块独立 DbContext | ADR-0017 + A-20 落地（同库单迁移方案 A）|
-| 双轨（Remote/Local）| ADR-0002 / ADR-0009 / ADR-0010 + 05-dual-mode.md |
+|---------|---------| 
+| 每模块独立 DbContext | [ADR-0017](decisions/0017-modular-monolith-cqrs.md) + A-20 落地（同库单迁移方案 A）|
+| 双轨（Remote/Local）| [ADR-0002](decisions/0002-dual-mode-architecture.md) / [ADR-0009](decisions/0009-url-driven-dual-mode.md) / [ADR-0010](decisions/0010-localwebapi-unified-service-layer.md) + 05-dual-mode.md |
 | 用户自主切换模式（不自动降级）| A-19 决策（2026-08-08 用户拍板）|
-| MedicalCase 聚合根 | ADR-0001 |
+| MedicalCase 聚合根 | [ADR-0001](decisions/0001-medicalcase-aggregate-root.md) |
 | 医案创建时机（接诊即建）| BR-000（2026-08-02）|
 | 打印规则 | 2026-08-03 定案（仅 Doctor/IsPrinted/完成后软删）|
 | 权限矩阵 | 04-permissions.md + 08-04 终局裁决 |
 | 契约统一（IApiClient 唯一面）| A-18 方案 A（2026-08-08）|
-| Mapperly 映射 | ADR-0011 + A-18 P1-4 |
+| Mapperly 映射 | [ADR-0011](decisions/0011-mapperly-migration.md) + A-18 P1-4 |
 | 异常→HTTP 映射 | 06-error-handling.md + 2026-08-08 对齐批次 |
-| 领域事件模式（预留）| ADR-0018（当前无订阅者，机制保留）|
+| 领域事件模式（预留）| [ADR-0018](decisions/0018-domain-events-pattern.md)（当前无订阅者，机制保留）|
 
 ## 变更记录
 

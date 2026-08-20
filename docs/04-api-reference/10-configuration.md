@@ -134,7 +134,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 更新单个配置节（仅业务参数，敏感配置返回 403）。sysadmin 在远程模式配置中心修改服务端业务参数时调用。
 
-- **权限**: SysAdminOnly（🧲 新策略，仅 `IsSysAdmin=true`，见 ADR-0014）
+- **权限**: SysAdminOnly（🧲 新策略，仅 `IsSysAdmin=true`，见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）
 
 **路径参数**:
 
@@ -221,7 +221,7 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ## GET 脱敏说明 🧲 v1.0 待实现
 
-> 🚧 **v1.0 待实现**（ADR-0014）。当前 GET 端点返回原始值；脱敏展示属待实施范围。
+> 🚧 **v1.0 待实现**（见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。当前 GET 端点返回原始值；脱敏展示属待实施范围。
 
 GET `/configuration` 与 `/configuration/{section}` 响应中敏感字段将掩码展示（与 PUT 黑名单对应）：
 
