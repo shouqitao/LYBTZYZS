@@ -51,7 +51,7 @@ LYBTZYZS/
 | 06 | [配置迁移](06-configuration-migration-guide.md) | 配置文件迁移 |
 | 07 | [性能基线](07-performance-baseline.md) | 性能指标 |
 | 08 | [UAT 计划](08-uat-test-plan.md) | 用户验收测试 |
-| 09 | [Postman vs .NET](09-postman-vs-dotnet-testing.md) | 测试工具对比 |
+| ~~09~~ | ~~Postman vs .NET~~ | ~~已归档至 compose/archive/~~ |
 | 13 | [迁移策略](13-migration-strategy.md) | EF Core 迁移与回滚 |
 
 ### 子目录
