@@ -71,16 +71,7 @@ graph LR
     Proxy -->|"localhost"| Kestrel
 ```
 
-| 维度 | 远程模式 | 本地模式 |
-|------|----------|----------|
-| **触发条件** | URL 为非 localhost | URL 为 localhost/127.0.0.1 |
-| **API 宿主** | 独立 ASP.NET Core 服务 | WPF 进程内嵌 Kestrel |
-| **数据库** | 远程 SQL Server（共享） | 本地 SQL Server LocalDB |
-| **适用场景** | 多终端联网诊所 | 单终端离线/网络不稳定 |
-| **认证** | 完整 JWT（30min + Refresh） | 简化 JWT（1 年长效） |
-| **业务代码** | 完全相同 | 完全相同 |
-
-**设计要点**: 两端共享相同的 Repository 接口、DTO 契约、实体配置和 EF Core 模型，差异仅在宿主进程和数据库连接。详见 [双模式架构](05-dual-mode.md)。
+双模式对比详见 [05-dual-mode.md §概述](05-dual-mode.md#概述)（远程/本地触发条件、API 宿主、数据库、认证差异）。
 
 ## 解决方案结构
 
