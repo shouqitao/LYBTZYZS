@@ -36,15 +36,7 @@ Local:  UsersController → IUserManagerService → UserManager → AppDbContext
 
 > 角色定义、层级管理规则详见 [`../01-product/02-personas.md`](../01-product/02-personas.md)。权限矩阵详见 [`../01-product/04-permissions.md`](../01-product/04-permissions.md)。
 
-**5 条授权策略**（PolicyConstants 当前代码）：
-
-| 策略 | 允许角色 | 用途 |
-| ------ | --------- | ------ |
-| `DoctorOnly` | Doctor | 医案创建、打印、接诊 |
-| `DoctorOrAdmin` | Doctor, Admin | 医案、报表 |
-| `AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、诊所设置、患者删除/禁用、药材写操作 |
-| `DoctorOrReceptionist` | Doctor, Receptionist | 患者读写（删除/禁用除外）、挂号、药材/验方查询（读） |
-| `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist | 挂号查看（Admin 只读）等 |
+**授权策略**: 5 条策略定义（PolicyConstants）详见 [09-security-architecture.md](../03-architecture/09-security-architecture.md) §4 授权策略。
 
 > **权限决策（2026-08-03，四角色需求审查）**：目标态为操作级细分——患者删除/禁用 `AdminOrSuperAdmin`；药材/验方 GET 不含前台；打印 `DoctorOnly`；挂号创建前台/医生均可（Source 区分）、接诊仅 Doctor（start-visit——2026-08-13 两步收敛 quick-visit 端点已删）、取消仅前台、Admin 只读查看；医案创建 `DoctorOnly`（待新增策略常量）。详见 [04-permissions.md](../01-product/04-permissions.md)。
 
