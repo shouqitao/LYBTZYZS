@@ -8,7 +8,7 @@
 
 ## US-CFG-001: 查询所有配置
 
-**角色**: 超级管理员
+**角色**: 管理员
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -35,7 +35,7 @@
 
 ## US-CFG-002: 查询单个配置
 
-**角色**: 超级管理员
+**角色**: 管理员
 **优先级**: Must
 **状态**: ✅ 已实现
 
@@ -61,7 +61,7 @@
 
 ## US-CFG-003: 验证生产配置
 
-**角色**: 运维人员
+**角色**: 运维
 **优先级**: Should
 **状态**: ✅ 已实现
 
@@ -89,7 +89,7 @@
 
 ## US-CFG-004: 功能开关
 
-**角色**: 运维人员
+**角色**: 运维
 **优先级**: Should
 **状态**: ✅ 已实现（T8: FeatureToggle 基建——feature-toggles.json + 热更新）
 
@@ -117,7 +117,7 @@ FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T
 
 ## US-CFG-005: 服务器配置管理端点
 
-**角色**: Admin / SuperAdmin
+**角色**: 管理员
 **优先级**: Should
 **状态**: ✅ 已实现（未文档化补记——R1 反向脱节）
 
@@ -135,7 +135,7 @@ FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T
 
 ## US-CFG-006: 诊所信息热更新
 
-**角色**: Admin
+**角色**: 管理员
 **优先级**: Should
 **状态**: ✅ 已实现（未文档化补记——R1 反向脱节；代码实现为 clinic-settings.json + IOptions reloadOnChange）
 
