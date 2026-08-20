@@ -80,9 +80,7 @@ namespace LYBT.WebAPI.Controllers
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
             var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, operatorId, isAdmin, ct);
             if (!result.IsSuccess)
-                return result.ModuleErrorCode == ErrorCode.Forbidden
-                    ? Forbid(result.Error ?? "无权限查看该医案")
-                    : NotFound(result.Error ?? "医案不存在");
+                return HandleResult(result, useAuthMapping: true);
 
             return Success(result.Value!, "查询成功");
         }
@@ -183,7 +181,7 @@ namespace LYBT.WebAPI.Controllers
             // 直接调用 CommandService 删除医案
             var deleted = await _medicalCaseCommandService.DeleteAsync(id, operatorId, isAdmin, ct);
             if (!deleted)
-                return NotFound("医案不存在");
+                return HandleResult(Result<bool>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
 
             LogOperation("删除医案", null, id);
             return Success(true, "医案已删除");
@@ -281,7 +279,7 @@ namespace LYBT.WebAPI.Controllers
             var entity = await _medicalCaseStateService.UpdateStatusAsync(
                 id, request.Status, operatorId, isAdmin, ct);
             if (entity == null)
-                return NotFound("医案不存在");
+                return HandleResult(Result<MedicalCaseDetailDto>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
 
             var dto = _medicalCaseMapper.MapToMedicalCaseDetailDto(entity);
             LogOperation("更新医案状态", request, id);
@@ -303,7 +301,7 @@ namespace LYBT.WebAPI.Controllers
             // 直接调用 StateService 关闭医案
             var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin: true, skipWorkflowValidation: true, cancellationToken: ct);
             if (entity == null)
-                return NotFound("医案不存在");
+                return HandleResult(Result<MedicalCaseDetailDto>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
 
             LogOperation("关闭医案", null, id);
             return Success("医案已关闭");
@@ -327,7 +325,7 @@ namespace LYBT.WebAPI.Controllers
             // 直接调用 StateService 挂起医案
             var entity = await _medicalCaseStateService.SuspendAsync(id, request, operatorId, isAdmin, ct);
             if (entity == null)
-                return NotFound("医案不存在");
+                return HandleResult(Result<MedicalCaseDetailDto>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
 
             LogOperation("暂存医案", request, id);
             return Success("医案已暂存");
@@ -350,7 +348,7 @@ namespace LYBT.WebAPI.Controllers
             // 直接调用 StateService 取消医案
             var entity = await _medicalCaseStateService.CancelAsync(id, operatorId, isAdmin, request?.Reason, ct);
             if (entity == null)
-                return NotFound("医案不存在");
+                return HandleResult(Result<bool>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
 
             _logger.LogInformation("医案取消成功(软删除)，MedicalCaseId: {Id}", id);
 LogOperation("取消医案", null, id);
