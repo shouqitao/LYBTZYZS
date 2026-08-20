@@ -49,6 +49,7 @@ services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
 | JwtOptionsValidator | JwtOptions | SecretKey 为有效 Base64 且解码后 ≥ 32 字节；AccessToken 过期 < RefreshToken 过期 |
 | DatabaseOptionsValidator | DatabaseOptions | MinConnections ≤ MaxConnections；BaseDelayMs ≤ MaxDelayMs |
 | SecurityOptionsValidator | SecurityOptions | LoginLimit.InternalPermitLimit ≥ PermitLimit；ApiLimit.AdminPermitLimit ≥ PermitLimit |
+| LocalJwtOptionsValidator | LocalJwtOptions | 本地模式 JWT 配置验证 |
 
 ## 环境分层
 
@@ -106,7 +107,7 @@ Admin 请求 → ConfigurationController → SystemConfigurationService
 
 ## Server 端注册
 
-`AddLybtServerConfiguration(services, configuration)` 注册 8 个 Options 和 3 个验证器:
+`AddLybtServerConfiguration(services, configuration)` 注册 12 个 Options 和 4 个验证器:
 
 | Options | 配置节 | 验证器 | ValidateOnStart |
 |---------|--------|--------|:---------------:|
@@ -118,18 +119,23 @@ Admin 请求 → ConfigurationController → SystemConfigurationService
 | SystemAdminOptions | `SystemAdmin` | — | ✓ |
 | DefaultPasswordOptions | `DefaultPasswords` | — | ✓ |
 | MemoryCacheOptions | `MemoryCache` | — | ✓ |
+| SwaggerOptions | `Swagger` | — | ✓ |
+| CorsOptions | `Cors` | — | ✗ (热更新) |
+| DesktopUpdateOptions | `DesktopUpdate` | — | ✗ (热更新) |
+| AppInfoOptions | `AppInfo` | — | ✓ |
 
 ## Client 端注册
 
-`AddLybtClientConfiguration(services, configuration)` 注册 5 个 Options 和 1 个验证器:
+`AddLybtClientConfiguration(services, configuration)` 注册 6 个 Options 和 1 个验证器:
 
 | Options | 配置节 | 验证器 | ValidateOnStart |
 |---------|--------|--------|:---------------:|
 | JwtOptions | `Jwt` | JwtOptionsValidator | ✓ |
 | ApiClientOptions | `ApiClient` | — | ✓ |
 | ClientSessionOptions | `ClientSession` | — | ✓ |
-| FeatureToggleOptions | `FeatureToggles` | — | ✗ (热更新) |
 | ClinicSettingsOptions | `ClinicSettings` | — | ✓ |
+| OfflineModeOptions | `OfflineMode` | — | ✓ |
+| CardReaderOptions | `CardReader` | — | ✓ |
 
 ## 配置节命名约定
 
