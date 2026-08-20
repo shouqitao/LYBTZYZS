@@ -34,14 +34,6 @@ Registration 管理挂号流程，连接前台/医生与医案。支持前台挂
 
 > **权威定义**: 见 [04-data-model.md「Registration 状态机」](../../03-architecture/04-data-model.md) L268-272 及 [07-medical-cases.md「状态机」](../../02-requirements/07-medical-cases.md) §状态机。
 
-```
-Waiting → InProgress → Completed
-   ↓          ↓
-Cancelled   Cancelled
-```
-
-**禁止**: Waiting→Completed, InProgress→Waiting, Completed→任何, Cancelled→任何
-
 ## 接诊即建
 
 `Waiting → InProgress` 时**原子创建** MedicalCase(Active) + Registration(InProgress)。医案取消（物理删除）→ Registration→Cancelled。
