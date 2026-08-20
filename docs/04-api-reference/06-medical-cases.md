@@ -196,8 +196,8 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 | HTTP | 错误码 | 说明 |
 |------|--------|------|
 | 422 | ERR-30301 | 不允许的状态转换 |
-| 422 | ERR-30302 | 请先标记是否需要开处方 (BR-003) |
-| 422 | ERR-30303 | 处方不存在，无法完成医案 (BR-003) |
+| 422 | ERR-30302 | BR-003 校验失败：未标记 NeedsPrescription |
+| 422 | ERR-30303 | BR-003 校验失败：缺少处方或 TcmDiagnosis |
 
 ---
 
