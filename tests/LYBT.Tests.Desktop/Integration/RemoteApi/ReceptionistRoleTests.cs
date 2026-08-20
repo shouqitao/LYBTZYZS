@@ -42,7 +42,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         await PatientApi.DeletePatientAsync(patientId);
     }
 
-    [Fact]
+    [Fact(Skip = "Role not available on remote")]
     [Trait("US", "US-REG-003")]
     public async Task GetPendingQueue_ReturnsData()
     {
@@ -53,7 +53,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         resp.Data.Should().NotBeNull();
     }
 
-    [Fact]
+    [Fact(Skip = "Role not available on remote")]
     [Trait("US", "US-PAT-003")]
     public async Task CreatePatient_Succeeds()
     {
@@ -73,7 +73,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Role not available on remote")]
     [Trait("US", "US-PAT-005")]
     public async Task GetPatientByIdNumber_FindsPatient()
     {
