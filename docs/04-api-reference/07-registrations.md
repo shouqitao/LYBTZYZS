@@ -86,63 +86,14 @@ curl -X POST "http://localhost:5000/api/v1/registrations" \
 
 ---
 
-## POST /registrations/quick-visit
+~~## POST /registrations/quick-visit~~  ⛔ **已删除（2026-08-13 两步收敛）**
 
-医生快速看诊（后台静默创建 Registration + MedicalCase）。
-
-- **权限**: DoctorOrReceptionist
-- US-REG-002: Source=Doctor, Status=InProgress, 医生无感知
-- 使用数据库事务，确保 Registration 和 MedicalCase 同时创建或回滚
-
-**请求体** (`QuickVisitInputDto`):
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `patientId` | Guid | 是 | 患者 ID |
-| `patientName` | string | 是 | 患者姓名 |
-| `remark` | string? | 否 | 备注 |
-
-```json
-{
-  "patientId": "12345678-abcd-1234-abcd-123456789012",
-  "patientName": "李四",
-  "remark": "复诊"
-}
-```
-
-**成功响应** (201 Created): `QuickVisitResultDto`
-
-```json
-{
-  "registrationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-  "medicalCaseId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "patientId": "12345678-abcd-1234-abcd-123456789012",
-  "patientName": "李四",
-  "doctorId": "87654321-dcba-4321-dcba-210987654321",
-  "doctorName": "张医生",
-  "createdAt": "2026-06-25T09:15:00Z"
-}
-```
-
-**curl 示例**:
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/registrations/quick-visit" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "patientId": "12345678-abcd-1234-abcd-123456789012",
-    "patientName": "李四",
-    "remark": "复诊"
-  }'
-```
-
-**错误码**:
-
-| HTTP 状态码 | 错误码 | 说明 |
-|------------|--------|------|
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
-| 422 | — | 医案创建失败，事务已回滚 |
+> **quick-visit 端点已按产品决策删除**（见 [08-registration.md](../02-requirements/08-registration.md)）。原一步原子操作（后台静默创建 Registration + MedicalCase）拆分为两步：
+>
+> 1. **POST /registrations**（Source=Doctor）→ 创建 Waiting 状态挂号
+> 2. **PUT /registrations/{id}/start-visit** → 接诊，状态变更为 InProgress 并原子创建 MedicalCase(Active)
+>
+> 两步流程使医生建号与接诊解耦，符合单一职责原则。详见 [08-registration.md §接诊即建原子性](../02-requirements/08-registration.md#接诊即建原子性2026-08-13-两步收敛quick-visit-端点已删)。
 
 ---
 
