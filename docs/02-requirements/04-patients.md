@@ -35,14 +35,8 @@
 3. 非管理员可见性由全局查询过滤器 + 角色判断联合实现
 4. **非管理员可见性（模块规则）**：Doctor/Receptionist 仅可见 `IsEnabled=true` 的患者；Admin/SuperAdmin 可见全部（含禁用）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:38` (HttpGet list), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet list), `IPatientService`
 
 ---
 
@@ -66,14 +60,8 @@
 1. 敏感字段（IdCardNumber/PhoneNumber/Address/AllergyHistory/MedicalHistory）按 `[SensitiveData]` 规则脱敏后返回
 2. 非管理员访问禁用患者视为不存在（404）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:65` (HttpGet `{id:guid}`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet `{id:guid}`), `IPatientService`
 
 ---
 
@@ -110,14 +98,8 @@
 - **2026-08-13 PATIENT-PHONE-UNIQUE-FIX**：真机发现同电话可重复创建——查重逻辑存在但错误码用 PatientNotFound（404 语义），且失败走 BusinessFail 恒 422，需求要求 409。修复：Handler 改 `PatientPhoneDuplicate`（ErrorCodeExtensions 400→409）；BatchImport 补电话查重（行内互查 + 与系统已有患者）；拼音码服务端自动生成兜底（对齐药材 B-03 先例——API 直调未传 PinYinCode 时按姓名生成）。
 - **2026-08-13 PATIENT-PHONE-409-FIX**：ErrorCodeExtensions 已映射 409 但真机仍 422——根因：`HandleResult` 只认 `Result.ModuleErrorCode`，而 `Result.Failure(ErrorCode)` 不设 ModuleErrorCode → 落 BusinessFail 恒 422。修复：`HandleResult` 在 ModuleErrorCode 为空时**回退 ErrorCode 映射**（`code.ToHttpStatusCode()`）——电话唯一 → 真 409；双端 PatientsController 创建/更新/批量导入失败分支改用 `HandleResult(useAuthMapping: true)`。同类检查：IdentityController 已手写 `ErrorCode.ToHttpStatusCode()` 正确；409 错误码（MedicalCaseLocked 等）代码零消费无路径可测；`HandleResult` 回退使未来 403/404/409 全部按错误码正确映射。
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:89` (HttpPost create), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPost create), `IPatientService`
 
 ---
 
@@ -149,14 +131,8 @@
 - 编辑过程中患者被其他用户禁用 → 保存成功（禁用不影响编辑权限，仅影响可见性）
 - 编辑过程中患者被软删除 → 返回 404
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:114` (HttpPut `{id:guid}`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPut `{id:guid}`), `IPatientService`
 
 ---
 
@@ -183,14 +159,8 @@
 3. 软删除通过全局查询过滤器自动隐藏
 4. **软删除（模块规则）**：通过 `IsDeleted` + 全局查询过滤器实现，默认隐藏已删除患者
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:146` (HttpDelete `{id:guid}`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpDelete `{id:guid}`), `IPatientService`
 
 ---
 
@@ -214,14 +184,8 @@
 1. 禁用与软删除语义不同：禁用保留记录但对非管理员隐藏；软删除则视为已移除
 2. 禁用不影响历史医案的访问（医生仍需查看已接诊患者的历史）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:175` (HttpPost `{id:guid}/toggle-status`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPost `{id:guid}/toggle-status`), `IPatientService`
 
 ---
 
@@ -245,14 +209,8 @@
 1. 恢复操作需 `IgnoreQueryFilters()` 绕过全局软删除过滤器定位记录
 2. 恢复仅还原患者记录本身，不还原关联医案（医案删除独立）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:197` (HttpPost `{id:guid}/restore`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPost `{id:guid}/restore`), `IPatientService`
 
 ---
 
@@ -277,14 +235,8 @@
 2. 每项均执行引用检查（同 US-PAT-005 规则）
 3. 端点受管理员权限保护
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:223` (HttpPost `batch-delete`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPost `batch-delete`), `IPatientService`
 
 ---
 
@@ -308,14 +260,8 @@
 1. 引用检查查询 MedicalCase 表中该患者的记录数
 2. 此端点允许所有 DoctorOrReceptionist 角色查询（前台/医生也需预判）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:248` (HttpGet `{id:guid}/check-reference`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet `{id:guid}/check-reference`), `IPatientService`
 
 ---
 
@@ -339,14 +285,8 @@
 1. 批量引用检查通过单次聚合查询实现（避免逐项 N+1）
 2. 用于批量删除前的预检，帮助管理员筛选
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:267` (HttpPost `batch-check-reference`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpPost `batch-check-reference`), `IPatientService`
 
 ---
 
@@ -370,12 +310,6 @@
 2. 模板字段与导入端点期望的 DTO 一致（`batch-import` 收 JSON 数组）
 3. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 处理由前端负责，如需）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
 
 **实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientService`
 
@@ -403,14 +337,8 @@
 3. 端点受管理员权限保护
 4. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 转换由前端负责，如需）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `PatientsController.cs:313` (HttpGet `export`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet `export`), `IPatientService`
 
 ---
 
@@ -437,12 +365,6 @@
 3. Hash 脱敏：用于过敏史/病史比对（如确认两记录是否相同），不还原文
 4. 数据库存储原始数据，脱敏仅发生在 API 响应阶段
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（通过统一脱敏管道） |
 
 **实现参考**: `PatientsController.cs`（全端点），`[SensitiveData]` 特性，脱敏序列化管道
 
@@ -461,7 +383,7 @@
 - [ ] GET `/api/v1/patients/by-id-number/{idNumber}` 返回匹配患者详情
 - [ ] 未找到返回 404
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs:296`（`by-id-number/{idNumber}`）、`PatientService.GetByIdNumberAsync`、Desktop `PatientCardReaderIntegration.FindPatientByIdNumberAsync`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs`（`by-id-number/{idNumber}`）、`PatientService.GetByIdNumberAsync`、Desktop `PatientCardReaderIntegration.FindPatientByIdNumberAsync`
 
 ---
 
