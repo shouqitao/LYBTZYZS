@@ -398,6 +398,8 @@
 
 ## 变更记录
 
+> **已知问题**（来自 [03-architecture/modules/patients.md](../03-architecture/modules/patients.md)）：US-PAT-005 单删（DELETE /{id}）**无引用检查**——被医案引用的患者可删除；但批量删除（batch-delete）有检查。两者行为不一致，待统一修复。
+
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-08-11 | US-PAT-014 补记（身份证号查询——代码已实现未文档化） | R3-补 反向脱节收编 |
