@@ -45,13 +45,9 @@
 4. Debug 模式运行上限 120 分钟。
 
 **双模式差异**:
+模式差异：远程: 启动步骤含 API 连通性检查；本地: 跳过 API 步骤，初始化本地数据库
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 启动步骤含 API 连通性检查 |
-| 本地 | 跳过 API 步骤，初始化本地数据库 |
-
-**实现参考**: `src/Client/Desktop/Shell/App.xaml.cs:41`、`Services/Bootstrap/ApplicationBootstrapper.cs:35`
+**实现参考**: `src/Client/Desktop/Shell/App.xaml.cs`、`Services/Bootstrap/ApplicationBootstrapper.cs`
 
 ---
 
@@ -76,14 +72,8 @@
 2. 菜单可见性矩阵：诊所设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
 3. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（模块加载逻辑与模式无关） |
-
-**实现参考**: `src/Client/Desktop/Shell/Services/Bootstrap/ApplicationBootstrapper.cs:35`
+**实现参考**: `src/Client/Desktop/Shell/Services/Bootstrap/ApplicationBootstrapper.cs`
 
 ---
 
@@ -109,11 +99,7 @@
 4. 入口：`MenuManager.EditProfileCommand`。
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 修改通过 API 提交 |
-| 本地 | 修改提交到本地 Service 层 |
+模式差异：远程: 修改通过 API 提交；本地: 修改提交到本地 Service 层
 
 **实现参考**: `AccountSettingsControl`、`MenuManager.EditProfileCommand`
 
@@ -143,11 +129,7 @@
 4. 前进导航与面包屑已实现。
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 全部菜单可用 |
-| 本地 | 部分需服务端的菜单禁用 |
+模式差异：远程: 全部菜单可用；本地: 部分需服务端的菜单禁用
 
 **实现参考**: `NavigationCoordinator`、`MenuManager`、Prism Region 定义
 
@@ -177,12 +159,6 @@
 4. 异常捕获返回 `ModeSwitchResult.Failed`，自动回退。
 5. **强制本地策略（S5 决策）**：v1.0 仅支持用户主动切换模式；运维强制某台机器走本地（如断网降级、离线巡诊）属 **v2.0**，需扩展 `SystemAdminOptions` 增加按机器/按用户锁定模式的策略，不在 v1.0 范围。
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 不适用（切换操作本身） |
-| 本地 | 不适用（切换操作本身） |
 
 **实现参考**: `IConnectionModeProvider.SwitchModeAsync`、`SwitchingApiClient`、`ModeSwitchValidator`
 
@@ -213,11 +189,7 @@
 4. 业界模式（参考）：极简 Landing Page——`GET /` 返回 HTML（项目名 + 版本 + 下载按钮 + 简短说明），发布包静态托管于同源 `/releases/`。
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 安装后指向 WebAPI 地址；下载页 `http://<host>:5000/` |
-| 本地 | 安装后自动切换本地模式（内嵌 LocalWebAPI） |
+模式差异：远程: 安装后指向 WebAPI 地址；下载页 `http://<host>:5000/`；本地: 安装后自动切换本地模式（内嵌 LocalWebAPI）
 
 **实现参考**: `velopack` NuGet + `VelopackApp.Build().Run()` 集成于 `App.xaml.cs`
 
@@ -485,11 +457,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 - sysadmin 运维设置增加读卡器诊断 tab
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | 读卡器为本地硬件，与模式无关 |
-| 本地 | 同上 |
+模式差异：远程: 读卡器为本地硬件，与模式无关；本地: 同上
 
 **实现参考**: 现有 `ICardReader`/`ICardReaderFactory` + 新增 `ICardReaderDiagnostics` 接口
 
@@ -613,11 +581,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 3. 双保险：start.sh 脚本层（PID+端口+health）+ Program.cs 程序层（Mutex）
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | start.sh 防护（Linux 部署） |
-| 本地 | LocalWebAPI 内嵌 Desktop 进程——由 Desktop 单实例（US-SHELL-001）天然保护 |
+模式差异：远程: start.sh 防护（Linux 部署）；本地: LocalWebAPI 内嵌 Desktop 进程——由 Desktop 单实例（US-SHELL-001）天然保护
 
 **实现参考**: start.sh（现有 pkill+sleep 2 → 增强 4 层）；`Program.cs`（加 Mutex 检查）
 
@@ -648,11 +612,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 4. Desktop 侧：证书信任/连接更新由 Desktop 端配置负责（此 US 只管 Server 端）
 
 **双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | start.sh 启动（Http 默认开，Https 可选） |
-| 本地 | LocalWebAPI 内嵌——不需要 HTTPS（localhost 自签可选） |
+模式差异：远程: start.sh 启动（Http 默认开，Https 可选）；本地: LocalWebAPI 内嵌——不需要 HTTPS（localhost 自签可选）
 
 **实现参考**: Program.cs（WebApplication.CreateBuilder 配置 Kestrel 端点）；appsettings.json（新增 Kestrel 段）
 
