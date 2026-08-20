@@ -169,14 +169,7 @@
 - 患者当天已有 Waiting 挂号，前台可查看但不可重复挂号
 - 患者非当天有 Waiting 挂号，前台可正常挂号（不阻塞）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Registrations` |
-| 本地 | 不适用（本地模式仅医生，不创建前台账号） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
+**实现参考**: `RegistrationsController.cs`、`IRegistrationService`
 
 ---
 
@@ -208,14 +201,7 @@
 4. API 单一职能：建挂号（POST /Registrations）与开始就诊（PUT /start-visit）各自独立——**组合由前端 VM 编排**
 5. **旧 quick-visit 端点已删除**（2026-08-13：两步收敛后不再需要，POST /Registrations 已覆盖）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Registrations`（Waiting）+ PUT `/api/v1/Registrations/{id}/start-visit`（InProgress+医案） |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`（注入 `IMedicalCaseCommandService`）
+**实现参考**: `RegistrationsController.cs`、`IRegistrationService`（注入 `IMedicalCaseCommandService`）
 
 ---
 
@@ -240,14 +226,7 @@
 3. 包含患者姓名、医生姓名（冗余快照）
 4. 权限：Receptionist/Doctor/Admin/SuperAdmin 均可查看
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/Registrations/{id}` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`
+**实现参考**: `RegistrationsController.cs`
 
 ---
 
@@ -277,14 +256,7 @@
 5. 状态着色：Waiting=黄色、InProgress=蓝色、Completed=灰色、Cancelled=红色
 6. **仅显示当天的 Waiting 挂号**：非当天的 Waiting 挂号不显示在医生待诊列表
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/Registrations?status=&doctorId=&patientId=&startDate=&endDate=&page=&pageSize=` 或 GET `/api/v1/Registrations/queue` |
-| 本地 | 不适用（本地模式无待诊队列） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationRepository`
+**实现参考**: `RegistrationsController.cs`、`IRegistrationRepository`
 
 ---
 
@@ -311,14 +283,7 @@
 4. 医案创建后医生进入诊疗工作流
 5. **并发保护**：开始看诊时检查挂号状态，如果挂号已变为 Cancelled，提示"患者已退号"
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/Registrations/{id}/start` 或通过接诊接口 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
+**实现参考**: `RegistrationsController.cs`、`IRegistrationService`
 
 ---
 
@@ -356,14 +321,7 @@
 - 医生模式（Source=Doctor）InProgress 挂号 → 取消医案后 Registration 自动变为 Cancelled（US-REG-007 闭环）
 - 前台模式（Source=Receptionist）InProgress 挂号 → 取消医案后 Registration 回退为 Waiting（US-REG-007）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/Registrations/{id}/cancel` |
-| 本地 | 不适用（本地模式仅医生，不创建前台账号） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`IRegistrationService`
+**实现参考**: `RegistrationsController.cs`、`IRegistrationService`
 
 ---
 
@@ -392,14 +350,7 @@
    - Source=Doctor：自动变为 Cancelled（闭环）
 3. 联动在事务内执行，保证一致性
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | MedicalCaseService 内部触发（CompleteAsync/CancelAsync 调用 RegistrationService） |
-| 本地 | 完全一致（通过统一 Service 层，事务内联动更新） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/RegistrationsController.cs:24`、`src/Server/Modules/LYBT.Module.MedicalCases/Interfaces/IMedicalCaseFacade.cs:15`
+**实现参考**: `RegistrationsController.cs`、`IMedicalCaseFacade.cs`
 
 ---
 
@@ -425,12 +376,7 @@
 3. 降级策略：推送失败回退轮询，复用 US-REG-004 候诊队列
 4. 双模式推送机制（远程 Hub / 本地模式）待 SignalR 专项 spec 定案，本 US 仅锚定范围
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | SignalR Hub（部署于 WebAPI，公网可达）推送挂号变更事件 |
-| 本地 | 待专项 spec 定案（候选：LocalWebAPI 内嵌 Hub / 前端轮询降级） |
+**双模式差异**: 远程由 SignalR Hub（部署于 WebAPI，公网可达）推送挂号变更事件；本地待专项 spec 定案（候选：LocalWebAPI 内嵌 Hub / 前端轮询降级）。
 
 **实现参考**: SignalR Hub（待专项 spec 设计，见 [ADR-0013](../03-architecture/decisions/0013-signalr-realtime-push.md)）
 
