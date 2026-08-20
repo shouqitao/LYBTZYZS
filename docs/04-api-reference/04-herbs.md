@@ -265,7 +265,7 @@ JSON 批量导入药材（直接 DTO 数组，非 Excel）。
 
 ---
 
-## 错误码汇总
+## 错误码
 
 > 完整定义见 [herbs.md PRD](../02-requirements/05-herbs.md)。分区: 5xxxx。
 

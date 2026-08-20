@@ -341,7 +341,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 ---
 
-## 错误码汇总
+## 错误码
 
 | 错误码 | HTTP | 触发条件 |
 |--------|------|----------|

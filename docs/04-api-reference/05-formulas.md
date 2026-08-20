@@ -284,7 +284,7 @@ JSON 批量导入验方（Server 端只处理 DTO，Excel 解析由 Client 端�
 
 ---
 
-## 错误码汇总
+## 错误码
 
 > 完整定义见 [formulas.md PRD](../02-requirements/06-formulas.md)。分区: 6xxxx。
 

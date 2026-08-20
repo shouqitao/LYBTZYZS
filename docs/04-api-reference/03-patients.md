@@ -266,7 +266,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 ---
 
-## 错误码汇总
+## 错误码
 
 > 完整定义见 [patients.md PRD](../02-requirements/04-patients.md)。分区: 2xxxx。
 
