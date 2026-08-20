@@ -110,14 +110,17 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **6 项**授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **7 项**授权策略，通过 `RequireRole()` 声明式配置：
 
 | Policy | 常量 | 满足条件的角色 | 典型用途 |
 |--------|------|--------------|----------|
 | `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 药材、验方（**目标态**，见 §下方 D7 待对齐注） |
 | `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表 |
 | `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
-| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具 |
+| `DoctorOnly` | `PolicyConstants.DoctorOnly` | SuperAdmin, Admin, Doctor | 医案创建、处方打印（操作级） |
+| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具、患者删除/禁用 |
+| `AdminBusinessOnly` | `PolicyConstants.AdminBusinessOnly` | SuperAdmin, Admin | 纯管理业务操作（不含诊断） |
+| `SysAdminOnly` | `PolicyConstants.SysAdminOnly` | SuperAdmin | 配置中心、重启等系统运维端点 |
 
 > ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（已存在于 PolicyConstants，部分端点已使用，待全面对齐）。
 
@@ -132,9 +135,13 @@ SuperAdmin → Admin → Doctor → Receptionist
 ```csharp
 // AuthenticationServiceCollectionExtensions.cs
 options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
-options.AddPolicy("DoctorOrReceptionist", RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
-options.AddPolicy("DoctorOrAdmin",       RequireRole("SuperAdmin", "Admin", "Doctor"));
-options.AddPolicy("AdminOrSuperAdmin",   RequireRole("SuperAdmin", "Admin"));
+options.AddPolicy(PolicyConstants.AdminBusinessOnly,     RequireRole("SuperAdmin", "Admin"));
+options.AddPolicy(PolicyConstants.DoctorOnly,           RequireRole("SuperAdmin", "Admin", "Doctor"));
+options.AddPolicy(PolicyConstants.DoctorOrAdmin,        RequireRole("SuperAdmin", "Admin", "Doctor"));
+options.AddPolicy(PolicyConstants.AdminOrSuperAdmin,    RequireRole("SuperAdmin", "Admin"));
+options.AddPolicy(PolicyConstants.SysAdminOnly,         RequireRole("SuperAdmin"));
+options.AddPolicy(PolicyConstants.DoctorOrReceptionist, RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
+options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
 ```
 
 ### 默认安全策略
