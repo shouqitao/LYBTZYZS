@@ -40,16 +40,20 @@
 | 目录 | 内容 |
 |------|------|
 | [decisions/README.md](decisions/README.md) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
+| [modules/README.md](modules/README.md) | 模块设计文档索引（10 个模块） |
 | [modules/auth.md](modules/auth.md) | 认证授权模块 |
 | [modules/users.md](modules/users.md) | 用户管理模块 |
 | [modules/patients.md](modules/patients.md) | 患者管理模块 |
+| [modules/medical-case.md](modules/medical-case.md) | 医案管理模块 |
+| [modules/registration.md](modules/registration.md) | 挂号管理模块 |
 | [modules/herbs.md](modules/herbs.md) | 药材管理模块 |
 | [modules/formulas.md](modules/formulas.md) | 验方管理模块 |
-| [modules/medical-case.md](modules/medical-case.md) | 医案管理模块 |
-| [modules/platform.md](modules/platform.md) | 平台壳程序模块 |
 | [modules/printing.md](modules/printing.md) | 打印模块 |
 | [modules/reports.md](modules/reports.md) | 报表模块 |
-| | [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
+| [modules/platform.md](modules/platform.md) | 平台壳程序模块 |
+| [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
+| [localwebapi/api-endpoints.md](localwebapi/api-endpoints.md) | 本地模式 API 端点清单 |
+| [localwebapi/authentication.md](localwebapi/authentication.md) | 本地模式认证流程 |
 | [shared-layer.md](shared-layer.md) | Shared 层设计（补充文档，无编号） |
 | [16-desktop-architecture-spec.md](16-desktop-architecture-spec.md) | Desktop 架构规格 |
 
