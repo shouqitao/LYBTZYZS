@@ -123,7 +123,7 @@ namespace LYBT.WebAPI.Controllers
             var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, doctorId, isAdmin: false, ct);
 
             if (!result.IsSuccess)
-                return NotFound(result.Error ?? "患者不存在");
+                return HandleResult(result, useAuthMapping: true);
 
             var responseDto = result.Value!;
 
@@ -160,7 +160,7 @@ namespace LYBT.WebAPI.Controllers
 
             if (!result.IsSuccess)
             {
-                return NotFound(result.Error ?? "医案不存在");
+                return HandleResult(result, useAuthMapping: true);
             }
 
             LogOperation("更新医案", input, id);
@@ -232,7 +232,7 @@ namespace LYBT.WebAPI.Controllers
                 id, request.NeedsPrescription, operatorId, isAdmin, ct);
 
             if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+                return HandleResult(result, useAuthMapping: true);
 
             LogOperation("更新处方标记", request, id);
             return Success(result.Value!, "处方标记更新成功");
@@ -253,7 +253,7 @@ namespace LYBT.WebAPI.Controllers
                 id, request.PrintType, request.PrinterName, operatorId, operatorName, ct);
 
             if (!result.IsSuccess)
-                return NotFound(result.Error ?? "医案不存在");
+                return HandleResult(result, useAuthMapping: true);
 
             _logger.LogInformation("打印记录写入成功，MedicalCaseId: {Id}, PrintType: {PrintType}, Operator: {Operator}",
                 id, request.PrintType, operatorName);
