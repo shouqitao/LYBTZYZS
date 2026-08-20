@@ -74,6 +74,8 @@ sequenceDiagram
 
 ## Server 分层规则（三态模板，2026-08-08 A-26 定案）
 
+> 依赖方向（WebAPI → Modules → Infrastructure → Entities，模块间禁止直接依赖）详见 [01-system-overview.md §依赖方向](01-system-overview.md#依赖方向)。本节仅描述模块内部目录结构。
+
 > 蓝图 v1.3 及之前以「七目录理想模板」表述，实际代码为三态并存（模块清单表格为准）。本版改为三态模板，标注各模块实际形态，**七目录模板从未完整落地**（全模块无 `Domain/`，实体下沉 LYBT.Entities）。
 
 **状态一：CQRS 模块（Identity/Patients/Herbs/Formula/Registration）**
