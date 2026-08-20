@@ -210,8 +210,8 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
 
-            // T5-3 #7 (US-MC-002/016): EditReason 校验——打印后修改 / 非 Admin 编辑已完成医案需提供原因
-            ValidateEditReason(medicalCase, request, isAdmin);
+            // P0-4 (R3 C2): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人）
+            ValidateEditReason(medicalCase, request, currentUserId);
 
             // T5-3 #16 (US-MC-017): 更新前快照（审计字段 diff）
             var before = CaptureSnapshot(medicalCase);
@@ -246,18 +246,24 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// T5-3 #7: EditReason 校验——打印后修改 / 非 Admin 编辑已完成医案需提供原因（US-MC-002/016）
+        /// P0-4 (R3 C2): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人）
         /// </summary>
-        private static void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, bool isAdmin)
+        private static void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
         {
             var isPrintedEdit = medicalCase.IsPrinted && medicalCase.PrintVersion > 0;
-            var isCompletedEdit = medicalCase.CaseStatus == MedicalCaseStatus.Completed && !isAdmin;
-            if ((isPrintedEdit || isCompletedEdit) && string.IsNullOrWhiteSpace(request.EditReason))
+            var isCompletedEdit = medicalCase.CaseStatus == MedicalCaseStatus.Completed;
+            var isLockedEdit = medicalCase.IsLocked;
+            var isForeignEdit = medicalCase.UserId != currentUserId;
+            if ((isPrintedEdit || isCompletedEdit || isLockedEdit || isForeignEdit) && string.IsNullOrWhiteSpace(request.EditReason))
             {
                 throw new InvalidOperationException(
                     isPrintedEdit
                         ? "医案已打印，修改内容需提供编辑原因"
-                        : "已完成医案编辑需提供编辑原因");
+                        : isLockedEdit
+                            ? "医案已锁定（隔天），编辑需提供编辑原因"
+                            : isForeignEdit
+                                ? "非创建医生编辑需提供编辑原因"
+                                : "已完成医案编辑需提供编辑原因");
             }
         }
 
