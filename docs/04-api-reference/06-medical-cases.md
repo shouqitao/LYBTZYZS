@@ -218,7 +218,7 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 
 ### PUT /medicalcases/{id}/cancel
 
-取消医案 (物理删除 + 审计日志)。需要审计理由 (非当天本人操作时)。
+取消医案 (统一为物理删除 + 审计日志)。需要审计理由 (非当天本人操作时)。
 
 **路径参数**: `id` (Guid)
 
