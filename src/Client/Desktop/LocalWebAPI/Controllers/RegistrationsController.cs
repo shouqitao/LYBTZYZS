@@ -43,8 +43,8 @@ public class RegistrationsController : BaseRegistrationsController
         return Success(result.Value, "挂号创建成功");
     }
 
-    /// <inheritdoc />
-    [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
+    /// <inheritdoc /> — 仅 Receptionist（04-permissions P0-3 / REG-BR-002）
+    [Authorize(Policy = PolicyConstants.ReceptionistOnly)]
     public override async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
         => await base.Cancel(id, ct);
 }

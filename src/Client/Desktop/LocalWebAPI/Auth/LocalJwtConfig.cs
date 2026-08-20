@@ -97,6 +97,10 @@ public static class LocalJwtConfig
                 policy.RequireAuthenticatedUser()
                       .RequireRole(RoleConstants.Doctor, RoleConstants.Receptionist));
 
+            options.AddPolicy(PolicyConstants.ReceptionistOnly, policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireRole(RoleConstants.Receptionist));
+
             // 三角色策略：Doctor/Admin/SuperAdmin/Receptionist 任一可访问
             // 语义与 WebAPI AuthenticationServiceCollectionExtensions 注册一致（含 SuperAdmin，兼容系统运维）
             options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, policy =>
