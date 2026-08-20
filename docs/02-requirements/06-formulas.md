@@ -69,14 +69,8 @@ stateDiagram-v2
 3. 列表包含药材数量，不显示价格（经验方不涉及价格）
 4. 默认按 CreatedAt DESC 排序
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/Formulas?keyword=&category=&page=&pageSize=` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:363`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -100,14 +94,8 @@ stateDiagram-v2
 2. 包含每味药材的验证状态（IsValidated）和绑定状态（HerbId 是否有值）
 3. 共享验方对 Doctor 只读
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/Formulas/{id}` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:423`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
 
 ---
 
@@ -149,14 +137,8 @@ stateDiagram-v2
 - **herbs 集合来源 = 药材目录查询（可缓存）**；提交时的组合 = 请求体快照（不依赖缓存）
 - 后端校验：herbId 不存在/已删除 → 422（引用校验）；空 herbs → 400（AC）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:443`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -186,14 +168,8 @@ stateDiagram-v2
 - 两个管理员同时编辑同一验方 → 后提交者覆盖先提交者（Last Write Wins），乐观锁冲突时返回 409
 - 一人正在验证药材，另一人同时更新验方药材列表 → 药材列表替换后触发状态重新评估（FLAW-F1），最终状态取决于最后一次操作
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | PUT `/api/v1/Formulas/{id}` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:464`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -218,14 +194,8 @@ stateDiagram-v2
 3. 验方无被引用关系（导入处方为数据复制，无强关联），可直接删除
 4. 支持批量删除
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | DELETE `/api/v1/Formulas/{id}` 或 POST `/api/v1/Formulas/batch-delete` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:489`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
 
 ---
 
@@ -252,12 +222,6 @@ stateDiagram-v2
 4. 返回成功列表和失败详情（含匹配/未匹配药材数）
 5. 客户端本地解析 Excel（2026-08-13：后端不涉及 Excel——服务端收 JSON/DTO，Excel 解析由前端负责，如 NPOI 类库已移除）
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas/batch-import`（DTO/JSON——2026-08-13：移除服务端 Excel 解析） |
-| 本地 | 同远程（DTO/JSON——客户端如需 Excel 自行解析后转 DTO） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpPost `formulas/batch-import`——DTO/JSON 唯一路径)
 
@@ -283,14 +247,8 @@ stateDiagram-v2
 2. 用于 Doctor 的待办列表（to-do list）
 3. 支持分页
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/api/v1/Formulas/pending-validation` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`（`GetPendingValidationFormulasAsync`）
+**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`（`GetPendingValidationFormulasAsync`）
 
 ---
 
@@ -318,14 +276,8 @@ stateDiagram-v2
 5. 绑定后 `IsValidated=true`、`HerbId` 填充
 6. `ValidateFormulaHerbAsync`：验证单个药材；当 ALL 药材验证完成，自动晋升 `Validated`（US-FORM-009）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas/{formulaId}/herbs/{herbItemId}/validate`（请求体含 selectedHerbId） |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`（`ValidateFormulaHerbAsync`）
+**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`（`ValidateFormulaHerbAsync`）
 
 ---
 
@@ -348,14 +300,8 @@ stateDiagram-v2
 2. 若全部 `IsValidated=true` → 自动晋升 `Validated`
 3. 晋升后验方满足处方导入条件（`ValidationStatus=Validated` 且 `Status=Enabled`）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 由 `IFormulaService.ValidateFormulaHerbAsync` 内部触发 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -383,14 +329,8 @@ stateDiagram-v2
 - 验方已为 Validated，管理员禁用其中一味药材 → 该验方不自动降级（禁用≠未验证），但导入处方时该药材被跳过
 - 验方已为 Validated，管理员删除其中一味药材 → 触发 FLAW-F1 降级回 Draft（药材数减少导致未验证）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | 由 `IFormulaService.UpdateAsync` 内部触发 |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs:11`
+**实现参考**: `src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -415,14 +355,8 @@ stateDiagram-v2
 3. 支持批量启用/禁用
 4. **处方导入对话框仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方**（MC-D08，见 [07-medical-cases.md](07-medical-cases.md)）
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas/{id}/toggle-status` 或 `/batch-enable`、`/batch-disable` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:516`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
 
 ---
 
@@ -445,14 +379,8 @@ stateDiagram-v2
 2. 仅 Admin 可恢复（业务管理；sysadmin 系统运维不碰业务）
 3. 恢复后验方状态保持删除前的 ValidationStatus
 
-**双模式差异**:
 
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas/{id}/restore` |
-| 本地 | 完全一致（通过统一 Service 层） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs:542`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
 
 ---
 
@@ -477,12 +405,6 @@ stateDiagram-v2
 2. 导出支持按分类筛选
 3. 客户端负责 Excel 生成（如需）；后端只出 JSON
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | POST `/api/v1/Formulas/batch-delete`、GET `/export`、GET `/import-template`（JSON——2026-08-13 改） |
-| 本地 | 同远程（JSON——2026-08-13 双端同步） |
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpGet `formulas/export`/`formulas/import-template`)、`IFormulaService`
 
@@ -502,7 +424,7 @@ stateDiagram-v2
 - [ ] 克隆副本名称/药材组成与源验方一致
 - [ ] 远程模式补端点（WebAPI 当前缺失——T 批次待补）
 
-**实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/CatalogController.cs:459`（clone）、Desktop `IFormulaApi.cs:48`/`FormulasHttpApiClient.cs:39`
+**实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/CatalogController.cs`（clone）、Desktop `IFormulaApi.cs`/`FormulasHttpApiClient.cs`
 
 ---
 
