@@ -128,10 +128,7 @@ curl -X POST "https://api.example.com/api/v1/medicalcases" \
 
 **授权**: 资源级授权 (Edit 操作)
 
-**打印保护规则** (MC-D15):
-- 当 `MedicalCase.IsPrinted=true` 时，修改 Consultation 或 Prescription 内容需提供 `editReason`，否则返回 ERR-30403
-- 修改成功后: `MedicalCase.IsPrinted=false`、`MedicalCase.PrintVersion++` (标记需重新打印)
-- 打印后删除处方始终禁止 (ERR-30404)
+**打印保护规则** (MC-D15): 详见 [09-printing.md §打印保护规则](../02-requirements/09-printing.md)（编辑需原因、禁止删除处方项、重置打印状态）。
 
 **成功响应** (200): `ApiResponse<MedicalCaseDetailDto>` -- 结构同 POST 创建响应
 
