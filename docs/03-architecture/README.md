@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-> 技术栈版本详见 [[00-architecture-summary]]
+> 技术栈版本详见 [00-architecture-summary](00-architecture-summary.md)
 
 ## 文档索引
 
