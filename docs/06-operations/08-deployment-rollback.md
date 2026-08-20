@@ -40,7 +40,7 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 
 # 3. 数据库备份（必需）
 $ts = Get-Date -Format "yyyyMMdd_HHmmss"
-Backup-SqlDatabase -ServerInstance "." -Database "LYBTDB" -BackupFile "D:\Backup\LYBTDB_pre_deploy_$ts.bak"
+Backup-SqlDatabase -ServerInstance "." -Database "LYBTDB_Dev" -BackupFile "D:\Backup\LYBTDB_Dev_pre_deploy_$ts.bak"
 ```
 
 ### 部署步骤
@@ -108,7 +108,7 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 sc stop LYBT-API
 
 # 2. 恢复数据库到部署前备份
-$sqlcmd = "RESTORE DATABASE [LYBTDB] FROM DISK = N'<部署前备份路径>' WITH REPLACE"
+$sqlcmd = "RESTORE DATABASE [LYBTDB_Dev] FROM DISK = N'<部署前备份路径>' WITH REPLACE"
 Invoke-Sqlcmd -Query $sqlcmd -ServerInstance "."
 
 # 3. 回滚应用版本（同场景 1）

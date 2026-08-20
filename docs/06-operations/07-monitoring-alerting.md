@@ -203,7 +203,7 @@ ORDER BY TimeStamp DESC;
 -- 数据库连接数
 SELECT COUNT(*) AS ActiveConnections
 FROM sys.dm_exec_sessions
-WHERE database_id = DB_ID('LYBTDB');
+WHERE database_id = DB_ID('LYBTDB_Dev');
 ```
 
 ### 数据库容量监控
@@ -216,7 +216,7 @@ SELECT
     size * 8 / 1024 AS SizeMB,
     max_size AS MaxSizeMB
 FROM sys.master_files
-WHERE database_id = DB_ID('LYBTDB');
+WHERE database_id = DB_ID('LYBTDB_Dev');
 
 -- 表大小排行
 SELECT
@@ -294,7 +294,7 @@ Invoke-RestMethod -Uri "http://localhost:5000/health/database" -Method Get
 
 # 3. 最近错误日志
 $query = "SELECT TOP 20 * FROM SystemLogs WHERE Level = 'Error' ORDER BY TimeStamp DESC"
-Invoke-Sqlcmd -Query $query -Database LYBTDB
+Invoke-Sqlcmd -Query $query -Database LYBTDB_Dev
 ```
 
 ### 每周检查（15 分钟）
@@ -304,7 +304,7 @@ Invoke-Sqlcmd -Query $query -Database LYBTDB
 RESTORE VERIFYONLY FROM DISK = N'<最新备份路径>'
 
 # 2. 数据库完整性
-DBCC CHECKDB ([LYBTDB])
+DBCC CHECKDB ([LYBTDB_Dev])
 
 # 3. 磁盘空间
 Get-PSDrive -Name D | Select-Object Used, Free
