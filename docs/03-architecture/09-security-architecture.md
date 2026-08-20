@@ -23,36 +23,7 @@
 
 ### 2.1 远程模式登录流程
 
-```mermaid
-sequenceDiagram
-    participant D as Desktop
-    participant S as Server (WebAPI)
-
-    D->>S: POST /api/v1/auth/login { userName, password }
-
-    Note over S: 1. 验证用户名/密码非空
-    Note over S: 2. 查询用户 (IUserCrossModuleService)
-    Note over S: 3. 检查用户状态
-    alt 用户不存在
-        S-->>D: 401 AuthInvalidCredentials
-    else 用户已禁用
-        S-->>D: 403 UserDisabled
-    else 账户已锁定
-        S-->>D: 401 UserLocked
-    else BCrypt 验证密码 (WorkFactor=12)
-        alt 密码错误
-            Note over S: 累加 FailedLoginCount<br/>达到阈值 → 锁定 15 分钟
-            S-->>D: 401 AuthInvalidCredentials
-        else 密码正确
-            Note over S: 5. 重置 FailedLoginCount
-            Note over S: 6. 撤销旧会话所有 Token
-            Note over S: 7. 生成 JWT AccessToken + RefreshToken
-            Note over S: 8. 记录安全审计日志
-            S-->>D: 200 { token, refreshToken, user, expiresAt }
-            Note over D: TokenStorageService.SaveAuthenticationAsync()<br/>（内存存储，进程退出自动清除）
-        end
-    end
-```
+> 完整登录流程（用户故事、验收标准、双模式差异）详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-001/002/003/009/010/012/013。
 
 关键安全约束：
 
@@ -420,17 +391,9 @@ stateDiagram-v2
 
 ### 7.8 安全审计
 
-`SecurityAuditService` 记录所有认证相关事件：
+> 完整安全审计事件类型与用户故事详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-007。
 
-| 事件类型 | 触发时机 |
-|---------|---------|
-| `Login` | 登录成功 |
-| `LoginFailed` | 登录失败 |
-| `Logout` | 登出 |
-| `RefreshToken` | Token 刷新成功 |
-| `RefreshTokenRejected` | Token 刷新被拒绝 |
-| `TokenReplayAttack` | 检测到重放攻击 |
-| `TokenRevoked` | Token 被撤销 |
+`SecurityAuditService` 记录所有认证相关事件（Login/LoginFailed/Logout/RefreshToken/RefreshTokenRejected/TokenReplayAttack/TokenRevoked）。
 
 审计记录包含：IP 地址（脱敏，如 `192.168.1.*`）、UserAgent（截断至 500 字符）、时间戳。审计日志保留 365 天（`SecurityOptions.AuditRetentionDays`）。
 
