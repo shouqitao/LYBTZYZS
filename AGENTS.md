@@ -127,7 +127,7 @@ dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --
 
 ## 技术栈速览
 
-. NET 8 | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
+.NET 8 | WPF/Prism | ASP.NET Core | EF Core | SQL Server (Remote + LocalDB dual-mode)
 
 ## Git
 
