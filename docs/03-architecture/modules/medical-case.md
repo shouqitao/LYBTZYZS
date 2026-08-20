@@ -35,11 +35,6 @@ MedicalCase 是系统核心聚合根，承载中医诊疗全流程：挂号→�
 
 > **权威定义**: 见 [07-medical-cases.md「状态机」](../../02-requirements/07-medical-cases.md) §状态机 (L107-121) 及 [04-data-model.md「MedicalCase 状态机」](../../03-architecture/04-data-model.md) L119-123。
 
-```
-Suspended ↔ Active → Completed
-特殊: 取消 = 物理删除（2026-08-03 决策），无独立 Cancelled 状态
-```
-
 ## 业务规则
 
 | 规则 | 描述 |
