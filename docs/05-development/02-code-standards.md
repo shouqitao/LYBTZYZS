@@ -62,14 +62,7 @@ Controller → Service → Repository → DbContext
 
 ### MVVM 模式 (Desktop)
 
-```
-View (XAML) ← 数据绑定 → ViewModel → Repository → API/DataSource
-```
-
-- View 不包含业务逻辑
-- ViewModel 通过 DI 注入 Repository
-- Repository 封装 API 调用或 DataSource 访问
-- 使用 CommunityToolkit.Mvvm `[ObservableProperty]` 和 `[RelayCommand]`（不使用 Prism 的 BindableBase/DelegateCommand）
+> MVVM 架构详情（View/ViewModel/Repository 层级、CommunityToolkit.Mvvm 用法、代码示例）见 [03-patterns.md §Desktop: MVVM + Repository](../05-development/03-patterns.md#desktop-mvvm--repository)。
 
 ---
 
