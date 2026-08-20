@@ -124,22 +124,7 @@
 
 ### v1.0 范围（当前版本）
 
-系统包含以下 10 个模块、共 141 个用户故事（US）：
-
-| 模块 | US 数 | 核心能力 |
-|------|-------|---------|
-| 认证与会话 (Auth) | 13 | JWT 认证、令牌刷新、重放攻击防护、本地简化认证 |
-| 用户管理 (Users) | 12 | 四级角色、IDOR 防护、批量操作 |
-| 患者管理 (Patients) | 13 | 拼音检索、敏感数据脱敏、身份证读卡集成 |
-| 药材管理 (Herbs) | 13 | 记录式管理、拼音搜索、Excel 批量导入 |
-| 验方管理 (Formulas) | 13 | Draft↔Validated 状态机、药材延迟绑定 |
-| 医案管理 (MedicalCases) | 19 | 核心聚合根、CQRS、BR-001 单活动医案、打印保护、复用上次处方微调 |
-| 挂号管理 (Registration) | 8 | 候诊队列、QuickVisit 原子事务、医案联动、SignalR 实时推送 |
-| 处方打印 (Printing) | 4 | A5/A4 模板、QuestPDF 导出、打印回写 |
-| 报表管理 (Reports) | 3 | 收入/就诊统计/药材使用排行，按时间范围查询 |
-| 平台基础设施 (Platform) | 43 | Shell/Config/Error/Logging/Health/CardReader（含 SHELL-010~019 中 v1.0 的 8 项） |
-
-详细需求见 [`02-requirements/01-prd.md`](../02-requirements/01-prd.md) 及各模块文档。
+v1.0 包含 10 个模块。详细的模块划分、用户故事数量及核心能力见 [`02-requirements/01-prd.md`](../02-requirements/01-prd.md)。
 
 ### 范围外（系统边界之外，线下流程）
 
