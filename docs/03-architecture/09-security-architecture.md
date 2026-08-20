@@ -370,8 +370,8 @@ stateDiagram-v2
 ### 7.5 速率限制
 
 | 策略 | 限制 | 适用范围 |
-|------|------|---------|
-| Login | 5 次/60 秒/IP | `/api/v1/auth/login`, `/api/v1/auth/auto-login` |
+|------|------|---------| 
+| Login | 详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-003/013 | 登录端点（远程/本地限流策略各自定义） |
 | ApiCalls | 100 次/分钟/IP | 全局 API 调用 |
 
 速率限制通过 `Security:RateLimiting:Enabled` 配置项控制，开发/测试环境可设为 `false` 禁用。被限制时返回 429 状态码和结构化错误响应 (`ErrorCode.RateLimitExceeded`)。
