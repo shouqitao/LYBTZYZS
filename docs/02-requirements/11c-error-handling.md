@@ -54,7 +54,7 @@
 **业务规则**:
 1. `ClientErrorMessageMapper` 覆盖 HTTP 状态码 + 7 模块 90+ 业务错误码。
 2. 优先级：业务错误码 > HTTP 状态码 > 通用兜底。
-3. 错误码分区：1xxxx 认证、2xxxx 患者、3xxxx 医案、5xxxx 药材、6xxxx 验方、7xxxx 同步。
+3. 错误码分区：0xxxx 通用、1xxxx 认证、2xxxx 患者、3xxxx 医案、5xxxx 药材、6xxxx 验方、7xxxx 同步、8xxxx 挂号。
 
 **双模式**:
 模式差异：------: ------；远程: 解析服务端 ProblemDetails 的 errorCode；本地: 解析本地操作异常类型
