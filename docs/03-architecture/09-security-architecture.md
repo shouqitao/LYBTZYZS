@@ -262,12 +262,17 @@ stateDiagram-v2
 
 ### PatientsController (`/api/v1/patients`)
 
-> ⚠️ **本节为历史策略表**（部分行仍反映早期 `DoctorOrReceptionist` 目标态）。2026-08-03 四连决策后的**权威权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)**（含代码现状与目标态差异、P0-P2 修复项）。代码实际策略以控制器 `[Authorize]` 属性为准：PatientsController 类级 `DoctorOrAdminOrReceptionist`，DELETE/禁用目标 `AdminOrSuperAdmin`（P0-5 待修）。
+> 权限对齐见 [04-permissions.md](../01-product/04-permissions.md)；代码实际策略以控制器 `[Authorize]` 属性为准。
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | DoctorOrAdminOrReceptionist | 代码实际（2026-08-03 前为 FallbackPolicy 需认证） |
-| 所有 CRUD 方法 | DoctorOrAdminOrReceptionist | 代码实际；删除/禁用目标态 AdminOrSuperAdmin |
+| 类级别 | DoctorOrAdminOrReceptionist | 代码实际 |
+| GET / GET /{id} | DoctorOrReceptionist | 分页列表/详情 |
+| POST / | DoctorOrReceptionist | 新增患者 |
+| PUT /{id} | DoctorOrReceptionist | 更新患者 |
+| DELETE /{id} | DoctorOrReceptionist | 软删除（目标态 AdminOrSuperAdmin，P0-5 待修） |
+| POST /{id}/toggle-status | AdminOrSuperAdmin | 启用/禁用 |
+| POST /{id}/restore | AdminOrSuperAdmin | 恢复已删除患者 |
 
 ### MedicalCasesController (`/api/v1/medicalcases`)
 
@@ -287,7 +292,7 @@ stateDiagram-v2
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrReceptionist | 打印处方 |
+| DoctorOrAdminOrReceptionist | 打印处方 |
 
 ### MedicalCaseAuditController (`/api/v1/medicalcase-audit`)
 
@@ -299,21 +304,20 @@ stateDiagram-v2
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrReceptionist | 药材管理 |
+| DoctorOrAdmin | 药材管理 |
 
 ### FormulasController (`/api/v1/formulas`)
 
 | Policy | 备注 |
 |--------|------|
-| DoctorOrReceptionist | 验方管理 |
+| DoctorOrAdmin | 验方管理 |
 
 ### RegistrationsController (`/api/v1/registrations`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | DoctorOrAdminOrReceptionist | 代码实际（2026-08-03 前为 DoctorOrReceptionist 目标态） |
+| 类级别 | DoctorOrAdminOrReceptionist | 代码实际 |
 | 创建/取消 | DoctorOrAdminOrReceptionist | 代码实际；目标态仅前台 Receptionist（P1-4 待修） |
-| quick-visit | DoctorOrAdmin | 代码实际；目标态 DoctorOnly（P1-4 待修） |
 | start-visit | DoctorOrAdminOrReceptionist | 代码实际 |
 
 ### SyncController (`/api/v1/sync`)
