@@ -242,6 +242,8 @@ stateDiagram-v2
 
 ## 6. Policy-to-Endpoint Matrix
 
+> **注意**：以下矩阵反映代码实际策略（2026-08-19 审计）。控制器不存在的章节已删除；药材/验方由 `CatalogController` 统一管理。完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)。
+
 ### AuthController (`/api/v1/auth`)
 
 | 端点 | 方法 | Policy | 备注 |
@@ -285,55 +287,57 @@ stateDiagram-v2
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | DoctorOrAdmin | 代码实际（2026-08-03 前为 FallbackPolicy 需认证） |
-| 创建 | DoctorOrAdminOrReceptionist | 代码实际；目标态 DoctorOnly（P0-4 待修） |
-| 其余方法 | DoctorOrAdmin | 代码实际 |
+| 类级别 | DoctorOrAdmin | 代码实际 |
+| `GET /` / `GET /{id}` | DoctorOrAdmin | 列表/详情 |
+| `POST /` | DoctorOnly | 医案创建（操作级） |
+| `PUT /{id}` | DoctorOrAdmin | 更新医案 |
+| `DELETE /{id}` | DoctorOrAdmin | 删除医案 |
+| `POST /batch-delete` | DoctorOrAdmin | 批量删除 |
+| `PUT /{id}/prescription-flag` | DoctorOrAdmin | 处方标记 |
+| `PUT /{id}/print-completed` | DoctorOnly | 打印完成（操作级） |
+| `PUT /{id}/status` | DoctorOrAdmin | 状态变更 |
+| `PUT /{id}/close` | AdminOrSuperAdmin | 关闭医案 |
+| `PUT /{id}/suspend` | DoctorOrAdmin | 挂起医案 |
+| `PUT /{id}/cancel` | DoctorOrAdmin | 取消医案 |
 
-### MedicalCaseProcessingController (`/api/v1/medicalcase-processing`)
+### CatalogController (`/api/v1/herbs`, `/api/v1/formulas`)
 
-| Policy | 备注 |
-|--------|------|
-| DoctorOrReceptionist | 医案处理流程 |
+> 药材与验方由 `CatalogController` 统一管理，无独立 HerbsController/FormulasController。
 
-### MedicalCasePrintController (`/api/v1/medicalcase-print`)
-
-| Policy | 备注 |
-|--------|------|
-| DoctorOrAdminOrReceptionist | 打印处方 |
-
-### MedicalCaseAuditController (`/api/v1/medicalcase-audit`)
-
-| Policy | 备注 |
-|--------|------|
-| DoctorOrReceptionist | 医案审计日志（变更追溯，D1 v1.0 补回） |
-
-### HerbsController (`/api/v1/herbs`)
-
-| Policy | 备注 |
-|--------|------|
-| DoctorOrAdmin | 药材管理 |
-
-### FormulasController (`/api/v1/formulas`)
-
-| Policy | 备注 |
-|--------|------|
-| DoctorOrAdmin | 验方管理 |
+| 端点 | Policy | 备注 |
+|------|--------|------|
+| 类级别 | DoctorOrAdmin | 代码实际 |
+| `GET /` / `GET /{id}` | DoctorOrAdmin | 列表/详情 |
+| `POST /` | AdminOrSuperAdmin | 创建药材/验方 |
+| `PUT /{id}` | AdminOrSuperAdmin | 更新药材/验方 |
+| `DELETE /{id}` | AdminOrSuperAdmin | 删除药材/验方 |
+| `POST /batch-delete` | AdminOrSuperAdmin | 批量删除 |
+| `POST /import-template` | AdminOrSuperAdmin | 下载导入模板 |
+| `GET /export` | AdminOrSuperAdmin | 导出 |
+| `GET /export-all` | AdminOrSuperAdmin | 全量导出 |
 
 ### RegistrationsController (`/api/v1/registrations`)
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | DoctorOrAdminOrReceptionist | 代码实际 |
-| 创建/取消 | DoctorOrAdminOrReceptionist | 代码实际；目标态仅前台 Receptionist（P1-4 待修） |
-| start-visit | DoctorOrAdminOrReceptionist | 代码实际 |
+| `POST /` | DoctorOrReceptionist | 挂号创建 |
+| `PUT /{id}/start-visit` | DoctorOnly | 接诊（操作级） |
+| `PUT /{id}/cancel` | DoctorOrReceptionist | 取消挂号 |
 
-### SyncController (`/api/v1/sync`)
+### ReportsController (`/api/v1/reports`)
 
-> 🧲 **v2.0 规划** — Sync 模块整体延期至 v2.0（N1 决策：v1.0 远程与本地数据孤立，不互通）。
+> 报表端点策略继承类级别 FallbackPolicy（需认证），具体操作级策略见控制器代码。
 
-| Policy | 备注 |
-|--------|------|
-| DoctorOrReceptionist | 数据同步 |
+### 其他端点
+
+| Controller | Policy | 备注 |
+|------------|--------|------|
+| `ConfigurationController` | AdminOrSuperAdmin / SysAdminOnly | 配置管理（操作级区分） |
+| `DeployController` | SysAdminOnly | 部署控制 |
+| `DiagnosticsController` | AdminOrSuperAdmin | 诊断工具 |
+| `HealthController` | AllowAnonymous | 健康检查 |
+| `DownloadController` | FallbackPolicy (需认证) | 文件下载 |
 
 ## 7. 安全考虑
 
