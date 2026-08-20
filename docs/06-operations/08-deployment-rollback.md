@@ -27,72 +27,43 @@ C:\Services\LYBT-releases\
 
 ## 服务端部署流程
 
-> ⚠️ **服务管理命令适用环境**：下方 `sc.exe` 命令适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（.NET 8 启动触发 SCM 1053 超时），须改用 `schtasks` 计划任务，详见 [01-deployment.md](./01-deployment.md) 与 [04-development-environment-spec.md](./04-development-environment-spec.md)。
+> 部署步骤（编译/上传/配置/重启）详见 [01-deployment.md §Linux 公网服务器部署](./01-deployment.md#linux-公网服务器部署)。本节仅覆盖回滚场景的前置检查与回滚操作。
 
 ### 前置检查
 
-```powershell
+```bash
 # 1. 确认当前版本
-Get-Content "C:\Services\LYBT-API\VERSION"
+ssh -p 5555 player@60.190.215.86 "cat /home/player/lybt-api/VERSION"
 
 # 2. 健康检查
-Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
+curl -s http://60.190.215.86:5000/health
 
 # 3. 数据库备份（必需）
-$ts = Get-Date -Format "yyyyMMdd_HHmmss"
-Backup-SqlDatabase -ServerInstance "." -Database "LYBTDB_Dev" -BackupFile "D:\Backup\LYBTDB_Dev_pre_deploy_$ts.bak"
-```
-
-### 部署步骤
-
-```powershell
-# 1. 停止服务
-sc stop LYBT-API
-Start-Sleep -Seconds 5
-
-# 2. 备份当前版本
-$currentVer = Get-Content "C:\Services\LYBT-API\VERSION"
-Copy-Item "C:\Services\LYBT-API" "C:\Services\LYBT-releases\v$currentVer" -Recurse -Force
-
-# 3. 部署新版本
-# (a) 交叉编译（如在 Ubuntu 构建）
-dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj `
-    -c Release -r win-x64 --self-contained false `
-    -p:EnableWindowsTargeting=true
-
-# (b) 复制发布产出
-Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-API\" -Recurse -Force
-
-# 4. 更新版本号
-Set-Content "C:\Services\LYBT-API\VERSION" "v1.2.3"
-
-# 5. 启动服务
-sc start LYBT-API
-Start-Sleep -Seconds 10
-
-# 6. 验证
-Invoke-RestMethod -Uri "http://localhost:5000/health/details" -Method Get
+# 远程数据库 192.168.190.243/LYBTDB_Dev，备份方式见 01-deployment.md
 ```
 
 ---
 
 ## 回滚流程
 
+> 回滚操作在生产服务器 `60.190.215.86` 上执行。回滚前先查 [01-deployment.md](./01-deployment.md) 确认当前部署状态。
+
 ### 场景 1：服务启动失败
 
-```powershell
-# 1. 查看事件日志
-Get-EventLog -LogName Application -Newest 20 | Where-Object { $_.Source -like "*LYBT*" }
+```bash
+# 1. 查看日志
+ssh -p 5555 player@60.190.215.86 "tail -50 /home/player/lybt-api/logs/*.log"
 
 # 2. 回滚到前一版本
-sc stop LYBT-API
-$prevVer = "v1.2.2"  # 前一版本号
-Remove-Item "C:\Services\LYBT-API\*" -Recurse -Force -Exclude VERSION
-Copy-Item "C:\Services\LYBT-releases\$prevVer\*" "C:\Services\LYBT-API\" -Recurse -Force
-sc start LYBT-API
+ssh -p 5555 player@60.190.215.86 "
+  cd /home/player/lybt-api &&
+  pkill -f LYBT.WebAPI || true &&
+  cp -r backups/v前版本号/* . &&
+  bash start.sh
+"
 
 # 3. 验证
-Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
+curl -s http://60.190.215.86:5000/health
 ```
 
 ### 场景 2：数据库迁移需回退
@@ -103,22 +74,18 @@ Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
 
 **手动迁移回退步骤**：
 
-```powershell
+```bash
 # 1. 停止服务
-sc stop LYBT-API
+ssh -p 5555 player@60.190.215.86 "pkill -f LYBT.WebAPI || true"
 
 # 2. 恢复数据库到部署前备份
-$sqlcmd = "RESTORE DATABASE [LYBTDB_Dev] FROM DISK = N'<部署前备份路径>' WITH REPLACE"
-Invoke-Sqlcmd -Query $sqlcmd -ServerInstance "."
+# 数据库 192.168.190.243/LYBTDB_Dev，RESTORE DATABASE 操作见 01-deployment.md
 
 # 3. 回滚应用版本（同场景 1）
-$prevVer = "v1.2.2"
-Remove-Item "C:\Services\LYBT-API\*" -Recurse -Force -Exclude VERSION
-Copy-Item "C:\Services\LYBT-releases\$prevVer\*" "C:\Services\LYBT-API\" -Recurse -Force
 
 # 4. 启动并验证
-sc start LYBT-API
-Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
+ssh -p 5555 player@60.190.215.86 "cd /home/player/lybt-api && bash start.sh"
+curl -s http://60.190.215.86:5000/health
 ```
 
 **数据库迁移回退策略**：
@@ -191,62 +158,47 @@ Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-releases\v1.2.3\LYBT
 
 每次回滚完成后，必须逐项验证以下项目：
 
-```powershell
+```bash
 # ===== 回滚验证清单 =====
+API="http://60.190.215.86:5000"
 
-# 1. 服务状态
-$service = Get-Service "LYBT-API" -ErrorAction SilentlyContinue
-if ($service.Status -ne "Running") { Write-Host "FAIL: Service not running" }
+# 1. 版本确认
+ssh -p 5555 player@60.190.215.86 "cat /home/player/lybt-api/VERSION"
 
-# 2. 版本确认
-$currentVer = Get-Content "C:\Services\LYBT-API\VERSION" -ErrorAction SilentlyContinue
-Write-Host "Current version: $currentVer"
+# 2. 健康检查
+curl -sf $API/health || echo "FAIL: Health endpoint unreachable"
 
-# 3. 健康检查
-$health = Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get -TimeoutSec 10
-if ($health.status -ne "Healthy") { Write-Host "FAIL: Health = $($health.status)" }
+# 3. 数据库连接
+curl -sf $API/health/details -H "Authorization: Bearer $TOKEN" || echo "FAIL: Database health check failed"
 
-# 4. 数据库连接
-$dbHealth = Invoke-RestMethod -Uri "http://localhost:5000/health/database" -Method Get -TimeoutSec 10
-if ($dbHealth.status -ne "Healthy") { Write-Host "FAIL: Database unhealthy" }
+# 4. 登录功能
+LOGIN=$(curl -sf -X POST $API/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"Admin@123456"}')
+echo "$LOGIN" | grep -q '"success":true' || echo "FAIL: Login failed"
 
-# 5. 登录功能
-$login = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/auth/login" `
-    -Method Post -ContentType "application/json" `
-    -Body '{"username":"admin","password":"Admin@123456"}' -TimeoutSec 10
-if (-not $login.success) { Write-Host "FAIL: Login failed" }
+# 5. 核心 API 抽查
+TOKEN=$(echo "$LOGIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+curl -sf "$API/api/v1/patients?page=1&pageSize=5" -H "Authorization: Bearer $TOKEN" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Patients: {len(d[\"data\"])} records')"
+curl -sf "$API/api/v1/herbs?page=1&pageSize=5" -H "Authorization: Bearer $TOKEN" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Herbs: {len(d[\"data\"])} records')"
 
-# 6. 核心 API 抽查
-$token = $login.token
-$headers = @{ Authorization = "Bearer $token" }
-$patients = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/patients?page=1&pageSize=5" `
-    -Headers $headers -TimeoutSec 10
-Write-Host "Patients API: $($patients.data.Count) records"
+# 6. 日志无新错误
+ssh -p 5555 player@60.190.215.86 "tail -20 /home/player/lybt-api/logs/*.log | grep -i error" || echo "No recent errors"
 
-$herbs = Invoke-RestMethod -Uri "http://localhost:5000/api/v1/herbs?page=1&pageSize=5" `
-    -Headers $headers -TimeoutSec 10
-Write-Host "Herbs API: $($herbs.data.Count) records"
-
-# 7. 事件日志无新错误
-$recentErrors = Get-EventLog -LogName Application -Newest 10 |
-    Where-Object { $_.Source -like "*LYBT*" -and $_.EntryType -eq "Error" }
-if ($recentErrors.Count -gt 0) { Write-Host "WARN: $($recentErrors.Count) recent errors in Event Log" }
-
-# 8. Desktop 客户端连接测试
-Write-Host "Manual: Verify Desktop client can connect and login"
+# 7. Desktop 客户端连接测试
+echo "Manual: Verify Desktop client can connect and login"
 ```
 
 ### 验证通过标准
 
 | 项目 | 通过条件 |
 |------|----------|
-| 服务状态 | Status = Running |
 | 版本号 | 与回滚目标版本一致 |
 | 健康检查 | status = Healthy |
 | 数据库连接 | status = Healthy |
 | 登录功能 | success = true |
 | 核心 API | patients / herbs 正常返回 |
-| 事件日志 | 无新增 Error 条目 |
+| 日志 | 无新增 Error 条目 |
 | 客户端连接 | Desktop 可正常登录使用 |
 
 ---
