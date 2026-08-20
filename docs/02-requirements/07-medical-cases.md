@@ -63,7 +63,7 @@ MedicalCase:   （不存在）→ Active → Suspended/Completed（取消=物理
 **碰撞处理**：当患者已有 `Active`/`Suspended` 医案时，系统提示用户选择：
 
 1. **重开现有医案** — 导航到已有的 Active/Suspended 医案继续编辑
-2. **关闭旧的后新建** — 将已有医案取消（物理删除），然后创建新医案
+2. **关闭旧的后新建** — 将已有医案取消（=物理删除，见 BR-002），然后创建新医案
 3. **取消操作** — 放弃创建
 
 **技术实现**：代码层检查（`MedicalCaseBusinessRules`）+ DB 唯一索引（Active + Suspended 状态）。并发冲突风险极低（NFR 1-3 用户，MC-D06）。
@@ -113,8 +113,8 @@ stateDiagram-v2
     Suspended --> Active: 恢复编辑
     Active --> Completed: 完成（US-MC-011，通过 BR-003 校验）
     Suspended --> Completed: 完成（US-MC-011）
-    Active --> [*]: 取消=物理删除（US-MC-014，🔥 不判内容）
-    Suspended --> [*]: 取消=物理删除（US-MC-014，🔥 不判内容）
+    Active --> [*]: 取消（US-MC-014）
+    Suspended --> [*]: 取消（US-MC-014）
     Completed --> [*]: 终态（隔天 IsLocked，仅 Admin+EditReason 可改）
     note right of Completed: 完成后当天可编辑\\n隔天 0 点自动锁定（IsLocked）\\n打印仅 Completed（未完成不可打印）\\nAdmin 清理 = 软删除（IsDeleted）
     note left of [*]: 医案在接诊（StartVisit/QuickVisit）时原子创建\\n（2026-08-03 决策：接诊即建）
@@ -122,7 +122,7 @@ stateDiagram-v2
 
 **关键说明**：
 
-- **取消 = 物理删除**（2026-08-03 决策）：未完成医案（Active/Suspended）取消即物理删除，不判断是否有内容，级联清除聚合；审计记录「取消」用于统计。**没有 `Cancelled` 状态**
+- **取消 = 物理删除**（BR-002）：见上方 [BR-002](#br-002医案离开界面操作)
 - **删除 = 软删除**（`IsDeleted=true`）：仅用于管理员清理**已完成**医案（Completed 不可取消，只可软删）
 - `Completed` 是业务终态，仅 Admin/SuperAdmin 提供 EditReason 后可编辑
 - `IsLocked` 是计算属性：`IsCompleted && CompletedAt.Date < Today`，0 点自动生效，无后台任务
