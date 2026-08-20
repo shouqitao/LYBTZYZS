@@ -1,6 +1,6 @@
 # 双模式架构（Remote WebAPI + LocalWebAPI）
 
-> **N1 决策（2026-06-28，用户确认）**：**v1.0 远程库与本地库数据孤立，不互通**。本地模式定位为"远程故障应急降级"，断网期录入的数据事后手动补录或可丢。**Sync（数据同步）整体延期至 v2.0**，详见 [16-sync-protocol.md](16-sync-protocol.md)（v2.0 设计参考）。
+> **N1 决策（2026-06-28，用户确认）**：**v1.0 远程库与本地库数据孤立，不互通**。本地模式定位为"远程故障应急降级"，断网期录入的数据事后手动补录或可丢。**Sync（数据同步）整体延期至 v2.0**，详见 [17-sync-protocol.md](17-sync-protocol.md)（v2.0 设计参考）。
 
 ## 概述
 
@@ -272,7 +272,7 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 > 🧲 **v2.0 规划** — Sync 整体属 v2.0（N1 决策）。v1.0 远程与本地数据孤立，无同步能力。
 >
-> **完整同步协议规范**（Checksum 算法、元数据模型、序列化格式、依赖顺序、错误恢复、MedicalCase 聚合同步）已外移至 [16-sync-protocol.md](16-sync-protocol.md)。
+> **完整同步协议规范**（Checksum 算法、元数据模型、序列化格式、依赖顺序、错误恢复、MedicalCase 聚合同步）已外移至 [17-sync-protocol.md](17-sync-protocol.md)。
 
 ---
 
@@ -299,5 +299,5 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 | 日期 | 版本 | 变更内容 |
 | ------ | ------ | ---------- |
 | 2026-08-08 | v8.1 | **13 项文档偏差修正（A-18 P1-7，D5-D10）**：URL 前缀统一 `/api/v1/`；迁移方式 EnsureCreated→MigrateAsync+双种子；DI 架构「Controller→DbContext 直连」→「复用 Server Service/Handler 层（ADR-0010）」；端点覆盖表按代码实际重写（103 vs 99，删虚构 categories/by-phone 端点）；打印日志行为「返回空结果」→「404（端点不存在）」；Rate Limiting 本地 5/60s；实体位置 `src/Shared/LYBT.Entities/`；DbContext 章节 LocalWebApiDbContext→AppDbContext |
-| 2026-06-28 | v8.0 | **spec S3 批次2 提炼（712→~360 行）**：同步架构 + 同步协议规范（Checksum/元数据/序列化/依赖顺序/错误恢复/MedicalCase 聚合同步/模块级决策）整体外移至 [16-sync-protocol.md](16-sync-protocol.md)；WebAPI vs LocalWebAPI 对比矩阵 + 本地认证架构 + DbContext 架构 + 本地模式限制 4 表合 1；N1 横幅简化为链接指向 sync-protocol。变更历史见 git log。 |
+| 2026-06-28 | v8.0 | **spec S3 批次2 提炼（712→~360 行）**：同步架构 + 同步协议规范（Checksum/元数据/序列化/依赖顺序/错误恢复/MedicalCase 聚合同步/模块级决策）整体外移至 [17-sync-protocol.md](17-sync-protocol.md)；WebAPI vs LocalWebAPI 对比矩阵 + 本地认证架构 + DbContext 架构 + 本地模式限制 4 表合 1；N1 横幅简化为链接指向 sync-protocol。变更历史见 git log。 |
 | 2026-06-28 | v7.2 | N1 决策对齐：顶部加 N1 横幅；端口统一 5300；模式切换流程图重写为 ADR-0009「URL 改即生效」语义；Policy 数量 2→4 对齐 PolicyConstants。 |

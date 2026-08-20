@@ -46,13 +46,7 @@
 | 13c | [当前状态](13c-current-status.md) | Desktop 视图 + 已知问题 |
 | 14 | [结构设计蓝图](14-structure-design-blueprint.md) | 全项目结构唯一权威（SSOT） |
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
-| 16 | [同步协议](16-sync-protocol.md) | v2.0 数据同步设计 |
-
-### 整合方案
-
-| 文档 | 内容 |
-|------|------|
-| [15-solution-integration-plan.md](15-solution-integration-plan.md) | 整体整合方案（SSOT）：项目合并（35→30）+ 机制集中定义（日志/异常）+ P0 缺陷 + C 批次规划。**当前状态：定稿待执行（C-0 起）** |
+| 17 | [同步协议](17-sync-protocol.md) | v2.0 数据同步设计 |
 
 ### 子目录
 
