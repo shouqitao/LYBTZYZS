@@ -315,9 +315,9 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 > 对应 AUTH-D06 (单会话策略) + AUTH-D07 (角色变更即时生效)，详见 [auth.md](../02-requirements/02-auth.md)。
 
-**单会话登录** (AUTH-D06): 新设备登录时撤销该用户所有现有 Token Family。**角色变更即时生效** (AUTH-D07): 角色变更时通过 `IAuthCrossModuleService.RevokeAllUserTokensAsync()` 撤销 Token Family。
+**单会话登录** (AUTH-D06): 新设备登录时撤销该用户所有现有 Token Family。**角色变更即时生效** (AUTH-D07): 角色变更时通过 `RevokeAllUserTokensCommand`（MediatR）撤销 Token Family。
 
-**跨模块 Token 撤销** (IAuthCrossModuleService): 6 个触发场景 — 登录踢出/角色变更/删除用户/重置密码/修改密码/禁用用户。
+**跨模块 Token 撤销** (`IAuthSessionRepository`): 6 个触发场景 — 登录踢出/角色变更/删除用户/重置密码/修改密码/禁用用户。
 
 **实现要点**: RefreshToken 通过 FamilyId 追踪 Token 家族；重放攻击检测: 已使用的 RefreshToken 再次提交 → 整个 Family 失效；延迟踢出: 撤销后旧 AccessToken 最长 30 分钟内仍有效。
 
