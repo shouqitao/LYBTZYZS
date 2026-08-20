@@ -318,7 +318,7 @@ Server/Local → UsersController → IUserManagerService
 
 ## US-USER-011: 恢复软删除用户（层级管理）
 
-**角色**: sysadmin 恢复 Admin；Admin 恢复 Doctor/Receptionist（一级管一级）
+**角色**: 管理员
 **优先级**: Should
 **状态**: ✅ 已实现（Restore 层级完整：sysadmin/Admin 权限+会话清理）
 
