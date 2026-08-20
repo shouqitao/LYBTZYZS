@@ -2,7 +2,7 @@
 
 本文档定义 LYBT 系统的部署流程和回滚策略。服务端使用 Windows Service 部署，客户端使用 ClickOnce/文件夹分发。
 
-> 备份恢复见 [07-backup-recovery.md](./07-backup-recovery.md)；监控告警见 [08-monitoring-alerting.md](./08-monitoring-alerting.md)；部署架构见 [01-deployment.md](./01-deployment.md)。
+> 备份恢复见 [06-backup-recovery.md](./06-backup-recovery.md)；监控告警见 [07-monitoring-alerting.md](./07-monitoring-alerting.md)；部署架构见 [01-deployment.md](./01-deployment.md)。
 
 ---
 
@@ -27,7 +27,7 @@ C:\Services\LYBT-releases\
 
 ## 服务端部署流程
 
-> ⚠️ **服务管理命令适用环境**：下方 `sc.exe` 命令适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（.NET 8 启动触发 SCM 1053 超时），须改用 `schtasks` 计划任务，详见 [01-deployment.md](./01-deployment.md) 与 [05-development-environment-spec.md](./05-development-environment-spec.md)。
+> ⚠️ **服务管理命令适用环境**：下方 `sc.exe` 命令适用于 Windows Server 2016+。**Server 2012 R2 禁用 `sc.exe`**（.NET 8 启动触发 SCM 1053 超时），须改用 `schtasks` 计划任务，详见 [01-deployment.md](./01-deployment.md) 与 [04-development-environment-spec.md](./04-development-environment-spec.md)。
 
 ### 前置检查
 

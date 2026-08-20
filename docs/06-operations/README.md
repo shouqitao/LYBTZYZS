@@ -23,14 +23,14 @@
 | 01 | [部署指南](01-deployment.md) | 服务端+客户端+数据库部署（含 Windows 补充与 Newman 验证） |
 | 02 | [配置管理](02-configuration.md) | 完整配置项说明 |
 | 03 | [故障排查](03-troubleshooting.md) | 错误日志定位与修复 |
-| 05 | [开发环境规格](05-development-environment-spec.md) | 环境要求 |
-| 06 | [API 测试](06-api-tests.md) | 测试用例 |
-| 07 | [备份恢复](07-backup-recovery.md) | 备份策略+灾难恢复 |
-| 08 | [监控告警](08-monitoring-alerting.md) | 监控指标+告警规则 |
-| 09 | [部署回滚](09-deployment-rollback.md) | 回滚策略+决策矩阵 |
-| 10 | [变量与密钥](10-variables-secrets.md) | 配置变量清单 |
-| 11 | [变量值域](11-variables-value-ranges.md) | 取值范围+默认值 |
-| 13 | [服务器配置参考](13-server-config-reference.md) | 生产环境速查 |
+| 04 | [开发环境规格](04-development-environment-spec.md) | 环境要求 |
+| 05 | [API 测试](05-api-tests.md) | 测试用例 |
+| 06 | [备份恢复](06-backup-recovery.md) | 备份策略+灾难恢复 |
+| 07 | [监控告警](07-monitoring-alerting.md) | 监控指标+告警规则 |
+| 08 | [部署回滚](08-deployment-rollback.md) | 回滚策略+决策矩阵 |
+| 09 | [变量与密钥](09-variables-secrets.md) | 配置变量清单 |
+| 10 | [变量值域](10-variables-value-ranges.md) | 取值范围+默认值 |
+| 11 | [服务器配置参考](11-server-config-reference.md) | 生产环境速查 |
 
 ## 日志系统
 

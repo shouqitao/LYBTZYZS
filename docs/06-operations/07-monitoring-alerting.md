@@ -2,7 +2,7 @@
 
 本文档定义 LYBT 系统的监控指标、告警规则和日常巡检流程。系统基于 ASP.NET Core HealthCheck + Serilog + SQL Server SystemLogs 构建，不依赖外部监控服务。
 
-> 备份恢复见 [07-backup-recovery.md](./07-backup-recovery.md)；配置项见 [02-configuration.md](./02-configuration.md)。
+> 备份恢复见 [06-backup-recovery.md](./06-backup-recovery.md)；配置项见 [02-configuration.md](./02-configuration.md)。
 
 ---
 
@@ -111,7 +111,7 @@ POST /api/v1/diagnostics/logging/debug/disable
 |------|------|------|------|------|
 | ALT-001 | `/health` 返回 `Unhealthy` 超过 2 分钟 | **严重** | 即时 | 检查 SQL Server 连接、磁盘空间、服务状态 |
 | ALT-002 | 数据库连接失败（`/health/database` 非 200） | **严重** | 即时 | 检查 SQL Server 服务、连接字符串、网络 |
-| ALT-003 | WebAPI 进程崩溃或无响应 | **严重** | 即时 | 查看事件查看器、重启服务（`sc start LYBT-API`；Server 2012 R2 禁用 sc.exe，须 `schtasks /run /tn LYBT-API`，见 [01](./01-deployment.md)/[05](./05-development-environment-spec.md)） |
+| ALT-003 | WebAPI 进程崩溃或无响应 | **严重** | 即时 | 查看事件查看器、重启服务（`sc start LYBT-API`；Server 2012 R2 禁用 sc.exe，须 `schtasks /run /tn LYBT-API`，见 [01](./01-deployment.md)/[05](./04-development-environment-spec.md)） |
 
 ### 警告告警
 
