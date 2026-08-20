@@ -159,42 +159,9 @@ docs/                                # 文档
 6. **拒绝屎山**（用户红线）：发现错误直接重写，不做兼容层
 7. **Status vs State 语义边界**（2026-08-08 A-26 定案）：**域内持久化状态用 `Status` 枚举**（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`，存于 `Shared.Models/Enums/`）；**客户端 UI/会话状态用 `State` 枚举**（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止域状态用 State、会话状态用 Status 的混用
 
-## 技术栈全景（2026-08-08）
+## 技术栈全景
 
-> 评估日期：2026-08-08｜维护者：技术总监｜依据：A-27 任务书 + 报告
-
-| 层 | 技术 | 职责 | 使用量 |
-|----|------|------|--------|
-| 运行时 | .NET 8 | 全栈运行时（LTS） | 全部 34 项目 |
-| 数据 | EF Core 8 | 唯一 ORM/数据访问 | Server 8 模块 + Infrastructure + LocalWebAPI |
-| 数据 | SQL Server / LocalDB | Remote / Local 双模式数据库 | 生产 + 开发 |
-| 桌面 UI | WPF + Prism（DryIoc） | 桌面壳 + MVVM 模块化 | 16 项目 |
-| 桌面 UI | CommunityToolkit.Mvvm | MVVM 源生成器 | 全部 ViewModel |
-| 桌面 UI | MaterialDesignThemes | 界面主题（M2） | Shell + 模块 |
-| 服务端 | ASP.NET Core 8 | WebAPI 双宿主 | 2 宿主 |
-| 服务端 | MediatR | CQRS 命令管道（验证+审计） | 7 模块（MedicalCase 例外）|
-| 服务端 | SignalR | 实时通知（挂号队列） | Registration + Desktop |
-| 契约/映射 | Mapperly | 编译期对象映射 | Server + Desktop |
-| 契约/映射 | FluentValidation | 输入验证唯一管道 | 全部 DTO 验证器 |
-| 契约/映射 | Refit | IApiClient 统一契约客户端 | Desktop 全部模块 |
-| 认证 | ASP.NET Core Identity（PBKDF2）| 密码哈希/验证唯一方案 | Auth + Users |
-| 认证 | JWT（JwtBearer） | 令牌认证授权 | WebAPI |
-| 日志 | Serilog | 结构化日志（A-31-C1 收敛后仅 `LYBT.Shared.Logging` 持有） | Server + Desktop |
-| 文档 | Swashbuckle（Swagger） | OpenAPI 文档（非生产启用） | WebAPI |
-| 打印 | QuestPDF | 处方 PDF 导出 | Desktop.Printing |
-| 工具 | pinyin4net | 拼音搜索/排序 | Server 导入 + Desktop 搜索 |
-
-### 核心必选 10 项（SSOT，无争议）
-
-`.NET 8`｜`EF Core`｜`WPF+Prism`｜`ASP.NET Core`｜`Identity（PBKDF2）+JWT`｜`Mapperly`｜`FluentValidation`｜`Refit`｜`Serilog`｜`SignalR`
-
-### 有成本但合理的 3 项
-
-| 项 | 成本 | 合理性 |
-|----|------|--------|
-| MediatR + Service 双轨 | 双执行路径认知成本 | 命令走管道（验证+审计），查询走 Service 绕过管道——CQRS 经典形态 |
-| Prism 模块化（16 项目） | 项目数多、编译链长 | 模块自治（ADR-0017）与角色工作台复用的结构代价 |
-| Dual-Mode 双轨（Remote+Local） | 双宿主维护 | 同一业务逻辑双宿主（ADR-0002/0009/0010），A-19 后由用户显式切换 |
+> 技术栈详见 [[00-architecture-summary]]
 
 ## 依赖方向
 
