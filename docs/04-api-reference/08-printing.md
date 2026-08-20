@@ -224,11 +224,13 @@ curl -X POST http://localhost:5000/api/v1/medicalcases/a1b2c3d4-e5f6-7890-abcd-e
 
 ## 角色权限
 
+> **2026-08-03 决策**：打印仅 Doctor（`DoctorOnly` 策略），管理员通过医案审计/打印日志查询权限查看打印记录。
+
 | 角色 | 打印权限 |
 |------|---------|
-| SuperAdmin | 打印所有处方 |
-| Admin | 打印所有处方 |
-| Doctor | 打印自己的处方 |
+| Doctor | 打印处方（DoctorOnly） |
+| SuperAdmin | 无打印权限（仅通过审计日志查看） |
+| Admin | 无打印权限（仅通过审计日志查看） |
 | Receptionist | 无打印权限 |
 
 ---
