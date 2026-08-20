@@ -21,83 +21,23 @@
 
 ### 领域事件定义
 
-所有领域事件实现 `IDomainEvent : INotification`（MediatR）：
+所有领域事件实现 `IDomainEvent : INotification`（MediatR），包含 `EventId` 和 `OccurredOn`。每个模块在 `Domain/Events/` 下定义自己的事件。
 
-```csharp
-// SharedKernel/Events/IDomainEvent.cs
-public interface IDomainEvent : INotification
-{
-    Guid EventId { get; }
-    DateTime OccurredOn { get; }
-}
-```
+### 事件发布时机
 
-每个模块在 `Domain/Events/` 下定义自己的事件：
-
-```csharp
-// Module.Patients/Domain/Events/PatientCreatedEvent.cs
-public sealed record PatientCreatedEvent(
-    Guid PatientId,
-    string Name,
-    Gender Gender,
-    Guid? CreatedBy
-) : IDomainEvent
-{
-    public Guid EventId { get; } = Guid.NewGuid();
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
-}
-```
-
-### 事件发布
-
-事件在以下时机发布：
 1. **实体方法内**：领域实体的状态变更方法 raise event（如 `Patient.SoftDelete()` → `PatientDeletedEvent`）
-2. **CommandHandler 内**：业务操作完成后 raise event（如 `CreatePatientCommandHandler` → `PatientCreatedEvent`）
+2. **CommandHandler 内**：业务操作完成后 raise event
 3. **事务提交后**：通过 Outbox 模式，同一事务写入 `OutboxMessage`，后台 worker 异步处理（⚠️ Outbox 未实现）
 
 ### Outbox 模式
 
 ⚠️ **Outbox 模式未实现**：`IOutboxService`/`OutboxMessage` 代码中不存在，Outbox 待 v2.0，当前事件直接投递。
 
-```csharp
-// SharedKernel/Outbox/IOutboxService.cs
-public interface IOutboxService
-{
-    Task SaveAsync(OutboxMessage message, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<OutboxMessage>> GetPendingMessagesAsync(int batchSize = 20, ...);
-    Task MarkAsProcessedAsync(Guid messageId, ...);
-    Task MarkAsFailedAsync(Guid messageId, string error, ...);
-}
-```
-
-流程：
-1. CommandHandler 在同一事务中写入实体变更 + `OutboxMessage`
-2. 事务提交后，后台 worker 读取待处理消息
-3. Worker 通过 `IDomainEventDispatcher` 分发事件
-4. 各模块的 `INotificationHandler<TEvent>` 异步处理
+流程：CommandHandler 在同一事务中写入实体变更 + `OutboxMessage` → 事务提交后后台 worker 读取 → 通过 `IDomainEventDispatcher` 分发 → 各模块 `INotificationHandler<TEvent>` 异步处理。
 
 ### 跨模块事件处理
 
-```csharp
-// 另一个模块订阅 PatientCreatedEvent
-public class PatientCreatedEventHandler : INotificationHandler<PatientCreatedEvent>
-{
-    public async Task Handle(PatientCreatedEvent notification, CancellationToken ct)
-    {
-        // 异步处理：如更新统计、初始化默认数据等
-    }
-}
-```
-
-### 事件分发器
-
-```csharp
-// SharedKernel/Events/IDomainEventDispatcher.cs
-public interface IDomainEventDispatcher
-{
-    Task DispatchAsync(IEnumerable<IDomainEvent> events, CancellationToken cancellationToken = default);
-}
-```
+各模块通过 `INotificationHandler<TEvent>` 订阅其他模块的事件，实现异步解耦处理。
 
 ## 理由
 
@@ -124,8 +64,8 @@ public interface IDomainEventDispatcher
 ## 关联
 
 - [ADR-0017: Modular Monolith with CQRS](0017-modular-monolith-cqrs.md) — 模块化单体架构的基础
-- SharedKernel Events（`src/Server/Core/LYBT.Infrastructure/SharedKernel/Events/`）— `IDomainEvent`, `IDomainEventDispatcher`
-- `SharedKernel/Outbox` — `IOutboxService`, `OutboxMessage`（🚧 **目录未实现**，Outbox 待 v2.0，当前事件直接投递）
+- SharedKernel Events — `IDomainEvent`, `IDomainEventDispatcher`
+- SharedKernel/Outbox — `IOutboxService`, `OutboxMessage`（🚧 目录未实现，Outbox 待 v2.0）
 - [MedicalCase 聚合根](0001-medicalcase-aggregate-root.md) — 首个使用领域事件的模块
 
 ## 变更记录
