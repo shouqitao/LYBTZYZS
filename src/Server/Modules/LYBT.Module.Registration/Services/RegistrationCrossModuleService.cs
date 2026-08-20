@@ -40,8 +40,8 @@ public class RegistrationCrossModuleService : IRegistrationCrossModuleService
         }
         else
         {
-            // US-MC-014: 医生来源自动取消（闭环）
-            entity.Cancel();
+            // US-MC-014: 医生来源自动取消（闭环）— InProgress → Cancelled 需专用方法，Cancel()仅限 Waiting
+            entity.CancelFromMedicalCase();
         }
 
         await _registrationRepository.UpdateAsync(entity, ct);

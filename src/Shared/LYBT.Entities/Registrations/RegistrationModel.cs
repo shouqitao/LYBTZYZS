@@ -136,6 +136,17 @@ namespace LYBT.Entities.Registrations
     }
 
     /// <summary>
+    /// 医案取消联动 — 医生来源 InProgress → Cancelled（闭环）
+    /// 允许 InProgress 状态，清空关联医案，仅供 HandleMedicalCaseCancelledAsync 调用
+    /// </summary>
+    public void CancelFromMedicalCase()
+    {
+        Status = RegistrationStatus.Cancelled;
+        MedicalCaseId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
     /// 软删除挂号记录
     /// </summary>
     public void SoftDelete(Guid deletedBy)
