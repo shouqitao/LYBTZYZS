@@ -11,7 +11,7 @@ graph TB
     subgraph Client["Client 层 (WPF Desktop)"]
         Shell["Shell (应用外壳)"]
         Roles["Roles (Admin/Clinical)"]
-        Modules_C["业务模块 x8"]
+        Modules_C["业务模块 x7"]
         Core_C["Core (基础设施)"]
         Shell --> Roles --> Modules_C --> Core_C
     end
@@ -25,7 +25,7 @@ graph TB
     subgraph Server["Server 层 (ASP.NET Core)"]
         WebAPI["WebAPI (入口)"]
         SignalRHub["SignalR Hub<br/>(实时推送, v1.0)"]
-        Modules_S["业务模块 (8 active + Sync v2.0)"]
+        Modules_S["业务模块 (7 active + Sync v2.0)"]
         Infra["Infrastructure"]
         Entities["Entities"]
         WebAPI --> SignalRHub
@@ -97,7 +97,7 @@ src/
       LYBT.Desktop.Utilities/        # 工具类库
       LYBT.Desktop.LocalData/        # 本地数据访问 (LocalWebAPI HTTP Proxy Repository)
       LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
-    Modules/                         # 业务模块 (8 active)
+    Modules/                         # 业务模块 (7 active)
       LYBT.Desktop.Auth/             # 认证
       LYBT.Desktop.Formula/          # 验方
       LYBT.Desktop.Herbs/            # 药材
@@ -117,7 +117,7 @@ src/
     Core/                            # 核心层 (2个项目)
       LYBT.Entities/                 # 领域实体 (贫血模型)
       LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类)
-    Modules/                         # 业务模块 (8 active)
+    Modules/                         # 业务模块 (7 active)
       LYBT.Module.Auth/
       LYBT.Module.Formula/
       LYBT.Module.Herbs/
