@@ -1,6 +1,6 @@
 # 顶层 PRD (Product Requirements Document)
 
-> 版本: v3.1 | 日期: 2026-08-03 | 状态: 已更新
+> 版本: v3.2 | 日期: 2026-08-20 | 状态: 已更新（R15/R16 US 总数校准）
 
 ## 执行摘要
 
@@ -90,8 +90,8 @@ v1.0 包含 **10 个功能模块、154 个 User Stories**（Must / Should / Coul
 | 7 | 挂号管理 (Registration) | 8 | 前台排队 + 医生快速就诊，医案联动回写，SignalR 实时推送、QuickVisit |
 | 8 | 处方打印 (Printing) | 4 | A5/A4 模板、PDF 导出、打印回写服务器 |
 | 9 | 报表管理 (Reports) | 4 | 收入/就诊统计/药材使用排行/趋势分析，按时间范围查询（A7 + R3-补） |
-|| 10 | 平台基础设施 (Platform) | 52 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~025：备份恢复 SHELL-013 + 配置中心 SHELL-018 + 读卡器诊断 SHELL-019 + 部署 SHELL-020 + 迁移 SHELL-021 + Go-Live SHELL-022 + 培训 SHELL-023 + 单实例防护 SHELL-024 + HTTPS 双协议 SHELL-025） |
-|| **合计** | | **154** | |
+| 10 | 平台基础设施 (Platform) | 52 | Shell + Config + Error + Logging + Health + CardReader（含 SHELL-010~025：备份恢复 SHELL-013 + 配置中心 SHELL-018 + 读卡器诊断 SHELL-019 + 部署 SHELL-020 + 迁移 SHELL-021 + Go-Live SHELL-022 + 培训 SHELL-023 + 单实例防护 SHELL-024 + HTTPS 双协议 SHELL-025） |
+| **合计** | | **154** | |
 
 > **2026-08-20 校准**：US 数 151→154（Shell 13→20——SHELL-010~025 补全；Platform 48→52）；R15/R16 修复：追溯矩阵 Shell 节 20 行校正、PRD 三处总数统一 154
 
@@ -185,17 +185,17 @@ v1.0 包含 **10 个功能模块、154 个 User Stories**（Must / Should / Coul
 | 模块 | 文档 | US 数 | 核心聚合根/特性 |
 |------|------|:-----:|----------------|
 | 认证与会话 | [`02-auth.md`](02-auth.md) | 13 | JWT + Token Family 旋转 + 重放攻击检测 |
-|| 用户管理 | [`03-users.md`](03-users.md) | 12 | 四级权限体系 + IDOR 防护 |
-|| 患者管理 | [`04-patients.md`](04-patients.md) | 14 | 拼音码 + 敏感数据脱敏 + 身份证读卡 |
-|| 药材管理 | [`05-herbs.md`](05-herbs.md) | 13 | Record-Only + 拼音检索 + 引用检查 |
-|| 验方管理 | [`06-formulas.md`](06-formulas.md) | 14 | Draft↔Validated 状态机 + 共享机制 |
-|| 医案管理 | [`07-medical-cases.md`](07-medical-cases.md) | 20 | **聚合根** + CQRS + BR-001 单活动医案 + 复用处方（D6） |
-|| 挂号管理 | [`08-registration.md`](08-registration.md) | 8 | 双 Source 模型 + 原子事务 + 医案联动 + SignalR 实时（R10） |
-|| 处方打印 | [`09-printing.md`](09-printing.md) | 4 | A5/A4 模板 + PDF 导出 + 打印回写 |
-|| 报表管理 | [`10-reports.md`](10-reports.md) | 4 | 收入/就诊统计/药材排行，按时间范围查询（A7） |
-|| 平台基础设施 | [`11a-shell.md`](11a-shell.md) + [`11b-configuration.md`](11b-configuration.md) + [`11c-error-handling.md`](11c-error-handling.md) + [`11d-observability.md`](11d-observability.md) + [`11e-cardreader.md`](11e-cardreader.md) | 52 | Shell + Config + Error + Logging + Health + CardReader |
-|| 非功能需求 | [`12-nfr.md`](12-nfr.md) | — | 性能/数据/可用性/安全/可维护性/兼容性 |
-|| **合计** | | **154** | |
+| 用户管理 | [`03-users.md`](03-users.md) | 12 | 四级权限体系 + IDOR 防护 |
+| 患者管理 | [`04-patients.md`](04-patients.md) | 14 | 拼音码 + 敏感数据脱敏 + 身份证读卡 |
+| 药材管理 | [`05-herbs.md`](05-herbs.md) | 13 | Record-Only + 拼音检索 + 引用检查 |
+| 验方管理 | [`06-formulas.md`](06-formulas.md) | 14 | Draft↔Validated 状态机 + 共享机制 |
+| 医案管理 | [`07-medical-cases.md`](07-medical-cases.md) | 20 | **聚合根** + CQRS + BR-001 单活动医案 + 复用处方（D6） |
+| 挂号管理 | [`08-registration.md`](08-registration.md) | 8 | 双 Source 模型 + 原子事务 + 医案联动 + SignalR 实时（R10） |
+| 处方打印 | [`09-printing.md`](09-printing.md) | 4 | A5/A4 模板 + PDF 导出 + 打印回写 |
+| 报表管理 | [`10-reports.md`](10-reports.md) | 4 | 收入/就诊统计/药材排行，按时间范围查询（A7） |
+| 平台基础设施 | [`11a-shell.md`](11a-shell.md) + [`11b-configuration.md`](11b-configuration.md) + [`11c-error-handling.md`](11c-error-handling.md) + [`11d-observability.md`](11d-observability.md) + [`11e-cardreader.md`](11e-cardreader.md) | 52 | Shell + Config + Error + Logging + Health + CardReader |
+| 非功能需求 | [`12-nfr.md`](12-nfr.md) | — | 性能/数据/可用性/安全/可维护性/兼容性 |
+| **合计** | | **154** | |
 
 ### 相关文档
 
@@ -213,7 +213,7 @@ v1.0 包含 **10 个功能模块、154 个 User Stories**（Must / Should / Coul
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
-| 2026-08-03 | v3.1 | 角色体系同步 personas v4.x：SuperAdmin 表述更新为「Sysadmin（独立用户，角色 SuperAdmin）」；目标用户表更新 | 四角色需求审查（L1） |
+| 2026-08-20 | v3.2 | R15/R16 修复：US 总数三处统一为 154（执行摘要 142→154、范围 151→154、模块总览 141→154）；Platform 48→52（Shell 13→20）；PAT 13→14、FORM 13→14、MC 19→20、REPORT 3→4 |
 | 2026-06-15 | v2.0 | 重建：合并原独立权限矩阵文档（448 行）为本文件 §权限矩阵；模块从 15 精简为 10；US 总数 138→136；统一采用 `US-` 编号；WHO/WHY 上下文迁移至 `../01-product/` |
 | 2026-06-25 | v2.1 | 修正 US 总数 136→128（实际计数）；Platform 模块 US 数 37→35 |
 | 2026-06-28 | v2.2 | 文档对齐：US 总数统一 136；Sync 模块移出 v1.0（9 模块）；Platform 35→43（含 SHELL-010~019 中 v1.0 的 8 项）；AccessToken 改为配置驱动（base 480/Dev·Test 60/Prod 30） |
