@@ -53,9 +53,11 @@ public sealed record PatientCreatedEvent(
 事件在以下时机发布：
 1. **实体方法内**：领域实体的状态变更方法 raise event（如 `Patient.SoftDelete()` → `PatientDeletedEvent`）
 2. **CommandHandler 内**：业务操作完成后 raise event（如 `CreatePatientCommandHandler` → `PatientCreatedEvent`）
-3. **事务提交后**：通过 Outbox 模式，同一事务写入 `OutboxMessage`，后台 worker 异步处理
+3. **事务提交后**：通过 Outbox 模式，同一事务写入 `OutboxMessage`，后台 worker 异步处理（⚠️ Outbox 未实现）
 
 ### Outbox 模式
+
+⚠️ **Outbox 模式未实现**：`IOutboxService`/`OutboxMessage` 代码中不存在，Outbox 待 v2.0，当前事件直接投递。
 
 ```csharp
 // SharedKernel/Outbox/IOutboxService.cs
@@ -100,7 +102,7 @@ public interface IDomainEventDispatcher
 ## 理由
 
 - **松耦合**：事件发布方不需要知道谁在监听，模块间无直接引用
-- **可靠性**：Outbox 模式保证事件在事务提交后不丢失
+- **可靠性**：Outbox 模式保证事件在事务提交后不丢失（⚠️ 未实现）
 - **可追溯**：`OutboxMessage` 记录事件类型、payload、处理状态、重试次数
 - **可测试**：事件处理器可独立测试，Mock 事件即可验证下游逻辑
 - **渐进迁移**：可逐步将同步 `ICrossModuleService` 调用替换为领域事件
@@ -110,13 +112,13 @@ public interface IDomainEventDispatcher
 ### 优势
 - 模块间完全解耦，编译时无直接依赖
 - 事件可被多个模块订阅，一对多通信
-- Outbox 保证事件可靠投递，支持重试
+- Outbox 保证事件可靠投递，支持重试（⚠️ 未实现）
 - 事件历史可用于审计和调试
 
 ### 权衡
 - 最终一致性：事件处理是异步的，下游模块可能有短暂延迟
 - 调试复杂度：事件链跨越多个模块，需通过 EventId 追踪
-- Outbox 增加了数据库写入量（每条事件一条 OutboxMessage）
+- Outbox 增加了数据库写入量（每条事件一条 OutboxMessage）（⚠️ 未实现）
 - 事件版本管理：事件 schema 变更需考虑向后兼容
 
 ## 关联

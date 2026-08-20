@@ -46,7 +46,7 @@ Services(WebAPI)
 | 模块隔离 | 禁止模块间直接引用 | 跨模块通信通过 ~~SharedKernel 的 `ICrossModuleService`~~ → 域接口（`IXxxCrossModuleService`）或领域事件 |
 | 数据隔离 | 每个模块独立 DbContext | 每个模块注册自己的 `<Module>DbContext`，不共享 `AppDbContext` |
 | CQRS | Command/Query 分离 | 写操作用 `IRequestHandler<TCommand, TResponse>`，读操作用 `IRequestHandler<TQuery, TResponse>` |
-| 领域事件 | `IDomainEvent : INotification` | 状态变更通过 MediatR 领域事件传播，Outbox 保证可靠投递 |
+| 领域事件 | `IDomainEvent : INotification` | 状态变更通过 MediatR 领域事件传播 | ⚠️ Outbox 模式未实现（IOutboxService/OutboxMessage 代码中不存在） |
 | Repository 模式 | 每个模块独立 Repository | 模块内部 Repository 继承 `BaseRepository<T>`，不注入 `AppDbContext` |
 
 ### MediatR 注册
@@ -61,7 +61,7 @@ services.AddMediatR(cfg =>
 
 - 实体方法或 CommandHandler 中 raise domain event
 - 跨模块通过 `INotificationHandler<TEvent>` 订阅
-- Outbox 模式：同一事务写入 `OutboxMessage`，后台 worker 异步处理
+- Outbox 模式（⚠️ 未实现：IOutboxService/OutboxMessage 代码中不存在）
 
 ## 理由
 
@@ -79,7 +79,7 @@ services.AddMediatR(cfg =>
 - 每个模块可独立开发、测试、维护
 - CQRS 模式使读写逻辑分离，代码更易理解
 - 领域事件支持松耦合的跨模块通信
-- Outbox 模式保证事件可靠投递
+- Outbox 模式保证事件可靠投递（⚠️ 未实现：IOutboxService/OutboxMessage 代码中不存在）
 
 ### 权衡
 - 每个模块需维护独立的 DbContext 和 Repository
