@@ -31,10 +31,7 @@
 3. 级联故障防护：handler 自身异常时由下一 handler 兜底；最大重抛 3 次。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 中间件自动注册，所有 API 端点生效 |
-| 本地 | Desktop 全局异常兜底处理本地操作异常 |
+模式差异：------: ------；远程: 中间件自动注册，所有 API 端点生效；本地: Desktop 全局异常兜底处理本地操作异常
 
 **实现参考**: `LYBT.Shared.ExceptionHandling/`（`BusinessExceptionHandler`、`SystemExceptionHandler`）、`DesktopExceptionHandler`
 
@@ -60,10 +57,7 @@
 3. 错误码分区：1xxxx 认证、2xxxx 患者、3xxxx 医案、5xxxx 药材、6xxxx 验方、7xxxx 同步。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 解析服务端 ProblemDetails 的 errorCode |
-| 本地 | 解析本地操作异常类型 |
+模式差异：------: ------；远程: 解析服务端 ProblemDetails 的 errorCode；本地: 解析本地操作异常类型
 
 **实现参考**: `ClientErrorMessageMapper`、`ExceptionMessageMapper`
 
@@ -88,10 +82,7 @@
 3. 展示格式："如需帮助，请提供追踪码: XXXXXXXX"。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同步记录到服务端日志（经 CorrelationId 关联） |
-| 本地 | 记录到本地日志文件 |
+模式差异：------: ------；远程: 同步记录到服务端日志（经 CorrelationId 关联）；本地: 记录到本地日志文件
 
 **实现参考**: `DesktopExceptionHandler`（追踪码生成）、Serilog 日志
 
@@ -116,10 +107,7 @@
 3. `CorrelationIdEnricher` 自动富集每条日志。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（Desktop 端 AsyncLocal 注入） |
+模式差异：------: ------；远程: 同下；本地: 完全一致（Desktop 端 AsyncLocal 注入）
 
 **实现参考**: `AsyncLocalCorrelationIdProvider`、`CorrelationIdEnricher`、CorrelationId 中间件
 
@@ -145,10 +133,7 @@
 4. ConflictException 额外含 entityType/entityId。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 服务端按环境决定返回字段 |
-| 本地 | Desktop 使用 `ClientProblemDetails` 解析 |
+模式差异：------: ------；远程: 服务端按环境决定返回字段；本地: Desktop 使用 `ClientProblemDetails` 解析
 
 **实现参考**: `BusinessExceptionHandler`、`SystemExceptionHandler`、`ClientProblemDetails`
 
@@ -173,10 +158,7 @@
 3. `ValidationException` 支持链式 `AddError` 收集多字段错误。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 服务端统一格式返回 |
-| 本地 | 完全一致（LocalWebAPI 复用 handler） |
+模式差异：------: ------；远程: 服务端统一格式返回；本地: 完全一致（LocalWebAPI 复用 handler）
 
 **实现参考**: `ValidationException`、`BusinessExceptionHandler`
 
@@ -204,10 +186,7 @@
 4. A1 统一异常体系重构：Service 层采用 throw 域异常，消除 47 处 `InvalidOperationException`。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 服务端抛出，中间件处理 |
-| 本地 | Desktop 直接捕获处理 |
+模式差异：------: ------；远程: 服务端抛出，中间件处理；本地: Desktop 直接捕获处理
 
 **实现参考**: `AppException` 体系（`LYBT.Shared.ExceptionHandling`）、`ExceptionFactory`
 
@@ -234,10 +213,7 @@
 4. 遵循 UI 通知规范：业务错误用 Toast，系统错误用对话框。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | API 调用异常的 Desktop 展示 |
-| 本地 | 本地操作异常的 Desktop 展示 |
+模式差异：------: ------；远程: API 调用异常的 Desktop 展示；本地: 本地操作异常的 Desktop 展示
 
 **实现参考**: `ErrorSeverity`、`ErrorCategory`、`DesktopExceptionHandler`
 
