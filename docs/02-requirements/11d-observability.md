@@ -59,7 +59,7 @@
 **实现参考**: docs/compose/plans/log-level-design-2026-08-13.md（完整设计）、BaseRepository.cs（Debug 先例）
 
 ---
-## US-LOG-001: 结构化日志（Serilog）
+## US-LOG-001: 结构化日志
 
 **角色**: 运维人员
 **优先级**: Should
@@ -85,7 +85,7 @@
 
 ---
 
-## US-LOG-002: 两阶段 Serilog 引导
+## US-LOG-002: 两阶段日志引导
 
 **角色**: 开发人员
 **优先级**: Should
