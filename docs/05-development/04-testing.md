@@ -261,6 +261,49 @@ Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Deskto
 
 ---
 
+## 断言、命名与 Builder 补充（原 10-testing-standards.md 合并，2026-08-20）
+
+> 本节合并自 `10-testing-standards.md`（历史命名/断言 Helper/Builder），原文件已删除。
+
+**历史命名（可保留）**：现有 `US_MC_001_CreateCase_WithValidData_ReturnsCreatedCase` 格式可保留，新增测试应使用简短 `{Method}_{Scenario}_{Expected}`。
+
+**禁止的断言模式**：
+
+```csharp
+// ❌ 不要直接检查状态码（除非非 ApiResponse 格式）
+response.StatusCode.Should().Be(HttpStatusCode.OK);
+// ✅ 使用辅助方法
+await response.ShouldBeSuccessWithDataAsync<MyDto>();
+await response.ShouldBeCreatedWithDataAsync<MyDto>(); // 仅 201
+await response.ShouldBePagedResultAsync<MyDto>();
+response.ShouldBeNoContent(); // 204
+await response.ShouldBeBusinessErrorAsync(422, msg); // 指定状态码
+response.ShouldBeUnauthorized(); // 401
+response.ShouldBeForbidden(); // 403
+```
+
+> Auth 端点（Login/Refresh）返回非 ApiResponse 的 Token 对象，可直接检查状态码。
+
+**Builder 与角色登录**：
+
+```csharp
+var patient = PatientBuilder.Default().WithName("张三").WithPhone("13800138000").Build();
+var doctorClient = await LoginAsDoctorAsync();
+var adminClient = await LoginAsAdminAsync();
+```
+
+**测试分层（与上文互补）**：
+
+| 层级 | 位置 | 特征 |
+|------|------|------|
+| 集成测试 | `Integration/` | 真实 DB，完整 HTTP 管线 |
+| 单元测试 | `Unit/` | 纯逻辑，无 DB |
+| 端到端 | `UserJourneys/` | 完整业务流程 |
+
+**目录与文件命名**（历史 `Module_Feature_Tests.cs` 可保留，新文件按 `{ClassName}Tests.cs` / `{Method}_{Scenario}_{Expected}`）：`MedicalCases_CreateEdit_Tests.cs` 等为旧例。
+
+---
+
 ## 常见测试问题
 
 **Q: Desktop 测试在 CI/Linux 上失败**

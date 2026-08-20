@@ -2,7 +2,7 @@
 
 > **用户速览**：给开发者看的。从 01-setup 开始，5 分钟跑起来。
 >
-> **权威文档在哪**：编码规范 → [02-code-standards.md](02-code-standards.md)；测试标准 → [10-testing-standards.md](10-testing-standards.md)。完整查询指南见 [docs/README.md](../README.md#ai-查询指南)。
+> **权威文档在哪**：编码规范 → [02-code-standards.md](02-code-standards.md)；测试指南 → [04-testing.md](04-testing.md)（原 10-testing-standards 已合并）。完整查询指南见 [docs/README.md](../README.md#ai-查询指南）。
 
 ## 前置条件
 
@@ -52,9 +52,6 @@ LYBTZYZS/
 | 07 | [性能基线](07-performance-baseline.md) | 性能指标 |
 | 08 | [UAT 计划](08-uat-test-plan.md) | 用户验收测试 |
 | 09 | [Postman vs .NET](09-postman-vs-dotnet-testing.md) | 测试工具对比 |
-| 10 | [测试标准](10-testing-standards.md) | 命名、断言、分层 |
-| 11 | [覆盖地图](11-test-coverage-map.md) | 覆盖矩阵 |
-| 12 | [用例明细](12-test-cases-detail.md) | 关键测试用例 |
 | 13 | [迁移策略](13-migration-strategy.md) | EF Core 迁移与回滚 |
 
 ### 子目录
@@ -62,7 +59,6 @@ LYBTZYZS/
 | 目录 | 内容 |
 |------|------|
 | [standards/](standards/) | 开发标准（STD-01~06） |
-| [archive/](archive/) | 历史指南 |
 
 ## 常见问题
 
