@@ -44,7 +44,7 @@
 | 13a | [数据模型](13a-data-model.md) | 核心实体 + 状态枚举 |
 | 13b | [API 端点](13b-api-endpoints.md) | 全部模块端点 |
 | 13c | [当前状态](13c-current-status.md) | Desktop 视图 + 已知问题 |
-| 14 | [结构设计蓝图](14-structure-design-blueprint.md) | 全项目结构唯一权威（SSOT） |
+| 14 | ~~[结构设计蓝图](14-structure-design-blueprint.md)~~ | **已合并删除**（内容分散到 01/02/03） |
 | 15 | [Mapperly](15-mapperly.md) | 映射规范 |
 | 17 | [同步协议](17-sync-protocol.md) | v2.0 数据同步设计 |
 

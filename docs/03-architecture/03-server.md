@@ -74,6 +74,44 @@ sequenceDiagram
 
 > 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，`LYBT.Module.Sync` 不在 v1.0 范围。
 
+## Server 分层规则（三态模板，2026-08-08 A-26 定案）
+
+> 蓝图 v1.3 及之前以「七目录理想模板」表述，实际代码为三态并存（模块清单表格为准）。本版改为三态模板，标注各模块实际形态，**七目录模板从未完整落地**（全模块无 `Domain/`，实体下沉 LYBT.Entities）。
+
+**状态一：CQRS 模块（Identity/Patients/Herbs/Formula/Registration）**
+
+```
+Controllers/           # HTTP 边界（继承 Base*，返回 IActionResult）
+Application/           # CQRS：Commands/Queries/Validators/Handlers（写走 Handler、读走 Service，请求处理边界规则）
+Infrastructure/        # Repository（注入模块 DbContext）+ 模块 DbContext
+Interfaces/            # 服务/仓储接口
+Services/              # Service 实现
+Application/Mappers/   # Mapperly（Target 策略）
+```
+
+**状态二：Service 化模块（MedicalCase，A-03 定案）**
+
+```
+Controllers/           # HTTP 边界
+Services/              # Command/Query/State/Prescription/CrossModule 五 Service（无 MediatR）
+Repositories/          # Repository（MedicalCaseRepository/MedicalCaseReferenceRepository 等）
+Interfaces/            # 11 个服务接口
+Mappers/               # MedicalCaseMapper（模块根 Mappers/）
+```
+
+**状态三：只读聚合模块（Reports，B-04 定案）**
+
+```
+Controllers/           # HTTP 边界
+Services/              # ReportService（只读聚合查询）
+Infrastructure/        # ReportRepository + ReportQueryModels（复用 AppDbContext，无自有表）
+```
+
+**目录差异注记**：
+- `Domain/` 目录全模块不存在——实体统一下沉 `LYBT.Entities`（2026-08-02 决策）
+- `Mappers/` 位置两种放法：**MedicalCase/Registration 在模块根 `Mappers/`**，其余 CQRS 模块在 `Application/Mappers/`（A-28 定案并存，蓝图记录差异）
+- `Infrastructure/` vs `Repositories/` 目录名并存：**MedicalCase 用 `Repositories/`**（4 文件，`Infrastructure/` 仅放 DbContext），其他模块用 `Infrastructure/` 放 Repository + DbContext（A-28 定案并存）
+
 ### 标准目录结构
 
 三种形态:
@@ -301,6 +339,32 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 - [ADR-0005: SuperAdmin 归属 Auth 模块](decisions/0005-superadmin-auth-module.md)
 - [ADR-0008: Token 安全防御性设计](decisions/0008-token-security-defensive-design.md)
 - MediatR + Service 混合注入（2026-08-07 A-14 评估）— 查询走 Service，命令走 MediatR
+
+## Tests 层（3 项目）
+
+| 项目 | 职责 | 依据 |
+|------|------|------|
+| **LYBT.Tests.Architecture** | 架构守卫（分层/依赖/DbContext/命名/映射）| 架构测试是设计决策的强制约束（2026-08-06 规则）|
+| **LYBT.Tests.Server** | Server 集成/单元测试（含 Respawn）| ADR-0003（Integration-first）|
+| **LYBT.Tests.Desktop** | Desktop 测试（LocalDB）| 需运行中 WebAPI（C-01 已知环境项）|
+
+> **守卫计数口径（2026-08-08 A-26 定案）**：蓝图「守卫数」= `[Fact]/[Theory]` **方法数**（单方法计 1）。2026-08-09 实测：81 方法（80 Fact + 1 Theory）；**Theory 数据展开后多于方法数**（dotnet test 实际执行 88 用例）。早期蓝图版本（v1.2 起）记 86 为口径演变前的估算值，以实测为准。
+
+## 设计依据索引（决策 → 文档追溯）
+
+| 设计决策 | 依据文档 |
+|---------|---------|
+| 每模块独立 DbContext | ADR-0017 + A-20 落地（同库单迁移方案 A）|
+| 双轨（Remote/Local）| ADR-0002 / ADR-0009 / ADR-0010 + 05-dual-mode.md |
+| 用户自主切换模式（不自动降级）| A-19 决策（2026-08-08 用户拍板）|
+| MedicalCase 聚合根 | ADR-0001 |
+| 医案创建时机（接诊即建）| BR-000（2026-08-02）|
+| 打印规则 | 2026-08-03 定案（仅 Doctor/IsPrinted/完成后软删）|
+| 权限矩阵 | 04-permissions.md + 08-04 终局裁决 |
+| 契约统一（IApiClient 唯一面）| A-18 方案 A（2026-08-08）|
+| Mapperly 映射 | ADR-0011 + A-18 P1-4 |
+| 异常→HTTP 映射 | 06-error-handling.md + 2026-08-08 对齐批次 |
+| 领域事件模式（预留）| ADR-0018（当前无订阅者，机制保留）|
 
 ## 变更记录
 

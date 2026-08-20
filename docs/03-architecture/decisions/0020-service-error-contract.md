@@ -39,7 +39,7 @@ L1 Service 层错误处理三态并存：
 
 | 批次 | 内容 |
 |------|------|
-| Batch 1 | 更新 `docs/03-architecture/14-structure-design-blueprint.md` §3.5 补充错误契约 |
+| Batch 1 | 更新 `docs/03-architecture/02-desktop.md` §Desktop 分层规则 补充错误契约 |
 | Batch 2 | 扫描所有 Service 方法，分类当前错误模式 |
 | Batch 3 | 逐个 Service 对齐契约（throw → CommandResult / return null） |
 | Batch 4 | 测试验证（错误场景覆盖） |

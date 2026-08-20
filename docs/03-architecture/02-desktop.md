@@ -44,6 +44,74 @@ graph TB
     Modules --> Models
 ```
 
+## Desktop 层详细结构（16 项目）
+
+### Core（6 项目）
+
+| 项目 | 文件数 | 职责 | 设计依据 |
+|------|--------|------|---------|
+| **LYBT.Desktop.Contracts** | 78 | **统一 API 契约**（IApiClient + 子接口，A-18 方案 A）+ Service 接口 + 导航契约（A-18 P1-5 下沉）| 契约单一（设计原则 2）|
+| **LYBT.Desktop.Foundation** | 70 | Http 客户端实现（RefitApiClient/HttpClientApiClient/SwitchingApiClient/adapter）+ 基础服务 | ADR-0009（URL 驱动双轨）|
+| **LYBT.Desktop.Infrastructure** | 92 | WPF 服务（VM 基类/Dialog/Navigation/Behaviors/Roles/Security）+ IApiClient 实现细节 | Core AGENTS；职责过载已审计（C1，LocalData 已废弃）|
+| **LYBT.Desktop.Controls** | 41 | 可复用控件（HerbList/PatientCard 等）+ 事件参数 | 组件解耦（ADR-0006）|
+| **LYBT.Desktop.Printing** | 12 | 打印（PrescriptionPrintService/DocumentBuilder/PdfExporter + XAML 模板）| 打印规则（2026-08-03 定案）|
+| **LYBT.LocalWebAPI** | 25 | **本地宿主**——薄 ASP.NET Core + 复用 Server 8 模块（ADR-0010）| 双轨设计（ADR-0002）；A-17 补 CRUD |
+
+#### 接口命名三层矩阵（2026-08-08 A-26 补记，A-18 契约单一既定结构）
+
+| 层 | 命名 | 可见性 | 位置 | 职责 |
+|----|------|--------|------|------|
+| Refit 契约 | `IXxxApi` | **internal**（A-18 后）| `Contracts/Api/` | Refit 特性接口，仅供 Foundation 消费 |
+| 唯一对外面 | `IApiClientXxx` | public | `Contracts/ApiClient/` | Desktop 模块唯一注入面（VM 不直连，走 Service）|
+| 服务接口 | `IXxxService` | public | `Contracts/Services/` | Service 层接口（Desktop 侧 API 客户端仓储接口在 `Contracts/Repositories/`）|
+
+**跨层镜像接口清单（同名字、不同程序集，设计内镜像防误改）**：`IFormulaRepository` / `IHerbRepository` / `IUserRepository` / `IRegistrationRepository` / `IMedicalCaseRepository` / `IPatientRepository` / `IFormulaService` —— Server 侧为 EF 仓储/服务接口（`src/Server/Modules/*/Interfaces/`），Desktop.Contracts 侧为 API 客户端仓储/服务接口。语义不同不可互相替换，改名须两处同步。
+
+### Modules（7 个业务模块）
+
+| 模块 | 文件数 | 结构 | 依据 |
+|------|--------|------|------|
+| LYBT.Desktop.Auth | 10 | ViewModels/Views/Models + LoginCoordinator | ADR-0005；FirstRunSetup/ServerConfig |
+| LYBT.Desktop.Users | 15 | 全目录（Controls/Mappers/Models/Repositories/Services/ViewModels）| 用户管理 UI |
+| LYBT.Desktop.Patients | 18 | 全目录 + Interfaces（D1 观察项）| 患者管理 UI |
+| LYBT.Desktop.Herbs | 13 | 全目录 | 药材管理 UI |
+| LYBT.Desktop.Formula | 14 | 全目录 | 验方管理 UI |
+| LYBT.Desktop.MedicalCase | 49 | 目录最全（6 子目录，Dialogs/Reports 等）| 医案工作台（核心）|
+| LYBT.Desktop.Registrations | 9 | 精简（Dialogs/Events/Repositories/Services/ViewModels）| 挂号 UI + SignalRClient |
+
+### Roles（2 个角色工作台）
+
+| 项目 | 文件数 | 引用模块 | 依据 |
+|------|--------|---------|------|
+| **LYBT.Desktop.Admin** | 17 | Herbs/Formula/Patients/MedicalCase/Users | 业务管理角色（08-04 角色画像）|
+| **LYBT.Desktop.Clinical** | 21 | Herbs/Formula/Patients/MedicalCase/Registration | 临床看诊角色 |
+
+### Shell（组合根）
+
+**LYBT.Desktop.Shell**（49 文件）：Prism 组合根——ModuleCatalog/Region/导航/状态栏/统一 ApiClient 注册。
+
+## Desktop 分层规则
+
+```
+View(XAML) ← binding ← ViewModel（[ObservableProperty]/[RelayCommand]）
+    → Service 接口（注入，不直连 IApiClient——A-21 M5 强制）
+    → Repository → IApiClient{Module}（统一契约）
+    → SwitchingApiClient →（Remote: Refit | Local: HttpClient → LocalWebAPI）
+```
+
+**映射规则（A-31-C8 定案）**：DTO↔Model 转换唯一走 **Mapperly**（`[Mapper]` 接口源生成）；**禁止手写映射扩展**（`DtoConversionExtensions` 已删除 2026-08-08）；UI 优先直用 DTO（A-26 P2-11 最终落地）。
+
+**Service 层错误契约（ADR-0020，2026-08-19 定案）**：
+
+| 操作类型 | 错误返回方式 | 调用方处理 |
+|---------|-------------|-----------|
+| **读操作** | 返回 null 或空集合 | 检查 null/空后走正常逻辑 |
+| **写/状态变更** | 返回 `CommandResult`（Success/Failed + FailureReason） | 根据 CommandResult 决定 UI 反馈 |
+| **参数非法** | 抛 `ArgumentException` | 调用方必须修复 |
+| **基础设施彻底失效** | 抛 `InvalidOperationException`（调用方确能处理） | 仅限登录/关键路径 |
+
+禁止：Service 层内部 `try/catch → return null`（吞异常）或 `throw` 非上述两类异常。
+
 ## Core 层 (8 个项目)
 
 | 项目 | 职责 | 主要内容 |

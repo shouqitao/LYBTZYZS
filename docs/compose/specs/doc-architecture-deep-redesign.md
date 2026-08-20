@@ -43,7 +43,7 @@
 
 ### 当前问题
 - `03-server.md`（668 行）混合了 L2+L3+L4
-- `14-structure-design-blueprint.md`（367 行）与 `03-server.md` 重叠
+- `14-structure-design-blueprint.md`（367 行）与 `03-server.md` 重叠 → **已完成合并删除**
 - `01-system-overview.md`（276 行）与 `03-server.md` 重叠
 
 ### 新设计：每个 C4 层一个文档
@@ -109,12 +109,12 @@ decisions/*.md                → ADR（历史决策）
 当前重叠：
 - `01-system-overview.md`（276 行）— 系统概览+模块图
 - `03-server.md`（668 行）— Server 架构+模块详情
-- `14-structure-design-blueprint.md`（367 行）— 合规表+DTO 约定
+- `14-structure-design-blueprint.md`（367 行）— ~~合规表+DTO 约定~~ **已合并删除**
 
 合并为：
 - `01-system-overview.md` — L1+L2（上下文+容器），≤300 行
 - `03-server.md` — L3（组件详情），≤400 行
-- `14-structure-design-blueprint.md` → **删除**，内容分散到 01/03/ADR
+- `14-structure-design-blueprint.md` → **✅ 已完成**，内容分散到 01（设计原则+技术栈）/02（Desktop 层）/03（Server 分层规则+Tests+设计依据索引）
 
 ### 模块文档精简
 
