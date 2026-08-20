@@ -9,9 +9,10 @@ namespace LYBT.Shared.Models.Primitives.ErrorCodes;
 /// - 1xxxx: 用户模块 (Users)
 /// - 2xxxx: 患者模块 (Patients)
 /// - 3xxxx: 医案模块 (MedicalCase)
-/// - 4xxxx: 处方模块 (Prescriptions)
+/// - 4xxxx: 处方模块 (Prescriptions) - 预留，当前收敛至 304xx
 /// - 5xxxx: 草药模块 (Herbs)
 /// - 6xxxx: 配方模块 (Formula)
+/// - 7xxxx: 同步模块 (Sync) - 预留 (Client ERR-07 对应)
 /// - 8xxxx: 挂号模块 (Registration)
 /// </summary>
 public enum ErrorCode
@@ -458,7 +459,10 @@ public enum ErrorCode
 
     #endregion
 
-    #region 4xxxx - 处方模块 (Prescriptions)
+    #region 4xxxx - 处方模块 (Prescriptions) - 预留
+
+    // 保留分区：处方相关错误当前收敛至医案模块 304xx（McPrescription*），本分区预留 Prescription 独立演进时启用
+    // R3 P2-1：4xxxx 为空属设计收敛，非遗漏——见 docs/compose/reports/code-review-cross-validation.md C-12
 
     #endregion
 
@@ -636,6 +640,13 @@ public enum ErrorCode
     /// 批量操作时单项数据库异常
     /// </summary>
     FormulaBatchItemError = 60304,
+
+    #endregion
+
+    #region 7xxxx - 同步模块 (Sync) - 预留
+
+    // 预留：同步/离线相关错误，对应 ClientErrorMessageMapper ERR-07，待双模式一致性设计落地后补充
+    // R3 P2-2：当前 ErrorCode 无 7xxxx 定义，Client 端 ERR-07 映射暂无枚举支撑——见 cross-validation C-12
 
     #endregion
 
