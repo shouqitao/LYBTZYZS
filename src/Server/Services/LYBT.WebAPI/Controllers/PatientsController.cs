@@ -320,6 +320,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量删除患者
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]

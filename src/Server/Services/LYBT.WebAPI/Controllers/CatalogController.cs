@@ -357,6 +357,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量删除药材
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
@@ -792,6 +793,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 批量删除验方
         /// </summary>
+        [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("/api/v{version:apiVersion}/formulas/batch-delete")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]

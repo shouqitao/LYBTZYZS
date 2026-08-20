@@ -217,6 +217,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量删除药材
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-delete")]
     public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
@@ -701,6 +702,7 @@ public class CatalogController : BaseCrudController
     /// <summary>
     /// 批量删除验方
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-delete")]
     public async Task<IActionResult> BatchDeleteFormulas(
         [FromBody] BatchDeleteInputDto dto,

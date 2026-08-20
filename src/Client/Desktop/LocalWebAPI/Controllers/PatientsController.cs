@@ -334,6 +334,7 @@ public class PatientsController : BaseCrudController
     /// <summary>
     /// 批量删除患者
     /// </summary>
+    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-delete")]
     public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
