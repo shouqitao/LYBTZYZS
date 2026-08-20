@@ -91,12 +91,12 @@
 | [04-api-reference](04-api-reference/README.md) | API 端点文档 | 15 |
 | [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 17 |
 | [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 12 |
-| [07-ui-ux](07-ui-ux/desktop-design-spec.md) | UI/UX 设计规范、桌面端需求 | 2 |
+| [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求 | 2 |
 | [compose](compose/README.md) | 过程文档归档：specs（图表资产） | 3 |
 | [prompts](prompts/README.md) | Prompt 模板 | 2 |
 | [training](training/README.md) | 培训材料 | 1 |
 
-**总计：约 140 个文档**（compose 41 报告/计划已清理，06-operations 4 部署文档已收敛，03-architecture 编号已修复，05-development 9 测试文档已整合，2026-08-20）
+**总计：150 个文档**（compose 报告/计划已清理，06-operations 部署文档已收敛，03-architecture 编号已修复，05-development 测试文档已整合，2026-08-20）
 
 ---
 
