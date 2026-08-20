@@ -7,7 +7,7 @@
 ## 概述
 
 患者管理 CRUD、身份证号查询、软删除恢复、批量操作、引用检查。支持 OutputCache。
-Doctor 只能编辑自己创建的患者，Admin 可操作全部。导入/导出为 JSON 格式。
+Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-patients.md US-PAT-004/005](../02-requirements/04-patients.md)）。导入/导出为 JSON 格式。
 
 ---
 
@@ -104,7 +104,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。导入/导出
 
 ### PUT /patients/{id}
 
-更新患者信息。Doctor 仅限自己创建的患者。
+更新患者信息。Doctor 仅限自己创建的患者（见 [04-patients.md US-PAT-004](../02-requirements/04-patients.md)）。
 
 - **权限**: `DoctorOrReceptionist`
 - **路径参数**: `id` (Guid)
@@ -122,7 +122,7 @@ Doctor 只能编辑自己创建的患者，Admin 可操作全部。导入/导出
 
 ### DELETE /patients/{id}
 
-软删除患者。Doctor 仅限自己创建的患者。
+软删除患者。Doctor 仅限自己创建的患者（见 [04-patients.md US-PAT-005](../02-requirements/04-patients.md)）。
 
 - **权限**: `DoctorOrReceptionist`
 - **路径参数**: `id` (Guid)
