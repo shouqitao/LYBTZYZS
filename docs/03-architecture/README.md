@@ -53,8 +53,17 @@
 | 目录 | 内容 |
 |------|------|
 | [decisions/README.md](decisions/README.md) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
-| [modules/auth.md](modules/auth.md) | 各模块架构规格（10 个模块） |
-| [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
+| [modules/auth.md](modules/auth.md) | 认证授权模块 |
+| [modules/users.md](modules/users.md) | 用户管理模块 |
+| [modules/patients.md](modules/patients.md) | 患者管理模块 |
+| [modules/herbs.md](modules/herbs.md) | 药材管理模块 |
+| [modules/formulas.md](modules/formulas.md) | 验方管理模块 |
+| [modules/medical-case.md](modules/medical-case.md) | 医案管理模块 |
+| [modules/platform.md](modules/platform.md) | 平台壳程序模块 |
+| [modules/printing.md](modules/printing.md) | 打印模块 |
+| [modules/reports.md](modules/reports.md) | 报表模块 |
+| | [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
+| [16-desktop-architecture-spec.md](16-desktop-architecture-spec.md) | Desktop 架构规格 |
 
 > 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/README.md)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
 

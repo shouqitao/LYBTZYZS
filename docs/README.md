@@ -91,6 +91,7 @@
 | [04-api-reference](04-api-reference/README.md) | API 端点文档 | 15 |
 | [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 17 |
 | [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 12 |
+| [07-ui-ux](07-ui-ux/desktop-design-spec.md) | UI/UX 设计规范、桌面端需求 | 2 |
 | [compose](compose/README.md) | 过程文档归档：specs（图表资产） | 3 |
 | [prompts](prompts/README.md) | Prompt 模板 | 2 |
 | [training](training/README.md) | 培训材料 | 1 |
