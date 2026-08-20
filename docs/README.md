@@ -96,7 +96,7 @@
 | [prompts](prompts/README.md) | Prompt 模板 | 2 |
 | [training](training/README.md) | 培训材料 | 1 |
 
-**总计：150 个文档**（compose 报告/计划已清理，06-operations 部署文档已收敛，03-architecture 编号已修复，05-development 测试文档已整合，2026-08-20）
+**总计：151 个文档**（compose 报告/计划已清理，06-operations 部署文档已收敛，03-architecture 编号已修复，05-development 测试文档已整合，2026-08-20）
 
 ---
 
