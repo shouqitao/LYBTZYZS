@@ -1,6 +1,6 @@
 # 部署与回滚指南
 
-本文档定义 LYBT 系统的部署流程和回滚策略。服务端使用 Windows Service 部署，客户端使用 Velopack 自动更新分发。
+本文档定义 LYBT 系统的部署流程和回滚策略。服务端部署方式取决于目标环境（Linux/nohup、Windows Service、IIS），客户端使用 Velopack 自动更新分发。
 
 > 备份恢复见 [06-backup-recovery.md](./06-backup-recovery.md)；监控告警见 [07-monitoring-alerting.md](./07-monitoring-alerting.md)；部署架构见 [01-deployment.md](./01-deployment.md)。
 
