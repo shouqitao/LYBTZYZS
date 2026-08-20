@@ -2,7 +2,7 @@
 
 ## 概述
 
-Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 7 个业务模块。Identity (认证+用户)、Catalog (药材+验方)、Patients、MedicalCases、Registration 使用 MediatR CQRS；Reports 为只读聚合查询模块。
+Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 6 个业务模块。Identity (认证+用户)、Catalog (药材+验方)、Patients、Registration 使用 MediatR CQRS；MedicalCases 为 Service 拆分（无 MediatR）；Reports 为只读聚合查询模块。
 
 ## 请求生命周期
 
