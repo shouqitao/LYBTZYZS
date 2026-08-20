@@ -85,7 +85,7 @@ sequenceDiagram
         Note over S: 6. 新 Token 继承 FamilyId
         S-->>D: 200 { newToken, newRefresh }
     end
-```
+```text
 
 #### Token Family 机制
 
@@ -93,7 +93,7 @@ sequenceDiagram
 
 每次登录创建一个新的 `FamilyId`。同一会话内的所有 RefreshToken 共享 FamilyId。Token 轮换时新 Token 继承 FamilyId。当检测到已使用的 Token 再次被提交（`IsUsed=true`），系统撤销该 FamilyId 下的所有 Token，防止 Token 被盗用。
 
-参见 ADR-0008: `docs/03-architecture/decisions/0008-token-security-defensive-design.md`。
+参见 [ADR-0008](decisions/0008-token-security-defensive-design.md)。
 
 ## 3. JWT Claims Schema
 
@@ -126,7 +126,7 @@ sequenceDiagram
 
 角色层次（隐含权限继承）：
 
-```
+```text
 SuperAdmin → Admin → Doctor → Receptionist
 ```
 
@@ -420,8 +420,8 @@ stateDiagram-v2
 
 | ID | 决策 | 原因 |
 |----|------|------|
-| ADR-0005 | ~~双轨认证 (AdminSecrets + Users)~~ 已废弃 | SuperAdmin 迁移到 Users 表，AdminSecrets 已移除 |
-| ADR-0008 | Token Family 防御性设计 | RefreshToken 轮换 + Family 撤销检测盗用 |
+| [ADR-0005](decisions/0005-superadmin-auth-module.md) | ~~双轨认证 (AdminSecrets + Users)~~ 已废弃 | SuperAdmin 迁移到 Users 表，AdminSecrets 已移除 |
+| [ADR-0008](decisions/0008-token-security-defensive-design.md) | Token Family 防御性设计 | RefreshToken 轮换 + Family 撤销检测盗用 |
 | Issue #1864 | 客户端 JWT 自验证 | Desktop 端本地解析 JWT，移除对 Server 验证 API 的依赖 |
 | Issue #1907 | Token 内存存储 | 医疗系统合规：进程结束自动清除，不留磁盘痕迹 |
 | Issue #1732 | FallbackPolicy 全局认证 | 默认安全：所有端点需认证，显式豁免仅需 AllowAnonymous |

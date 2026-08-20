@@ -23,7 +23,7 @@ sequenceDiagram
     Repo-->>Svc: Entity/DTO
     Svc-->>Ctrl: Result<T>
     Ctrl-->>C: ApiResponse<T>
-```
+```text
 
 ## Core 层
 
@@ -175,7 +175,7 @@ Controller -> MediatR Command/Query -> Handler -> {Entity}Repository -> DbContex
 ### Controller 继承体系（A-14 文档化，2026-08-07）
 
 三种继承路径:
-```
+```text
 BaseApiController — 独立端点基类
 ├── BaseCrudController — 标准 CRUD（5个 virtual 方法 + 批量操作模板）
 │   ├── PatientsController / HerbsController / FormulasController
@@ -191,7 +191,7 @@ BaseApiController — 独立端点基类
 
 > 完整实现见 `UnifiedMiddlewareConfiguration.cs`。
 
-```
+```text
 1. UseExceptionHandler → IExceptionHandler 链; UseStatusCodePages → RFC 7807
 2. UseForwardedHeaders / UseCorrelationId / UseSecurityHeaders
 3. UseResponseCompression / UseStaticFiles
@@ -242,7 +242,7 @@ services.AddScoped<IValidator<PatientInputDto>, PatientInputDtoValidator>(); // 
 ```csharp
 return Result<PatientDto>.Success(dto);       // 成功
 return Result<PatientDto>.Failure("患者不存在"); // 失败
-```
+```text
 
 ### 错误处理
 
@@ -276,13 +276,13 @@ return Result<PatientDto>.Failure("患者不存在"); // 失败
 
 > commit `0d8aabb90`（2026-08-06），详见 [ADR-0013](decisions/0013-signalr-realtime-push.md)。
 
-```
+```text
 Desktop (SignalRClient) ←WebSocket→ MapHub("/hubs/registration")
                                         ↓
                               RegistrationHub → NotificationService
                                         ↓
                     CreateCommandHandler / StartVisitHandler / CancelHandler
-```
+```text
 
 - **端点**: `/hubs/registration`，`[Authorize(DoctorOrAdmin)]`
 - **分组**: 医生通过 `?doctorId={guid}` 连接，按 `doctor-{id}` 分组推送

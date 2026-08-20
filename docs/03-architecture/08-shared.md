@@ -164,7 +164,7 @@ LYBT.Entities/
 
 ### 目录结构（代码实际定义）
 
-```
+```text
 LYBT.Shared.Configuration/
   ConnectionStringResolver.cs    # 三级回退（Database:ConnectionString → ConnectionStrings:DefaultConnection → CONNECTION_STRING 环境变量）
   Extensions/
@@ -311,7 +311,7 @@ builder.Host.UseSerilog((context, logger) =>
 ```csharp
 [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
 public string PhoneNumber { get; set; }
-```
+```text
 
 ### 脱敏模式 (MaskingMode)
 
@@ -360,7 +360,7 @@ Entity (DataAnnotations)
   DTO (DataAnnotations)
     DetailModel (DataAnnotations)
       FluentValidator (Server 端)
-```
+```text
 
 **规则**:
 - 三层使用相同的 `ValidationConstants` 常量

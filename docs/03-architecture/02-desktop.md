@@ -94,12 +94,12 @@ graph TB
 
 ## Desktop 分层规则
 
-```
+```text
 View(XAML) ← binding ← ViewModel（[ObservableProperty]/[RelayCommand]）
     → Service 接口（注入，不直连 IApiClient——A-21 M5 强制）
     → Repository → IApiClient{Module}（统一契约）
     → SwitchingApiClient →（Remote: Refit | Local: HttpClient → LocalWebAPI）
-```
+```text
 
 **映射规则（A-31-C8 定案）**：DTO↔Model 转换唯一走 **Mapperly**（`[Mapper]` 接口源生成）；**禁止手写映射扩展**（`DtoConversionExtensions` 已删除 2026-08-08）；UI 优先直用 DTO（A-26 P2-11 最终落地）。
 
@@ -152,7 +152,7 @@ LYBT.Desktop.{Domain}/
     Components/                  # ViewModel 组件 (>500行时拆分)
     Dialogs/                     # 弹窗 ViewModel
   Services/                      # 客户端服务 (可选)
-```
+```text
 
 ### 模块类型
 
@@ -409,7 +409,7 @@ Events.Subscribe<CaseEvents.WorkspaceChangedEvent, WorkspaceChangedPayload>(
 Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusPayload { ... });
 
 // Dispose 时自动清理 (CoreViewModelBase.Dispose 中调用)
-```
+```text
 
 ### 通信模式选择
 
@@ -562,7 +562,7 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 
 ### 状态 (WorkspaceEditState)
 
-```
+```text
 ReadOnly ──BeginEdit──> Editing ──MakeChange──> DirtyEditing
                            |                         |
                      SaveRequest              SaveRequest
@@ -616,7 +616,7 @@ PatientMasterDetailViewModel
                     |-- ConnectAsync / DisconnectAsync
                     |-- ReadCardAsync -> CardReadResult
                     |-- DetectCardAsync
-```
+```text
 
 **CardReaderOptions**: 从 `appsettings.json ["CardReader"]` 注入，包含设备端口、超时等硬件参数。
 
@@ -830,7 +830,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
         }
     });
 }
-```
+```text
 
 ---
 

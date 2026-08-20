@@ -55,7 +55,7 @@ services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
 
 系统使用三层配置文件，后加载的覆盖先前的:
 
-```
+```text
 appsettings.json                  # 基础配置 (所有环境共享的默认值)
 ├── appsettings.Development.json  # 开发环境覆盖
 └── appsettings.Production.json   # 生产环境覆盖
@@ -88,7 +88,7 @@ appsettings.json                  # 基础配置 (所有环境共享的默认值
 
 通过 `PUT /api/v1/configuration/{key}` 或 `PUT /api/v1/configuration/` 端点，Admin 可在运行时修改配置并持久化：
 
-```
+```text
 Admin 请求 → ConfigurationController → SystemConfigurationService
     → ConfigurationWritePolicy.IsAllowed(key) 白名单校验
     → IConfigurationStore.SaveAsync(key, value) 持久化
@@ -154,7 +154,7 @@ public class JwtOptions
 ```csharp
 services.AddOptions<JwtOptions>()
     .Bind(configuration.GetSection(JwtOptions.SectionName))
-```
+```text
 
 ## 测试覆盖
 

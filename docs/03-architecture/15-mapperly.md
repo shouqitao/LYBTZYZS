@@ -38,7 +38,7 @@
 
 // 特殊: 深度克隆
 [Mapper(UseDeepCloning = true)]
-```
+```text
 
 ### 标准方法命名
 
@@ -95,7 +95,7 @@ public MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
     // ... 嵌套 DTO 映射
     return dto;
 }
-```
+```text
 
 ### 3. 已知特殊处理
 
@@ -130,7 +130,7 @@ item.IsPersonal = !dto.IsShared;
 
 // Item → DTO: 反向同理
 dto.IsShared = !item.IsPersonal;
-```
+```text
 
 此模式出现在 `FormulaMapper`、`FormulaDetailModelMapper`、`FormulaHerbItemMapper` 中, 共 4 处映射方向。
 

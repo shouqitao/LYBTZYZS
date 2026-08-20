@@ -97,7 +97,7 @@ new JsonSerializerOptions
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     WriteIndented = false
 };
-```
+```text
 
 **各实体包含字段**（仅业务字段，排除审计字段）：
 
@@ -212,10 +212,10 @@ new JsonSerializerOptions
 
 ### 同步状态机
 
-```
+```text
 Idle → CheckingDifferences → ReviewingDifferences → ExecutingSync → Completed
                                                     ↘ Failed
-```
+```text
 
 | 阶段 | `SyncPhase` 枚举 | 说明 |
 |------|------------------|------|
@@ -281,7 +281,7 @@ Idle → CheckingDifferences → ReviewingDifferences → ExecutingSync → Comp
 
 MedicalCase 是 DDD 聚合根，同步时作为原子单元处理，包含最多 4 层实体：
 
-```
+```text
 MedicalCase（根）
 ├── Consultation（一对一，可选）
 └── Prescription（一对一，可选）

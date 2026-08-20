@@ -37,7 +37,7 @@
 
 ### 2.1 理想链路
 
-```
+```text
 API Response (DTO)
     ↓ Desktop Service（封装 API 调用 + 错误处理）
 DTO
@@ -47,7 +47,7 @@ Model（可编辑的 UI 数据副本）
 Model
     ↓ ViewModel（调用 Service 保存 → Model 转换为 InputDto）
 InputDto → API Request
-```
+```text
 
 ### 2.2 关键转换点
 
@@ -73,7 +73,7 @@ InputDto → API Request
 
 ### 3.1 标准目录
 
-```
+```text
 LYBT.Desktop.{ModuleName}/
 ├── {ModuleName}Module.cs          ← IModule 实现（DI 注册）
 ├── Models/                        ← UI 数据模型
@@ -97,7 +97,7 @@ LYBT.Desktop.{ModuleName}/
 ├── Controls/                      ← 自定义控件（可选）
 ├── Dialogs/                       ← 对话框（可选）
 └── Events/                        ← 模块内事件（可选）
-```
+```text
 
 ### 3.2 目录存在性矩阵
 
@@ -222,7 +222,7 @@ LYBT.Desktop.{ModuleName}.Views
 LYBT.Desktop.{ModuleName}.Services
 LYBT.Desktop.{ModuleName}.Mappers
 LYBT.Desktop.{ModuleName}.Repositories
-```
+```text
 
 **禁止**：`LYBT.Desktop.Modules.{ModuleName}` （MedicalCase 当前违规）
 

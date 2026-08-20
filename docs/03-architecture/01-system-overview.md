@@ -142,10 +142,10 @@ docs/                                # 文档
 
 ## 设计原则（贯穿所有 project）
 
-1. **模块自治**（ADR-0017）：每个业务模块完整 Domain/Application/Infrastructure 三层，独立 DbContext（A-20 落地）
+1. **模块自治**（见 [ADR-0017](decisions/0017-modular-monolith-cqrs.md)）：每个业务模块完整 Domain/Application/Infrastructure 三层，独立 DbContext（A-20 落地）
 2. **契约单一**（A-18）：桌面对外唯一接口面 `IApiClient`，Refit 特性接口 internal 化
-3. **双轨设计**（ADR-0002/0009/0010）：Remote/Local 共享同一业务逻辑（同一 Service 双宿主），切换由用户自主（A-19）
-4. **映射单一**（ADR-0011 + A-18 P1-4）：Mapperly 编译期映射，Target 策略
+3. **双轨设计**（见 [ADR-0002](decisions/0002-dual-mode-architecture.md) / [ADR-0009](decisions/0009-url-driven-dual-mode.md) / [ADR-0010](decisions/0010-localwebapi-unified-service-layer.md)）：Remote/Local 共享同一业务逻辑（同一 Service 双宿主），切换由用户自主（A-19）
+4. **映射单一**（见 [ADR-0011](decisions/0011-mapperly-migration.md) + A-18 P1-4）：Mapperly 编译期映射，Target 策略
 5. **共享单源**：公共类型只在 Shared 定义一次（Gender 样板），禁止两端重复
 6. **拒绝屎山**（用户红线）：发现错误直接重写，不做兼容层
 7. **Status vs State 语义边界**（2026-08-08 A-26 定案）：**域内持久化状态用 `Status` 枚举**（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`，存于 `Shared.Models/Enums/`）；**客户端 UI/会话状态用 `State` 枚举**（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止域状态用 State、会话状态用 Status 的混用
@@ -219,7 +219,7 @@ sequenceDiagram
     CMS->>PS: 查询患者基本信息
     PS-->>CMS: PatientBasicInfo
     CMS-->>MC: PatientBasicInfo
-```
+```text
 
 - 使用跨模块服务接口 (ISP 原则，按域拆分):
   - `IPatientCrossModuleService` -- 患者查询 + 引用检查

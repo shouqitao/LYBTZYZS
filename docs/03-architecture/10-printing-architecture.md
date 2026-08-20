@@ -142,7 +142,7 @@ flowchart TD
     E --> E1[PreviewAsync]
     E --> F[5. 状态回写]
     F --> F1[RecordPrintCompletedAsync]
-```
+```text
 
 ### 3.2 PrescriptionPrintModel 数据结构
 

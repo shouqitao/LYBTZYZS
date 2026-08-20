@@ -8,7 +8,7 @@
 
 ### 远程链（有前台，挂号驱动）
 
-```
+```text
 1. 前台登录 → Auth.LoginAsync → JWT
 2. 读身份证 → CardReader → 患者信息
 3. 创建挂号 → RegistrationController.Create → 候诊队列
@@ -20,7 +20,7 @@
 8. 完成医案 → MedicalCaseController.Complete → Completed
 9. 打印处方 → PrintService → PDF/纸质
 10. 打印回写 → MedicalCaseController.PrintCompleted → IsPrinted=true
-```
+```text
 
 **急诊/特殊通道**：医生 QuickVisit（US-REG-002）→ 选/建患者 → 原子创建 Registration+MedicalCase → 跳过队列直接看诊。
 
@@ -28,7 +28,7 @@
 
 > 本地模式 = 远程功能完整副本（数据孤立 N1），不做角色强制过滤，差异由用户配置自然调节。以下为**默认无前台用户**时的医生独立链。
 
-```
+```text
 1. 医生登录
 2. 选/建患者 → PatientsController（姓名/拼音码/身份证查询，不存在则新建）
 3. 直接开医案 → MedicalCaseFacade.Create → MedicalCase(Active)（无挂号环节）
@@ -37,7 +37,7 @@
 6. 完成医案 → MedicalCaseController.Complete → Completed
 7. 打印处方 → PrintService → PDF/纸质
 8. 打印回写 → MedicalCaseController.PrintCompleted → IsPrinted=true
-```
+```text
 
 **本地链要素**：默认无前台用户时无 Registration、无待诊队列；**若 Admin 建前台用户则前台挂号→待诊队列→StartVisit 链同样可用**（本地全角色支持）。本地无 SignalR（即使有前台也用轮询/手动刷新）。Registration 模块按需——无前台用户时不显现，有则可用。
 
@@ -63,7 +63,7 @@ v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 Si
 
 **覆盖 US**: US-PAT-001, US-HERB-001, US-MC-002/008/009/019, US-PRINT-001
 
-```
+```text
 1. 医生登录
 2. 搜索患者 → PatientsController.Search (拼音码)
 3. 查历史医案 → MedicalCaseController.GetHistory (D9 补回)
@@ -87,7 +87,7 @@ v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 Si
 
 **覆盖 US**: US-SHELL-007, US-AUTH-009/012/013
 
-```
+```text
 1. 切换到本地 → ModeSwitchValidator.Validate
    - 检查：无未结医案 + 网络连通 + Token 有效
 2. SwitchingApiClient 切换 URL → localhost:5300
@@ -95,7 +95,7 @@ v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 Si
 4. 本地操作 → LocalDB (SQL Server LocalDB)
 5. 网络恢复 → 切换到远程
 6. 本地数据 → ⚠️ 无同步机制 (v2.0 延期)
-```
+```text
 
 **权限检查**：
 - 本地模式无角色检查（简化认证）
@@ -110,7 +110,7 @@ v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 Si
 
 **覆盖 US**: US-AUTH-001, US-SHELL-001/003/005
 
-```
+```text
 1. 用户登录 → AuthService.LoginAsync
 2. LoginCoordinator 接收登录结果
 3. 调用 ApplicationBootstrapper.LoadModulesForRoleAsync(role)
@@ -133,7 +133,7 @@ v1.0 **未设计 SignalR 反向推送**（医生→前台方向）。ADR-0013 Si
 
 **覆盖 US**: US-PRINT-001/004, US-MC-002/014/017
 
-```
+```text
 1. 打印处方 → PrintService.Render
 2. 打印成功 → MedicalCaseController.PrintCompleted
    - IsPrinted = true

@@ -54,7 +54,7 @@ graph TB
     Registration -.->|PatientId| Patient
     Registration -.->|DoctorId| User
     Registration -.->|MedicalCaseId| MC
-```
+```text
 
 **规则**: 聚合根内的实体 (Consultation, Prescription) 只能通过 MedicalCase 访问和操作，禁止独立的 Repository。
 
@@ -456,7 +456,7 @@ entity.HasIndex(e => e.PatientId)
     .HasFilter("[CaseStatus] IN (0, 1) AND [IsDeleted] = 0")
     .IsUnique()
     .HasDatabaseName("IX_MedicalCases_PatientId_Active");
-```
+```text
 
 > **设计取舍**: NFR 并发用户 1-3 人，并发创建重复草稿概率极低。代码层 BR-001 检查为主，DB 唯一索引为兜底保障。
 

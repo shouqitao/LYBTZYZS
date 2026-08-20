@@ -10,7 +10,7 @@
 
 继承链位于 `LYBT.Shared.ExceptionHandling.Exceptions` 命名空间：
 
-```
+```text
 Exception
  └── AppException                       # 应用基类 (默认 500)
       ├── BusinessException             # 业务规则违反 (400)
@@ -43,7 +43,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 注册于 `AddServerExceptionHandling()` (`LYBT.Shared.ExceptionHandling.Extensions.ServiceCollectionExtensions`)：
 
-```
+```text
 请求 → CorrelationIdMiddleware → ... → Controller → Service 抛异常
                                                          ↓
                                     BusinessExceptionHandler (IExceptionHandler #1)
@@ -156,7 +156,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ### 提供者体系 (ICorrelationIdProvider)
 
-```
+```text
 ICorrelationIdProvider
  ├── HttpContextCorrelationIdProvider   # Server 端，从 HttpContext.Items 读取
  └── AsyncLocalCorrelationIdProvider    # Desktop 端，基于 AsyncLocal<string?> 传递
@@ -179,7 +179,7 @@ ICorrelationIdProvider
 
 ### 追踪流程
 
-```
+```text
 Desktop                          Server
   │                                │
   ├─ LoggingHttpHandler            │
@@ -213,7 +213,7 @@ Desktop                          Server
     "correlationId": "a1b2c3d4e5f6"
   }
 }
-```
+```text
 
 速率限制中间件 (`UseRateLimiter()`) 在路由之后、认证之前执行，由 `ProblemDetailsConfiguration.UseStatusCodePagesWithProblemDetails()` 处理 429 状态码响应。
 

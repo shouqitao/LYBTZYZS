@@ -174,7 +174,7 @@ flowchart TD
     D -->|否| F[路由到 RefitApiClient → 远程 WebAPI :5000]
     E --> G[Repository 层零感知，业务继续]
     F --> G
-```
+```text
 
 **关键特性**（ADR-0009）：
 
@@ -199,7 +199,7 @@ DI 注册在 `UnifiedApiClientExtensions.cs` 中完成：始终注册 `Switching
 
 ### SwitchingApiClient 代理
 
-```
+```text
 SwitchingApiClient : IApiClient
   ├── _remoteApi (RefitApiClient)     ← 非 localhost 时使用
   └── _localApi  (HttpClientApiClient) ← localhost/127.0.0.1 时使用
@@ -236,7 +236,7 @@ SwitchingApiClient : IApiClient
 
 LocalWebAPI 是运行在 WPF Desktop 进程内的 ASP.NET Core Kestrel 实例，不是独立服务。
 
-```
+```text
 LYBT.Desktop.Shell.exe (WPF 主进程)
   ├── WPF UI 线程 (Dispatcher)
   ├── Kestrel 后台线程 (LocalWebApiHost)
@@ -258,7 +258,7 @@ LYBT.Desktop.Shell.exe (WPF 主进程)
 ```csharp
 // AppDbContext 复用 Server 端所有 IEntityTypeConfiguration
 modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly);
-```
+```text
 
 实体配置完全相同（共享程序集）；查询过滤器（IsDeleted 全局过滤器）完全相同。差异仅在连接字符串（LocalDB `(localdb)\MSSQLLocalDB`）和数据库名（LYBTDB_Local），迁移方式（`MigrateAsync()` + 双种子，与远程同一迁移链）。
 
