@@ -6,20 +6,7 @@
 
 ## 技术栈
 
-> 版本号以项目根目录 `Directory.Packages.props` 为唯一真相源。
-
-| 组件 | 技术 | 版本 |
-|------|------|------|
-| 运行时 | .NET SDK | 8.0.400 |
-| 后端 | ASP.NET Core | 8.0 |
-| ORM | EF Core | 8.0.26 |
-| 数据库 | SQL Server / LocalDB | — |
-| 桌面 | WPF + Prism | 8.1.97 |
-| UI | MaterialDesignThemes | 5.3.2 |
-| 映射 | Riok.Mapperly | 4.3.1 |
-| 验证 | FluentValidation | 12.1.1 |
-| 认证 | JWT Bearer | — |
-| 日志 | Serilog | — |
+> 技术栈版本详见 [[00-architecture-summary]]
 
 ## 文档索引
 
