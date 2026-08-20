@@ -49,7 +49,7 @@
 
 **业务规则**:
 
-1. 支持 19 个 Options 类（12 服务端 + 1 共享 + 6 客户端）。
+1. 支持 18 个 Options 类（12 服务端 + 4 客户端专用 + 2 共享 JwtOptions/LoginOptions，详见 [07-configuration.md §Server 端注册](../03-architecture/07-configuration.md#server-端注册)）。
 2. 客户端 `ClinicSettings`（Name/Department/Address/Phone）驱动处方打印标题区。
 
 **双模式差异**:

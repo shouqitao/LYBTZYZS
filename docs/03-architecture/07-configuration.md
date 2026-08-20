@@ -107,7 +107,7 @@ Admin 请求 → ConfigurationController → SystemConfigurationService
 
 ## Server 端注册
 
-`AddLybtServerConfiguration(services, configuration)` 注册 12 个 Options 和 4 个验证器:
+`AddLybtServerConfiguration(services, configuration)` 注册 12 个 Options 和 4 个验证器（IdentityModule 另注册 LoginOptions，共 13 个 Server 端 Options）:
 
 | Options | 配置节 | 验证器 | ValidateOnStart |
 |---------|--------|--------|:---------------:|
