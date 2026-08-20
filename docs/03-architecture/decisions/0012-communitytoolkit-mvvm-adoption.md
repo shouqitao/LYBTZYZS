@@ -1,4 +1,5 @@
 # ADR-0012: 采用 CommunityToolkit.Mvvm 替代 Prism MVVM 基础设施
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## 状态
 Accepted

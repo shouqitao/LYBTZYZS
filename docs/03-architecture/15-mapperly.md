@@ -1,4 +1,5 @@
 # Mapperly 映射规范
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 基于 **Mapperly 4.3.1** 的编译时 source-generator 映射，零运行时反射。本文档从 [08-shared.md](08-shared.md) 外移为独立规范（spec S3 批次2）。
 >

@@ -1,4 +1,5 @@
 # ADR-0014: sysadmin 配置双模式 + 服务端 Configuration API + 延迟重启
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## 状态
 Accepted（范围决策）— v1.0 文档基线已锁定；**代码实现（ConfigurationController 扩展 / 重启端点 / SysAdminOnly 策略 / 双模式面板）属待实施范围，由后续代码 plan 承载**（用户「先文档不代码」）。

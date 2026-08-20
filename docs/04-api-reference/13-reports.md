@@ -1,4 +1,5 @@
 # 报表 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `ReportsController` | 路由前缀: `/api/v1/reports` | 默认权限: `DoctorOrAdmin`
 

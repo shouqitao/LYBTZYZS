@@ -1,4 +1,5 @@
 # 设计模式速查
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Server 端通用模式（三层架构、Repository、Service、CQRS）见 [03-server.md](../03-architecture/03-server.md)。本文档仅记录 Desktop 独有和跨端补充模式。
 

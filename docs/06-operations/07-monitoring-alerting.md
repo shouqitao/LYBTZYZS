@@ -1,4 +1,5 @@
 # 监控与告警指南
+> 版本: v1.0 | 日期: 2026-08-20
 
 本文档定义 LYBT 系统的监控指标、告警规则和日常巡检流程。系统基于 ASP.NET Core HealthCheck + Serilog + SQL Server SystemLogs 构建，不依赖外部监控服务。
 

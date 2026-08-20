@@ -1,4 +1,5 @@
 # Desktop UI 需求文档
+> 版本: v1.0 | 日期: 2026-08-20
 
 > **版本**: v1.0 | **日期**: 2026-08-16
 > **基于**: desktop-ui-inventory-2026-08-15.md + desktop-design-spec.md + 10 个设计稿

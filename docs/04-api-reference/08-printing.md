@@ -1,4 +1,5 @@
 # 打印 API 参考
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 🚧 **v1.0 待实现（D2 打印保护/回写补回）**：下列打印端点（`print-completed`/`print-logs`）及相关实体（`IsPrinted`/`PrintVersion`/`PrintCount`/`LastPrintedAt` 字段、`MedicalCasePrintLog`/`PrintLog` 实体）**部分已实现**（`print-completed` 在 `MedicalCasesController`，见 [06-medical-cases.md](06-medical-cases.md)）。本文保留作设计参考。
 

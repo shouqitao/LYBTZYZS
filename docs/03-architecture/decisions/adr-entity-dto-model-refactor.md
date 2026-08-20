@@ -1,4 +1,5 @@
 # ADR: Entity/DTO/Model 三层定义重构
+> 版本: v1.0 | 日期: 2026-08-20
 
 > **状态**：第一批（DTO 层移除脱节字段 + 命名统一）已实施（2026-08-14，见总账 Entity/DTO/Model 重构第一批行）；第二批（Mapper 简化——PrescriptionItemMapper 共享类 + FormulaHerbItem 通用方法 + PinYinCode/Guid 模式抽取）已实施（2026-08-14，见总账第二批行）；Desktop Model 命名对齐（ADR §4）评估后有意保留（与既有 ViewModel 层同名冲突 + INPC 模型不可从 DTO 派生）；验证器补全/UserId vs DoctorId 文档属后续批次。
 

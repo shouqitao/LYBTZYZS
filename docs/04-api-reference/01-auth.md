@@ -1,4 +1,5 @@
 # 认证 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `AuthController` | 路由前缀: `/api/v1/auth` | 默认权限: `[Authorize]`
 

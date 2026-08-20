@@ -1,4 +1,5 @@
 # ADR-0009: URL 驱动双模式架构 (Remote WebAPI + LocalWebAPI)
+> 版本: v1.0 | 日期: 2026-08-20
 
 **状态**: Accepted
 **日期**: 2026-06-13

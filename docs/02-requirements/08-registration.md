@@ -1,4 +1,5 @@
 # 挂号管理 (Registration Management)
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 挂号（Registration）是患者就诊流程的系统化入口，用于管理患者分流、排队顺序和就诊可追溯性。系统支持**两种来源模式**：前台模式（Source=Receptionist）与医生模式（Source=Doctor）。挂号与医案是**独立实体**——挂号记录排队关系，医案记录诊疗内容，通过 `MedicalCaseId` 关联；**医案由医生接诊时原子创建**（2026-08-03 决策：接诊即建，见 [07-medical-cases.md BR-000](07-medical-cases.md)）。
 >

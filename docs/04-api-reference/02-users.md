@@ -1,4 +1,5 @@
 # 用户 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `UsersController` | 路由前缀: `/api/v1/users` | 默认权限: `[Authorize]`
 

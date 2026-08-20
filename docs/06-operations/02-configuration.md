@@ -1,4 +1,5 @@
 # 配置说明
+> 版本: v1.0 | 日期: 2026-08-20
 
 本文档包含 LYBT.WebAPI 的完整配置项说明。配置文件位于 `appsettings.json`，生产环境通过 `appsettings.Production.json` 覆盖。
 

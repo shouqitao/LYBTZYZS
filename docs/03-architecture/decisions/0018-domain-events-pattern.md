@@ -1,4 +1,5 @@
 # ADR-0018: Domain Events Pattern
+> 版本: v1.0 | 日期: 2026-08-20
 
 **状态**: Accepted
 **日期**: 2026-06-29

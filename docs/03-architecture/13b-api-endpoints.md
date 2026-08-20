@@ -1,4 +1,5 @@
 # LYBTZYZS API 端点
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 由 [13-project-master-plan.md §三](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移，不改变定义。端点按模块组织，权限均为操作级（详细矩阵见 [12-permissions-matrix.md](12-permissions-matrix.md)）。
 >

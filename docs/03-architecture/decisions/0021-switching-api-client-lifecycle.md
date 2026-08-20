@@ -1,4 +1,5 @@
 # ADR-0021: SwitchingApiClient Client Lifecycle Management
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## 状态
 **已实施** — 2026-08-19（实现见任务书 high-priority-fixes，commit c56ec0893）

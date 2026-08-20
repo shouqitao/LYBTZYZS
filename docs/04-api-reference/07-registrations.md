@@ -1,4 +1,5 @@
 # 挂号管理 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（代码实际，`RegistrationsController.cs:21`）
 >

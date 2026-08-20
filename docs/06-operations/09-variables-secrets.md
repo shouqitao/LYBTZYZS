@@ -1,4 +1,5 @@
 # Variables — 配置与密钥
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## Configuration Variables
 

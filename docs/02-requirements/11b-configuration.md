@@ -1,4 +1,5 @@
 # Configuration (配置管理)
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 配置模块基于 ASP.NET Core Options 模式，提供强类型绑定 + DataAnnotation 验证 + 分环境覆盖 + 生产启动验证。运行时配置查询通过 `ConfigurationController` 暴露。
 >

@@ -1,4 +1,5 @@
 # ADR-0020: Desktop Service Layer Error Contract
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## 状态
 **提议** — 2026-08-19

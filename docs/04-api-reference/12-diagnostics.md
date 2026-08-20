@@ -1,4 +1,5 @@
 # 诊断工具 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `DiagnosticsController` | 路由前缀: `/api/v1/diagnostics` | 默认权限: 远程 `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`; 本地 `[Authorize]` (任意已登录用户)
 

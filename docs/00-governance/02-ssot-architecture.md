@@ -1,4 +1,5 @@
 # 文档 SSOT 架构方案（Single Source of Truth）
+> 版本: v1.0 | 日期: 2026-08-20
 
 ## 一、核心原则
 

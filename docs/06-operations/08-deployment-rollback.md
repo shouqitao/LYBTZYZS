@@ -1,4 +1,5 @@
 # 部署与回滚指南
+> 版本: v1.0 | 日期: 2026-08-20
 
 本文档定义 LYBT 系统的部署流程和回滚策略。服务端部署方式取决于目标环境（Linux/nohup、Windows Service、IIS），客户端使用 Velopack 自动更新分发。
 

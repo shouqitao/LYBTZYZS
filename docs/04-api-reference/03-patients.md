@@ -1,4 +1,5 @@
 # 患者 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `DoctorOrAdminOrReceptionist`
 >

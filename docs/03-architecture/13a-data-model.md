@@ -1,4 +1,5 @@
 # LYBTZYZS 数据模型
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 由 [13-project-master-plan.md §二](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移，不改变定义。
 >

@@ -1,4 +1,5 @@
 # 用户管理 (User Management)
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 用户管理模块采用标准 ASP.NET Core Identity 架构。单一用户模型 `ApplicationUser : IdentityUser<Guid>` 同时承载认证（Identity 内置）和业务字段（Role、Status、PinYinCode 等）。Remote 和 Local 两端通过同一套 `IUserManagerService` 接口操作同一数据模型，零重复实现。
 

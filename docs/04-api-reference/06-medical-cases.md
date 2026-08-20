@@ -1,4 +1,5 @@
 # 医案 API
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Controllers: `MedicalCasesController`, `MedicalCaseProcessingController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 >

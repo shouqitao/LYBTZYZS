@@ -1,4 +1,5 @@
 # Shell (平台壳程序)
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Shell 采用 Prism 8.1.97 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
 

@@ -1,4 +1,5 @@
 # Shared 层设计
+> 版本: v1.0 | 日期: 2026-08-20
 
 > Shared 层是跨 Server/Desktop 的公共基础，位于 `src/Shared/`。2026-08 实体源统一后从 Core 层移出。
 

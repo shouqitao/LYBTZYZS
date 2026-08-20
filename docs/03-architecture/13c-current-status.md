@@ -1,4 +1,5 @@
 # LYBTZYZS 当前状态
+> 版本: v1.0 | 日期: 2026-08-20
 
 > 由 [13-project-master-plan.md §四/§五](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移：Desktop 视图实现现状 + 已知问题清单。**本文件是 Build/测试/已知问题的唯一权威。**
 
