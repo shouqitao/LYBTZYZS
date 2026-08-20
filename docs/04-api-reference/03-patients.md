@@ -1,144 +1,77 @@
 # 患者 API
 
-> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（代码实际，`PatientsController.cs:24`）
+> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `DoctorOrAdminOrReceptionist`
 >
-> ⚠️ **权限待对齐（2026-08-03 四连决策，见 [04-permissions.md](../01-product/04-permissions.md)）**：患者删除/禁用目标态 `AdminOrSuperAdmin`（P0-5 待修，代码当前仍为类级 `DoctorOrAdminOrReceptionist`）。
+> ⚠️ **权限待对齐**（见 [04-permissions.md](../01-product/04-permissions.md)）：删除/禁用目标态 `AdminOrSuperAdmin`（代码当前仍为类级 `DoctorOrAdminOrReceptionist`）。
 
 ## 概述
 
-患者管理 CRUD、身份证号查询、软删除恢复、批量操作、引用检查。支持 OutputCache (`PatientsCache`)。
-Doctor 只能编辑自己创建的患者，Admin 可操作全部。
-
-> **注意**: 患者导入/导出为 **JSON 格式**（2026-08-13 决策——后端不涉及 Excel，保持通用性；Excel 处理由前端负责）。服务端提供 `GET /patients/import-template`（JSON 模板）与 `GET /patients/export`（JSON 数组）。
+患者管理 CRUD、身份证号查询、软删除恢复、批量操作、引用检查。支持 OutputCache。
+Doctor 只能编辑自己创建的患者，Admin 可操作全部。导入/导出为 JSON 格式。
 
 ---
 
-## GET /patients
+## 端点列表
 
-获取患者列表 (分页)。启用 OutputCache。
+### GET /patients
 
-- **权限**: `DoctorOrReceptionist`（Non-Admin 用户仅可见 Enabled 患者）
+获取患者分页列表。Non-Admin 仅可见 Enabled 患者。
 
-**查询参数**:
+- **权限**: `DoctorOrReceptionist`
 
 | 参数 | 类型 | 默认值 | 说明 |
-| ------ | ------ | -------- | ------ |
+|------|------|--------|------|
 | `page` | int | 1 | 页码 (>0) |
 | `pageSize` | int | 20 | 每页大小 (1-100) |
 | `keyword` | string? | null | 搜索关键词 (姓名/拼音码) |
 
-**成功响应** (200): `ApiResponse<PagedResult<PatientListDto>>`
+**响应**: `ApiResponse<PagedResult<PatientListDto>>`
 
 ```json
 {
   "items": [
-    {
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "name": "张三",
-      "gender": "Male",
-      "age": 35,
-      "phoneNumber": "13800138000",
-      "pinYinCode": "ZS",
-      "status": "Enabled",
-      "createdAt": "2026-01-15T08:30:00Z"
-    },
-    {
-      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-      "name": "李四",
-      "gender": "Female",
-      "age": 28,
-      "phoneNumber": "13900139000",
-      "pinYinCode": "LS",
-      "status": "Enabled",
-      "createdAt": "2026-02-20T10:00:00Z"
-    }
+    { "id": "...", "name": "张三", "gender": "Male", "age": 35, "phoneNumber": "13800138000", "status": "Enabled", "createdAt": "..." },
+    { "id": "...", "name": "李四", "gender": "Female", "age": 28, "status": "Enabled", "createdAt": "..." }
   ],
-  "totalCount": 156,
-  "page": 1,
-  "pageSize": 20,
-  "totalPages": 8
+  "totalCount": 156, "page": 1, "pageSize": 20, "totalPages": 8
 }
 ```
 
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients?page=1&pageSize=20" \
-  -H "Authorization: Bearer $TOKEN"
-
-# 按关键词搜索
-curl -X GET "http://localhost:5000/api/v1/patients?keyword=张&page=1&pageSize=10" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 分页参数无效 (ERR-20705) |
-| 401/403/404 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20705 | 400 | 分页参数无效 |
 
 ---
 
-## GET /patients/{id}
+### GET /patients/{id}
 
-获取患者详情。返回 `PatientDetailDto`，含年龄自动计算。
+获取患者详情（含年龄自动计算）。
 
 - **权限**: `DoctorOrReceptionist`
+- **路径参数**: `id` (Guid)
 
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<PatientDetailDto>`
+**响应**: `ApiResponse<PatientDetailDto>`
 
 ```json
 {
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "张三",
-  "gender": "Male",
-  "birthDate": "1991-03-15",
-  "age": 35,
-  "phoneNumber": "13800138000",
-  "idNumber": "110101199103150012",
-  "address": "北京市东城区王府井大街1号",
-  "maritalStatus": "Married",
-  "idType": "IdCard",
-  "bloodType": "A",
-  "emergencyContactName": "张四",
-  "emergencyContactPhone": "13700137000",
-  "emergencyContactRelation": "配偶",
-  "allergyHistory": "青霉素过敏",
-  "medicalHistory": "高血压病史5年",
-  "lastVisitTime": "2026-06-20T14:30:00Z",
-  "visitCount": 12,
-  "disableReason": null,
-  "pinYinCode": "ZS",
-  "status": "Enabled",
-  "remark": "老患者，定期复诊",
-  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "createdAt": "2026-01-15T08:30:00Z",
-  "updatedAt": "2026-06-20T14:30:00Z"
+  "id": "...", "name": "张三", "gender": "Male", "birthDate": "1991-03-15", "age": 35,
+  "phoneNumber": "13800138000", "idNumber": "110101199103150012", "address": "...",
+  "maritalStatus": "Married", "idType": "IdCard", "bloodType": "A",
+  "emergencyContactName": "张四", "emergencyContactPhone": "13700137000", "emergencyContactRelation": "配偶",
+  "allergyHistory": "青霉素过敏", "medicalHistory": "高血压病史5年",
+  "lastVisitTime": "2026-06-20T14:30:00Z", "visitCount": 12,
+  "disableReason": null, "pinYinCode": "ZS", "status": "Enabled",
+  "remark": "...", "createdBy": "...", "createdAt": "...", "updatedAt": "..."
 }
 ```
 
-**错误响应** (404): 见错误码表 ERR-20001。
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 404 | 患者不存在 (ERR-20001) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20001 | 404 | 患者不存在 |
 
 ---
 
-## POST /patients
+### POST /patients
 
 新增患者。
 
@@ -146,23 +79,8 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 
 **请求体** (`PatientInputDto`):
 
-```json
-{
-  "name": "王五",
-  "gender": "Male",
-  "birthDate": "1988-07-20",
-  "phoneNumber": "13600136000",
-  "idNumber": "110101198807200034",
-  "address": "北京市朝阳区建国路88号",
-  "allergyHistory": null,
-  "medicalHistory": null,
-  "remark": "初诊患者",
-  "pinYinCode": "WW"
-}
-```
-
 | 字段 | 类型 | 必填 | 说明 |
-| ------ | ------ | ------ | ------ |
+|------|------|------|------|
 | `name` | string | 是 | 患者姓名 |
 | `gender` | enum | 否 | Male/Female/Unknown，默认 Unknown |
 | `birthDate` | date | 否 | 出生日期 |
@@ -174,280 +92,106 @@ curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef123
 | `remark` | string | 否 | 备注 |
 | `pinYinCode` | string | 否 | 拼音码 |
 
-**成功响应** (201 Created): `ApiResponse<PatientDetailDto>`
+**响应** (201): `ApiResponse<PatientDetailDto>` — 同 GET /patients/{id}
 
-```json
-{
-  "id": "d4e5f6a7-b8c9-0123-def4-567890abcdef",
-  "name": "王五",
-  "gender": "Male",
-  "birthDate": "1988-07-20",
-  "age": 37,
-  "phoneNumber": "13600136000",
-  "idNumber": "110101198807200034",
-  "address": "北京市朝阳区建国路88号",
-  "maritalStatus": "Unknown",
-  "idType": "IdCard",
-  "bloodType": "Unknown",
-  "emergencyContactName": null,
-  "emergencyContactPhone": null,
-  "emergencyContactRelation": null,
-  "allergyHistory": null,
-  "medicalHistory": null,
-  "lastVisitTime": null,
-  "visitCount": 0,
-  "disableReason": null,
-  "pinYinCode": "WW",
-  "status": "Enabled",
-  "remark": "初诊患者",
-  "createdBy": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "createdAt": "2026-06-25T10:00:00Z",
-  "updatedAt": null
-}
-```
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/patients" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "王五",
-    "gender": "Male",
-    "birthDate": "1988-07-20",
-    "phoneNumber": "13600136000",
-    "idNumber": "110101198807200034",
-    "address": "北京市朝阳区建国路88号",
-    "remark": "初诊患者",
-    "pinYinCode": "WW"
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 参数验证失败 (ERR-00003) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
-| 409 | 身份证号已存在 (ERR-20002) / 患者电话已存在 (ERR-20003) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-00003 | 400 | 参数验证失败 |
+| ERR-20002 | 409 | 身份证号已存在 |
+| ERR-20003 | 409 | 患者电话已存在 |
 
 ---
 
-## PUT /patients/{id}
+### PUT /patients/{id}
 
-更新患者信息。执行所有权检查 (Doctor 只能改自己的)。
+更新患者信息。Doctor 仅限自己创建的患者。
 
-- **权限**: `DoctorOrReceptionist`（Doctor 仅限自己创建的患者）
+- **权限**: `DoctorOrReceptionist`
+- **路径参数**: `id` (Guid)
+- **请求体**: `PatientInputDto`（同 POST）
+- **响应**: `ApiResponse<PatientDetailDto>` — 返回更新后详情
 
-**路径参数**: `id` (Guid)
-
-**请求体**: `PatientInputDto` (同创建)
-
-```json
-{
-  "name": "张三",
-  "gender": "Male",
-  "birthDate": "1991-03-15",
-  "phoneNumber": "13800138000",
-  "idNumber": "110101199103150012",
-  "address": "北京市东城区王府井大街1号（已搬迁）",
-  "allergyHistory": "青霉素过敏",
-  "medicalHistory": "高血压病史5年，糖尿病病史2年",
-  "remark": "复诊记录已更新",
-  "pinYinCode": "ZS"
-}
-```
-
-**成功响应** (200): `ApiResponse<PatientDetailDto>` — 返回更新后的完整患者详情。
-
-**curl 示例：**
-
-```bash
-curl -X PUT "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "张三",
-    "gender": "Male",
-    "birthDate": "1991-03-15",
-    "phoneNumber": "13800138000",
-    "idNumber": "110101199103150012",
-    "address": "北京市东城区王府井大街1号（已搬迁）",
-    "allergyHistory": "青霉素过敏",
-    "medicalHistory": "高血压病史5年，糖尿病病史2年",
-    "remark": "复诊记录已更新",
-    "pinYinCode": "ZS"
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 参数验证失败 (ERR-00003) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 Doctor 非所有者 |
-| 404 | 患者不存在 (ERR-20001) |
-| 409 | 身份证号已存在 (ERR-20002) / 患者电话已存在 (ERR-20003) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-00003 | 400 | 参数验证失败 |
+| ERR-20001 | 404 | 患者不存在 |
+| ERR-20002 | 409 | 身份证号已存在 |
+| ERR-20003 | 409 | 患者电话已存在 |
 
 ---
 
-## DELETE /patients/{id}
+### DELETE /patients/{id}
 
-删除患者 (软删除)。执行所有权检查。
+软删除患者。Doctor 仅限自己创建的患者。
 
-- **权限**: `DoctorOrReceptionist`（Doctor 仅限自己创建的患者）
+- **权限**: `DoctorOrReceptionist`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<bool>` → `true`
 
-**路径参数**: `id` (Guid)
-
-**成功响应** (200): `ApiResponse<bool>`
-
-```json
-true
-```
-
-**curl 示例：**
-
-```bash
-curl -X DELETE "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 Doctor 非所有者 |
-| 404 | 患者不存在 (ERR-20001) |
-| 422 | 患者有历史医案，无法删除 (ERR-20004) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20001 | 404 | 患者不存在 |
+| ERR-20004 | 422 | 患者有历史医案，无法删除 |
 
 ---
 
-## POST /patients/{id}/toggle-status
+### POST /patients/{id}/toggle-status
 
-切换患者状态 (启用/禁用)。无请求体，自动在 Enabled/Disabled 间切换。
+切换患者状态（启用/禁用），无请求体，自动在 Enabled/Disabled 间切换。
 
-- **权限**: `AdminOrSuperAdmin`（仅 Admin 可执行）
+- **权限**: `AdminOrSuperAdmin`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<PatientDetailDto>` — 返回切换后详情
 
-> **US-PAT-013**: PRD 原文为 `PUT /{id}/status` (带 body 指定状态)，但代码实现为 `POST /{id}/toggle-status` (自动切换，无 body)。文档以代码为准。
+**业务规则**: 禁用时检查是否有 Draft/Active 医案（有则拒绝）；禁用后禁止创建新医案，历史医案可查阅但 PatientName 按角色脱敏；启用后限制解除。
 
-**路径参数**: `id` (Guid)
+> 交叉引用: 禁用联动见 [medical-cases.md](06-medical-cases.md) MC-D16
 
-**请求体**: 无
-
-**业务规则**:
-
-1. 仅 Admin/SuperAdmin 可执行状态切换
-2. 禁用时: 检查患者是否有 Draft/Active 医案，有则拒绝 (需先完成或取消)
-3. 禁用后: 禁止为该患者创建新医案 (见 medical-cases.md ERR-30105)
-4. 禁用后: 历史医案可查阅，PatientName 按角色脱敏 (Admin 完整/Doctor 掩码如 "张*")
-5. 启用后: 所有限制解除，脱敏自动取消
-6. v1.0 主要禁用场景: 患者已故 (PAT-D05)
-
-**成功响应** (200): `ApiResponse<PatientDetailDto>` — 返回切换后的患者详情
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/toggle-status" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-> **交叉引用**: 禁用联动规则见 [medical-cases.md](06-medical-cases.md) MC-D16; 查询可见性见 patients PRD FR-PAT-002 规则 5 (Receptionist 不可见禁用患者)
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码)；403 详见 ERR-20005 |
-| 404 | 患者不存在 (ERR-20001) |
-| 422 | 患者有进行中的医案 (ERR-20005) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20001 | 404 | 患者不存在 |
+| ERR-20005 | 422 | 患者有进行中的医案 |
 
 ---
 
-## POST /patients/batch-delete
+### POST /patients/batch-delete
 
-批量删除患者。
+批量软删除患者。
 
 - **权限**: `DoctorOrReceptionist`
 
 **请求体** (`BatchDeleteInputDto`):
 
-```json
-{
-  "ids": [
-    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
-  ]
-}
-```
-
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `ids` | Guid[] | 是 | 患者 ID 列表，不能为空 |
 
-**成功响应** (200): `ApiResponse<BatchOperationResultDto>`
+**响应**: `ApiResponse<BatchOperationResultDto>`
 
 ```json
-{
-  "totalCount": 2,
-  "successCount": 2,
-  "failureCount": 0,
-  "errors": []
-}
+{ "totalCount": 2, "successCount": 2, "failureCount": 0, "errors": [] }
 ```
 
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/patients/batch-delete" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "ids": [
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
-    ]
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 请至少选择一个患者 (ERR-20703) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20703 | 400 | 请至少选择一个患者 |
 
 ---
 
-## GET /patients/import-template
+### GET /patients/import-template
 
-> **2026-08-13 已实现**（Excel→JSON：后端不涉及 Excel 格式）。
-
-下载患者导入 JSON 模板（字段说明 + 示例 + 必填标注，与 `POST /patients/batch-import` 期望的 DTO 一致）。
+下载患者导入 JSON 模板（字段说明 + 示例，与 batch-import DTO 一致）。
 
 - **权限**: `DoctorOrReceptionist`
-
-- **响应类型**: `application/json`（`ApiResponse<object>`——含 Fields/Example）
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients/import-template" \
-  -H "Authorization: Bearer $TOKEN"
-```
+- **响应类型**: `application/json`（`ApiResponse<object>` — 含 Fields/Example）
 
 ---
 
-## GET /patients/export
+### GET /patients/export
 
-> **2026-08-13 已实现**（Excel→JSON）。
-
-导出患者数据为 JSON 数组（按筛选条件导出；敏感字段自动脱敏——`SensitiveDataJsonConverterFactory` 管道）。
+导出患者 JSON 数组（按筛选条件，敏感字段自动脱敏）。
 
 - **权限**: `DoctorOrReceptionist`
-
-**查询参数**:
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
@@ -455,221 +199,88 @@ curl -X GET "http://localhost:5000/api/v1/patients/import-template" \
 
 - **响应类型**: `application/json`（`ApiResponse<List<PatientListDto>>`）
 
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients/export" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
 ---
 
-## POST /patients/{id}/restore
+### POST /patients/{id}/restore
 
-> ✅ **已实现**
-
-恢复已删除的患者。绕过软删除全局过滤器。
+恢复已删除的患者（绕过软删除全局过滤器）。
 
 - **权限**: `DoctorOrReceptionist`
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<PatientDetailDto>`
 
-**路径参数**: `id` (Guid)
-
-**请求体**: 无
-
-**成功响应** (200): `ApiResponse<PatientDetailDto>`
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/restore" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**注意**: 此端点不使用 `GetEntityWithOwnershipCheckAsync`，因为 `GetByIdAsync` 受全局软删除过滤器影响。`RestoreAsync` 内部使用 `GetByIdIncludingDeletedAsync` 绕过过滤器。
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 200 | 该患者未被删除 (ERR-20702) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
-| 404 | 患者不存在 (ERR-20001) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20702 | 200 | 该患者未被删除 |
+| ERR-20001 | 404 | 患者不存在 |
 
 ---
 
-## GET /patients/by-id-number/{idNumber}
-
-> ✅ **已实现**
+### GET /patients/by-id-number/{idNumber}
 
 根据身份证号查询患者（用于读卡器/快速登记）。
 
 - **权限**: `DoctorOrAdminOrReceptionist`
+- **路径参数**: `idNumber` (string)
+- **响应**: `ApiResponse<PatientDetailDto>`
 
-**路径参数**:
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `idNumber` | string | 身份证号 |
-
-**成功响应** (200): `ApiResponse<PatientDetailDto>`
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients/by-id-number/110101199001011234" \
-  -H "Authorization: Bearer ***"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-|------------|------|
-| 404 | 未找到匹配的患者 |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| 404 | 404 | 未找到匹配的患者 |
 
 ---
 
-## GET /patients/{id}/check-reference
+### GET /patients/{id}/check-reference
 
-> ✅ **已实现**
-
-检查患者是否被医案引用，用于删除前确认。
+检查患者是否被医案引用（删除前确认）。
 
 - **权限**: `DoctorOrReceptionist`
-- 对应 [FR-PAT-011](../02-requirements/04-patients.md)。
+- **路径参数**: `id` (Guid)
+- **响应**: `ApiResponse<PatientReferenceCheckDto>`
 
-**路径参数**: `id` (Guid)
+**业务规则**: `referenceCount` = 关联医案总数；`recentCases` 返回最近 5 条医案摘要；有关联时 `canDelete=false`（提示用禁用替代删除）。
 
-**成功响应** (200): `ApiResponse<PatientReferenceCheckDto>`
-
-**业务规则**:
-
-1. referenceCount = 该患者关联的医案总数 (含所有状态)
-2. recentCases 返回最近 5 条医案摘要
-3. 有关联医案时 canDelete=false (MC-D04)，提示使用禁用功能替代删除
-
-**curl 示例：**
-
-```bash
-curl -X GET "http://localhost:5000/api/v1/patients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/check-reference" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
-| 404 | 患者不存在 (ERR-20001) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20001 | 404 | 患者不存在 |
 
 ---
 
-## POST /patients/batch-check-reference
-
-> ✅ **已实现**
+### POST /patients/batch-check-reference
 
 批量检查多个患者的引用关系。
 
 - **权限**: `DoctorOrReceptionist`
-- 对应 [FR-PAT-012](../02-requirements/04-patients.md)。
 
 **请求体** (`PatientBatchCheckReferenceInputDto`):
-
-```json
-{
-  "patientIds": [
-    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-    "c3d4e5f6-a7b8-9012-cdef-123456789012"
-  ]
-}
-```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `patientIds` | Guid[] | 是 | 患者 ID 列表，最多 100 个 |
 
-**成功响应** (200): `ApiResponse<List<PatientReferenceCheckDto>>`
+- **响应**: `ApiResponse<List<PatientReferenceCheckDto>>`
 
-**业务规则**:
-
-1. 最多 100 个患者 ID (超出返回 ERR-20704)
-2. 不存在的 ID 跳过 (不返回错误)
-3. 结果顺序与请求顺序一致
-
-**curl 示例：**
-
-```bash
-curl -X POST "http://localhost:5000/api/v1/patients/batch-check-reference" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "patientIds": [
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-      "c3d4e5f6-a7b8-9012-cdef-123456789012"
-    ]
-  }'
-```
-
-**错误码：**
-
-| HTTP 状态码 | 说明 |
-| ------------ | ------ |
-| 400 | 批量检查最多支持100条 (ERR-20704) |
-| 401/403 | — | 通用错误码见 [README](README.md#通用-http-状态码) |
+| 错误码 | HTTP | 说明 |
+|--------|------|------|
+| ERR-20704 | 400 | 批量检查最多支持100条 |
 
 ---
 
-## 错误码
+## 错误码汇总
 
-> 完整错误码定义见 [patients.md PRD](../02-requirements/04-patients.md)。错误码分区: 2xxxx。
+> 完整定义见 [patients.md PRD](../02-requirements/04-patients.md)。分区: 2xxxx。
 
-### 核心错误 (200xx)
+| 错误码 | HTTP | 用户消息 | 触发端点 |
+|--------|------|----------|----------|
+| ERR-20001 | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
+| ERR-20002 | 409 | 身份证号已存在 | POST /, PUT /{id} |
+| ERR-20003 | 409 | 患者电话已存在 | POST /, PUT /{id} |
+| ERR-20004 | 422 | 患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
+| ERR-20005 | 403/422 | 患者已被禁用/有进行中医案 | 需启用状态的操作 |
+| ERR-00003 | 400 | 参数验证失败 | POST /, PUT /{id} |
+| ERR-20702 | 200 | 该患者未被删除 | POST /{id}/restore |
+| ERR-20703 | 400 | 请至少选择一个患者 | POST /batch-delete |
+| ERR-20704 | 400 | 批量检查最多支持100条 | POST /batch-check-reference |
+| ERR-20705 | 400 | 分页参数无效 | GET / |
 
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-| -------- | -------- | ------ | ---------- | ---------- |
-| ERR-20001 | PatientNotFound | 404 | 患者不存在 | GET/PUT/DELETE /{id}, POST /{id}/restore |
-| ERR-20002 | PatientIdCardExists | 409 | 系统中已存在该身份证 | POST /, PUT /{id} |
-| ERR-20003 | PatientPhoneExists | 409 | 患者电话已存在 | POST /, PUT /{id} |
-| ERR-20004 | PatientHasReferencedCases | 422 | 该患者有历史医案，无法删除 | DELETE /{id}, POST /batch-delete |
-| ERR-20005 | PatientDisabled | 403 | 患者已被禁用 | 需启用状态的操作 |
-| ERR-20006 | InvalidPatientStatus | 400 | 无效的患者状态 | PUT /{id}/status |
-| ERR-00003 | ValidationFailed | 400 | 参数验证失败 | POST /, PUT /{id} |
-
-### 业务规则错误 (207xx)
-
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-| -------- | -------- | ------ | ---------- | ---------- |
-| ERR-20701 | PhoneDuplicate | 400 | 手机号已存在 | POST /, PUT /{id} |
-| ERR-20702 | PatientNotDeleted | 200 | 该患者未被删除 | POST /{id}/restore |
-| ERR-20703 | BatchOperationEmpty | 400 | 请至少选择一个患者 | POST /batch-delete |
-| ERR-20704 | BatchCheckExceeded | 400 | 批量检查最多支持100条 | POST /batch-check-reference |
-| ERR-20705 | InvalidPagination | 400 | 分页参数无效 | GET / |
-
-### 导入错误 (208xx)
-
-> 以下错误码用于客户端 Excel 导入流程，非服务端端点触发。
-
-| 错误码 | 枚举名 | HTTP | 用户消息 | 触发端点 |
-| -------- | -------- | ------ | ---------- | ---------- |
-| ERR-20801 | ImportFileEmpty | 400 | 文件不能为空 | 客户端导入 |
-| ERR-20802 | ImportFileFormat | 400 | 仅支持.xlsx格式 | 客户端导入 |
-| ERR-20803 | ImportFileSize | 400 | 文件大小不能超过10MB | 客户端导入 |
-| ERR-20804 | ImportNoWorksheet | 400 | 没有工作表 | 客户端导入 |
-| ERR-20805 | ImportRowExceeded | 400 | 导入数据超过限制 | 客户端导入 |
-
----
-
-## 变更记录
-
-| 日期 | 版本 | 变更内容 |
-| ------ | ------ | ---------- |
-| 2026-02-10 | v1.0 | 初始版本，10 个端点 |
-| 2026-02-18 | v1.1 | 新增 PUT /patients/{id}/status 端点 (FR-PAT-013 患者状态管理); 补充错误码 ERR-20005/20006 |
-| 2026-02-18 | v1.2 | 新增错误码章节: 补充端点级 MCCEE 错误码 (ERR-20001~20805)，含核心/业务规则/导入三类 |
-| 2026-06-12 | v1.4 | 移除 POST /patients/import (客户端功能); US-PAT-013 改为 toggle-status; 导入错误码标注为客户端触发 |
-| 2026-06-12 | v1.5 | PatientDetailDto: 新增 maritalStatus/idType/bloodType/emergencyContact*/lastVisitTime/visitCount/disableReason/pinYinCode/status 字段 |
-| 2026-06-25 | v2.0 | 补充全部 12 个端点的完整请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
-| 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注；import-template/export 标 v2.0（D6）；restore 标 D4 待实现；check-reference/batch-check-reference 标 D5 必做补回 |
-| 2026-06-28 | v2.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表引用；待实现端点删除 JSON 示例只保留字段表+标注 |
-| 2026-06-29 | v2.3 | restore/check-reference/batch-check-reference 三个端点从待实现变为已实现 |
+> 客户端导入错误码 (ERR-20801~20805) 用于前端 Excel 导入流程，非服务端端点触发。
