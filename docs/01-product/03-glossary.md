@@ -41,12 +41,12 @@
 | Patient | 患者 | 患者基本信息，含个人信息和就诊历史统计 |
 | Registration | 挂号 | 患者就诊登记记录，含候诊队列管理和就诊状态跟踪 |
 | User | 用户 | 系统用户。角色定义见 [02-personas.md](02-personas.md) |
-| MedicalCaseAuditLog | 医案审计日志 | 记录医案的所有修改历史，含操作人、变更字段（20 字段差异追踪）、修改原因。🚧 v1.0 待实现（D1 补回） |
-| MedicalCasePrintLog | 打印日志 | 记录医案打印历史（含 PrintType 区分打印类型）。🚧 v1.0 待实现（D2 补回） |
-| SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件（登录、登出、令牌撤销等）。🚧 v1.0 待实现（D3 补回） |
+| MedicalCaseAuditLog | 医案审计日志 | 记录医案的所有修改历史，含操作人、变更字段（20 字段差异追踪）、修改原因。 |
+| MedicalCasePrintLog | 打印日志 | 记录医案打印历史（含 PrintType 区分打印类型）。 |
+| SecurityAuditLog | 安全审计日志 | 记录认证相关的安全事件（登录、登出、令牌撤销等）。 |
 | AuthSession | 认证会话 | JWT 登录会话记录 |
-| RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测。🚧 v1.0 待实现（D3 补回） |
-| BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌。🚧 v1.0 待实现 |
+| RefreshToken | 刷新令牌 | JWT 刷新令牌，支持令牌轮换和重放攻击检测。 |
+| BlacklistedToken | 黑名单令牌 | 被撤销的 JWT 令牌。 |
 | PinYinCode | 拼音码 | 中文姓名/药材名的拼音首字母，用于快速检索 |
 | DecocteMethod | 煎法 | 药材的煎煮方式：默认、先煎 (PreDecoct)、后下 (PostDecoct) |
 | ~~草稿水印~~ | ~~草稿水印~~ | ~~未完成医案打印时叠加的"草稿"标识~~ — **已删除**（2026-08-03 决策：未完成医案不可打印，无此场景，见 [09-printing.md](../02-requirements/09-printing.md)） |
