@@ -242,9 +242,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 9. **两种创建入口（MC-D19）**：模式 1 前台挂号→医生从挂号队列选中；模式 2 医生直接查询患者创建。两种模式在 BR-001 检查后完全收敛
 10. **医案号溢出处理**：当 3 位序号达到 999 时，扩展为 4 位序号（MC+yyyyMMdd+0001）
 
-**双模式差异**: 远程 `POST /api/v1/medicalcases`；本地一致（统一 Service 层）。
-
-**实现参考**: `MedicalCasesController.cs:26`、`MedicalCaseBusinessRules.cs:9`
+**实现参考**: `MedicalCasesController.cs`、`MedicalCaseBusinessRules.cs`
 
 ---
 
@@ -276,9 +274,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 7. **乐观并发控制**：RowVersion + 3 次重试（MC-D10）
 8. **辨证录入（D7 决策）**：主诉 / 现病史 / 舌诊 / 脉诊 / 辨证为 Consultation 的结构化字段（见 [04-data-model](../03-architecture/04-data-model.md) Consultation 实体）；舌象 / 脉象提供常用选项选择器 + 自由文本兜底；v1.0 **不做**智能辅助诊断（如 AI 推荐、证型自动判别）。
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}`；本地一致（统一 Service 层）。
-
-**实现参考**: `MedicalCasesController.cs:26`、`IMedicalCaseFacade.cs:15`
+**实现参考**: `MedicalCasesController.cs`、`IMedicalCaseFacade.cs`
 
 ---
 
@@ -303,9 +299,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 设为 true 时，允许创建/编辑处方
 4. 完成医案时此字段不可为 null（BR-003）
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/prescription-flag`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -330,9 +324,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 包含计算属性
 4. `HasPrescription` 计算：`entity.Prescription != null && !entity.Prescription.IsDeleted`
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -359,9 +351,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 默认排序：CreatedAt DESC（MC-D11）
 4. 分页参数校验：page ≥ 1，pageSize 1-100
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases?status=&patientId=&keyword=&page=&pageSize=`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -386,9 +376,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. ByPatient 查询：按患者 ID 过滤
 4. Recent 查询：返回最近 N 条（默认 20，最大 50）
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/query?type=&...`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -415,9 +403,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 返回完整 MedicalCaseDetailDto（含嵌套数据）
 5. 权限过滤：Doctor 仅自己；Admin 全部
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/search?patientName=&diagnosisKeyword=&startDate=&endDate=`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -443,9 +429,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 2. 仅返回 `Completed` 状态医案的 Consultation
 3. 按时间 DESC 排序
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/{patientId}/consultations`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -472,9 +456,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 按时间 DESC 排序
 4. 支持复制操作（见 US-MC-019）
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/{patientId}/prescriptions`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -501,9 +483,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. `UpdateStatusAsync` 拒绝 `Completed` 状态，强制使用 `CompleteAsync`（US-MC-011）
 4. Doctor 仅可操作自己的；Admin 全部
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/suspend` 或 `/activate`；本地一致。
-
-**实现参考**: `MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs`
 
 ---
 
@@ -529,9 +509,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 2. 完成校验规则见 [BR-003](#br-003医案完成校验规则)；完成后当天可编辑，隔天锁定（IsLocked 计算属性）
 3. **Registration 联动**：完成后关联 Registration 自动 Completed（US-REG-007）
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/close`；本地一致（统一 Service 层）。
-
-**实现参考**: `MedicalCaseProcessingController.cs:25`、`MedicalCaseBusinessRules.cs:9`
+**实现参考**: `MedicalCaseProcessingController.cs`、`MedicalCaseBusinessRules.cs`
 
 ---
 
@@ -557,9 +535,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 用于清理异常状态医案（如长期 Suspended 的孤儿医案）
 4. 必须记录操作原因
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/close?force=true`；本地一致。
-
-**实现参考**: `MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs`
 
 ---
 
@@ -587,9 +563,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. Doctor 仅可操作自己的；Admin 全部
 5. v1.0 不实现自动清理（MC-D05），BR-001 形成天然卡点提醒
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/suspend`；本地一致。
-
-**实现参考**: `MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs`
 
 ---
 
@@ -622,9 +596,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
    - Source=Receptionist：Registration 回退为 Waiting（原医案已物理删，患者回来重新接诊时新建）
    - Source=Doctor：Registration 自动变为 Cancelled
 
-**双模式差异**: 远程 `PUT /api/v1/medicalcases/{id}/cancel`；本地一致。
-
-**实现参考**: `MedicalCaseProcessingController.cs:25`
+**实现参考**: `MedicalCaseProcessingController.cs`
 
 ---
 
@@ -652,9 +624,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 批量删除 IDs 列表非空校验
 5. 未完成医案不可删除（走「取消」= 物理删除）
 
-**双模式差异**: 远程 `DELETE /api/v1/medicalcases/{id}` 或 `POST /api/v1/medicalcases/batch-delete`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -683,9 +653,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 6. 权限查询端点返回 CanEdit/CanDelete/RequiresEditReason/DenialReason
 7. **删除权限 = 编辑权限**
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}/permissions`；本地一致。
-
-**实现参考**: `MedicalCaseAuditController.cs:23`
+**实现参考**: `MedicalCaseAuditController.cs`
 
 ---
 
@@ -717,9 +685,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 8. 删除操作：记录 IsDeleted=true 变更
 9. **审计记录写入失败不影响主业务流程**（异常隔离）
 
-**双模式差异**: 远程 `GET /api/v1/medicalcases/{id}/audit-logs`（完整字段级审计）；本地仅实体级审计字段。
-
-**实现参考**: `MedicalCaseAuditController.cs:23`
+**实现参考**: `MedicalCaseAuditController.cs`
 
 ---
 
@@ -748,9 +714,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 4. 权限过滤：Doctor 仅自己；Admin 全部
 5. 用于列表场景的批量预加载，避免 N+1 查询
 
-**双模式差异**: 远程 `POST /api/v1/medicalcases/batch-details`；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`
+**实现参考**: `MedicalCasesController.cs`
 
 ---
 
@@ -778,9 +742,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 3. 复制是数据快照，修改新处方不影响源医案。
 4. 与 US-MC-018 区分：US-MC-018 是「批量详情查询」（≤50，解决 N+1），复制处方独立为 MC-019。
 
-**双模式差异**: 复用 US-MC-009 处方历史聚合接口；本地一致。
-
-**实现参考**: `MedicalCasesController.cs:26`（处方历史见 US-MC-009）
+**实现参考**: `MedicalCasesController.cs`（处方历史见 US-MC-009）
 
 ---
 
@@ -797,7 +759,7 @@ IsLocked = IsCompleted && (CompletedAt.Date < Today)
 - [ ] POST `/api/v1/medicalcases/batch-delete` 批量软删除
 - [ ] 仅 Admin 可操作，仅 Completed 医案可删（其余跳过计数）
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasesController.cs:178`（batch-delete）、`MedicalCaseCommandService.Deletion.cs`（McOnlyCompletedCanDelete）
+**实现参考**: `MedicalCasesController.cs`（batch-delete）、`MedicalCaseCommandService.Deletion.cs`（McOnlyCompletedCanDelete）
 
 ---
 
