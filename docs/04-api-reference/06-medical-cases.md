@@ -457,7 +457,7 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/query?queryType=ByPatie
 3. 客户端组装: 预览选择药材，禁用药材跳过并提示 (MC-D09)，UnitPrice 从药材库实时获取 (MC-D13)
 4. `PUT /medicalcases/{currentId}` → 聚合保存
 
-**业务规则**: 价格从药材库实时获取 (MC-D13)；禁用药材跳过并提示 (MC-D09)；复制后处方与原医案无关联；总价公式: `SingleDosePrice = SUM(Items.Amount); TotalPrice = SingleDosePrice × DosageCount × Discount` (MC-D14)
+> 业务规则详见 [07-medical-cases.md US-MC-019](../02-requirements/07-medical-cases.md#us-mc-019-复制上次处方微调)（仅复制药材与剂量、价格重新计算、禁用药材跳过、无关联复制）。
 
 ---
 
