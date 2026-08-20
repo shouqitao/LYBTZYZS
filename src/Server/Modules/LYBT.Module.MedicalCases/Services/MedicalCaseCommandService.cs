@@ -246,7 +246,7 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// P0-4 (R3 C2): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人）
+        /// P0-4+P0-5 (R3 C2 + R4 C1): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人，改 BusinessException 带 TypedErrorCode）
         /// </summary>
         private static void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
         {
@@ -256,14 +256,13 @@ namespace LYBT.Module.MedicalCases.Services
             var isForeignEdit = medicalCase.UserId != currentUserId;
             if ((isPrintedEdit || isCompletedEdit || isLockedEdit || isForeignEdit) && string.IsNullOrWhiteSpace(request.EditReason))
             {
-                throw new InvalidOperationException(
-                    isPrintedEdit
-                        ? "医案已打印，修改内容需提供编辑原因"
-                        : isLockedEdit
-                            ? "医案已锁定（隔天），编辑需提供编辑原因"
-                            : isForeignEdit
-                                ? "非创建医生编辑需提供编辑原因"
-                                : "已完成医案编辑需提供编辑原因");
+                if (isPrintedEdit)
+                    throw new BusinessException(ErrorCode.McPrintedRequiresReason, "医案已打印，修改内容需提供编辑原因");
+                if (isLockedEdit)
+                    throw new BusinessException(ErrorCode.McCannotEditCase, "医案已锁定（隔天），编辑需提供编辑原因");
+                if (isForeignEdit)
+                    throw new BusinessException(ErrorCode.McCannotEditCase, "非创建医生编辑需提供编辑原因");
+                throw new BusinessException(ErrorCode.McCannotEditCase, "已完成医案编辑需提供编辑原因");
             }
         }
 
