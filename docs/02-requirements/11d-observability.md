@@ -79,10 +79,7 @@
 4. 默认级别 Information，可通过 DiagnosticsController 动态调整。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | Server 写 Console + File + SQL Server |
-| 本地 | Desktop 写 Console + File |
+模式差异：------: ------；远程: Server 写 Console + File + SQL Server；本地: Desktop 写 Console + File
 
 **实现参考**: Serilog 配置（`Program.cs`）、`SystemLog` 表
 
@@ -107,12 +104,9 @@
 3. 切换后最终 logger 接管全部后续日志。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（Desktop 同样两阶段） |
+模式差异：------: ------；远程: 同下；本地: 完全一致（Desktop 同样两阶段）
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Program.cs`、`src/Client/Desktop/Shell/App.xaml.cs:41`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Program.cs`、`src/Client/Desktop/Shell/App.xaml.cs`
 
 ---
 
@@ -140,10 +134,7 @@
 6. `SensitiveDataDestructuringPolicy` 在 Serilog 析构时触发。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（Desktop 同策略） |
+模式差异：------: ------；远程: 同下；本地: 完全一致（Desktop 同策略）
 
 **实现参考**: `SensitiveDataAttribute`、`SensitiveDataMasker`、`SensitiveDataDestructuringPolicy`
 
@@ -171,10 +162,7 @@
 4. UserId 可选（LoginFailed 可能无已知用户）。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 写入 SQL Server `SecurityAuditLogs` 表 |
-| 本地 | 不适用（本地模式无完整认证流程） |
+模式差异：------: ------；远程: 写入 SQL Server `SecurityAuditLogs` 表；本地: 不适用（本地模式无完整认证流程）
 
 **实现参考**: `SecurityAuditService`、`SecurityAuditLog` 实体、`SecurityOptions.AuditRetentionDays`
 
@@ -201,10 +189,7 @@
 4. 所有操作 `lock` 保护，实现 `IDisposable`。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 通过 `DiagnosticsController` API 管理 |
-| 本地 | Desktop 直接使用 `LoggingLevelManager` |
+模式差异：------: ------；远程: 通过 `DiagnosticsController` API 管理；本地: Desktop 直接使用 `LoggingLevelManager`
 
 **实现参考**: `LoggingLevelManager`（API 详见下方 Health & Diagnostics US-SYS-005~009）
 
@@ -231,10 +216,7 @@
 4. CorrelationId 经 `CorrelationIdEnricher` 自动注入。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | Server 全局启用 |
-| 本地 | 不适用（Desktop 无 Controller） |
+模式差异：------: ------；远程: Server 全局启用；本地: 不适用（Desktop 无 Controller）
 
 **实现参考**: `ApiLoggingFilter`、`CorrelationIdEnricher`
 
@@ -262,10 +244,7 @@
 4. 清理失败异常隔离，不影响主流程；可通过 `Lybt:Logging:Cleanup` 禁用。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | Server 自动运行 |
-| 本地 | 不适用（Desktop 日志由文件滚动策略管理） |
+模式差异：------: ------；远程: Server 自动运行；本地: 不适用（Desktop 日志由文件滚动策略管理）
 
 **实现参考**: `LogCleanupService`、`SecurityOptions.AuditRetentionDays`、`Lybt:Logging:Cleanup` 配置节
 
@@ -343,12 +322,9 @@
 3. 此端点不查 DB，保证最轻量。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `GET /api/v1/health` |
-| 本地 | 不适用（纯客户端无服务端探针） |
+模式差异：------: ------；远程: `GET /api/v1/health`；本地: 不适用（纯客户端无服务端探针）
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/HealthController.cs:19`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/HealthController.cs`
 
 ---
 
@@ -369,12 +345,9 @@
 2. 返回 message("pong") + timestamp(UTC)。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `GET /api/v1/health/ping` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `GET /api/v1/health/ping`；本地: 不适用
 
-**实现参考**: `HealthController.cs:19`
+**实现参考**: `HealthController.cs`
 
 ---
 
@@ -400,12 +373,9 @@
 4. 返回数据库检查耗时。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `GET /api/v1/health/details` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `GET /api/v1/health/details`；本地: 不适用
 
-**实现参考**: `HealthController.cs:19`、数据库健康检查服务
+**实现参考**: `HealthController.cs`、数据库健康检查服务
 
 ---
 
@@ -429,12 +399,9 @@
 3. diagnostics API 对审计日志查询失败返回 Degraded，不抛 500。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `/health/details` 按状态返回 200/503 |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `/health/details` 按状态返回 200/503；本地: 不适用
 
-**实现参考**: `HealthController.cs:19`
+**实现参考**: `HealthController.cs`
 
 ---
 
@@ -457,12 +424,9 @@
 3. remainingMinutes 仅调试模式激活时返回。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `GET /api/v1/diagnostics/logging/status` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `GET /api/v1/diagnostics/logging/status`；本地: 不适用
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/DiagnosticsController.cs:20`、`LoggingLevelManager`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/DiagnosticsController.cs`、`LoggingLevelManager`
 
 ---
 
@@ -488,12 +452,9 @@
 5. 新调试模式覆盖前一次（停旧 Timer，设新 Timer）；操作记 Warning 日志。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `POST /api/v1/diagnostics/logging/debug/enable` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `POST /api/v1/diagnostics/logging/debug/enable`；本地: 不适用
 
-**实现参考**: `DiagnosticsController.cs:20`、`LoggingLevelManager`
+**实现参考**: `DiagnosticsController.cs`、`LoggingLevelManager`
 
 ---
 
@@ -516,12 +477,9 @@
 3. 操作记 Warning 日志。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `POST /api/v1/diagnostics/logging/debug/disable` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `POST /api/v1/diagnostics/logging/debug/disable`；本地: 不适用
 
-**实现参考**: `DiagnosticsController.cs:20`、`LoggingLevelManager`
+**实现参考**: `DiagnosticsController.cs`、`LoggingLevelManager`
 
 ---
 
@@ -544,12 +502,9 @@
 3. 此操作不设自动过期（与调试模式不同）；操作记 Warning 日志。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | `POST /api/v1/diagnostics/logging/level` |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: `POST /api/v1/diagnostics/logging/level`；本地: 不适用
 
-**实现参考**: `DiagnosticsController.cs:20`、`LoggingLevelManager`
+**实现参考**: `DiagnosticsController.cs`、`LoggingLevelManager`
 
 ---
 
@@ -572,10 +527,7 @@
 3. 与手动禁用共用恢复路径。
 
 **双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | Server Timer 自动触发 |
-| 本地 | 不适用 |
+模式差异：------: ------；远程: Server Timer 自动触发；本地: 不适用
 
 **实现参考**: `LoggingLevelManager`（Timer + `IDisposable`）
 
