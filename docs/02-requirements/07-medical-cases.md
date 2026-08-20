@@ -1,4 +1,4 @@
-# 医案管理 (Medical Case Management)
+# 医案管理 (MedicalCase Management)
 
 > 医案（MedicalCase）是中医诊疗的完整记录，涵盖一次就诊从创建到归档的完整生命周期，是**系统唯一的聚合根**：聚合 Consultation（中医诊断）和 Prescription（处方），所有写操作通过聚合根统一入口完成。一个医案包含患者信息、主治医生、中医诊断（含四诊结果与辨证分析）和处方（含药材列表与价格计算）。
 >

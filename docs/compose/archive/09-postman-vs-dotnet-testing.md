@@ -303,8 +303,8 @@ jobs:
 |------|---------|---------|
 | `US_User_MustHaveTests.cs` | 用户 CRUD、权限、批量操作 | ✅ 权限边界 + 业务规则 + DB 状态 |
 | `US_Patient_MustHaveTests.cs` | 患者 CRUD、身份证验证 | ✅ 唯一性约束 + 软删除 |
-| `US_Herb_MustHaveTests.cs` | 草药 CRUD、名称唯一性 | ✅ 唯一性约束 + 分页验证 |
-| `US_Formula_MustHaveTests.cs` | 方剂 CRUD、草药关联 | ✅ 关联数据完整性 |
+| `US_Herb_MustHaveTests.cs` | 药材 CRUD、名称唯一性 | ✅ 唯一性约束 + 分页验证 |
+| `US_Formula_MustHaveTests.cs` | 验方 CRUD、药材关联 | ✅ 关联数据完整性 |
 | `US_MedicalCase_MustHaveTests.cs` | 医案 CRUD、聚合根验证 | ✅ DDD 聚合根规则 + 事务 |
 | `US_Registration_MustHaveTests.cs` | 挂号流程、状态转换 | ✅ 状态机验证 + 并发控制 |
 | `US_Sync_MustHaveTests.cs` | 离线同步、冲突解决 | ✅ 事务性同步逻辑 |

@@ -124,7 +124,7 @@
 | 0 | Disabled | 禁用 |
 | 1 | Enabled | 启用 |
 
-### FormulaType (方剂类型)
+### FormulaType (验方类型)
 
 | 值 | 英文 | 中文 |
 |----|------|------|
