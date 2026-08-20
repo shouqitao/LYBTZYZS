@@ -61,11 +61,11 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     private double _sidebarWidth = 60;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(NavTextVisibility))]
+    [NotifyPropertyChangedFor(nameof(IsNavTextVisible))]
     private bool _isSidebarExpanded = false;
 
-    public Visibility NavTextVisibility =>
-        IsSidebarExpanded ? Visibility.Visible : Visibility.Collapsed;
+    public bool IsNavTextVisible =>
+        IsSidebarExpanded;
 
     [ObservableProperty]
     private bool _isDarkMode;

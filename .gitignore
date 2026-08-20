@@ -167,3 +167,7 @@ backups/
 # Compose brainstorm sessions
 .compose/
 tests/newman/results.json
+
+# Tool secrets - never commit
+src/Tools/PasswordHashGenerator/appsettings*.json
+src/Tools/PasswordHashGenerator/appsettings*.json

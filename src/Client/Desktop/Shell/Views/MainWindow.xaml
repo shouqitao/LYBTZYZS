@@ -85,7 +85,7 @@
                                     <TextBlock Margin="8,0,0,0" FontSize="14" FontWeight="Bold"
                                                Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                Text="凌隐宝堂"
-                                               Visibility="{Binding DataContext.NavTextVisibility,
+                                               Visibility="{Binding DataContext.IsNavTextVisible, Converter={x:Static converters:Cvt.BoolToVis},
                                                            RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </StackPanel>
 
@@ -109,7 +109,7 @@
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="AccountEdit" Width="18" Height="18" />
                                             <TextBlock Margin="8,0,0,0" Text="个人资料"
-                                                       Visibility="{Binding DataContext.NavTextVisibility,
+                                                       Visibility="{Binding DataContext.IsNavTextVisible, Converter={x:Static converters:Cvt.BoolToVis},
                                                                    RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </StackPanel>
                                     </Button>
@@ -132,7 +132,7 @@
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Logout" Width="18" Height="18" />
                                             <TextBlock Margin="8,0,0,0" Text="退出"
-                                                       Visibility="{Binding DataContext.NavTextVisibility,
+                                                       Visibility="{Binding DataContext.IsNavTextVisible, Converter={x:Static converters:Cvt.BoolToVis},
                                                                    RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </StackPanel>
                                     </Button>
@@ -167,7 +167,7 @@
                                                                Foreground="{DynamicResource MaterialDesign.Brush.IdealForeground}"
                                                                VerticalAlignment="Center"
                                                                Text="{Binding Title}"
-                                                               Visibility="{Binding DataContext.NavTextVisibility,
+                                                               Visibility="{Binding DataContext.IsNavTextVisible, Converter={x:Static converters:Cvt.BoolToVis},
                                                                            RelativeSource={RelativeSource AncestorType=Window}}" />
                                                 </StackPanel>
                                             </Grid>
