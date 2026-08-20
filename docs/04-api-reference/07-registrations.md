@@ -319,7 +319,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 取消挂号。
 
 - **权限**: DoctorOrReceptionist
-- US-REG-004: 仅 Waiting 状态可取消
+- US-REG-006: 仅 Waiting 状态可取消
 
 **路径参数**: `id` (Guid)
 
