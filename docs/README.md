@@ -17,7 +17,7 @@
 | API 端点契约 | [04-api-reference/](04-api-reference/README.md)（按模块） | [13b-api-endpoints.md](03-architecture/13b-api-endpoints.md)（视图层） |
 | 任务清单 / 进度 / 决策 | [13-project-master-plan.md](03-architecture/13-project-master-plan.md) | — |
 | 当前状态 / 已知问题 | [13c-current-status.md](03-architecture/13c-current-status.md) | — |
-| 架构决策 (ADR) | [03-architecture/decisions/](03-architecture/decisions/) | — |
+| 架构决策 (ADR) | [03-architecture/decisions/](03-architecture/decisions/README.md) | — |
 | 技术栈 / 架构总览 | [00-architecture-summary.md](03-architecture/00-architecture-summary.md) | — |
 | 部署 / 配置 | [06-operations/](06-operations/README.md) | — |
 | 命名规范 / 文档规则 | [01-naming-convention.md](00-governance/01-naming-convention.md) | — |
@@ -84,16 +84,16 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
-| [00-governance](00-governance/) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 4 |
-| [01-product](01-product/) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
-| [02-requirements](02-requirements/) | 需求文档（15 模块，142 US） | 19 |
-| [03-architecture](03-architecture/) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 57 |
-| [04-api-reference](04-api-reference/) | API 端点文档 | 15 |
-| [05-development](05-development/) | 开发指南、编码规范、测试指南 | 17 |
-| [06-operations](06-operations/) | 部署、配置、监控、备份 | 12 |
-| [compose](compose/) | 过程文档归档：specs（图表资产） | 3 |
-| [prompts](prompts/) | Prompt 模板 | 2 |
-| [training](training/) | 培训材料 | 1 |
+| [00-governance](00-governance/README.md) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 4 |
+| [01-product](01-product/README.md) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
+| [02-requirements](02-requirements/README.md) | 需求文档（15 模块，142 US） | 19 |
+| [03-architecture](03-architecture/README.md) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 57 |
+| [04-api-reference](04-api-reference/README.md) | API 端点文档 | 15 |
+| [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 17 |
+| [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 12 |
+| [compose](compose/README.md) | 过程文档归档：specs（图表资产） | 3 |
+| [prompts](prompts/README.md) | Prompt 模板 | 2 |
+| [training](training/README.md) | 培训材料 | 1 |
 
 **总计：约 140 个文档**（compose 41 报告/计划已清理，06-operations 4 部署文档已收敛，03-architecture 编号已修复，05-development 9 测试文档已整合，2026-08-20）
 

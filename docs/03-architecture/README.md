@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-> 版本号以 [`Directory.Packages.props`](../../Directory.Packages.props) 为唯一真相源。
+> 版本号以项目根目录 `Directory.Packages.props` 为唯一真相源。
 
 | 组件 | 技术 | 版本 |
 |------|------|------|
@@ -52,11 +52,11 @@
 
 | 目录 | 内容 |
 |------|------|
-| [decisions/](decisions/) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
-| [modules/](modules/) | 各模块架构规格（10 个模块） |
-| [localwebapi/](localwebapi/) | 本地模式 API 架构 |
+| [decisions/README.md](decisions/README.md) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
+| [modules/auth.md](modules/auth.md) | 各模块架构规格（10 个模块） |
+| [localwebapi/overview.md](localwebapi/overview.md) | 本地模式 API 架构 |
 
-> 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
+> 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/README.md)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
 
 ## 核心架构原则
 

@@ -102,4 +102,4 @@ Port = new Uri(addressFeature.Addresses.First()).Port;
 - [LocalWebAPI API 端点](./api-endpoints.md)
 - [LocalWebAPI 认证](./authentication.md)
 
-> 架构决策详见 [decisions/](../decisions/) 目录。
+> 架构决策详见 [decisions/](../decisions/README.md) 目录。

@@ -122,7 +122,7 @@ public interface IDomainEventDispatcher
 ## 关联
 
 - [ADR-0017: Modular Monolith with CQRS](0017-modular-monolith-cqrs.md) — 模块化单体架构的基础
-- [SharedKernel Events](../../../src/Server/Core/LYBT.Infrastructure/SharedKernel/Events/) — `IDomainEvent`, `IDomainEventDispatcher`
+- SharedKernel Events（`src/Server/Core/LYBT.Infrastructure/SharedKernel/Events/`）— `IDomainEvent`, `IDomainEventDispatcher`
 - `SharedKernel/Outbox` — `IOutboxService`, `OutboxMessage`（🚧 **目录未实现**，Outbox 待 v2.0，当前事件直接投递）
 - [MedicalCase 聚合根](0001-medicalcase-aggregate-root.md) — 首个使用领域事件的模块
 

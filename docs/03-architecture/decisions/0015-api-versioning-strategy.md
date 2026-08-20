@@ -53,7 +53,7 @@
 
 - [ADR-0009: URL 驱动双模式](0009-url-driven-dual-mode.md) — SwitchingApiClient 依赖版本化 URL
 - [ADR-0010: LocalWebAPI 统一服务层](0010-localwebapi-unified-service-layer.md) — 本地/远程 API 契约同步
-- [04-api-reference/](../../04-api-reference/) — API 端点文档，按版本组织
+- [04-api-reference/](../../04-api-reference/README.md) — API 端点文档，按版本组织
 
 ## 关联 US
 

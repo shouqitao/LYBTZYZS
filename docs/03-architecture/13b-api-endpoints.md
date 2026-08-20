@@ -2,7 +2,7 @@
 
 > 由 [13-project-master-plan.md §三](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移，不改变定义。端点按模块组织，权限均为操作级（详细矩阵见 [12-permissions-matrix.md](12-permissions-matrix.md)）。
 >
-> **权威定义**：逐端点请求/响应/错误码等详细说明见 [04-api-reference/](../04-api-reference/)。
+> **权威定义**：逐端点请求/响应/错误码等详细说明见 [04-api-reference/](../04-api-reference/README.md)。
 
 ## 3.1 认证授权 (Auth) — `api/v1/auth`
 

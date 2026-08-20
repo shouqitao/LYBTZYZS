@@ -58,7 +58,7 @@ LYBTZYZS/
 
 | 目录 | 内容 |
 |------|------|
-| [standards/](standards/) | 开发标准（STD-01~06） |
+| [standards/](standards/README.md) | 开发标准（STD-01~06） |
 
 ## 常见问题
 

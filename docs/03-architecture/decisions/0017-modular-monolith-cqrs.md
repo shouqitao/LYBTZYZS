@@ -90,7 +90,7 @@ services.AddMediatR(cfg =>
 ## 关联
 
 - [ADR-0001: MedicalCase 聚合根](0001-medicalcase-aggregate-root.md) — MedicalCase 是首个采用 CQRS 的模块
-- [SharedKernel Events](../../../src/Server/Core/LYBT.Infrastructure/SharedKernel/Events/) — `IDomainEvent`, `IDomainEventDispatcher`
+- SharedKernel Events（`src/Server/Core/LYBT.Infrastructure/SharedKernel/Events/`）— `IDomainEvent`, `IDomainEventDispatcher`
 - `SharedKernel/Outbox` — `IOutboxService`, `OutboxMessage`（🚧 **目录未实现**，Outbox 待 v2.0，当前事件直接投递）
 
 ## 关联 US

@@ -151,7 +151,7 @@ dotnet test tests/LYBT.Tests.Architecture/  # 架构守卫
 
 | 文档 | 说明 |
 |------|------|
-| [05-development/](05-development/) | 编码标准、开发流程 |
+| [05-development/](05-development/README.md) | 编码标准、开发流程 |
 | [01-setup.md](05-development/01-setup.md) | 快速开始（新人上手） |
 
 ---

@@ -204,8 +204,8 @@ v1.0 包含 **10 个功能模块、142 个 User Stories**（Must / Should / Coul
 | 产品愿景 | [`../01-product/01-vision.md`](../01-product/01-vision.md) |
 | 角色画像 | [`../01-product/02-personas.md`](../01-product/02-personas.md) |
 | 业务术语表 | [`../01-product/03-glossary.md`](../01-product/03-glossary.md) |
-| 系统架构 | [`../03-architecture/`](../03-architecture/) |
-| API 参考 | [`../04-api-reference/`](../04-api-reference/) |
+| 系统架构 | [`../03-architecture/`](../03-architecture/README.md) |
+| API 参考 | [`../04-api-reference/`](../04-api-reference/README.md) |
 
 ---
 
