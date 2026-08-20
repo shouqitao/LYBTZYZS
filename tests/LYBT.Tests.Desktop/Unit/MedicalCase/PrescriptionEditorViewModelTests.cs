@@ -15,7 +15,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-public class PrescriptionEditorViewModelTests : UserJourneyTestBase
+public class PrescriptionEditorViewModelTests : DesktopTestBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IWorkspaceHost _host;

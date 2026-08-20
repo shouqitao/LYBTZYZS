@@ -9,7 +9,7 @@ namespace LYBT.Tests.Desktop;
 /// Phase 1.2: WorkflowStepIndicator tests
 /// Tests for workflow step progression and visualization
 /// </summary>
-public class WorkflowStepIndicatorTests : UserJourneyTestBase
+public class WorkflowStepIndicatorTests : DesktopTestBase
 {
     public WorkflowStepIndicatorTests()
     {

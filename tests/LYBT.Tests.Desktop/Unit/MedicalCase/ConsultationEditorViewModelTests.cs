@@ -13,7 +13,7 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-public class ConsultationEditorViewModelTests : UserJourneyTestBase
+public class ConsultationEditorViewModelTests : DesktopTestBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IWorkspaceHost _host;

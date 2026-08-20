@@ -10,7 +10,7 @@ namespace LYBT.Tests.Desktop;
 /// Phase 1.3: ConsultationItem validation property tests
 /// Tests for field validation indicators
 /// </summary>
-public class ConsultationItemTests : UserJourneyTestBase
+public class ConsultationItemTests : DesktopTestBase
 {
     public ConsultationItemTests()
     {

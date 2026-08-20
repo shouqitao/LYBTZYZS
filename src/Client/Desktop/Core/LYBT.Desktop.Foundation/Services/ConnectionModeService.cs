@@ -209,16 +209,26 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <summary>
     /// 当 URL 被外部修改时，重新推导生效模式并统一走 SetModeAsync
     /// （守卫 + 状态同步 + 事件），不再直接 ApplyMode 绕过守卫。
-    /// fire-and-forget：UrlChanged 为同步事件；SetModeAsync 异步执行，异常就地捕获。
+    /// fire-and-forget：UrlChanged 为同步事件；异步执行体 HandleUrlChangedAsync 就地捕获异常。
     /// </summary>
     private void OnUrlChanged(object? sender, string newUrl)
+    {
+        _ = HandleUrlChangedAsync(newUrl);
+    }
+
+    /// <summary>
+    /// URL 驱动模式切换的异步执行体。必须在此 await SetModeAsync 并捕获异常——
+    /// 若在 OnUrlChanged 中写 `_ = SetModeAsync()` fire-and-forget，异步阶段的异常
+    /// 会变成未观察任务异常（try/catch 只能捕获 await 前的同步抛出，捕获不到异步 Task 故障）。
+    /// </summary>
+    private async Task HandleUrlChangedAsync(string newUrl)
     {
         try
         {
             var derived = _connectionSettings.IsLocal
                 ? ConnectionMode.Local
                 : ConnectionMode.Remote;
-            _ = SetModeAsync(derived);
+            await SetModeAsync(derived).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

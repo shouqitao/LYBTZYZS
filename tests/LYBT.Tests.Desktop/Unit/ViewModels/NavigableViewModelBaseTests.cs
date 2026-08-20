@@ -15,7 +15,7 @@ namespace LYBT.Tests.Desktop;
 /// Phase 2.2: NavigableViewModelBase message method tests
 /// Tests for Toast-based notification methods
 /// </summary>
-public class NavigableViewModelBaseTests : UserJourneyTestBase
+public class NavigableViewModelBaseTests : DesktopTestBase
 {
     public NavigableViewModelBaseTests()
     {

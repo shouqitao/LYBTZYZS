@@ -27,7 +27,7 @@ namespace LYBT.Tests.Desktop;
 /// MedicalCaseMasterDetailViewModel 单元测试
 /// 验证医案管理模块的Master-Detail视图模型行为
 /// </summary>
-public class MedicalCaseMasterDetailViewModelTests : UserJourneyTestBase
+public class MedicalCaseMasterDetailViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<MedicalCaseListDto, MedicalCaseDetailModel> _masterDetailServices;

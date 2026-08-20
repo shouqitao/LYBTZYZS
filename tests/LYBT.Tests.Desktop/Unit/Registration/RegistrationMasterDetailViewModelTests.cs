@@ -28,7 +28,7 @@ using LYBT.Tests.Desktop.Infrastructure;
 namespace LYBT.Tests.Desktop;
 
 [Collection("UserJourney")]
-public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
+public class RegistrationMasterDetailViewModelTests : DesktopTestBase
 {
     private readonly IViewModelServices _viewModelServices;
     private readonly IRegistrationService _registrationService;
@@ -60,7 +60,7 @@ public class RegistrationMasterDetailViewModelTests : UserJourneyTestBase
 
         // 使用真实的 LoggerFactory 确保 Logger 不为 null
         // NSubstitute mock 的 CreateLogger ReturnsForAnyArgs 在某些情况下无法拦截静态扩展方法调用
-        var realLoggerFactory = LoggerFactory.Create(builder => { });
+        var realLoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { });
         _viewModelServices.LoggerFactory.Returns(realLoggerFactory);
         _registrationService = Substitute.For<IRegistrationService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();

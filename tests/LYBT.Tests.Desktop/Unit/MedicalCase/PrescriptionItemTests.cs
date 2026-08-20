@@ -12,7 +12,7 @@ namespace LYBT.Tests.Desktop;
 /// Phase 1.3: PrescriptionItemViewModel validation property tests
 /// Tests for prescription validation and indicators
 /// </summary>
-public class PrescriptionItemTests : UserJourneyTestBase
+public class PrescriptionItemTests : DesktopTestBase
 {
     public PrescriptionItemTests()
     {

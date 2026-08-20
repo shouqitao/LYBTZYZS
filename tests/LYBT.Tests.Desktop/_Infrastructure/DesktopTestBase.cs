@@ -38,12 +38,47 @@ public abstract class DesktopTestBase : IAsyncLifetime
     public virtual Task InitializeAsync() => Task.CompletedTask;
     public virtual Task DisposeAsync() => Task.CompletedTask;
 
-    // 统一 MasterDetail Services Mock 工厂（收敛 UserJourneyTestBase 重复）
+    /// <summary>
+    /// 统一 MasterDetail Services Mock 工厂（收敛 UserJourneyTestBase 重复）。
+    /// 子服务全部 mock，<c>ExecuteWithLoadingAsync</c> 实际执行传入的函数（自动化验证加载体）。
+    /// </summary>
     protected IMasterDetailServices<TList, TDetail> CreateMasterDetailServicesMock<TList, TDetail>()
-        where TList : class where TDetail : class
+        where TList : class
+        where TDetail : class
     {
-        var services = Substitute.For<IMasterDetailServices<TList, TDetail>>();
-        return services;
+        var mock = Substitute.For<IMasterDetailServices<TList, TDetail>>();
+
+        var listViewServices = Substitute.For<IListViewServices<TList>>();
+        var detailEditor = Substitute.For<IDetailEditorService<TDetail>>();
+        var dialogManager = Substitute.For<IDialogManager>();
+        var navigationCoordinator = Substitute.For<INavigationCoordinator>();
+        var loadingState = Substitute.For<ILoadingStateManager>();
+        var pagination = Substitute.For<IPaginationService>();
+        var search = Substitute.For<ISearchService>();
+        var selection = Substitute.For<ISelectionService<TList>>();
+        var errorHandler = Substitute.For<IErrorHandler>();
+
+        listViewServices.Loading.Returns(loadingState);
+        listViewServices.Pagination.Returns(pagination);
+        listViewServices.Search.Returns(search);
+        listViewServices.Selection.Returns(selection);
+        listViewServices.ErrorHandler.Returns(errorHandler);
+
+        // ExecuteWithLoadingAsync 实际执行传入的函数（而非空跑）
+        loadingState.ExecuteWithLoadingAsync(Arg.Any<Func<Task>>(), Arg.Any<string?>(), Arg.Any<bool>())
+            .Returns(callInfo => callInfo.Arg<Func<Task>>()());
+
+        mock.List.Returns(listViewServices);
+        mock.DetailEditor.Returns(detailEditor);
+        mock.Dialog.Returns(dialogManager);
+        mock.Navigation.Returns(navigationCoordinator);
+        mock.Loading.Returns(loadingState);
+        mock.Pagination.Returns(pagination);
+        mock.Search.Returns(search);
+        mock.Selection.Returns(selection);
+        mock.ErrorHandler.Returns(errorHandler);
+
+        return mock;
     }
 
     protected IViewModelServices CreateViewModelServicesMock()
