@@ -458,9 +458,9 @@ Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusP
 
 | 角色 | 加载模块 | 说明 |
 |------|---------|------|
-| Doctor | AuthModule, PatientsModule, MedicalCaseModule, RegistrationModule, HerbsModule, FormulaModule | 临床全功能 |
-| Admin | AuthModule, UsersModule, PatientsModule, HerbsModule, FormulaModule | 管理全功能 |
-| Receptionist | AuthModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
+| Doctor | IdentityModule, PatientsModule, MedicalCaseModule, RegistrationModule, CatalogModule | 临床全功能 |
+| Admin | IdentityModule, PatientsModule, CatalogModule | 管理全功能 |
+| Receptionist | IdentityModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
 | SuperAdmin | 全部模块 | 系统管理 + 临床 |
 
 > 🧲 **SyncModule 属 v2.0**（N1 决策）：上表已从 Doctor 角色模块清单中移除 SyncModule。SyncModule 代码仍存在，但 v1.0 不通过 `RoleRegistry` 加载。

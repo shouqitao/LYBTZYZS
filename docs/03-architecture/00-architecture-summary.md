@@ -28,9 +28,9 @@
 ┌─────────────────────────────────────────────────┐
 │  Desktop (WPF/Prism)                            │
 │  ┌──────────┬────────────────────────────────┐  │
-│  │  Shell   │  Modules (Auth/Patients/Herbs/ │  │
-│  │          │  Formula/MedicalCase/Registra- │  │
-│  │          │  tion/Users/Sync)              │  │
+│  │  Shell   │  Modules (Identity/Patients/Catalog│  │
+│  │          │  /MedicalCase/Registra-            │  │
+│  │          │  tion/Users/Sync)                   │  │
 │  └──────────┴────────────────────────────────┘  │
 │                    ↓ Refit                       │
 ├─────────────────────────────────────────────────┤

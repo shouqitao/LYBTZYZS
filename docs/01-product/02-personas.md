@@ -429,8 +429,8 @@ flowchart TD
 | **身份类型** | **独立用户** | 角色 | 角色 | 角色 |
 | **模块数** | 5（全量） | 5 | **6** | **3** |
 | **包含 RegistrationModule** | ❌ | ✅ 只读 | ✅ | ✅ |
-| **包含 HerbsModule** | ✅ | ✅ | ✅ | ❌ |
-| **包含 FormulaModule** | ✅ | ✅ | ✅ | ❌ |
+| **包含 CatalogModule** | ✅ | ✅ | ✅ | ❌ |
+| **包含 CatalogModule** | ✅ | ✅ | ✅ | ❌ |
 | **包含 MedicalCaseModule** | ✅ | ✅ | ✅ | ❌ |
 | **首页视图** | SysadminHome | AdminHome | ClinicalWorkspace | ReceptionistHome |
 | **可删除** | ❌ | ✅ | ✅ | ✅ |

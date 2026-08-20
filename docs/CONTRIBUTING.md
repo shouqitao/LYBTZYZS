@@ -110,7 +110,7 @@ gitnexus_detect_changes()           # 确认变更范围
 | Repository | internal class | `HerbRepository` |
 | Service | public class | `HerbService` |
 | Controller | 复数 + Controller | `HerbsController` |
-| 模块 | Module后缀 | `HerbsModule` |
+| 模块 | Module后缀 | `CatalogModule` |
 
 ---
 
