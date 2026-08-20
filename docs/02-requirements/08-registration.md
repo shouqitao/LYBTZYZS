@@ -199,7 +199,6 @@
 2. 第 2 步复用 StartVisit（原子创建 MedicalCase + InProgress）——**与普通挂号流程收敛**
 3. 受 BR-001 单活跃医案约束（[07-medical-cases.md](07-medical-cases.md)）
 4. API 单一职能：建挂号（POST /Registrations）与开始就诊（PUT /start-visit）各自独立——**组合由前端 VM 编排**
-5. **旧 quick-visit 端点已删除**（2026-08-13：两步收敛后不再需要，POST /Registrations 已覆盖）
 
 **实现参考**: `RegistrationsController.cs`、`IRegistrationService`（注入 `IMedicalCaseCommandService`）
 
