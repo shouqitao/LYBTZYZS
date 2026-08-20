@@ -55,13 +55,7 @@
 5. ~~`BatchPrintAsync` 默认 `ShowDialog=false`，单个失败不影响后续，返回成功计数。~~（A-31-C7 已移除批量打印接口，生产 0 消费；批量打印需求待产品决策）
 6. **单联/多联（D14 决策）**：v1.0 仅支持**单联打印**——患者持单付费取药（一张处方笺完成全部流程）；多联分发（药房联 / 存根联 / 收据联等）属 **v2.0**，不在 v1.0 范围。
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（Desktop 本地 OS 打印操作，与数据源模式无关） |
-
-**实现参考**: `src/Client/Desktop/Core/LYBT.Desktop.Printing/Services/PrescriptionPrintService.cs:23`、`Interfaces/IPrintService.cs:9`、模板 `PrescriptionPrintTemplate.xaml` 等 4 个；服务端回写 `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasePrintController.cs:44`
+**实现参考**: `PrescriptionPrintService.cs`、`IPrintService.cs`、模板 `PrescriptionPrintTemplate.xaml` 等 4 个；服务端回写 `MedicalCasePrintController.cs`
 
 ---
 
@@ -82,12 +76,6 @@
 1. 预览窗口布局：左侧设置面板（打印机/份数/纸张）+ 右侧文档预览。
 2. 预览基于 WPF `FixedDocument`，与实际打印共用同一渲染管线。
 3. ~~草稿水印~~：已删除（2026-08-03 决策：未完成医案不可打印，无水印场景）。
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（纯客户端 UI 渲染） |
 
 **实现参考**: `PrescriptionPrintService.cs`（预览与打印共用 `FixedDocument` 构建逻辑）
 
@@ -110,12 +98,6 @@
 1. `ExportFormat`：XPS（WPF 原生）、PDF（QuestPDF 2025.4.0，Community 许可证）。
 2. PDF 由 `PrescriptionPdfExporter` 生成，布局独立于 XAML 模板。
 3. 导出入口：`MedicalCaseWorkspaceView` 的导出按钮 + `ExportPdfCommand`。
-
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 同下 |
-| 本地 | 完全一致（本地文件写入） |
 
 **实现参考**: `PrescriptionPdfExporter`（QuestPDF）、`ExportPdfCommand`
 
@@ -141,13 +123,9 @@
 3. `PrintVersion` 记录打印时的聚合根版本快照，用于事后溯源。
 4. 回写端点：`PUT /print-completed`、`POST /print-log`（`MedicalCasePrintController`）。
 
-**双模式**:
-| 模式 | 行为 |
-|------|------|
-| 远程 | 日志回写到服务端 `MedicalCasePrintLog` 表 |
-| 本地 | 完全一致（通过统一 Service 层写入本地数据库） |
+**双模式差异**: 远程日志回写到服务端 `MedicalCasePrintLog` 表；本地通过统一 Service 层写入本地数据库。
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCasePrintController.cs:44,72`
+**实现参考**: `MedicalCasePrintController.cs`
 
 ---
 
