@@ -69,14 +69,7 @@
 2. 区间为闭区间 `[startDate, endDate]`，按业务日期（非时间戳）对齐。
 3. 时间范围参数已实现（`ReportsController.cs` 支持可选 startDate/endDate，缺省默认当日）。
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/income?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:30`（`GetDailyIncome`）
+**实现参考**: `ReportsController.cs`（`GetDailyIncome`）
 
 ---
 
@@ -103,14 +96,7 @@
 2. **医生工作量覆盖**：本 US 的 `byDoctor` 即满足医生工作量统计需求，不单列独立报表。
 3. 时间范围参数已实现（缺省默认当日）。
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/consultations?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:38`（`GetDailyConsultations`）
+**实现参考**: `ReportsController.cs`（`GetDailyConsultations`）
 
 ---
 
@@ -136,14 +122,7 @@
 2. 数据来源：`PrescriptionItem` 关联 `Herb`。
 3. 时间范围参数已实现（缺省默认当日）。
 
-**双模式差异**:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | GET `/reports/daily/herbs?startDate=&endDate=` |
-| 本地 | 完全一致（LocalWebAPI 同端点） |
-
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:46`（`GetDailyHerbs`）
+**实现参考**: `ReportsController.cs`（`GetDailyHerbs`）
 
 ---
 
@@ -166,12 +145,7 @@
 
 **实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/ReportsController.cs:69-158`、`ReportService.cs:52-103`；Desktop `ReportsHomeViewModel` 当前仅消费 3 个 daily 端点
 
-**双模式差异**（2026-08-12 决策 B：本地裁剪）:
-
-| 模式 | 行为 |
-|------|------|
-| 远程 | ✅ 5 端点全提供（trend/income、trend/consultations、doctor-performance、herbs/ranking、patient-flow） |
-| 本地 | ❌ 不提供（LocalWebAPI 仅 3 个 daily 端点）——**有意裁剪**：本地=单机小诊所场景，趋势分析属管理决策用途，一般连远程使用；且本地数据孤立 N1，趋势聚合意义有限；避免为低价值场景补双端代码 |
+**双模式差异**: 远程 5 端点全提供（trend/income、trend/consultations、doctor-performance、herbs/ranking、patient-flow）；本地不提供（有意裁剪——本地=单机小诊所场景，趋势分析属管理决策用途，一般连远程使用；且本地数据孤立，趋势聚合意义有限）。
 
 > **2026-08-12 决策 B（用户确认）**：US-REPORT-004 趋势/绩效报表仅远程模式提供，本地模式不提供（裁剪合理，非缺陷）。原 v1.0 克制声明「不做趋势分析」已被代码超越（远程已实现），此 US 补记双模式语义。
 
