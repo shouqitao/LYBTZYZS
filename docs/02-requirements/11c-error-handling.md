@@ -11,7 +11,7 @@
 
 ---
 
-### US-ERR-001: 全局异常处理（Dispatcher+AppDomain）
+## US-ERR-001: 全局异常处理（Dispatcher+AppDomain）
 
 **角色**: 系统
 **优先级**: Must
@@ -37,7 +37,7 @@
 
 ---
 
-### US-ERR-002: 中文友好错误消息
+## US-ERR-002: 中文友好错误消息
 
 **角色**: 所有用户
 **优先级**: Must
@@ -63,7 +63,7 @@
 
 ---
 
-### US-ERR-003: 追踪 ID（TraceId）
+## US-ERR-003: 追踪 ID（TraceId）
 
 **角色**: 管理员
 **优先级**: Should
@@ -88,7 +88,7 @@
 
 ---
 
-### US-ERR-004: CorrelationId 端到端追踪
+## US-ERR-004: CorrelationId 端到端追踪
 
 **角色**: 开发人员
 **优先级**: Should
@@ -113,7 +113,7 @@
 
 ---
 
-### US-ERR-005: 生产环境堆栈屏蔽
+## US-ERR-005: 生产环境堆栈屏蔽
 
 **角色**: 安全管理者
 **优先级**: Must
@@ -139,7 +139,7 @@
 
 ---
 
-### US-ERR-006: 验证错误统一格式（422）
+## US-ERR-006: 验证错误统一格式（422）
 
 **角色**: 开发人员
 **优先级**: Should
@@ -164,7 +164,7 @@
 
 ---
 
-### US-ERR-007: 业务异常分类
+## US-ERR-007: 业务异常分类
 
 **角色**: 开发人员
 **优先级**: Should
@@ -192,7 +192,7 @@
 
 ---
 
-### US-ERR-008: 异常层级（Validation/NotFound/Conflict → Business）
+## US-ERR-008: 异常层级（Validation/NotFound/Conflict → Business）
 
 **角色**: 开发人员
 **优先级**: Should
@@ -219,7 +219,7 @@
 
 ---
 
-### US-ERR-009: 错误日志定位工作流（文档化）
+## US-ERR-009: 错误日志定位工作流（文档化）
 
 **角色**: 开发人员/运维人员
 **优先级**: Should
