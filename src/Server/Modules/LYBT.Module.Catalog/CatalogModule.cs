@@ -12,6 +12,7 @@ using LYBT.Module.Catalog.Interfaces;
 using LYBT.Module.Catalog.Services;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Spi;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Validators.Formula;
 using LYBT.Shared.Models.Validators.Herbs;
@@ -88,6 +89,9 @@ namespace LYBT.Module.Catalog
                 _ => new BatchEntityIdsValidator<BatchDisableHerbsCommand>("药材"));
             services.AddScoped<IValidator<BatchDisableFormulasCommand>, BatchEntityIdsValidator<BatchDisableFormulasCommand>>(
                 _ => new BatchEntityIdsValidator<BatchDisableFormulasCommand>("验方"));
+
+            // SPI 扩展点：新增库存实体仅新增 ICrossModuleReferenceChecker 实现并注册（不改现有删除链）
+            services.AddSingleton<ICrossModuleReferenceChecker, Spi.CatalogReferenceChecker>();
 
             return services;
         }

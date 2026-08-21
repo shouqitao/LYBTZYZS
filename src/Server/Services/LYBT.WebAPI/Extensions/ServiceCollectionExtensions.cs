@@ -5,8 +5,9 @@ using System.Text.Json.Serialization;
 using LYBT.Infrastructure.Serialization;
 using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Serialization;
-using LYBT.Module.Identity;
 using LYBT.Module.Catalog;
+using LYBT.Module.Identity;
+using LYBT.Shared.Models.Spi;
 
 using LYBT.Module.MedicalCases;
 using LYBT.Module.Patients;
@@ -110,6 +111,9 @@ public static class ServiceCollectionExtensions
 
         // 7. 报表模块
         services.AddReportsModule(configuration);
+
+        // SPI 注册表（新增报表/库存仅新增类 + DI 注册）
+        services.AddSpiRegistries();
 
         return services;
     }

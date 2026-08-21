@@ -1,4 +1,5 @@
 using LYBT.Module.Reports.Interfaces;
+using LYBT.Shared.Models.Spi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +20,9 @@ public static class ReportsModule
 
         // 服务层
         services.AddScoped<IReportService, Services.ReportService>();
+
+        // SPI 扩展点：新增报表仅新增 IReportProvider 实现并注册（不改 ReportService）
+        services.AddSingleton<IReportProvider, Spi.DailyIncomeReportProvider>();
 
         return services;
     }
