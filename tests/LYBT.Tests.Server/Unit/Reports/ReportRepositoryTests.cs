@@ -304,4 +304,147 @@ public class ReportRepositoryTests : IDisposable
         result.Single(x => x.Date == Day3).NewPatients.Should().Be(0);
         result.Single(x => x.Date == Day3).ReturningPatients.Should().Be(1);
     }
+
+    // ==================== T5.1: doctorIdFilter 行级过滤分支（P1-23）====================
+
+    [Fact]
+    public async Task GetRegistrationFeeTotalAsync_WithDoctorFilter_OnlySumsOwnRegistrations()
+    {
+        var doctorA = Guid.NewGuid();
+        var regA = CreateRegistration(Guid.NewGuid(), 100);
+        regA.DoctorId = doctorA;
+        var regB = CreateRegistration(Guid.NewGuid(), 200);
+        await AddRegistrationAsync(regA, Day1);
+        await AddRegistrationAsync(regB, Day1);
+
+        var ownTotal = await _sut.GetRegistrationFeeTotalAsync(Day1, Day2, doctorA, CancellationToken.None);
+        var adminTotal = await _sut.GetRegistrationFeeTotalAsync(Day1, Day2, null, CancellationToken.None);
+
+        ownTotal.Should().Be(100);
+        adminTotal.Should().Be(300);
+    }
+
+    [Fact]
+    public async Task GetMedicineFeeTotalAsync_WithDoctorFilter_ExcludesOtherDoctorsCases()
+    {
+        var doctorA = Guid.NewGuid();
+        var caseA = CreateCase("张医生");
+        caseA.UserId = doctorA;
+        var caseB = CreateCase("李医生");
+        await AddCaseAsync(caseA, Day1);
+        await AddCaseAsync(caseB, Day1);
+
+        var pA = CreatePrescription(caseA.Id, CreateItem("黄芪", 10, 10m)); // 100
+        var pB = CreatePrescription(caseB.Id, CreateItem("当归", 10, 20m)); // 200
+        await AddAsync(pA, pB);
+
+        var ownTotal = await _sut.GetMedicineFeeTotalAsync(Day1, Day2, doctorA, CancellationToken.None);
+        var adminTotal = await _sut.GetMedicineFeeTotalAsync(Day1, Day2, null, CancellationToken.None);
+
+        ownTotal.Should().Be(100);
+        adminTotal.Should().Be(300);
+    }
+
+    [Fact]
+    public async Task GetConsultationCountAsync_WithDoctorFilter_CountsOwnOnly()
+    {
+        var doctorA = Guid.NewGuid();
+        var caseA1 = CreateCase("张医生");
+        caseA1.UserId = doctorA;
+        var caseA2 = CreateCase("张医生");
+        caseA2.UserId = doctorA;
+        var caseB = CreateCase("李医生");
+        await AddCaseAsync(caseA1, Day1);
+        await AddCaseAsync(caseA2, Day2);
+        await AddCaseAsync(caseB, Day2);
+
+        var ownCount = await _sut.GetConsultationCountAsync(Day1, Day3, doctorA, CancellationToken.None);
+        var adminCount = await _sut.GetConsultationCountAsync(Day1, Day3, null, CancellationToken.None);
+
+        ownCount.Should().Be(2);
+        adminCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetConsultationsByDoctorAsync_WithDoctorFilter_ReturnsOnlyFilteredDoctor()
+    {
+        var doctorA = Guid.NewGuid();
+        var caseA = CreateCase("张医生");
+        caseA.UserId = doctorA;
+        var caseB = CreateCase("李医生");
+        await AddCaseAsync(caseA, Day1);
+        await AddCaseAsync(caseB, Day1);
+
+        var ownRows = await _sut.GetConsultationsByDoctorAsync(Day1, Day2, doctorA, CancellationToken.None);
+
+        ownRows.Should().HaveCount(1);
+        ownRows[0].DoctorName.Should().Be("张医生");
+    }
+
+    [Fact]
+    public async Task GetHerbUsageAsync_WithDoctorFilter_AggregatesOwnOnly()
+    {
+        var doctorA = Guid.NewGuid();
+        var caseA = CreateCase("张医生");
+        caseA.UserId = doctorA;
+        var caseB = CreateCase("李医生");
+        await AddCaseAsync(caseA, Day1);
+        await AddCaseAsync(caseB, Day1);
+
+        var pA = CreatePrescription(caseA.Id, CreateItem("黄芪", 10, 1m));
+        var pB = CreatePrescription(caseB.Id, CreateItem("当归", 5, 1m));
+        await AddAsync(pA, pB);
+
+        var ownUsage = await _sut.GetHerbUsageAsync(Day1, Day2, doctorA, CancellationToken.None);
+
+        ownUsage.Should().HaveCount(1);
+        ownUsage[0].HerbName.Should().Be("黄芪");
+    }
+
+    [Fact]
+    public async Task GetHerbRankingAsync_WithDoctorFilter_RanksOwnOnly()
+    {
+        var doctorA = Guid.NewGuid();
+        var caseA = CreateCase("张医生");
+        caseA.UserId = doctorA;
+        var caseB = CreateCase("李医生");
+        await AddCaseAsync(caseA, Day1);
+        await AddCaseAsync(caseB, Day1);
+
+        var pA = CreatePrescription(caseA.Id, CreateItem("甘草", 10, 1m), CreateItem("甘草", 20, 1m));
+        var pB = CreatePrescription(caseB.Id, CreateItem("当归", 99, 1m));
+        await AddAsync(pA, pB);
+
+        var ranking = await _sut.GetHerbRankingAsync(Day1, Day2, 10, doctorA, CancellationToken.None);
+
+        ranking.Should().HaveCount(1);
+        ranking[0].HerbName.Should().Be("甘草");
+    }
+
+    [Fact]
+    public async Task GetPatientFlowByDayAsync_WithDoctorFilter_ClassifiesOwnPatientsOnly()
+    {
+        var doctorA = Guid.NewGuid();
+        var patientA = Guid.NewGuid();
+        var patientB = Guid.NewGuid();
+
+        var aFirst = CreateCase("张医生");
+        aFirst.PatientId = patientA;
+        aFirst.UserId = doctorA;
+        var aAgain = CreateCase("张医生");
+        aAgain.PatientId = patientA;
+        aAgain.UserId = doctorA;
+        var bVisit = CreateCase("李医生");
+        bVisit.PatientId = patientB;
+        await AddCaseAsync(aFirst, Day1);
+        await AddCaseAsync(aAgain, Day2);
+        await AddCaseAsync(bVisit, Day2);
+
+        var flow = await _sut.GetPatientFlowByDayAsync(Day1, Day3, doctorA, CancellationToken.None);
+
+        flow.Should().HaveCount(2);
+        flow.Single(x => x.Date == Day1).NewPatients.Should().Be(1);
+        flow.Single(x => x.Date == Day2).NewPatients.Should().Be(0);
+        flow.Single(x => x.Date == Day2).ReturningPatients.Should().Be(1);
+    }
 }

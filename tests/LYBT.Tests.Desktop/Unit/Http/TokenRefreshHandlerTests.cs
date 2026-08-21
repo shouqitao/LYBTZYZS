@@ -368,6 +368,50 @@ public class TokenRefreshHandlerTests : IAsyncLifetime
         await _credentialVault.Received(1).ClearCredentialsAsync("user1");
     }
 
+    [Fact]
+    public async Task AutoLogin_SkipsOnRevokedRefresh_WhenNoStoredAutoToken()
+    {
+        // T5.1: RefreshTokenRevoked 亦属可降级分支，但无存储 AutoLoginToken 时应跳过降级直接失败
+        _server.OnRefresh = ctx => FakeAuthServer.WriteError(ctx, HttpStatusCode.Unauthorized, "refresh token revoked");
+        var handler = CreateHandler(MakeLogin(DateTime.UtcNow.AddMinutes(2)));
+        _credentialVault.GetAutoLoginTokenAsync("user1").Returns(Task.FromResult<string?>(null));
+
+        var result = await handler.RefreshTokenAsync();
+
+        result.Success.Should().BeFalse();
+        _server.AutoLoginCalls.Should().Be(0);
+        await _credentialVault.DidNotReceive().SaveAutoLoginTokenAsync(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task AutoLogin_SkipsOnUserDisabled()
+    {
+        // T5.1: UserDisabled 不降级（IsAutoLoginEligible=false）——直接返回失败且不调 AutoLogin 端点
+        _server.OnRefresh = ctx => FakeAuthServer.WriteError(ctx, HttpStatusCode.Forbidden, "account disabled");
+        var handler = CreateHandler(MakeLogin(DateTime.UtcNow.AddMinutes(2)));
+
+        var result = await handler.RefreshTokenAsync();
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Be(TokenRefreshFailureReason.UserDisabled);
+        _server.AutoLoginCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AutoLogin_SkipsOnNetworkError_AfterRetriesExhausted()
+    {
+        // T5.1: NetworkError/ServerError 属可重试错误，3 次重试耗尽后仍失败则不降级（仅过期/撤销/无效降级）
+        _server.OnRefresh = ctx => throw new HttpRequestException("network down");
+        var handler = CreateHandler(MakeLogin(DateTime.UtcNow.AddMinutes(2)));
+
+        var result = await handler.RefreshTokenAsync();
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().BeOneOf(TokenRefreshFailureReason.NetworkError, TokenRefreshFailureReason.ServerError);
+        _server.RefreshCalls.Should().Be(3);
+        _server.AutoLoginCalls.Should().Be(0);
+    }
+
     #endregion
 
     #region 事件发布
