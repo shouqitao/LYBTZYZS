@@ -160,7 +160,7 @@ namespace LYBT.Infrastructure.Repositories
         /// </summary>
         [Obsolete("Use SoftDeleteAsync")]
         public virtual Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-            => SoftDeleteAsync(id, cancellationToken);
+            => SoftDeleteAsync(id, cancellationToken); // N4: 与 IRepository 同步标记，使 BaseRepository 直接调用亦告警
 
         /// <summary>
         /// 软删除实体（置 IsDeleted=true，T2.2）
