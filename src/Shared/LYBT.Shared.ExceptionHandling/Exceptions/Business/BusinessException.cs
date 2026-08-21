@@ -23,17 +23,23 @@ public class BusinessException : AppException
 
     public BusinessException(string message) : base(message)
     {
+        TypedErrorCode = EC.Unknown;
+        ErrorCode = EC.Unknown.ToFormattedString();
         UserMessage = message;
     }
 
     public BusinessException(string message, Exception innerException) : base(message, innerException)
     {
+        TypedErrorCode = EC.Unknown;
+        ErrorCode = EC.Unknown.ToFormattedString();
         UserMessage = message;
     }
 
     public BusinessException(string message, string businessRule)
         : base(message)
     {
+        TypedErrorCode = EC.Unknown;
+        ErrorCode = EC.Unknown.ToFormattedString();
         BusinessRule = businessRule;
         UserMessage = message;
     }

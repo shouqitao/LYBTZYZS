@@ -1,4 +1,6 @@
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Infrastructure.BatchOperations;
 
@@ -91,7 +93,10 @@ public abstract class BatchOperationHandlerBase<TEntity>
             }
             catch (Exception ex) when (CatchExceptions && CaughtExceptionType.IsInstanceOfType(ex))
             {
-                RecordFailure(result, id, entity is null ? null : GetEntityName(entity), ex.Message);
+                var reason = ex is AppException appEx && appEx.TypedErrorCode.HasValue
+                    ? $"[{appEx.TypedErrorCode.Value.ToFormattedString()}] {ex.Message}"
+                    : ex.Message;
+                RecordFailure(result, id, entity is null ? null : GetEntityName(entity), reason);
             }
         }
 
