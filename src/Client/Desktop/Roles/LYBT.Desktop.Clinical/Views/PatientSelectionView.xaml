@@ -7,13 +7,10 @@
              xmlns:patientControls="clr-namespace:LYBT.Desktop.Patients.Controls;assembly=LYBT.Desktop.Patients"
              xmlns:infraControls="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
-
-    <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    </UserControl.Resources>
 
     <!-- 患者选择视图
          位于Clinical模块，使用Patients模块的PatientSelectionControl
@@ -123,7 +120,7 @@
                                 </ItemsControl>
                                 <TextBlock Text="暂无待诊患者"
                                            Visibility="{Binding PendingQueue.HasNoPendingCases,
-                                               Converter={StaticResource BooleanToVisibilityConverter}}"
+                                               Converter={x:Static converters:Cvt.BoolToVis}}"
                                            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                            HorizontalAlignment="Center" Margin="0,8"/>
                             </StackPanel>

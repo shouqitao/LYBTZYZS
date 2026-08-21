@@ -803,7 +803,7 @@ public class ConsultationModule : IModule
 **定义**: 应用程序基础功能，所有模块都依赖
 
 **示例**:
-- `INavigationService`: 导航服务
+- `INavigationCoordinator`: 导航协调（统一入口，T5.5：原 `INavigationService` 已由 `INavigationCoordinator` 替代，遗留命名见本文历史版本）
 - `IDialogService`: 对话框服务
 - `ISessionManager`: 会话管理
 - `IThemeService`: 主题服务
@@ -813,7 +813,7 @@ public class ConsultationModule : IModule
 
 ```csharp
 // Shell 统一注册 Foundation 服务
-containerRegistry.RegisterSingleton<INavigationService, EnhancedNavigationService>();
+containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
 containerRegistry.RegisterSingleton<IDialogService, PrismDialogService>();
 containerRegistry.RegisterSingleton<ISessionManager, SessionManager>();
 containerRegistry.RegisterSingleton<IThemeService, ThemeService>();
