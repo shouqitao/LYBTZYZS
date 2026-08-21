@@ -1101,4 +1101,75 @@ public class ServerArchTests
     }
 
     #endregion
+
+    /// <summary>
+    /// P1-6: 审计表禁止 ExecuteUpdate/ExecuteDelete 绕过审计
+    /// 审计记录（SecurityAuditLogs / MedicalCaseAuditLogs）必须经 AppDbContext.SaveXXX 走 SetAuditFields
+    /// 自动填充 CreatedBy 等审计字段；批量原始更新/删除（ExecuteUpdate/ExecuteDelete/ExecuteSqlRaw）
+    /// 会静默绕过审计，属红线。
+    /// 例外：SystemLogs 清理（LogCleanupService.ExecuteSqlRawAsync 目标 SystemLogs，非审计表）。
+    /// </summary>
+    [Fact]
+    public void P1_Audit_Tables_No_ExecuteUpdate_ExecuteDelete()
+    {
+        var violations = new List<string>();
+
+        foreach (var asm in ServerAssemblies)
+        {
+            var auditTypes = asm.GetTypes()
+                .Where(t => (t.Name.Contains("Audit") || t.Name.Contains("SecurityAudit") || t.Name.Contains("SystemLog"))
+                            && (t.Name.Contains("Repository") || t.Name.Contains("Service")));
+            foreach (var t in auditTypes)
+            {
+                foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                {
+                    var body = m.GetMethodBody();
+                    var il = body?.GetILAsByteArray();
+                    if (il == null || il.Length == 0) continue;
+                    foreach (var callee in DecodeRawWriteCalls(il, t.Module))
+                    {
+                        violations.Add($"{t.Name}.{m.Name} 调用原始写 {callee}（绕过审计——P1-6）");
+                    }
+                }
+            }
+        }
+
+        // 已知例外：SystemLogs 清理（AppDbContext.Database.ExecuteSqlRawAsync 仅目标 SystemLogs，非审计表）
+        var legit = violations.Where(v => v.Contains("LogCleanupService.Cleanup") || v.Contains("SystemLog")).ToList();
+        Assert.True(legit.Count <= 1,
+            $"审计表原始写绕过审计: {string.Join("; ", violations)}。例外仅限 LogCleanupService 清理 SystemLogs。");
+        var real = violations.Except(legit).ToList();
+        Assert.Empty(real);
+    }
+
+    /// <summary>解码 IL call/callvirt，返回对 EF 原始写方法（ExecuteUpdate/ExecuteDelete/ExecuteSqlRaw）的调用</summary>
+    private static IEnumerable<string> DecodeRawWriteCalls(byte[] il, System.Reflection.Module module)
+    {
+        var rawWrites = new[] { "ExecuteUpdateAsync", "ExecuteUpdate", "ExecuteDeleteAsync", "ExecuteDelete", "ExecuteSqlRawAsync", "ExecuteSqlRaw" };
+        var results = new List<string>();
+        int i = 0;
+        while (i < il.Length)
+        {
+            var opcode = il[i];
+            if (opcode == 0xFE) { if (i + 1 >= il.Length) break; var sub = il[i + 1]; i += 2; i += sub switch { 0x06 or 0x07 or 0x15 or 0x16 or 0x1C => 4, _ => 0 }; continue; }
+            if (opcode is 0x28 or 0x6F)
+            {
+                if (i + 5 > il.Length) break;
+                var token = il[i + 1] | (il[i + 2] << 8) | (il[i + 3] << 16) | (il[i + 4] << 24);
+                i += 5;
+                try
+                {
+                    var target = module.ResolveMethod(token);
+                    if (target != null && (target.Name is "ExecuteUpdateAsync" or "ExecuteUpdate" or "ExecuteDeleteAsync" or "ExecuteDelete" or "ExecuteSqlRawAsync" or "ExecuteSqlRaw"))
+                        results.Add($"{target.Name}");
+                }
+                catch { }
+                continue;
+            }
+            i += 1 + IlOperandSize(opcode);
+        }
+        return results;
+    }
+
 }
+

@@ -84,6 +84,7 @@ graph TB
 - **机制**：`RowVersion` 字段（EF Core `IsRowVersion()`，BaseEntityConfiguration + UserConfiguration 均已配置），每次更新时自动比较
 - **冲突处理**：`DbUpdateConcurrencyException` → 抛出 `ConflictException`（HTTP 409）→ 客户端重试或提示用户。P1-17：`MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync` 重试耗尽后转 `ConflictException`（原抛原始 `DbUpdateConcurrencyException` 致 500），Service 层必须转 409
 - **审计原子性（P1-19）**：医案更新审计与业务同事务——`AddAuditLogAsync(saveChanges:false)` 先入 ChangeTracker，`UpdateAsync` 单次 SaveChanges 提交（同 `MedicalCaseDbContext`），业务失败则审计同回滚
+- **审计绕过红线（P1-6）**：审计表（`SecurityAuditLogs`/`MedicalCaseAuditLogs`）禁止 `ExecuteUpdate/ExecuteDelete/ExecuteSqlRaw` 原始写——必须经 `AppDbContext.SaveXXX` 走 `SetAuditFields` 自动填充（ArchTests `P1_Audit_Tables_No_ExecuteUpdate_ExecuteDelete` 守卫；唯一例外 `LogCleanupService` 清理 SystemLogs，非审计表）
 - **MedicalCase 聚合根特殊规则**：单活动医案约束（BR-001）+ 乐观锁双重保护
 - **软删除**：`IsDeleted=true` 为逻辑删除，查询时自动过滤（全局查询过滤器）
 
