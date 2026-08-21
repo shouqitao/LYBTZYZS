@@ -1,3 +1,4 @@
+// P2-14-3 Herb/Formula BatchImport 命令抽取评估：已 via MasterDetailCommandGroup 抽公共命令，CanExecute 仍各VM重复已评估参数化收益<独立演进成本
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;

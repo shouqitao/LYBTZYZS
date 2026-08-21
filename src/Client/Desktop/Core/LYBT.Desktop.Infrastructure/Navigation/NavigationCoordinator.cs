@@ -13,6 +13,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation;
 /// <summary>
 /// 导航协调器实现 - 统一导航入口
 /// 职责：导航路由核心逻辑（~100行）
+/// P2-13-3 评估：RequestNavigate 失败仅日志不抛异常，已评估静默失败可接受（RegionNames/ViewNames 注册遗漏时空白页，日志可定位），不引入异常冒泡。
 /// 历史/面包屑/懒加载/Region监控 已提取到独立服务
 /// </summary>
 public class NavigationCoordinator : INavigationCoordinator

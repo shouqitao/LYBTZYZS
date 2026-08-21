@@ -1,3 +1,4 @@
+// P2-13-6 HuaDa.dll 32/64位已评估：AnyCPU下BadImageFormatException风险已在 CardReaderModule 启动时 try/catch 兜底，文档 11e-cardreader.md 已补位数要求
 using System.IO;
 using System.Text;
 using LYBT.Desktop.Infrastructure.CardReader.Abstractions;

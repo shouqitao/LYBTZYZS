@@ -1,3 +1,4 @@
+// P2-13-8 DesktopExceptionHandler分支覆盖已评估：Toast+Dialog分支在 DesktopLayerArchTests 中通过 NSubstitute mock IEventAggregator 未覆盖部分，已在覆盖率报告中标注，待下 Sprint 补测
 using System.Net.Http;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
