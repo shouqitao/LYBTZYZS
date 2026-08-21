@@ -77,4 +77,13 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
             .Where(h => idList.Contains(h.Id) && !h.IsDeleted)
             .ToDictionaryAsync(h => h.Id, h => h.Name, ct);
     }
+
+    /// <inheritdoc/>
+    public async Task<List<Herb>> GetAllActiveAsync(CancellationToken ct = default)
+    {
+        return await _context.Herbs
+            .AsNoTracking()
+            .Where(h => !h.IsDeleted && h.Status == LYBT.Shared.Models.Enums.CommonStatus.Enabled)
+            .ToListAsync(ct);
+    }
 }

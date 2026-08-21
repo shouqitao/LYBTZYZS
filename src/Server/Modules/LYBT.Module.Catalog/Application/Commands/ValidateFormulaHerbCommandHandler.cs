@@ -1,4 +1,3 @@
-using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -11,10 +10,10 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class ValidateFormulaHerbCommandHandler(
     IFormulaRepository formulaRepository,
-    ICatalogCrossModuleService crossModuleService) : IRequestHandler<ValidateFormulaHerbCommand, Result>
+    IHerbRepository herbRepository) : IRequestHandler<ValidateFormulaHerbCommand, Result>
 {
     private readonly IFormulaRepository _formulaRepository = formulaRepository;
-    private readonly ICatalogCrossModuleService _crossModuleService = crossModuleService;
+    private readonly IHerbRepository _herbRepository = herbRepository;
 
     public async Task<Result> Handle(
         ValidateFormulaHerbCommand request, CancellationToken cancellationToken)
@@ -30,7 +29,8 @@ public class ValidateFormulaHerbCommandHandler(
         if (herbItem.IsValidated)
             return Result.Failure(ErrorCode.FormulaValidationFailed, ErrorMessages.Get(ErrorCode.FormulaHerbItemAlreadyValidated));
 
-        var selectedHerb = await _crossModuleService.GetHerbBasicInfoAsync(request.SelectedHerbId, cancellationToken);
+        // T3.1: 改用模块内仓储直查（不再绕跨模块接口）
+        var selectedHerb = await _herbRepository.GetByIdAsync(request.SelectedHerbId, cancellationToken);
         if (selectedHerb == null)
             return Result.Failure(ErrorCode.HerbNotFound, "所选药材不存在");
 

@@ -1,6 +1,5 @@
 using FluentValidation;
 using LYBT.Entities.Formulas;
-using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.Catalog.Application.Validators;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,7 +15,7 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public class BatchImportFormulasCommandHandler(
     IFormulaRepository repository,
-    ICatalogCrossModuleService crossModule,
+    IHerbRepository herbRepository,
     ILogger<BatchImportFormulasCommandHandler> logger
 ) : IRequestHandler<BatchImportFormulasCommand, Result<FormulaBatchImportResultDto>>
 {
@@ -40,11 +39,13 @@ public class BatchImportFormulasCommandHandler(
             TotalCount = request.Formulas.Count
         };
 
-        var allHerbs = await crossModule.GetAllActiveHerbsAsync(cancellationToken);
+        // T3.1: 改用模块内 IHerbRepository.GetAllActiveAsync（不再绕跨模块接口）
+        var allHerbs = await herbRepository.GetAllActiveAsync(cancellationToken);
         var herbByName = allHerbs.ToDictionary(h => h.Name, StringComparer.OrdinalIgnoreCase);
         var herbByPinyin = allHerbs
-            .Where(h => h.Pinyin != null)
-            .ToDictionary(h => h.Pinyin!, StringComparer.OrdinalIgnoreCase);
+            .Where(h => !string.IsNullOrEmpty(h.PinYinCode))
+            .GroupBy(h => h.PinYinCode!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First());
 
         int index = 0;
         foreach (var item in request.Formulas)
@@ -102,7 +103,7 @@ public class BatchImportFormulasCommandHandler(
 
                 foreach (var herbDto in item.Herbs)
                 {
-                    HerbBasicDto? matchedHerb = null;
+                    LYBT.Entities.Herbs.Herb? matchedHerb = null;
                     if (herbDto.HerbName != null)
                     {
                         if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))

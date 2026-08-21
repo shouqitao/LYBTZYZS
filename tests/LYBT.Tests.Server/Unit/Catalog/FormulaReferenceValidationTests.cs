@@ -105,6 +105,7 @@ internal sealed class FakeHerbRepository : IHerbRepository
     public Task<bool> SoftDeleteAsync(Guid id, CancellationToken ct = default) => DeleteAsync(id, ct);
     public Task<bool> RestoreAsync(Guid id, CancellationToken ct = default) => Task.FromResult(true);
     public Task<bool> HardDeleteAsync(Herb entity, CancellationToken ct = default) => Task.FromResult(true);
+    public Task<List<Herb>> GetAllActiveAsync(CancellationToken ct = default) => Task.FromResult(new List<Herb>());
     public Task<PagedResult<Herb>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
         => Task.FromResult(new PagedResult<Herb>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);
