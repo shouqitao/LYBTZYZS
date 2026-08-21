@@ -11,6 +11,7 @@ namespace LYBT.WebAPI.Configuration;
 public static class ConfigurationPostProcessor
 {
     /// <summary>已知键清单（配置校验/注入敏感键——占位或空串视为无效）</summary>
+    /// T2.4: 已改为自动发现，不再硬编码 6 键；保留兼容字段供测试引用
     public static readonly string[] KnownKeys =
     {
         "Jwt:SecretKey",
@@ -45,7 +46,12 @@ public static class ConfigurationPostProcessor
         var fallbacks = new Dictionary<string, string?>();
         var providers = root.Providers.ToList(); // 从低到高顺序（Reload 后含全部）
 
-        foreach (var key in KnownKeys)
+        // T2.4: 自动发现 — 遍历全量键，避免新增配置需手动加入 KnownKeys
+        var allKeys = root.AsEnumerable().Where(kv => !string.IsNullOrEmpty(kv.Key)).Select(kv => kv.Key).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        // 兼容：KnownKeys 中但当前未出现在 AsEnumerable（空占位未展开） 的键亦纳入
+        var keysToCheck = allKeys.Concat(KnownKeys).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+        foreach (var key in keysToCheck)
         {
             // 从高到低取第一个有效值
             string? firstValid = null;

@@ -57,7 +57,18 @@ public static class ConfigurationWritePolicy
     }
 
     /// <summary>
+    /// 判断配置键是否可配置（运行时允许修改，T2.4 三级之一：Configurable）
+    /// </summary>
+    public static bool IsConfigurable(string key) => IsAllowed(key);
+
+    /// <summary>
+    /// 判断配置键是否只读（非敏感亦非可配置，需重启生效，T2.4 三级之一：ReadOnly）
+    /// </summary>
+    public static bool IsReadOnly(string key) => !IsAllowed(key) && !IsSensitive(key);
+
+    /// <summary>
     /// 判断配置键是否敏感（SHELL-018 Phase 1: GET 脱敏掩码——命中禁止节/禁止键或密钥类键返回 true）
+    /// T2.4 三级之一：Sensitive
     /// </summary>
     public static bool IsSensitive(string key)
     {

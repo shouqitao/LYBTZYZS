@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Configuration.Options.Common;
@@ -22,6 +23,10 @@ public static class AuthenticationServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // T2.4: 启动期断言 AddIdentity 顺序（必须在 RegisterAuthenticationServices 之前）
+        if (!services.Any(sd => sd.ServiceType == typeof(Microsoft.AspNetCore.Identity.UserManager<LYBT.Entities.Users.ApplicationUser>)))
+            throw new InvalidOperationException("AddIdentity must be called before RegisterAuthenticationServices (see Program.cs 325-330)");
+
         // unify-configuration-system: 使用强类型 JwtOptions
         var jwtOptions = new JwtOptions();
         configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
