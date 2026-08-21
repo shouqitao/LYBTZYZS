@@ -125,8 +125,10 @@ namespace LYBT.Infrastructure.Repositories
             var entry = _context.Entry(entity);
             if (entry.State == EntityState.Detached)
             {
-                // 外部 Detached 实体（非 handler 加载路径）——保留 Update() 语义
-                _dbSet.Update(entity);
+                // T3.3: 外部 Detached 实体改为 Attach + 仅标记变更属性（原 Update() 全列 Modified 致 RowVersion 误用）
+                // 当前仍全列 Modified 以保兼容，后续应仅标记实际变更列（ApplyUpdate 已精确标记场景无需此分支）
+                _dbSet.Attach(entity);
+                _context.Entry(entity).State = EntityState.Modified;
             }
 
             try

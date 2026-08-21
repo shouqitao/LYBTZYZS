@@ -7,7 +7,9 @@ namespace LYBT.Infrastructure.Interfaces;
 /// <typeparam name="T">实体类型</typeparam>
 /// <remarks>
 /// 设计原则：
-/// - 只保留实际使用的4个核心方法（GetById/Add/Update/Delete）
+/// - 只保留实际使用的4个核心方法（GetById/Add/Update/Delete → T2.2 四态 SoftDelete/Restore/HardDelete）
+/// - T3.3 评估：约束收紧 where T:BaseEntity 因 ApplicationUser 继承 IdentityUser 而非 BaseEntity（手抄 IsDeleted 等）暂保留 where T:class，待 ApplicationUser 统一 BaseEntity 后再收紧（见 BaseEntity 顶部 checklist）
+/// - TDbContext 预留见 BaseRepository<TEntity,TDbContext> 双参（ADR-0017）
 /// - 复杂查询由各模块 Repository 自定义方法实现（如 WithDetails 系列）
 /// - 使用Guid作为ID类型（对齐BaseEntity设计）
 /// - 所有方法均为异步方法（Async后缀）
