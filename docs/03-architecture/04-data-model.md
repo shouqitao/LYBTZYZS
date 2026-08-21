@@ -492,3 +492,5 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 | 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |
 
 <!-- P3-5 双标识 SuperAdmin vs IsSysAdmin：前者业务角色，后者运维标识，已在04-permissions.md增双标识说明段 -->
+
+<!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->

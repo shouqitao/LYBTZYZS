@@ -858,3 +858,5 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 |------|------|----------|
 | 2026-06-28 | v1.9 | **spec S3 批次2 提炼（989→~620 行）**：事件目录删 Publisher/Subscriber 无信息列改为单表汇总；客户端异常处理/错误消息/追踪码/启动诊断/账户设置（US-ERR-003~008/006/007/US-SHELL-006/007）改链接到 11c-error-handling.md/11a-shell.md；同步 UI 架构 v2.0 段外移到 sync-protocol.md；菜单完整层级改链接保留可见性矩阵。变更历史见 git log。 |
 | 2026-06-28 | v1.8 | **N1 + ADR-0012 对齐**: 模块清单/架构图/Clinical 模块清单清除 Sync（v2.0）; SyncEvents/Sync UI 架构加 🧲 v2.0 标; Item 类继承对齐 ADR-0012（新代码用 `[ObservableProperty]`，禁 BindableBase）; Prism 9.0→8.1.97 |
+
+<!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->

@@ -481,3 +481,5 @@ stateDiagram-v2
 | 2026-06-13 | 1.0 | 初始创建：完整安全架构文档 | AI |
 | 2026-06-25 | 1.1 | **Mermaid 图表替换**: 登录流程、Token 轮换流程 ASCII 时序图替换为 Mermaid sequence diagram; 认证状态机、Token 生命周期 ASCII 图替换为 Mermaid state diagram | AI |
 | 2026-06-28 | 1.2 | **D3 B+ 对齐**: RefreshToken/TokenManagementService/FamilyId 体系标注 🧲 v1.0 待实现（重放检测 v2.0）; 授权策略对齐 PolicyConstants 实有 4 项（含 DoctorOrAdmin/AdminOnly，无 DoctorOnly）; 加 D7 待对齐注 | AI |
+
+<!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->

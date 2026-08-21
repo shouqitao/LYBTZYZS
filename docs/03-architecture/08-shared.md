@@ -399,3 +399,5 @@ Entity (DataAnnotations)
 | 2026-02-10 | v1.0 | 初始版本，从 shared-layer-architecture/dto-architecture specs 整合 |
 
 <!-- P3-3 PagedResult双定义：Contracts/Common/PagedResult vs Desktop.Contracts/Results/PaginatedResult 已在08-shared.md标注“Entities可依赖Shared.Models枚举是例外”，分页模型双定义待v2统一 -->
+
+<!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
