@@ -340,7 +340,8 @@ public abstract class BaseUsersController : BaseCrudController
             return ValidationFail("请至少选择一个用户");
         }
 
-        var result = await Sender.Send(new BatchEnableUsersCommand(dto.Ids), ct);
+        var (operatorId, _, operatorRole) = GetOperator();
+        var result = await Sender.Send(new BatchEnableUsersCommand(dto.Ids, operatorId, operatorRole), ct);
 
         LogOperation("批量启用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量启用完成");
@@ -364,7 +365,8 @@ public abstract class BaseUsersController : BaseCrudController
             return ValidationFail("请至少选择一个用户");
         }
 
-        var result = await Sender.Send(new BatchDisableUsersCommand(dto.Ids), ct);
+        var (operatorId2, _, operatorRole2) = GetOperator();
+        var result = await Sender.Send(new BatchDisableUsersCommand(dto.Ids, operatorId2, operatorRole2), ct);
 
         LogOperation("批量禁用用户", new { Ids = dto.Ids, Result = result.Value?.Message }, null);
         return Success(result.Value!, result.Value?.Message ?? "批量禁用完成");

@@ -13,6 +13,7 @@ public class BatchEnableUsersCommandHandler
       IRequestHandler<BatchEnableUsersCommand, Result<BatchOperationResultDto>>
 {
     private readonly IUserRepository _userRepository;
+    private UserRole _operatorRole;
 
     public BatchEnableUsersCommandHandler(IUserRepository userRepository)
     {
@@ -21,7 +22,10 @@ public class BatchEnableUsersCommandHandler
 
     public Task<Result<BatchOperationResultDto>> Handle(
         BatchEnableUsersCommand request, CancellationToken cancellationToken)
-        => ExecuteBatchAsync(request.Ids, Guid.Empty, cancellationToken);
+    {
+        _operatorRole = request.OperatorRole;
+        return ExecuteBatchAsync(request.Ids, request.CurrentUserId, cancellationToken);
+    }
 
     protected override Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken ct)
         => _userRepository.GetByIdAsync(id, ct);
@@ -45,7 +49,11 @@ public class BatchEnableUsersCommandHandler
 
     protected override Task<string?> ValidateAsync(
         ApplicationUser user, Guid id, Guid operatorId, CancellationToken ct)
-        => user.IsSysAdmin
-            ? Task.FromResult<string?>("系统管理员账号不可被操作")
-            : Task.FromResult<string?>(null);
+    {
+        var guardResult = UserHierarchyGuard.Validate<object>(
+            operatorId, id, _operatorRole, user.IsSysAdmin, user.Role);
+        if (guardResult != null)
+            return Task.FromResult<string?>(guardResult.ErrorMessage ?? "无权限启用");
+        return Task.FromResult<string?>(null);
+    }
 }
