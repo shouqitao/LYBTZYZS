@@ -52,15 +52,11 @@ public class Program
 
         LoggingBootstrap.CreateBootstrapLogger(isTestEnvironment);
 
-        // US-SHELL-024（2026-08-13 P2-07）: 单实例检查——已有实例在跑则拒绝启动（防跨脚本双开）
-        // 位置：Bootstrap Logger 之后（能记日志）、任何写操作之前（尽早失败）
-        // 仅 Production 生效（真实部署场景）；测试宿主（testhost.exe——WebApplicationFactory 多 host 测试
-        // 进程内共享 Mutex 命名空间，同进程二次获取误判拒绝）与开发环境跳过
-        // 测试宿主（testhost.exe——WebApplicationFactory 多 host 测试进程内共享 Mutex 命名空间，
-        // 同进程二次获取误判拒绝——2026-08-13 P2-07 日志定位实证）与开发环境跳过
+        // P2-2-3 Mutex 全环境：原仅 Production 生效，Development 可多开致端口/DB 锁冲突；现全环境生效，
+        // 通过 Environment 后缀隔离（testhost 单进程多 host 测试不误判，2026-08-13 实证保留）
         var isTestHost = System.Diagnostics.Process.GetCurrentProcess().ProcessName.Contains(
             "testhost", StringComparison.OrdinalIgnoreCase);
-        if (environment == "Production" && !isTestHost && !TryAcquireSingleInstance())
+        if (!isTestHost && !TryAcquireSingleInstance($"{InstanceMutexName}_{environment}"))
         {
             Log.Fatal(
                 "[启动] 检测到已有 LYBT.WebAPI 实例在运行（Mutex={InstanceMutexName}）——拒绝启动（US-SHELL-024 单实例保护）",

@@ -167,7 +167,8 @@ public static class UnifiedMiddlewareConfiguration
         app.UseResponseCaching();
 
         // ===== 阶段6: 终端映射（最后） =====
-        // Issue #1726 Phase 3: 健康检查端点
+        // Issue #1726 Phase 3: 健康检查端点 - P2-12-1 根路由探针分离：/health 为外部探针（匿名，K8s/负载均衡），
+        // /api/v1/health 为业务受控探针（需认证的 GetDetails），根 "/" 保持 404 不混为探针
         // Sprint3-A3-08: FallbackPolicy 启用后，健康检查需显式 AllowAnonymous
         app.MapHealthChecks("/health").AllowAnonymous();
         app.MapHealthChecks("/health/database", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

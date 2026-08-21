@@ -12,7 +12,7 @@ using MediatR;
 namespace LYBT.Module.Catalog.Application.Commands;
 
 /// <summary>
-/// 批量导入药材命令处理器。
+/// 批量导入药材命令处理器。P2-12-2 批量策略与单条一致：需 AdminOrSuperAdmin（HerbsController.Create/Update 同策略），校验含 <> 禁用（与单条 HerbCommandHandler 一致），软删同名走新增不复活。
 /// </summary>
 public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCommand, Result<HerbBatchImportResultDto>>
 {

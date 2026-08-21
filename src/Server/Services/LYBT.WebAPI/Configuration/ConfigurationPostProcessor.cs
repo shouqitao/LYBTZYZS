@@ -66,6 +66,8 @@ public static class ConfigurationPostProcessor
 
         if (fallbacks.Count > 0)
         {
+            // P2-2-4 占位符回退提示：记录回退键便于运维定位未注入的环境变量
+            Serilog.Log.Warning("[配置] 占位符回退生效 {Count} 项: {Keys}（值来自下一级配置，顶层为 ${...} 或空串）", fallbacks.Count, string.Join(", ", fallbacks.Keys));
             var builder = new ConfigurationBuilder().AddInMemoryCollection(fallbacks);
             var overlay = builder.Build();
             // 注入到 root（ConfigurationManager 作为 IConfigurationBuilder 支持追加）

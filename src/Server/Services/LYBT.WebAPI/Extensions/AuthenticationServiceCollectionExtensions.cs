@@ -29,6 +29,8 @@ public static class AuthenticationServiceCollectionExtensions
         // JWT 认证 - 从统一配置读取
         try
         {
+            // P2-2-5 JWT 顺序 ADR：AddIdentity 必须在 RegisterAuthenticationServices 之前（见 Program.cs 325-330 注释），
+            // 本扩展依赖 Identity 已注册的 Cookie 默认方案被 JWT Bearer 覆盖，否则 302 重定向 /Account/Login。
             // unify-configuration-system: 使用扁平化配置路径
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
                            jwtOptions.SecretKey;
