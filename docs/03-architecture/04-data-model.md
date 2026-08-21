@@ -494,3 +494,5 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 <!-- P3-5 双标识 SuperAdmin vs IsSysAdmin：前者业务角色，后者运维标识，已在04-permissions.md增双标识说明段 -->
 
 <!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
+
+<!-- F4 P3 batch: P3-3-8/3-9/4-6/4-9/5-2 已评估 -->

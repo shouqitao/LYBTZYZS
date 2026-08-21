@@ -860,3 +860,5 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | 2026-06-28 | v1.8 | **N1 + ADR-0012 对齐**: 模块清单/架构图/Clinical 模块清单清除 Sync（v2.0）; SyncEvents/Sync UI 架构加 🧲 v2.0 标; Item 类继承对齐 ADR-0012（新代码用 `[ObservableProperty]`，禁 BindableBase）; Prism 9.0→8.1.97 |
 
 <!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
+
+<!-- F4 P3 batch: P3-3-8/3-9/4-6/4-9/5-2 已评估 -->

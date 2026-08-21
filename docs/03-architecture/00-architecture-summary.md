@@ -101,3 +101,5 @@
 <!-- P3-10 双真相互补等28项已归档 Good First Issues，见 architecture-deep-review P3全表 -->
 
 <!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
+
+<!-- F4 P3 batch: P3-3-8/3-9/4-6/4-9/5-2 已评估 -->
