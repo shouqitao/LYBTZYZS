@@ -12,6 +12,21 @@ public sealed class SecurityOptionsValidator : IValidateOptions<SecurityOptions>
     {
         var failures = new List<string>();
 
+        // P1-9：AesKey 需为 Base64 32 字节（若配置）
+        if (!string.IsNullOrWhiteSpace(options.AesKey))
+        {
+            try
+            {
+                var kb = Convert.FromBase64String(options.AesKey);
+                if (kb.Length != 32)
+                    failures.Add("Security:AesKey 解码后必须为 32 字节（AES-256）");
+            }
+            catch (FormatException)
+            {
+                failures.Add("Security:AesKey 必须是有效的 Base64 字符串");
+            }
+        }
+
         // 验证速率限制配置
         if (options.RateLimiting.Enabled)
         {

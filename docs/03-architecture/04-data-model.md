@@ -458,12 +458,13 @@ entity.HasIndex(e => e.PatientId)
 
 > **设计取舍**: NFR 并发用户 1-3 人，并发创建重复草稿概率极低。代码层 BR-001 检查为主，DB 唯一索引为兜底保障。
 
-### 敏感数据 — v1.0 仅 IdNumber/PhoneNumber（Patient 简化后）
+### 敏感数据 — v1.0 仅 IdNumber/PhoneNumber（Patient 简化后，P1-9 透明加密）
 
-Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏:
-- IdNumber (身份证号, `SensitiveData(IdentityInfo, Partial)`)
-- PhoneNumber (手机号, `SensitiveData(ContactInfo, Partial)`)
+Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-GCM 透明加密双层:
+- IdNumber (身份证号, `SensitiveData(IdentityInfo, Partial)` + `AesGcmValueConverter`)
+- PhoneNumber (手机号, `SensitiveData(ContactInfo, Partial)` + `AesGcmValueConverter`)
 
+> **P1-9（2026-08-21）**：`PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())`，密钥 `SecurityOptions.AesKey`（Base64 32B），历史明文回退兼容。
 > **v1.0 注**：文档原 Address/AllergyHistory/MedicalHistory/EmergencyContactPhone 等敏感字段随 Patient 裁剪延期至 v2.0，代码 `PatientModel.cs:47,55` 仅保留上述两字段。
 
 ### 软删除

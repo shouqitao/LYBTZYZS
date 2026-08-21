@@ -121,6 +121,12 @@ cd /home/player/lybt-api && bash start.sh
 - 发布前 `grep -c "Jwt__SecretKey" start.sh` 确认双值不同；相同值启动 `Fatal`
 - 本地 `SecurityAuditLogs` 已 SQLite 落库，联网后同步（v2.0 前先可追溯）
 
+### 患者敏感字段加密密钥（P1-9，2026-08-21）
+
+- `Security__AesKey`（Base64 32B，`SecurityOptions.AesKey`）生产必须配置，缺省回退测试固定密钥仅开发/测试
+- 发布前校验：`python3 -c "import base64,os; print(base64.b64encode(os.urandom(32)).decode())"` 生成并注入
+- 变更后历史明文自动回退解密，无需手动数据迁移（ValueConverter 容错）
+
 ### 发布前门禁
 
 ```bash

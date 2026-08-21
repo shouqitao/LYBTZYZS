@@ -365,6 +365,18 @@ stateDiagram-v2
 | 审计补偿 | `LocalWebAPI` 本地 `SecurityAuditLogs` SQLite 落库，联网后 `IAuditSyncService` 同步到远程（v2.0 完整 Sync 前先可追溯） |
 | 文档 | `docs/03-architecture/decisions/0024-dual-jwt-isolation.md` 为 SSOT |
 
+### 7.02 患者敏感字段透明加密（P1-9，2026-08-21）
+
+| 项 | 说明 |
+|----|------|
+| 字段 | `Patient.IdNumber` / `PhoneNumber`（`[SensitiveData]` 日志脱敏 + ValueConverter 落库 AES-GCM 双层） |
+| 转换器 | `LYBT.Infrastructure.Serialization.AesGcmValueConverter`（nonce12+tag16+密文，Base64，随机 nonce，回退明文兼容） |
+| 密钥 | `SecurityOptions.AesKey`（Base64 32B，环境变量 `Security__AesKey`，`SecurityOptionsValidator` 强校验） |
+| 配置 | `PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())` |
+| 迁移 | `AddPatientEncryption`（空结构变更，历史明文回退解密） |
+| 日志 | 仍经 `SensitiveDataDestructuringPolicy` 脱敏为 `***` |
+| 验证 | `PatientEncryptionTests` 存取往返 |
+
 ### 7.1 Token 重放检测 (Token Family)
 
 > 🧲 **v2.0 规划** —— 依赖 RefreshToken 实体的 `FamilyId` / `IsUsed` 字段，当前均未实现。v1.0（D3 B+）仅补回 Token 族旋转 + 登出撤销；重放检测延后至 v2.0。

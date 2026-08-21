@@ -12,6 +12,9 @@ public sealed class SecurityOptions
     /// <summary>系统审计用户 ID（非 HTTP 上下文如种子/后台任务归属）</summary>
     public Guid SystemUserId { get; set; } = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
+    /// <summary>患者敏感字段 AES-GCM 密钥（Base64 32 字节，P1-9）</summary>
+    public string? AesKey { get; set; }
+
     /// <summary>
     /// 速率限制配置
     /// </summary>
