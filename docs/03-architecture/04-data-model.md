@@ -413,6 +413,9 @@ graph TB
 | IX_MedicalCases_PatientId | MedicalCases | PatientId | 普通索引 | 按患者查询医案 |
 | IX_MedicalCases_UserId | MedicalCases | UserId | 普通索引 | 按医生查询医案 |
 | IX_MedicalCases_PatientId_Active | MedicalCases | PatientId | **筛选唯一索引** | BR-001 同一患者单活跃医案约束 (MC-D06) |
+| IX_Herbs_Name | Herbs | Name | **筛选唯一索引** | 名称过滤唯一 `[IsDeleted]=0`，允许软删后重建 |
+| IX_Formulas_Name | Formulas | Name | **筛选唯一索引** | P1-8 补，过滤唯一 `[IsDeleted]=0`（同 Herb） |
+| IX_Patients_IdNumber | Patients | IdNumber | **筛选唯一索引** | P1-20 补，`[IsDeleted]=0 AND [IdNumber] IS NOT NULL` |
 
 ## 实体验证约束
 
@@ -469,6 +472,8 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 - 通过 `IsDeleted = true` 标记
 - 全局查询过滤器自动排除
 - 使用 `IgnoreQueryFilters()` 查询已删除记录
+- **Identity 全局过滤副作用（P1-7，2026-08-21）**：`ApplicationUser` 同属 `ISoftDeletable`，全局过滤使 `UserManager.FindByIdAsync` 查已删用户返 null；需恢复/引用检查时显式 `IgnoreQueryFilters`（范例 `RestoreUserCommandHandler.cs:42`）
+- **系统操作归属（P1-3，2026-08-21）**：非 HTTP 上下文（种子/后台清理）`CreatedBy/UpdatedBy` 归属 `SecurityOptions.SystemUserId`（默认 `00000000-0000-0000-0000-000000000001`）
 
 ## 架构决策记录
 

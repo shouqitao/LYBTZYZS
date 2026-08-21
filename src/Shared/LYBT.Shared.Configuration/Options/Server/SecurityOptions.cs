@@ -9,6 +9,9 @@ public sealed class SecurityOptions
 {
     public const string SectionName = "Security";
 
+    /// <summary>系统审计用户 ID（非 HTTP 上下文如种子/后台任务归属）</summary>
+    public Guid SystemUserId { get; set; } = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
     /// <summary>
     /// 速率限制配置
     /// </summary>

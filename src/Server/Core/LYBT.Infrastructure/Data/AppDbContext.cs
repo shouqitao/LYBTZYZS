@@ -173,6 +173,7 @@ namespace LYBT.Infrastructure.Data
 
         /// <summary>
         /// 获取当前用户ID
+        /// P1-3：非 HTTP 上下文（如种子/后台清理）归属 System 用户（SecurityOptions.SystemUserId 占位），文档补“系统操作归属 System 用户”
         /// </summary>
         private Guid? GetCurrentUserId()
         {
@@ -181,13 +182,24 @@ namespace LYBT.Infrastructure.Data
                 var userIdClaim = _httpContextAccessor?.HttpContext?.User?
                     .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+                if (Guid.TryParse(userIdClaim, out var userId))
+                    return userId;
             }
             catch
             {
                 // 在某些情况下（如单元测试、后台服务等），可能无法获取HttpContext
-                return null;
             }
+            // P1-3：非 HTTP 上下文归属 System 用户，便于审计追溯（种子数据等）
+            // 若需可注入 IOptions<SecurityOptions> 读取 SystemUserId，此处先用固定占位（与 SecurityOptions.SystemUserId 默认一致）
+            try
+            {
+                // 尝试从 HttpContext 请求服务解析（若可用）
+                var opts = _httpContextAccessor?.HttpContext?.RequestServices.GetService(typeof(Microsoft.Extensions.Options.IOptions<LYBT.Shared.Configuration.Options.Server.SecurityOptions>)) as Microsoft.Extensions.Options.IOptions<LYBT.Shared.Configuration.Options.Server.SecurityOptions>;
+                if (opts != null && opts.Value.SystemUserId != Guid.Empty)
+                    return opts.Value.SystemUserId;
+            }
+            catch { }
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
         }
 
         #endregion

@@ -20,6 +20,9 @@ public class FormulaConfiguration : BaseEntityConfiguration<Formula>
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         builder.Property(f => f.IsShared).HasDefaultValue(false);
 
+        // P1-8: 名称过滤唯一索引（同 Herb 已有语义），允许软删后重建
+        builder.HasIndex(f => f.Name).IsUnique().HasFilter("[IsDeleted] = 0");
+
         // 配置与FormulaHerbItem的一对多关系
         builder.HasMany(f => f.Herbs)
             .WithOne(f => f.Formula)

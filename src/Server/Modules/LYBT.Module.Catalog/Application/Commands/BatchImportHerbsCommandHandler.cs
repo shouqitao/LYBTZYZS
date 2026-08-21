@@ -1,4 +1,6 @@
+using FluentValidation;
 using LYBT.Module.Catalog.Application.Mappers;
+using LYBT.Module.Catalog.Application.Validators;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -44,6 +46,22 @@ public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCo
 
             try
             {
+                // P1-5：批量路径补单体一致的校验（含 <> 非法字符）
+                var itemValidator = new HerbImportItemDtoValidator();
+                var validation = await itemValidator.ValidateAsync(dto, cancellationToken);
+                if (!validation.IsValid)
+                {
+                    result.FailureCount++;
+                    result.Failures.Add(new HerbImportFailureDto
+                    {
+                        RowNumber = rowNumber,
+                        HerbName = dto.Name,
+                        Reason = "校验失败",
+                        ErrorDetails = validation.Errors.Select(e => e.ErrorMessage).ToList()
+                    });
+                    continue;
+                }
+
                 if (string.IsNullOrWhiteSpace(dto.PinYinCode))
                 {
                     dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);

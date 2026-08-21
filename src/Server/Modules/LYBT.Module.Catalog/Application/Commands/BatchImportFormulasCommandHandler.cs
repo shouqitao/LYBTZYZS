@@ -1,5 +1,7 @@
+using FluentValidation;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Module.Catalog.Application.Validators;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -50,6 +52,20 @@ public class BatchImportFormulasCommandHandler(
             index++;
             try
             {
+                // P1-5：批量路径补 <> 校验（与单体一致）
+                var formulaItemValidator = new FormulaImportItemDtoValidator();
+                var fv = await formulaItemValidator.ValidateAsync(item, cancellationToken);
+                if (!fv.IsValid)
+                {
+                    result.FailureCount++;
+                    result.Failures.Add(new FormulaImportFailureDto
+                    {
+                        RowIndex = index,
+                        FormulaName = item.Name ?? string.Empty,
+                        ErrorMessage = string.Join("; ", fv.Errors.Select(e => e.ErrorMessage))
+                    });
+                    continue;
+                }
                 if (string.IsNullOrWhiteSpace(item.Name))
                 {
                     result.FailureCount++;
