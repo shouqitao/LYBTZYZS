@@ -6,6 +6,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <!-- P2-1-9 汇聚点评估：13 项目引用为架构守卫必需（Server+Desktop+LocalWebAPI 全量扫描），虽增量构建成本但属测试期编译期依赖，运行时无循环；保留。 -->
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />

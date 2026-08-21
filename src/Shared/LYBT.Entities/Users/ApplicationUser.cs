@@ -10,6 +10,8 @@ namespace LYBT.Entities.Users;
 /// <summary>
 /// 统一用户实体 - 合并原 Identity ApplicationUser 与业务 User 模型
 /// 继承 IdentityUser<Guid> 提供 Identity 集成，同时携带业务字段（角色、状态、审计等）
+/// P2-4-3 评估：因需继承 IdentityUser&lt;Guid&gt; 无法继承 BaseEntity，故审计/软删除字段手抄（CreatedAt/UpdatedAt/CreatedBy/UpdatedBy/IsDeleted/RowVersion），
+/// AppDbContext.SetAuditFields 同时处理 BaseEntity 与 ApplicationUser 两分支；若 BaseEntity 新增字段需同步手抄，已在 04-data-model.md 标注特例。
 /// </summary>
 public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeletable
 {

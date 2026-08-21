@@ -14,7 +14,7 @@ public abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T>
 {
     public virtual void Configure(EntityTypeBuilder<T> builder)
     {
-        // 主键配置
+        // 主键配置 - P2-4-1 Id 生成职责：实体侧 Guid.NewGuid() 为内存默认值，EF侧 ValueGeneratedNever + HasKey 仅声明主键，不设 HasDefaultValueSql，避免双重 NEWID()；Db 仅对未显式赋值的审计字段用 GETUTCDATE()。
         builder.HasKey(e => e.Id);
 
         // 审计字段配置
