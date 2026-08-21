@@ -256,6 +256,10 @@ dotnet ef migrations add <Name> -p src/Server/Core/LYBT.Infrastructure -s src/Se
 dotnet ef database update -s src/Server/Services/LYBT.WebAPI
 ```
 
+### P2-06-5 DDL 权限 Runbook（2026-08-21）
+- **Serilog MSSql Sink** `AutoCreateSqlTable=true` 首次启动会建 `Logs` 表，需 DB 账号有 `CREATE TABLE` 权限；生产建议预建表并设 `AutoCreateSqlTable=false`（`LoggingBootstrap` 仅首次建表，失权限则启动失败，`06-operations` 未提示）。
+- **迁移**需 `db_owner` 或 `db_ddladmin + db_datawriter/reader`；CI 迁移前 `dotnet ef database update` 校验 `__EFMigrationsHistory` 一致性。
+
 ---
 
 ## 故障排查

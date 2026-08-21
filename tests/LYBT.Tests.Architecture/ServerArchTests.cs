@@ -542,6 +542,7 @@ public class ServerArchTests
     /// P-10: 服务层不得直接注入 AppDbContext / IDbContextAccessor，必须通过 Repository 层访问数据
     /// Task 6: Repository 规范统一 - 消除服务层直接依赖 DbContext
     /// A-28 P1-2: 扩展检查 IDbContextAccessor（跨模块服务绕过模块 DbContext 的盲区）；基础设施类豁免
+    /// P2-19-2 评估：CatalogCrossModuleService 注入 CatalogDbContext（模块级）属跨聚合 ID 校验白名单，P10 仅守 AppDbContext/IDbContextAccessor，故豁免；若后续新增跨模块直查需在 ADR-0017 增白名单。
     /// </summary>
     [Fact]
     public void P10_Services_Should_Not_Directly_Inject_AppDbContext()
