@@ -21,6 +21,7 @@ public static class ErrorMessages
         [ErrorCode.InternalError] = ("内部服务器错误", "Internal server error"),
         [ErrorCode.DatabaseError] = ("数据库操作失败", "Database operation failed"),
         [ErrorCode.RateLimitExceeded] = ("请求频率过高", "Rate limit exceeded"),
+        [ErrorCode.SensitiveDecryptFailed] = ("敏感数据解密失败，请联系管理员", "Sensitive data decryption failed"),
 
         // 1xxxx - 用户模块
         [ErrorCode.UserNotFound] = ("用户不存在", "User not found"),

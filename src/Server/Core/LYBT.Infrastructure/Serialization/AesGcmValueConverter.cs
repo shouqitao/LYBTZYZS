@@ -59,7 +59,8 @@ public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
         try
         {
             var combined = Convert.FromBase64String(cipherBase64);
-            if (combined.Length < 12 + 16 + 1) return cipherBase64; // 太短则视为明文回退
+            if (combined.Length < 12 + 16 + 1)
+                throw new CryptographicException("敏感数据解密失败：密文长度不足");
             var key = ResolveKey();
             var nonce = new byte[12];
             var tag = new byte[16];
@@ -72,10 +73,17 @@ public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
             aes.Decrypt(nonce, cipher, tag, plain);
             return System.Text.Encoding.UTF8.GetString(plain);
         }
-        catch
+        catch (CryptographicException)
         {
-            // 非法 Base64 或认证失败 → 视为历史明文回退
-            return cipherBase64;
+            throw;
+        }
+        catch (FormatException ex)
+        {
+            throw new CryptographicException("敏感数据解密失败：Base64 格式错误", ex);
+        }
+        catch (Exception ex) when (ex is not CryptographicException)
+        {
+            throw new CryptographicException("敏感数据解密失败", ex);
         }
     }
 

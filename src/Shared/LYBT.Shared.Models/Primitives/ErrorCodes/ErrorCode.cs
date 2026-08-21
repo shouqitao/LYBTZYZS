@@ -79,6 +79,11 @@ public enum ErrorCode
     /// </summary>
     RateLimitExceeded = 12,
 
+    /// <summary>
+    /// 敏感数据解密失败（T1.4）
+    /// </summary>
+    SensitiveDecryptFailed = 13,
+
     #endregion
 
     #region 1xxxx - 用户模块 (Users)

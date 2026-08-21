@@ -118,6 +118,7 @@ public static class ErrorCodeExtensions
             ErrorCode.PasswordChangeRequired => 422,
             ErrorCode.RegistrationInvalidStatusTransition => 422,
             ErrorCode.RegistrationCancelNotAllowed => 422,
+            ErrorCode.SensitiveDecryptFailed => 422,
 
             // 429 Too Many Requests
             ErrorCode.RateLimitExceeded => 429,
@@ -258,6 +259,7 @@ public static class ErrorCodeExtensions
             ErrorCode.RateLimitExceeded => ErrorCategory.Business,
             ErrorCode.RegistrationInvalidStatusTransition => ErrorCategory.Business,
             ErrorCode.RegistrationCancelNotAllowed => ErrorCategory.Business,
+            ErrorCode.SensitiveDecryptFailed => ErrorCategory.Business,
 
             // 系统错误
             ErrorCode.InternalError => ErrorCategory.System,

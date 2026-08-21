@@ -43,6 +43,22 @@ public class BusinessExceptionHandler : IExceptionHandler
             return true;
         }
 
+        // T1.4: 敏感数据解密失败转 422（AesGcmValueConverter 解密失败抛 CryptographicException）
+        if (exTypeName == "System.Security.Cryptography.CryptographicException" || exception is System.Security.Cryptography.CryptographicException)
+        {
+            _logger.LogWarning(exception, "敏感数据解密失败 - CorrelationId: {CorrelationId}, 路径: {Path}", GetCorrelationId(httpContext), httpContext.Request.Path);
+            httpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+            httpContext.Response.ContentType = "application/json";
+            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
+            {
+                Success = false,
+                Message = ErrorMessages.Get(ErrorCode.SensitiveDecryptFailed),
+                Errors = new { code = ErrorCode.SensitiveDecryptFailed.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
+                RequestId = GetCorrelationId(httpContext)
+            }, cancellationToken);
+            return true;
+        }
+
         // FluentValidation 校验异常转 400（与 ValidationBehavior 管道互补，无直接引用用全名匹配）
         if (exTypeName == "FluentValidation.ValidationException")
         {
