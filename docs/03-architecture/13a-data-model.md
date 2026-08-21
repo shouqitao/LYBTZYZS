@@ -25,6 +25,8 @@
 | **MedicalCasePrintLog** | MedicalCasePrintLogs | 医案ID、打印类型、打印机、操作人 | — |
 | **SystemLog** | SystemLogs | 系统日志（已标记死代码，待删除） | — |
 
+> **索引**：P1-20 `Patients.IdNumber` 过滤唯一 `IX_Patients_IdNumber` `[IsDeleted]=0 AND [IdNumber] IS NOT NULL`；P1-8 `Formulas.Name` 过滤唯一 `[IsDeleted]=0`（同 Herbs）|
+
 ## 2.2 状态枚举
 
 | 枚举 | 值 | 用途 |

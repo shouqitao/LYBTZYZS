@@ -17,6 +17,9 @@ public class PatientConfiguration : BaseEntityConfiguration<Patient>
 
         builder.ToTable("Patients");
 
+        // P1-20：身份证号过滤唯一索引，允许软删后重建且 NULL 不参与
+        builder.HasIndex(p => p.IdNumber).IsUnique().HasFilter("[IsDeleted] = 0 AND [IdNumber] IS NOT NULL").HasDatabaseName("IX_Patients_IdNumber");
+
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
     }
 }
