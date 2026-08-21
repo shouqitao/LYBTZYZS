@@ -118,15 +118,22 @@ public abstract class CrudServiceBase<TListDto, TDetailDto, TInputDto>
         });
     }
 
-    #region Core 抽象方法 — 子类必须实现
+    #region Core 方法 — 子类按需重写，未重写默认抛 NotSupported（T3.4）
 
-    protected abstract Task<TDetailDto> CreateCoreAsync(TInputDto input, CancellationToken ct);
-    protected abstract Task<TDetailDto> UpdateCoreAsync(TInputDto input, CancellationToken ct);
-    protected abstract Task DeleteCoreAsync(Guid id, CancellationToken ct);
-    protected abstract Task<TDetailDto?> GetByIdCoreAsync(Guid id, CancellationToken ct);
-    protected abstract Task<PagedResult<TListDto>> GetPagedCoreAsync(int page, int pageSize, string? keyword, CancellationToken ct);
-    protected abstract Task<List<TListDto>> SearchCoreAsync(string keyword, CancellationToken ct);
-    protected abstract Task<TDetailDto?> ToggleStatusCoreAsync(Guid id, CancellationToken ct);
+    protected virtual Task<TDetailDto> CreateCoreAsync(TInputDto input, CancellationToken ct)
+        => throw new NotSupportedException($"Create not supported for {EntityName}");
+    protected virtual Task<TDetailDto> UpdateCoreAsync(TInputDto input, CancellationToken ct)
+        => throw new NotSupportedException($"Update not supported for {EntityName}");
+    protected virtual Task DeleteCoreAsync(Guid id, CancellationToken ct)
+        => throw new NotSupportedException($"Delete not supported for {EntityName}");
+    protected virtual Task<TDetailDto?> GetByIdCoreAsync(Guid id, CancellationToken ct)
+        => throw new NotSupportedException($"GetById not supported for {EntityName}");
+    protected virtual Task<PagedResult<TListDto>> GetPagedCoreAsync(int page, int pageSize, string? keyword, CancellationToken ct)
+        => throw new NotSupportedException($"GetPaged not supported for {EntityName}");
+    protected virtual Task<List<TListDto>> SearchCoreAsync(string keyword, CancellationToken ct)
+        => throw new NotSupportedException($"Search not supported for {EntityName}");
+    protected virtual Task<TDetailDto?> ToggleStatusCoreAsync(Guid id, CancellationToken ct)
+        => throw new NotSupportedException($"ToggleStatus not supported for {EntityName}");
 
     #endregion
 

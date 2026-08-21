@@ -1,4 +1,5 @@
 using LYBT.Entities.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Data;
 
