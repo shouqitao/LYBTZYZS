@@ -5,6 +5,8 @@
 
 系统使用 EF Core 8.0 管理数据模型，所有业务实体继承 `BaseEntity` 基类。MedicalCase 是唯一的 DDD 聚合根，Consultation 和 Prescription 是其内部实体。数据库使用 SQL Server (远程) 或 SQL Server (嵌入式 LocalWebAPI)。
 
+> **2026-08-21 P1-1**：`LYBT.Module.MedicalCase`（单数）为重命名残留，已清理；`MedicalCases`（复数）为唯一 Server 端聚合根模块。
+
 ## 实体关系图
 
 ```mermaid
