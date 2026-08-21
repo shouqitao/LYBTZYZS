@@ -49,6 +49,7 @@
 | 10 | **已知问题/当前状态** | `03-architecture/13c-current-status.md` |
 | 11 | **开发规则/流程（agent 层）** | Skill `lybtzys-coder-rules` |
 | 12 | **部署/配置** | `06-operations/` |
+| 13 | **LocalWebAPI 白名单（P07 例外）** | `03-architecture/decisions/0023-localwebapi-whitelist.md`（关联 ADR-0010，SSOT；其他位置仅引用） |
 
 ---
 

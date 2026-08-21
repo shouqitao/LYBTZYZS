@@ -45,6 +45,8 @@
 
 **依赖方向**: Shell → Roles → Modules → Infrastructure → Foundation → Contracts
 
+> **LocalWebAPI 特例（P07 白名单，见 ADR-0010/0023）**：`LYBT.LocalWebAPI` 为 P07 模块间零引用的**唯一例外**，允许直接引用 `LYBT.Entities`/`LYBT.Infrastructure` 及 6 个 Server 模块（`Identity/Catalog/Patients/MedicalCases/Registrations/Reports`）以实现统一服务层（双模式行为 100% 复用）。其余 Server 模块间仍零引用，架构测试显式豁免 LocalWebAPI。
+
 ## Auth/Session Flow
 
 1. Desktop → `POST /api/v1/auth/login` → Server 验证凭据

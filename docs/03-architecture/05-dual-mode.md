@@ -288,8 +288,14 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 ---
 
+### P07 例外：LocalWebAPI 统一服务层白名单（ADR-0010/0023）
+
+架构规则 P07 要求 Server 模块间零引用；`LYBT.LocalWebAPI` 为**唯一例外**（见 ADR-0010 统一服务层、ADR-0023 白名单正名）。允许直接引用 `LYBT.Entities`/`LYBT.Infrastructure` 及 6 个 Server 模块（`Identity/Catalog/Patients/MedicalCases/Registrations/Reports`）以实现双模式行为 100% 复用。其余模块间仍零引用，`tests/LYBT.Tests.Architecture/ArchTests.P07` 显式豁免 LocalWebAPI（代码注释）。
+
 ## 架构决策记录
 
+- [ADR-0023: LocalWebAPI 白名单（P07 例外正名）](decisions/0023-localwebapi-whitelist.md) — P07 唯一例外显式白名单
+- [ADR-0010: LocalWebAPI 统一服务层](decisions/0010-localwebapi-unified-service-layer.md) — 保留复用，不解耦
 - [ADR-0009: URL 驱动双模式架构](decisions/0009-url-driven-dual-mode.md) — 当前决策：嵌入式 Kestrel + URL 驱动切换 + SQL Server LocalDB
 - [ADR-0002: 双模式架构](decisions/0002-dual-mode-architecture.md) — 历史决策（已被 ADR-0009 取代）
 

@@ -17,6 +17,7 @@
     <ProjectReference Include="../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />
     <ProjectReference Include="../../../Shared/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="../../../Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj" />
+    <!-- P07 Whitelist: unified Service layer, see ADR-0010/0023 -->
     <!-- Server modules (unified Service layer — same as Remote WebAPI) -->
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Identity/LYBT.Module.Identity.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Patients/LYBT.Module.Patients.csproj" />

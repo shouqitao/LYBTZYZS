@@ -639,6 +639,7 @@ public class ArchTests
 
         foreach (var module in moduleAssemblies)
         {
+            if (module.GetName().Name == "LYBT.LocalWebAPI") continue; // exempt per ADR-0010/0023 (unified Service layer)
             var referencedModules = module.GetReferencedAssemblies()
                 .Where(a => a.Name?.StartsWith("LYBT.Module.") == true 
                          && a.Name != module.GetName().Name)
