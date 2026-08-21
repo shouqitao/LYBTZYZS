@@ -151,10 +151,10 @@ IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 
 > **P1-10（2026-08-21）**：日界 = 诊所本地时间（`Asia/Shanghai`，见 `LYBT.Entities.MedicalCases.MedicalCaseTime` / `MedicalCaseDetailDto.IsLocked`），非 UTC 非服务器本地时区。修复历史问题：北京 00-08 时 UTC 已跨日而本地未跨日时误锁 Completed 医案。`MedicalCaseCommandService.ValidateEditReason` 经 `IMedicalCaseTimeService.IsLocked` 强锁（API 层 422 兜底）。
 
-**锁定后行为**：
+**锁定后行为**（P1-18 API 强锁，非仅前端置灰）：
 
-- Doctor 不可编辑
-- Admin/SuperAdmin 编辑需提供 EditReason
+- Doctor 不可编辑（`EnsureCanEdit` 拒绝非 Admin 编辑 Completed；隔天由 `IsLocked` 覆盖）
+- Admin/SuperAdmin 编辑需提供 EditReason（`ValidateEditReason` 经 `IMedicalCaseTimeService.IsLocked` 强校验，缺 EditReason 抛 `McCannotEditCase`）
 - 无显式解锁接口，管理员直接编辑（需 EditReason）
 
 ### 编辑理由（EditReason）要求
