@@ -34,6 +34,8 @@ public sealed class MedicalCaseStateGuard : IStateGuard<MedicalCase>
 
         if ((isPrintedEdit || isCompletedEdit || isLockedEdit || isForeignEdit) && string.IsNullOrWhiteSpace(editReason))
         {
+            if (isCompletedEdit)
+                throw new BusinessException(ErrorCode.McCannotEditCase, "已完成医案编辑需提供编辑原因");
             if (isPrintedEdit)
                 throw new BusinessException(ErrorCode.McPrintedRequiresReason, "医案已打印，修改内容需提供编辑原因");
             if (isLockedEdit)
