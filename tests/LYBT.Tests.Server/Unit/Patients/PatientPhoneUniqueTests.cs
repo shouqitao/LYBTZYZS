@@ -162,7 +162,12 @@ public class PatientPhoneUniqueTests
         // 其余方法仅满足接口签名（本测试路径不触发）
         public Task<Patient> AddAsync(Patient entity, CancellationToken cancellationToken = default) => Task.FromResult(entity);
         public Task<Patient> UpdateAsync(Patient entity, CancellationToken cancellationToken = default) => Task.FromResult(entity);
+#pragma warning disable CS0618
         public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(true);
+#pragma warning restore CS0618
+        public Task<bool> SoftDeleteAsync(Guid id, CancellationToken ct = default) => DeleteAsync(id, ct);
+        public Task<bool> RestoreAsync(Guid id, CancellationToken ct = default) => Task.FromResult(true);
+        public Task<bool> HardDeleteAsync(Patient entity, CancellationToken ct = default) => Task.FromResult(true);
         public Task<PagedResult<Patient>> GetPagedAsync(int page, int pageSize, string? keyword, CommonStatus? status, CancellationToken ct)
             => Task.FromResult(new PagedResult<Patient>());
         public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);

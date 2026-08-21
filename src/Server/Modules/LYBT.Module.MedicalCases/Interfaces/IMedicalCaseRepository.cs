@@ -135,7 +135,7 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="entity">已加载的聚合根实体（含关联数据）</param>
         /// <param name="cancellationToken">取消令牌</param>
         /// <returns>删除是否成功</returns>
-        Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default);
+        new Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default);
     }
 }
 

@@ -46,7 +46,7 @@ namespace LYBT.Module.MedicalCases.Services
             await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
             _logger.LogInformation("[SVC] MedicalCase.Delete → RegistrationRolledBack - MedicalCaseId={MedicalCaseId}", id);
 
-            var result = await _repository.DeleteAsync(id, cancellationToken);
+            var result = await _repository.SoftDeleteAsync(id, cancellationToken);
             if (result)
             {
                 await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);

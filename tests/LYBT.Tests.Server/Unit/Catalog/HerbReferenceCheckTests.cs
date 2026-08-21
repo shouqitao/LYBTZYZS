@@ -115,7 +115,12 @@ internal sealed class FakeHerbRepository : IHerbRepository
         => Task.FromResult(ids.ToDictionary(id => id, id => ExistingHerb?.Name ?? string.Empty));
     public Task<Herb> UpdateAsync(Herb entity, CancellationToken ct = default) { Updated = entity; return Task.FromResult(entity); }
     public Task<Herb> AddAsync(Herb entity, CancellationToken ct = default) => Task.FromResult(entity);
+#pragma warning disable CS0618
     public Task<bool> DeleteAsync(Guid id, CancellationToken ct = default) => Task.FromResult(true);
+#pragma warning restore CS0618
+    public Task<bool> SoftDeleteAsync(Guid id, CancellationToken ct = default) => DeleteAsync(id, ct);
+    public Task<bool> RestoreAsync(Guid id, CancellationToken ct = default) => Task.FromResult(true);
+    public Task<bool> HardDeleteAsync(Herb entity, CancellationToken ct = default) => Task.FromResult(true);
     public Task<PagedResult<Herb>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
         => Task.FromResult(new PagedResult<Herb>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(Exists);

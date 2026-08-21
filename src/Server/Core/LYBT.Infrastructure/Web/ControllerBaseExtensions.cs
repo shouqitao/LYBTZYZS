@@ -181,9 +181,10 @@ public static class ControllerBaseExtensions
 
         var message = result.ErrorMessage ?? "操作失败";
 
-        if (result.ModuleErrorCode.HasValue)
+        var code = result.ModuleErrorCode ?? (result.ErrorCode == default ? (ErrorCode?)null : result.ErrorCode);
+        if (code.HasValue)
         {
-            var moduleCode = result.ModuleErrorCode.Value;
+            var moduleCode = code.Value;
             var httpStatus = moduleCode.ToHttpStatusCode();
             var response = ApiResponse.CreateFail(message);
             response.RequestId = GetRequestId(controller);

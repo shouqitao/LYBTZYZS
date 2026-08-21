@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Services;
 
@@ -17,5 +18,16 @@ public interface ICrudService<TListDto, TDetailDto, TInputDto>
     Task<CommandResult<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<CommandResult<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword = null, CancellationToken ct = default);
     Task<CommandResult<List<TListDto>>> SearchAsync(string keyword, CancellationToken ct = default);
+    [Obsolete("Use SetStatusAsync")]
     Task<CommandResult<TDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default);
+
+    Task<CommandResult<TDetailDto>> SetStatusAsync(Guid id, CommonStatus status, CancellationToken ct = default);
+
+    [Obsolete("Use BatchSetStatusAsync")]
+    Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> ids, CancellationToken ct = default);
+
+    [Obsolete("Use BatchSetStatusAsync")]
+    Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> ids, CancellationToken ct = default);
+
+    Task<CommandResult<BatchOperationResultDto>> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default);
 }

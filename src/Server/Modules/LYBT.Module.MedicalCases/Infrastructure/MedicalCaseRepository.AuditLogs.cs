@@ -54,7 +54,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         /// 物理删除医案（US-MC-014 取消语义）
         /// Remove 聚合根，Consultation/Prescription/PrescriptionItems/PrintLogs 由 DB 级联删除
         /// </summary>
-        public async Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default)
+        public override async Task<bool> HardDeleteAsync(MedicalCase entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
                 return false;

@@ -263,7 +263,7 @@ public class FormulasController : BaseCrudController
                 ct
             );
             if (!result.IsSuccess)
-                return HandleResult(result, useAuthMapping: true);
+                return HandleResult(result);
 
             LogOperation("删除验方成功", null, id);
             return Success(true, "删除成功");

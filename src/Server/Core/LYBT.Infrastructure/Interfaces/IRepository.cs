@@ -53,5 +53,21 @@ public interface IRepository<T> where T : class
     /// <param name="id">实体唯一标识（Guid类型）</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>删除成功返回true，否则返回false</returns>
+    [Obsolete("Use SoftDeleteAsync")]
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 软删除实体（置 IsDeleted=true，T1.2/T2.2 四态之一，ADR-0027）
+    /// </summary>
+    Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 恢复已软删除实体
+    /// </summary>
+    Task<bool> RestoreAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 物理删除实体（仅显式场景，如 MedicalCase 取消=物理删，ADR-0027）
+    /// </summary>
+    Task<bool> HardDeleteAsync(T entity, CancellationToken cancellationToken = default);
 }

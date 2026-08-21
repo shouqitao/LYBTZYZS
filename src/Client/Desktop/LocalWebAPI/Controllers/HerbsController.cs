@@ -143,7 +143,7 @@ public class HerbsController : BaseCrudController
             ct
         );
         if (!result.IsSuccess)
-            return HandleResult(result, useAuthMapping: true);
+            return HandleResult(result);
 
         LogOperation("删除药材", new { Id = id }, id);
         return Success<object?>(null, "药材删除成功");

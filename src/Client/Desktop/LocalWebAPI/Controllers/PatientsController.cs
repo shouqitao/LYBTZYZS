@@ -261,7 +261,7 @@ public class PatientsController : BaseCrudController
             ct
         );
         if (!result.IsSuccess)
-            return HandleResult(result, useAuthMapping: true);
+            return HandleResult(result);
 
         return Success(true, "删除成功");
     }

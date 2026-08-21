@@ -154,14 +154,21 @@ namespace LYBT.Infrastructure.Repositories
         #region 删除操作
 
         /// <summary>
-        /// 软删除实体
+        /// 软删除实体（兼容旧 DeleteAsync，ADR-0027 四态之一）
         /// </summary>
-        public virtual async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        [Obsolete("Use SoftDeleteAsync")]
+        public virtual Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+            => SoftDeleteAsync(id, cancellationToken);
+
+        /// <summary>
+        /// 软删除实体（置 IsDeleted=true，T2.2）
+        /// </summary>
+        public virtual async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
-                _logger.LogWarning("[REPO] {EntityType}.Delete({Id}) → NotFound", typeof(TEntity).Name, id);
+                _logger.LogWarning("[REPO] {EntityType}.SoftDelete({Id}) → NotFound", typeof(TEntity).Name, id);
                 return false;
             }
 
@@ -170,7 +177,39 @@ namespace LYBT.Infrastructure.Repositories
 
             _dbSet.Update(entity);
             await SaveChangesAsync(cancellationToken);
-            _logger.LogDebug("[REPO] {EntityType}.Delete({Id})", typeof(TEntity).Name, id);
+            _logger.LogDebug("[REPO] {EntityType}.SoftDelete({Id})", typeof(TEntity).Name, id);
+            return true;
+        }
+
+        /// <summary>
+        /// 恢复已软删除实体（T2.2）
+        /// </summary>
+        public virtual async Task<bool> RestoreAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetByIdIncludingDeletedAsync(id, cancellationToken);
+            if (entity == null || !entity.IsDeleted)
+            {
+                _logger.LogWarning("[REPO] {EntityType}.Restore({Id}) → NotFoundOrNotDeleted", typeof(TEntity).Name, id);
+                return false;
+            }
+
+            entity.IsDeleted = false;
+            entity.UpdatedAt = DateTime.UtcNow;
+            _dbSet.Update(entity);
+            await SaveChangesAsync(cancellationToken);
+            _logger.LogDebug("[REPO] {EntityType}.Restore({Id})", typeof(TEntity).Name, id);
+            return true;
+        }
+
+        /// <summary>
+        /// 物理删除实体（仅显式场景，ADR-0027）
+        /// </summary>
+        public virtual async Task<bool> HardDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            _dbSet.Remove(entity);
+            await SaveChangesAsync(cancellationToken);
+            _logger.LogDebug("[REPO] {EntityType}.HardDelete({Id})", typeof(TEntity).Name, entity.Id);
             return true;
         }
 

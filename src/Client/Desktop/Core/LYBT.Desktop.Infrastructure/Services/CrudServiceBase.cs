@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services;
@@ -82,6 +83,7 @@ public abstract class CrudServiceBase<TListDto, TDetailDto, TInputDto>
         });
     }
 
+    [Obsolete("Use SetStatusAsync")]
     public virtual async Task<CommandResult<TDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
     {
         return await ExecuteAsync<TDetailDto>($"{EntityName}.ToggleStatus", async () =>
@@ -92,6 +94,20 @@ public abstract class CrudServiceBase<TListDto, TDetailDto, TInputDto>
             return CommandResult<TDetailDto>.Succeeded(entity);
         });
     }
+
+    public virtual Task<CommandResult<TDetailDto>> SetStatusAsync(Guid id, CommonStatus status, CancellationToken ct = default)
+        => ToggleStatusAsync(id, ct);
+
+    [Obsolete("Use BatchSetStatusAsync")]
+    public virtual Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> ids, CancellationToken ct = default)
+        => BatchSetStatusAsync(ids, CommonStatus.Enabled, ct);
+
+    [Obsolete("Use BatchSetStatusAsync")]
+    public virtual Task<CommandResult<BatchOperationResultDto>> BatchDisableAsync(List<Guid> ids, CancellationToken ct = default)
+        => BatchSetStatusAsync(ids, CommonStatus.Disabled, ct);
+
+    public virtual Task<CommandResult<BatchOperationResultDto>> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+        => Task.FromResult(CommandResult<BatchOperationResultDto>.Failed("BatchSetStatus not implemented for " + EntityName));
 
     public virtual async Task<CommandResult<List<TListDto>>> GetAllAsync(CancellationToken ct = default)
     {
