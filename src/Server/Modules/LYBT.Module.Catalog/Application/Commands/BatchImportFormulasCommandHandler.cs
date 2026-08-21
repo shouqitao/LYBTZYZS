@@ -47,8 +47,13 @@ public class BatchImportFormulasCommandHandler(
             .GroupBy(h => h.PinYinCode!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First());
 
+        // T4.2: 分批 500 条 per 事务，避免 10000 ChangeTracker 超时
+        const int BatchSize = 500;
         int index = 0;
-        foreach (var item in request.Formulas)
+        for (int batchStart = 0; batchStart < request.Formulas.Count; batchStart += BatchSize)
+        {
+            var batch = request.Formulas.Skip(batchStart).Take(BatchSize).ToList();
+            foreach (var item in batch)
         {
             index++;
             try
@@ -146,6 +151,7 @@ public class BatchImportFormulasCommandHandler(
                 });
                 logger.LogError(ex, "[CMD] FormulaImport → ItemError - FormulaName={FormulaName}", item.Name);
             }
+        }
         }
 
         result.EndTime = DateTime.UtcNow;

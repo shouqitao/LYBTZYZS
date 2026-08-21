@@ -38,11 +38,16 @@ public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCo
             return Result<HerbBatchImportResultDto>.Failure(ErrorCode.ValidationFailed, $"批量导入最多支持{MAX_IMPORT_SIZE}条记录");
         }
 
-        for (int i = 0; i < request.Herbs.Count; i++)
+        // T4.2: 分批 500 条 per 事务，避免 10000 ChangeTracker 超时，partial 成功/失败已通过 result 透出
+        const int BatchSize = 500;
+        for (int batchStart = 0; batchStart < request.Herbs.Count; batchStart += BatchSize)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var dto = request.Herbs[i];
-            var rowNumber = i + 2;
+            var batch = request.Herbs.Skip(batchStart).Take(BatchSize).ToList();
+            for (int j = 0; j < batch.Count; j++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var dto = batch[j];
+                var rowNumber = batchStart + j + 2;
 
             try
             {
@@ -130,6 +135,7 @@ public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCo
                     ErrorDetails = new List<string> { "数据处理异常" }
                 });
             }
+        }
         }
 
         return Result<HerbBatchImportResultDto>.Success(result);
