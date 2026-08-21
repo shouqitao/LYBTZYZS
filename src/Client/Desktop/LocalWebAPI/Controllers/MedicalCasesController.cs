@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Constants;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -195,8 +196,8 @@ public class MedicalCasesController : BaseMedicalCasesController
     {
         if (request?.Ids == null || request.Ids.Count == 0)
             return ValidationFail("医案ID列表不能为空");
-        if (request.Ids.Count > 100)
-            return ValidationFail("单次批量查询不能超过 100 条");
+        if (request.Ids.Count > BatchOptions.DefaultMaxBatchSize)
+            return ValidationFail($"单次批量查询不能超过 {BatchOptions.DefaultMaxBatchSize} 条");
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
         var result = await _medicalCaseQueryService.GetDetailDtosBatchAsync(request.Ids, operatorId, isAdmin, ct);

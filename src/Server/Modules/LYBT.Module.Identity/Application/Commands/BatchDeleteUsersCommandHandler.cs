@@ -1,6 +1,7 @@
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.BatchOperations;
 using LYBT.Module.Identity.Interfaces;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -25,13 +26,12 @@ public class BatchDeleteUsersCommandHandler
         CancellationToken cancellationToken
     )
     {
-        // P3 (US-USER-012): 单次批量上限 100 条（需求验收——原无上限）
-        const int MaxBatchSize = 100;
-        if (request.Ids.Count > MaxBatchSize)
+        // P3 (US-USER-012): 单次批量上限 100 条（T1.3 抽 BatchOptions.DefaultMaxBatchSize）
+        if (request.Ids.Count > BatchOptions.DefaultMaxBatchSize)
         {
             return Result<BatchOperationResultDto>.Failure(
                 ErrorCode.InvalidRequest,
-                $"单次批量操作数量不能超过 {MaxBatchSize} 条，当前 {request.Ids.Count} 条"
+                $"单次批量操作数量不能超过 {BatchOptions.DefaultMaxBatchSize} 条，当前 {request.Ids.Count} 条"
             );
         }
 

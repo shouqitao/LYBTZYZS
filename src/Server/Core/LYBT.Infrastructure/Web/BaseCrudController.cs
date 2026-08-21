@@ -1,6 +1,7 @@
-using MediatR;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -108,7 +109,7 @@ public abstract class BaseCrudController : BaseApiController
     {
         if (ids == null || ids.Count == 0)
             return ValidationFail(emptyMessage);
-        if (ids.Count > 100)
+        if (ids.Count > BatchOptions.DefaultMaxBatchSize)
             return ValidationFail(maxMessage);
 
         var result = await Sender.Send(createQuery(ids), ct);
