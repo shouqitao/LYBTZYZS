@@ -23,9 +23,6 @@ public sealed class RegistrationStateGuard : IStateGuard<Registration>
         if (registration.Status != RegistrationStatus.Waiting)
             throw new BusinessException(ErrorCode.RegistrationInvalidStatusTransition, "只有等待中的挂号可以取消");
 
-        if (registration.MedicalCaseId.HasValue)
-            throw new BusinessException(ErrorCode.RegistrationCancelNotAllowed, "该挂号已关联医案，请通过医案操作取消");
-
         // 已完成医案关联的挂号不可取消（R14-02 / R41）
         if (medicalCase != null && medicalCase.CaseStatus == MedicalCaseStatus.Completed)
             throw new BusinessException(ErrorCode.RegistrationCancelNotAllowed, "关联医案已完成，挂号不可取消");
