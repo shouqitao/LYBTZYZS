@@ -12,6 +12,10 @@ public sealed class JwtOptionsValidator : IValidateOptions<JwtOptions>
     {
         var failures = new List<string>();
 
+        // P2-6-1 未展开占位符视为缺失（Fatal）
+        if (!string.IsNullOrWhiteSpace(options.SecretKey) && options.SecretKey.StartsWith("${", StringComparison.Ordinal) && options.SecretKey.EndsWith("}", StringComparison.Ordinal))
+            failures.Add($"Jwt:SecretKey 仍为未展开占位符 {options.SecretKey}（需注入环境变量 Jwt__SecretKey）");
+
         // 验证 SecretKey 是否为有效的 Base64
         if (!string.IsNullOrEmpty(options.SecretKey))
         {

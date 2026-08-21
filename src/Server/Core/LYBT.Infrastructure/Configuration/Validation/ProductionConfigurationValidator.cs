@@ -212,8 +212,17 @@ public class ProductionConfigurationValidator
             return;
         }
 
-        // Issue #1932: 占位符检查已移除
-        // 现在使用环境变量直接覆盖配置文件中的默认值，不再使用#{VAR}#占位符格式
+        // P2-6-1 Jwt 校验提升 Fatal：未展开占位符 ${...} 视为缺失（Critical 必须 Fatal，未走 IValidateOptions 时由本校验器拦截）
+        if (value.StartsWith("${", StringComparison.Ordinal) && value.EndsWith("}", StringComparison.Ordinal))
+        {
+            _errors.Add(new ConfigurationError
+            {
+                Item = item,
+                ErrorType = ErrorType.Placeholder,
+                Message = $"仍为未展开的环境变量占位符 {value}（需注入 {item.EnvVarName}）"
+            });
+            return;
+        }
 
         // 检查 3: 长度验证
         if (item.MinLength.HasValue && value.Length < item.MinLength.Value)

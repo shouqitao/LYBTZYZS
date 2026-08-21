@@ -26,6 +26,42 @@ public class BusinessExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
+        // P2-6-3 并发转 409 统一：DbUpdateConcurrencyException 未经 AppException 包装时统一转 409（无 EF Core 直接引用，用全名匹配避免 Shared 层依赖 EF）
+        var exTypeName = exception.GetType().FullName;
+        if (exTypeName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException")
+        {
+            _logger.LogWarning(exception, "并发冲突 - CorrelationId: {CorrelationId}, 路径: {Path}", GetCorrelationId(httpContext), httpContext.Request.Path);
+            httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+            httpContext.Response.ContentType = "application/json";
+            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
+            {
+                Success = false,
+                Message = "数据已被其他用户修改，请刷新后重试",
+                Errors = new { code = ErrorCode.ConcurrencyConflict.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
+                RequestId = GetCorrelationId(httpContext)
+            }, cancellationToken);
+            return true;
+        }
+
+        // FluentValidation 校验异常转 400（与 ValidationBehavior 管道互补，无直接引用用全名匹配）
+        if (exTypeName == "FluentValidation.ValidationException")
+        {
+            dynamic dynEx = exception;
+            string msg = "参数校验失败";
+            try { msg = dynEx.Errors[0].ErrorMessage ?? msg; } catch { }
+            _logger.LogWarning(exception, "参数校验失败 - CorrelationId: {CorrelationId}", GetCorrelationId(httpContext));
+            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            httpContext.Response.ContentType = "application/json";
+            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
+            {
+                Success = false,
+                Message = msg,
+                Errors = new { code = ErrorCode.ValidationFailed.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
+                RequestId = GetCorrelationId(httpContext)
+            }, cancellationToken);
+            return true;
+        }
+
         // 只处理 AppException 及其子类
         if (exception is not AppException appException)
         {
