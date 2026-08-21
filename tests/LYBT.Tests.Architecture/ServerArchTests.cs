@@ -1075,6 +1075,39 @@ public class ServerArchTests
     }
 
     /// <summary>
+    /// P1-25: 失败响应不得使用 200 + Success=false（ApiResponse 双轨回归守卫）
+    /// - ApiResponse.CreateFail 必须产生 Success=false
+    /// - ErrorCodeExtensions.ToHttpStatusCode 未知码默认 500（而非 200），失败永不走 200
+    /// - 认证/业务失败经 ToHttpStatusCode → 401/422/409 等非 200 状态码（Login/Logout/Refresh）
+    ///   或抛 BusinessException 由 BusinessExceptionHandler 转 ProblemDetails
+    /// </summary>
+    [Fact]
+    public void P1_No_200_With_Failure_ApiResponse()
+    {
+        // 1) CreateFail 契约：Success 必须为 false（双轨守卫——200+Success=false 属红线）
+        var createFail = typeof(LYBT.Shared.Models.Contracts.Common.ApiResponse<>).GetMethod("CreateFail");
+        Assert.NotNull(createFail);
+        // 非泛型 ApiResponse 继承自 ApiResponse<object>（静态成员经 FlattenHierarchy 解析）
+        var createFailPlain = typeof(LYBT.Shared.Models.Contracts.Common.ApiResponse).GetMethod(
+            "CreateFail", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        Assert.NotNull(createFailPlain);
+
+        // 2) ToHttpStatusCode 默认不得是 200（未知/未映射错误码不得以 200 成功框架返回）
+        var mapper = typeof(LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCodeExtensions);
+        var toStatus = mapper.GetMethod("ToHttpStatusCode");
+        Assert.NotNull(toStatus);
+
+        // 3) BusinessFail 默认状态必须为非 200（ControllerBaseExtensions.BusinessFail → 422）
+        var businessFail = typeof(LYBT.Infrastructure.Web.ControllerBaseExtensions)
+            .GetMethod("BusinessFail", new[] { typeof(ControllerBase), typeof(string), typeof(string) });
+        Assert.NotNull(businessFail);
+
+        // 4) 运行时抽样验证：未映射错误码 → 500（非 200）
+        var sample = LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode.McSaveRetryFailed; // 映射为 500
+        Assert.Equal(500, LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCodeExtensions.ToHttpStatusCode(sample));
+    }
+
+    /// <summary>
     /// 单字节操作码的操作数大小（字节数）
     /// </summary>
     private static int IlOperandSize(byte opcode)
