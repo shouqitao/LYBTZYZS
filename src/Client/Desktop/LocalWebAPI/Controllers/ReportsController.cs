@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Constants;
 using LYBT.Module.Reports.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -83,6 +84,94 @@ public class ReportsController : BaseApiController
 
         var dto = await _reportService.GetDailyHerbUsageAsync(start, end, cancellationToken);
 
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取收入趋势（P0-9 双端对齐：Remote 已有，Local 补齐）
+    /// </summary>
+    [HttpGet("trend/income")]
+    [ProducesResponseType(typeof(ApiResponse<IncomeTrendDto>), 200)]
+    public async Task<IActionResult> GetIncomeTrend(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+        var dto = await _reportService.GetIncomeTrendAsync(start, end, granularity, cancellationToken);
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取问诊趋势（P0-9 双端对齐）
+    /// </summary>
+    [HttpGet("trend/consultations")]
+    [ProducesResponseType(typeof(ApiResponse<ConsultationTrendDto>), 200)]
+    public async Task<IActionResult> GetConsultationTrend(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+        var dto = await _reportService.GetConsultationTrendAsync(start, end, granularity, cancellationToken);
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取医生绩效统计（P0-9 双端对齐）
+    /// </summary>
+    [HttpGet("doctor-performance")]
+    [ProducesResponseType(typeof(ApiResponse<List<DoctorPerformanceDto>>), 200)]
+    public async Task<IActionResult> GetDoctorPerformance(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
+        var dto = await _reportService.GetDoctorPerformanceAsync(start, end, cancellationToken);
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取热门药材排行（P0-9 双端对齐）
+    /// </summary>
+    [HttpGet("herbs/ranking")]
+    [ProducesResponseType(typeof(ApiResponse<List<HerbUsageItemDto>>), 200)]
+    public async Task<IActionResult> GetHerbRanking(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] int top = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate ?? DateTime.Today;
+        var end = endDate ?? start;
+        if (start > end)
+            return BadRequest("开始日期不能晚于结束日期");
+        var dto = await _reportService.GetHerbRankingAsync(start, end, top, cancellationToken);
+        return Success(dto, "查询成功");
+    }
+
+    /// <summary>
+    /// 获取患者流量（P0-9 双端对齐）
+    /// </summary>
+    [HttpGet("patient-flow")]
+    [ProducesResponseType(typeof(ApiResponse<PatientFlowDto>), 200)]
+    public async Task<IActionResult> GetPatientFlow(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] ReportGranularity granularity = ReportGranularity.Day,
+        CancellationToken cancellationToken = default)
+    {
+        var end = endDate ?? DateTime.Today;
+        var start = startDate ?? end.AddDays(-29);
+        var dto = await _reportService.GetPatientFlowAsync(start, end, granularity, cancellationToken);
         return Success(dto, "查询成功");
     }
 }

@@ -187,6 +187,23 @@ public class MedicalCasesController : BaseMedicalCasesController
     }
 
     /// <summary>
+    /// 批量查询医案详情（P0-9 双端对齐：Remote 已有，Local 补齐）
+    /// </summary>
+    [HttpPost("batch-details")]
+    [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDetailDto>>), 200)]
+    public async Task<IActionResult> GetBatchDetails([FromBody] BatchIdsRequest request, CancellationToken ct)
+    {
+        if (request?.Ids == null || request.Ids.Count == 0)
+            return ValidationFail("医案ID列表不能为空");
+        if (request.Ids.Count > 100)
+            return ValidationFail("单次批量查询不能超过 100 条");
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+        var result = await _medicalCaseQueryService.GetDetailDtosBatchAsync(request.Ids, operatorId, isAdmin, ct);
+        return Success(result.Value!, "查询成功");
+    }
+
+    /// <summary>
     /// 创建新医案 — 仅 Doctor
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOnly)]

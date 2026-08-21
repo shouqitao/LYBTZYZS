@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using System.Text.Json.Serialization;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Serialization;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
@@ -107,6 +108,8 @@ public static class LocalWebApiProgram
                 // ADR-0022：LocalWebAPI 枚举字符串化，与 Desktop 客户端（HttpApiClientBase）及
                 // Remote WebAPI 契约一致（ASP.NET 默认枚举为数字，此处统一为字符串）。
                 o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                // P0-9: 敏感数据脱敏（与 Remote ServiceCollectionExtensions 对齐，PII 脱敏）
+                o.JsonSerializerOptions.Converters.Add(new SensitiveDataJsonConverterFactory());
             });
 
         builder.Services.AddSingleton<LoggingLevelManager>();
