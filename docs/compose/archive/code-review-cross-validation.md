@@ -1,7 +1,7 @@
 # 代码审查交叉验证报告（R1-R5 综合评估）
 
 **报告编号**: CROSS-VAL-2026-08-21  
-**验证范围**: `docs/compose/reports/code-review-R1-security.md` / `R2-architecture.md` / `R3-error-handling.md` / `R4-performance.md` / `R5-code-quality.md`  
+**验证范围**: `docs/compose/archive/code-review-R1-security.md` / `R2-architecture.md` / `R3-error-handling.md` / `R4-performance.md` / `R5-code-quality.md`  
 **验证人**: Hermes Agent (交叉验证)  
 **验证方式**: 全文通读 + 关键断言源码抽检 + 规则/阈值一致性比对  
 **源码抽检基准**: commit 最新 master（抽检文件见正文引用）

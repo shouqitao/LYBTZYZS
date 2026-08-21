@@ -1320,7 +1320,7 @@ Resources 主题一致性良好，MaterialDesign 基座 + 自定 Colors 落地�
 - **文档一致性**：文档架构决策与代码演进不同步 · P3
 
 - **发现 20-10（P3）**：`docs/compose/` 含 `reports/` 13 份历史审查报告（8-20 按日），但 `docs/README.md#ai-查询指南` 未增链到 `arch-review-summary.md`，AI 查询指南与 compose 沉淀断联，新人难以发现历史审查结论。
-- **依据**：`docs/README.md` 查询指南第 35 行；`docs/compose/reports/` 13 报告。
+- **依据**：`docs/README.md` 查询指南第 35 行；`docs/compose/archive/` 13 报告。
 - **文档一致性**：文档导航断链 · P3
 
 ### 代码-文档一致性总览
@@ -1503,10 +1503,10 @@ P3 38 项要点：文档统计口径（1-1）、双 Warn 抑制（1-5）、测�
 1. **本周闭环 P0×4**：`ADR-0023/0024` + `Shell 去直引` + `热更新 SHA` + `批量 Guard`
 2. **下 Sprint P1 批次一（数据完整性）**：`IdNumber 唯一索引` + `挂号单例` + `Herb 导入复活` + `IsLocked 时区` + `患者加密`
 3. **下 Sprint P1 批次二（并发一致）**：`RowVersion 409` + `审计原子` + `API 强锁` + `策略对齐`
-4. **P2 看板化**：`13-project-master-plan.md` 每 Sprint 限 5 P2，`docs/compose/reports/architecture-review-2026-08-21-followups.md` 跟踪
+4. **P2 看板化**：`13-project-master-plan.md` 每 Sprint 限 5 P2，`docs/compose/archive/architecture-review-2026-08-21-followups.md` 跟踪
 5. **测试补齐**：`IsLocked` + `并发挂号 Parallel` + `Respawn 隔离` + `策略一致性` 4 单测，补后 `13-test-coverage-map.md` 更新至 75%
 
 ---
 
-**审查签署**：Hermes 统筹（只读） 2026-08-21 · 依据 `docs/README.md#ai-查询指南` 可复查，报告已落盘 `docs/compose/reports/architecture-deep-review-2026-08-21.md`
+**审查签署**：Hermes 统筹（只读） 2026-08-21 · 依据 `docs/README.md#ai-查询指南` 可复查，报告已落盘 `docs/compose/archive/architecture-deep-review-2026-08-21.md`
 

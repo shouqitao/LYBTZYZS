@@ -1,7 +1,7 @@
 # LYBTZYZS 架构审查修复方案
 
 **日期**：2026-08-21  
-**来源**：`docs/compose/reports/architecture-deep-review-2026-08-21.md`（20轮，145发现 P0:4/P1:38/P2:65/P3:38）  
+**来源**：`docs/compose/archive/architecture-deep-review-2026-08-21.md`（20轮，145发现 P0:4/P1:38/P2:65/P3:38）  
 **约束**：`lybtzys-coder-rules`（文档优先、外科手术式、0/0门禁、P07/P08/P10、双控制器同步、技术引入治理）、`docs/00-governance/02-ssot-architecture.md` SSOT、`docs/03-architecture/decisions` ADR  
 **性质**：只读规划，不改 `src/` 代码；方案到文件:行/方法级；批次化、可验证
 
