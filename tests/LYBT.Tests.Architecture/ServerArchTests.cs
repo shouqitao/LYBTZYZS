@@ -1051,6 +1051,30 @@ public class ServerArchTests
     }
 
     /// <summary>
+    /// P1-7: 软删恢复/引用检查必须经 IgnoreQueryFilters（防全局 IsDeleted 过滤副作用）
+    /// 扫描关键仓储方法，确保软删记录查询显式绕过过滤器（Identity 用户与业务实体一致约束）
+    /// </summary>
+    [Fact]
+    public void P1_SoftDelete_Queries_Must_Use_IgnoreQueryFilters()
+    {
+        // 这些点硬性要求查询软删记录（恢复/唯一性），必须调用 IgnoreQueryFilters
+        var userRepo = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Module.Identity");
+        Assert.NotNull(userRepo);
+        var repoType = userRepo!.GetType("LYBT.Module.Identity.Infrastructure.UserRepository");
+        Assert.NotNull(repoType);
+        var restoreMethod = repoType!.GetMethod("GetByIdIncludingDeletedAsync");
+        Assert.NotNull(restoreMethod); // Restore 定位已删用户——P1-7 守卫，若缺失则软删过滤副作用回归
+
+        var baseRepo = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.Infrastructure");
+        Assert.NotNull(baseRepo);
+        var baseType = baseRepo!.GetTypes()
+            .FirstOrDefault(t => t.Name.StartsWith("BaseRepository")); // 泛型基类（BaseRepository<TEntity,TContext>）
+        Assert.NotNull(baseType);
+        var baseMethod = baseType!.GetMethod("GetByIdIncludingDeletedAsync");
+        Assert.NotNull(baseMethod); // 泛型基类软删定位
+    }
+
+    /// <summary>
     /// 单字节操作码的操作数大小（字节数）
     /// </summary>
     private static int IlOperandSize(byte opcode)
