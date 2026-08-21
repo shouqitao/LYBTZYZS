@@ -74,7 +74,7 @@ graph LR
 
 双模式对比详见 [05-dual-mode.md §概述](05-dual-mode.md#概述)（远程/本地触发条件、API 宿主、数据库、认证差异）。
 
-## 解决方案结构
+## 解决方案结构（Shared SSOT：共享契约/DTO 权威见本文件；模块细节权威见 [03-server.md](03-server.md)）
 
 ```
 LYBTZYZS/

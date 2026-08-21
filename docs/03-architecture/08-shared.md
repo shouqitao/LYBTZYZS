@@ -1,4 +1,4 @@
-# 共享层架构
+# 共享层架构（视图层，权威见 [01-system-overview.md](01-system-overview.md) §解决方案结构）
 > 版本: v1.0 | 日期: 2026-08-20
 
 > **v1.6（2026-08-08）**：按实际 5 项目结构重写（原文档声称 8 项目，实际 5 项目，Primitives/Utilities/Components/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹）。结构审计依据：A-16 结构审计报告（compose 过程报告，已归档删除）。
