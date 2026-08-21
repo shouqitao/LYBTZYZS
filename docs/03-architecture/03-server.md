@@ -221,7 +221,7 @@ services.AddScoped<IValidator<PatientInputDto>, PatientInputDtoValidator>(); // 
 
 ### 模块注册入口
 
-每个 Module 提供 `{Domain}Module.cs`，在 `Program.cs` 中调用: `builder.Services.AddPatientsModule();` 等。
+每个 Module 提供 `{Domain}Module.cs`，在 `Program.cs` 中调用: `builder.Services.AddPatientsModule();` 等。`Program.Main` 仅编排（P1-3 Batch D 2026-08-21 瘦身：热更新/配置闭环/Kestrel 抽至 `WebApplicationBuilderExtensions`，`Program` <120 行）。
 
 ## 异常处理
 

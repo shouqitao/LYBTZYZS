@@ -385,7 +385,7 @@ stateDiagram-v2
 | 密钥 | `SecurityOptions.AesKey`（Base64 32B，环境变量 `Security__AesKey`，`SecurityOptionsValidator` 强校验） |
 | 配置 | `PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())` |
 | 迁移 | `AddPatientEncryption`（空结构变更，历史明文回退解密） |
-| 日志 | 仍经 `SensitiveDataDestructuringPolicy` 脱敏为 `***` |
+| 日志 | 双路径：`SensitiveDataDestructuringPolicy`（Serilog 结构化）+ `SensitiveDataLoggerProvider`（P1-12 Batch D 2026-08-21：Microsoft ILogger 文本路径 `SanitizeText` 正则脱敏 `password=/token=/Bearer` 等）均脱敏为 `***`/`[REDACTED]` |
 | 验证 | `PatientEncryptionTests` 存取往返 |
 
 ### 7.1 Token 重放检测 (Token Family)
@@ -458,7 +458,7 @@ stateDiagram-v2
 **存储与清理（G-02 补写，2026-08-04）**：
 - **存储位置**：`SecurityAuditLogs` 表（`AppDbContext.cs:74`），与业务数据同库。字段：`Id/EventType/UserId/UserType/UserName/IpAddress/UserAgent/Success/ErrorMessage/Metadata/CreatedAt`（11 字段，`InitialCreate.cs:154`）；索引 `IX_SecurityAuditLogs_EventType_CreatedAt`、`IX_SecurityAuditLogs_UserId_CreatedAt`。
 - **保留策略**：`SecurityOptions.AuditRetentionDays`（默认 365），后台任务按 `CreatedAt < now-365d` 批量清理（`SecurityAuditService` 待实现，D3 v1.0 补回）。
-- **写入点**：登录成功/失败、令牌撤销、限流触发、权限拒绝等安全事件（`SecurityAuditService.RecordAsync`）。
+- **写入点**：登录成功/失败、**账户锁定（`AccountLockout`，P1-14 Batch D 2026-08-21：`LoginCommandHandler` 在 `FailedCount>=MaxFailedCount` 时除 `LoginFailed` 外另写 `AccountLockout` 审计）**、令牌撤销、限流触发、权限拒绝等安全事件（`SecurityAuditService.RecordAsync`）。
 - **查询入口**：管理端审计日志页（Admin/SuperAdmin）。
 
 ## 8. 决策记录

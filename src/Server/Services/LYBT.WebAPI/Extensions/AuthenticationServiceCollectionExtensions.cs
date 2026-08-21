@@ -154,7 +154,7 @@ public static class AuthenticationServiceCollectionExtensions
 
             options.AddPolicy(PolicyConstants.DoctorOrReceptionist, policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole(RoleConstants.Doctor, RoleConstants.Receptionist));
+                      .RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor, RoleConstants.Receptionist));
 
             options.AddPolicy(PolicyConstants.ReceptionistOnly, policy =>
                 policy.RequireAuthenticatedUser()

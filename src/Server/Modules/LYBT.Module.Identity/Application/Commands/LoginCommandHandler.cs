@@ -153,6 +153,21 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 FailureReason = lockoutEnd.HasValue ? $"密码错误，账户已锁定至 {lockoutEnd}" : "密码错误"
             }, cancellationToken);
 
+            // P1-14: 账户锁定单独审计（阈值触发时）
+            if (lockoutEnd.HasValue)
+            {
+                await RecordAuditAsync(new SecurityAuditEvent
+                {
+                    UserId = user.Id,
+                    UserName = input.UserName,
+                    EventType = "AccountLockout",
+                    IpAddress = input.ClientIp,
+                    UserAgent = input.UserAgent,
+                    IsSuccess = false,
+                    FailureReason = $"账户因连续 {newFailedCount} 次失败登录被锁定至 {lockoutEnd}（阈值 {_securityOptions.AccountLockout.MaxFailedCount}）"
+                }, cancellationToken);
+            }
+
             await _crossModuleService.UpdateLoginFailureAsync(user.Id, newFailedCount, lockoutEnd, cancellationToken);
             return Result<LoginResponse>.Failure(ErrorCode.AuthInvalidCredentials, ErrorMessages.Get(ErrorCode.AuthInvalidCredentials));
         }

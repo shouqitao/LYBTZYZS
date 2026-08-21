@@ -1,5 +1,6 @@
 using LYBT.Shared.Logging.Correlation;
 using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Logging.Masking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,9 @@ public static class LoggingServiceCollectionExtensions
         // LoggerFactory 单例 + 开放泛型 ILogger<>（宿主已注册时 TryAdd 不覆盖，保持宿主管道）
         services.TryAddSingleton<ILoggerFactory>(_ => LoggingBootstrap.CreateLoggerFactory());
         services.TryAddSingleton(typeof(ILogger<>), typeof(Logger<>));
+
+        // P1-12: ILogger  ścieżка脱敏（与 Serilog Destructure 双路径覆盖）
+        services.AddSingleton<ILoggerProvider, SensitiveDataLoggerProvider>();
 
         return services;
     }

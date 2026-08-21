@@ -233,10 +233,10 @@ LYBT.Desktop.{Domain}/
 应用入口，负责:
 - 应用启动和初始化 (PrismApplication)
 - 主窗口和 Region 定义
-- 模块加载编排 (ConfigureModuleCatalog + RoleRegistry 单一真相源)
+- 模块加载编排 (ConfigureModuleCatalog + RoleRegistry 单一真相源，P1-2 Batch D 2026-08-21：Shell 保留 Contracts/Infrastructure/Roles 直引，业务 Modules 经 Prism `InitializationMode.OnDemand` 懒加载，`App.ConfigureModuleCatalog` 按角色 `RequiredModules` 动态 AddModule，构建期不 eager 加载业务程序集)
 - 全局异常处理
 
-> **v1.0 重构**（C1 决策 2026-06-28）：删除 LoginCoordinator 硬编码旁路，统一走 RoleRegistry。
+> **v1.0 重构**（C1 决策 2026-06-28）：删除 LoginCoordinator 硬编码旁路，统一走 RoleRegistry。P1-31 Batch D 2026-08-21：导航可见性不再硬编码 `Dict<(Role,ViewName),bool>`，`NavigationManager.BuildNavigationItems` 以 `RoleRegistry.GetDefinition(role)` 为唯一真相源，与 `PolicyConstants` 策略定义同源（新增 View 仅改 `IRoleDefinition.RequiredModules` + `ViewNames`，不改两处）。
 
 ## ViewModel 基类体系
 

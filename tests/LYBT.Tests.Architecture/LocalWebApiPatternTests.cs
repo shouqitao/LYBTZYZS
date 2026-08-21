@@ -81,6 +81,36 @@ public class LocalWebApiPatternTests
     }
 
     /// <summary>
+    /// P1-29: 双端授权策略一致性——RegistrationsController 等同名控制器在 Local 与 Remote 的 Authorize Policy 必须一致。
+    /// 对齐 SSOT docs/02-requirements/04-permissions.md：Create=DoctorOrReceptionist、StartVisit=DoctorOnly、Cancel=ReceptionistOnly。
+    /// </summary>
+    [Fact]
+    public void Should_Have_Same_Auth_Policy_As_Remote()
+    {
+        // 仅校验 Registrations 核心三方法（Create/StartVisit/Cancel）的 Policy 一致性，避免全量反射受基类干扰
+        var localType = typeof(LYBT.LocalWebAPI.Controllers.RegistrationsController);
+        var remoteType = typeof(LYBT.WebAPI.Controllers.RegistrationsController);
+
+        foreach (var methodName in new[] { "Create", "StartVisit", "Cancel" })
+        {
+            var localMethod = localType.GetMethod(methodName);
+            var remoteMethod = remoteType.GetMethod(methodName);
+            Assert.NotNull(localMethod);
+            Assert.NotNull(remoteMethod);
+            var localPolicy = GetPolicy(localMethod);
+            var remotePolicy = GetPolicy(remoteMethod);
+            Assert.Equal(remotePolicy, localPolicy);
+        }
+
+        static string? GetPolicy(System.Reflection.MethodInfo m)
+        {
+            var attr = m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true)
+                .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().FirstOrDefault();
+            return attr?.Policy;
+        }
+    }
+
+    /// <summary>
     /// P22: All LocalWebAPI controllers must be decorated with [ApiController].
     /// This ensures consistent ASP.NET Core behavior: automatic model validation,
     /// binding source inference, and problem details responses.

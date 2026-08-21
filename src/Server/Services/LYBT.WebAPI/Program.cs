@@ -34,58 +34,15 @@ public class Program
     // Linux 语义：.NET 6+ 的 named Mutex 在 Linux 映射到 /tmp 下文件锁（flock）——Global\ 前缀
     // 在非 Windows 被忽略（Linux 无 session 概念），等价全局互斥——与 Desktop 单实例（US-SHELL-001）同模式
     private static Mutex? _instanceMutex;
-    private const string InstanceMutexName = @"Global\LYBTZYZS_WebAPI_Instance";
+    internal const string InstanceMutexName = @"Global\LYBTZYZS_WebAPI_Instance";
 
     public static async Task Main(string[] args)
     {
         // 修复Windows控制台中文乱码问题
         Console.OutputEncoding = Encoding.UTF8;
 
-        // ── 热更新：检查并应用待更新包（P0-2：SHA256 校验防篡改/RCE） ──
-        var updateFlag = Path.Combine(AppContext.BaseDirectory, ".update-pending");
-        var shaFlag = Path.Combine(AppContext.BaseDirectory, ".update-pending.sha256");
-        if (File.Exists(updateFlag))
-        {
-            try
-            {
-                var zipPath = (await File.ReadAllTextAsync(updateFlag)).Trim();
-                if (File.Exists(zipPath))
-                {
-                    // P0-2: 若存在 .sha 侧车文件则强制校验，不一致拒绝解压
-                    if (File.Exists(shaFlag))
-                    {
-                        var expected = (await File.ReadAllTextAsync(shaFlag)).Trim().ToLowerInvariant();
-                        var actual = await ComputeFileSha256Async(zipPath);
-                        if (!string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase))
-                        {
-                            Console.Error.WriteLine($"[UPDATE] SHA256 校验失败: expected={expected} actual={actual} —— 拒绝解压（防篡改）");
-                            Log.Fatal("[UPDATE] 热更新 SHA256 校验失败 expected={Expected} actual={Actual} zip={ZipPath} —— 拒绝解压", expected, actual, zipPath);
-                            File.Delete(updateFlag);
-                            try { File.Delete(shaFlag); } catch { }
-                            Environment.Exit(1);
-                        }
-                    }
-                    Console.WriteLine("[UPDATE] 检测到更新包，正在应用...");
-                    var currentDir = AppContext.BaseDirectory;
-                    System.IO.Compression.ZipFile.ExtractToDirectory(
-                        zipPath,
-                        currentDir,
-                        overwriteFiles: true
-                    );
-                    File.Delete(zipPath);
-                    Console.WriteLine("[UPDATE] 更新完成，重新启动...");
-                }
-                File.Delete(updateFlag);
-                try { if (File.Exists(shaFlag)) File.Delete(shaFlag); } catch { }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[UPDATE] 更新失败: {ex.Message}");
-                Log.Error(ex, "[UPDATE] 热更新应用失败");
-                try { File.Delete(updateFlag); } catch { }
-                try { if (File.Exists(shaFlag)) File.Delete(shaFlag); } catch { }
-            }
-        }
+        // P1-3: 热更新抽至 WebApplicationBuilderExtensions.ApplyHotUpdateAsync()
+        await WebApplicationBuilderExtensions.ApplyHotUpdateAsync();
 
         // Phase 1: Bootstrap Logger - 确保启动阶段异常能够被记录
         // refactor-logging-system: 测试环境使用普通Logger避免WebApplicationFactory"logger is already frozen"错误
@@ -163,70 +120,8 @@ public class Program
 
             Log.Information("已切换到Final Logger，配置加载完成");
 
-            // unify-configuration-system: 注册强类型配置
-            // ADR-0019 配置集中: appsettings 移入 config/ 子目录（发布产物 = {BaseDir}/config/）
-            // 移除 CreateBuilder 默认根目录 json providers → 改加载 config/ 路径
-            foreach (
-                var source in builder
-                    .Configuration.Sources.Where(src =>
-                        src is Microsoft.Extensions.Configuration.Json.JsonConfigurationSource
-                    )
-                    .ToList()
-            )
-            {
-                builder.Configuration.Sources.Remove(source);
-            }
-            var configDir = Path.Combine(AppContext.BaseDirectory, "config");
-            builder.Configuration.AddJsonFile(
-                Path.Combine(configDir, "appsettings.json"),
-                optional: true,
-                reloadOnChange: true
-            );
-            builder.Configuration.AddJsonFile(
-                Path.Combine(configDir, $"appsettings.{environment}.json"),
-                optional: true,
-                reloadOnChange: true
-            );
-
-            // CFG-BATCH2 优先级修正（边界决策 1）：环境变量 > runtime-overrides.json > appsettings.{env}.json > appsettings.json
-            // 移除内置环境变量 provider → 追加 runtime-overrides → 重建环境变量（最高优先）
-            var runtimeOverridesPath = Path.Combine(configDir, "runtime-overrides.json");
-            var baseline = builder
-                .Configuration.AsEnumerable()
-                .Where(kv => kv.Value is not null)
-                .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
-
-            // 1) 移除内置环境变量 provider（稍后按目标顺序重加）
-            foreach (
-                var source in builder
-                    .Configuration.Sources.OfType<Microsoft.Extensions.Configuration.EnvironmentVariables.EnvironmentVariablesConfigurationSource>()
-                    .ToList()
-            )
-            {
-                builder.Configuration.Sources.Remove(source);
-            }
-
-            // 2) runtime-overrides（运行时微调——低于部署环境变量）
-            builder.Configuration.AddJsonFile(
-                runtimeOverridesPath,
-                optional: true,
-                reloadOnChange: true
-            );
-
-            // 3) 环境变量（部署权威——最高优先）
-            builder.Configuration.AddEnvironmentVariables();
-
-            // CFG-BATCH2 边界决策 2/3: 占位符/空串后处理——无效值回退下一级有效值
-            if (builder.Configuration is IConfigurationRoot configRoot)
-                ConfigurationPostProcessor.Process(configRoot);
-            builder.Services.AddSingleton<IConfigurationStore>(
-                new JsonFileConfigurationStore(runtimeOverridesPath, baseline)
-            );
-            builder.Services.AddLybtServerConfiguration(builder.Configuration);
-            // Register system configuration service for DI
-            builder.Services.AddScoped<ProductionConfigurationValidator>();
-            builder.Services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
-            Log.Information("强类型配置注册完成");
+            // P1-3: 配置闭环抽至 WebApplicationBuilderExtensions.AddConfigurationClosedLoop()
+            builder.AddConfigurationClosedLoop(environment);
 
             // 验证默认密码配置（所有环境）
             ValidateDefaultPasswordConfiguration(builder.Configuration, builder.Environment);
@@ -300,55 +195,8 @@ public class Program
                 }
             }
 
-            // Kestrel 多端点（P2-09 US-SHELL-025 2026-08-14）: Http 5000 默认开 + Https 5001 默认关
-            // 配置段: Server:Endpoints（非 Kestrel:Endpoints——避开 ASP.NET Core 内建 Kestrel 端点绑定，防双重监听）
-            // 开关: Server:Endpoints:Http:Enabled / Server:Endpoints:Https:Enabled
-            // 证书: Server:Endpoints:Https:Certificate:Path + Password
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
-
-                var endpoints = builder.Configuration.GetSection("Server:Endpoints");
-
-                // Http 端点（默认开启）
-                var httpEnabled = endpoints.GetValue<bool>("Http:Enabled", true);
-                var httpUrl = endpoints["Http:Url"] ?? "http://0.0.0.0:5000";
-                if (httpEnabled)
-                {
-                    options.ListenAnyIP(GetPort(httpUrl), listenOptions =>
-                    {
-                        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-                    });
-                    Log.Information("[启动] Listening on {HttpUrl}", httpUrl);
-                }
-
-                // Https 端点（默认关闭——按需启用）
-                var httpsEnabled = endpoints.GetValue<bool>("Https:Enabled", false);
-                var httpsUrl = endpoints["Https:Url"] ?? "https://0.0.0.0:5001";
-                if (httpsEnabled)
-                {
-                    var certPath = builder.Configuration["Server:Endpoints:Https:Certificate:Path"];
-                    var certPassword = builder.Configuration["Server:Endpoints:Https:Certificate:Password"];
-                    options.ListenAnyIP(GetPort(httpsUrl), listenOptions =>
-                    {
-                        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-                        if (string.IsNullOrWhiteSpace(certPath))
-                        {
-                            // 无证书路径——尝试开发证书（dotnet dev-certs https）；失败则警告不阻断
-                            listenOptions.UseHttps();
-                        }
-                        else if (string.IsNullOrWhiteSpace(certPassword))
-                        {
-                            listenOptions.UseHttps(certPath);
-                        }
-                        else
-                        {
-                            listenOptions.UseHttps(certPath, certPassword);
-                        }
-                    });
-                    Log.Information("[启动] Listening on {HttpsUrl} (cert={CertPath})", httpsUrl, certPath ?? "dev-cert");
-                }
-            });
+            // P1-3: Kestrel 端点抽至 WebApplicationBuilderExtensions.MapKestrelEndpoints()
+            builder.MapKestrelEndpoints();
 
             var app = builder.Build();
 

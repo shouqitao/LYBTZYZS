@@ -73,7 +73,7 @@
 | **实体模型** | 完全相同 — `src/Shared/LYBT.Entities/`，AppDbContext 复用所有 `IEntityTypeConfiguration` |
 | **业务规则** | Validators、BusinessRules 完全共享 |
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
-| **授权策略** | 相同的 7 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `SysAdminOnly` / `DoctorOrReceptionist` / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`） |
+| **授权策略** | 相同的 7 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `SysAdminOnly` / `DoctorOrReceptionist`（P1-6 Batch D 已扩为含 Admin/SuperAdmin） / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`）——双端 Registrations 策略已对齐（P1-29 Batch D：Create=`DoctorOrReceptionist`、StartVisit=`DoctorOnly`、Cancel=`ReceptionistOnly`，`LocalWebApiPatternTests.Should_Have_Same_Auth_Policy_As_Remote` 守卫） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
 | **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
 
@@ -196,7 +196,7 @@ flowchart TD
 | IUserRepository | IApiClient.Identity | CRUD + 密码管理 + 批量操作 |
 | IRegistrationRepository | IApiClient.Registrations | CRUD + 队列管理 |
 
-DI 注册在 `UnifiedApiClientExtensions.cs` 中完成：始终注册 `SwitchingApiClient` 为 `IApiClient` Singleton。
+DI 注册在 `UnifiedApiClientExtensions.cs` 中完成：始终注册 `SwitchingApiClient` 为 `IApiClient` Singleton。P1-30 Batch D 2026-08-21 收敛：`Contracts/Api/IApi*`（Refit 生成，`internal`）为远程/本地共享契约；`Contracts/ApiClient/IApiClient*` 聚合为单一 `IApiClient` 门面（含 10 子段 `IApiClientPatients` 等作聚合属性），`ViewModel` 仅依赖 `IApiClient.*`，不直连 Refit 接口。
 
 ### SwitchingApiClient 代理
 

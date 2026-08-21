@@ -24,9 +24,6 @@ public class RegistrationsController : BaseRegistrationsController
 
     /// <inheritdoc />
     [Authorize(Policy = PolicyConstants.DoctorOnly)]
-
-    /// <inheritdoc />
-    [Authorize(Policy = PolicyConstants.DoctorOnly)]
     public override async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
         => await base.StartVisit(id, ct);
 

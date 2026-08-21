@@ -35,7 +35,7 @@
 
 | # | 类型 | 问题 | 代码位置 | 修复方向 |
 |---|------|------|---------|---------|
-| **K1** | ⚠️💻 | `DoctorOrReceptionist` 策略注册仅含 Doctor/Receptionist，与本文档矩阵矛盾（矩阵称含 SuperAdmin/Admin/Doctor/Receptionist）。**D7 切换前若不先扩策略定义加 Admin/SuperAdmin，切换后 Admin/SuperAdmin 全部锁出** | `AuthenticationServiceCollectionExtensions.cs:129-131` | 扩策略注册：`RequireRole(SuperAdmin, Admin, Doctor, Receptionist)` |
+| **K1** | ✅ | **已修复 2026-08-21 Batch D P1-6**：`DoctorOrReceptionist` 已扩为 `RequireRole(SuperAdmin, Admin, Doctor, Receptionist)`，双端（WebAPI + LocalWebAPI）同步，Admin/SuperAdmin 不再锁出 | `AuthenticationServiceCollectionExtensions.cs:155` / `LocalJwtConfig.cs:96` | 已完成 |
 
 ### P0 信任根安全（公网部署前必修）
 
