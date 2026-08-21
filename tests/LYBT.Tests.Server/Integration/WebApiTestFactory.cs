@@ -1,3 +1,4 @@
+// P2-18-1 Respawn忽略AspNetRoles/Users已评估：sysadmin保留提升速度但顺序依赖，已在 tests/AGENTS.md 标注测试需幂等
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;

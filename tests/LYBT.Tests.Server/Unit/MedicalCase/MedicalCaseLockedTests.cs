@@ -1,3 +1,4 @@
+// P2-18-3 IsLocked跨日与PrintVersion测试缺口已评估：MedicalCaseLockedTests 已覆盖跨日409，待补并发 PrintVersion
 using FluentAssertions;
 using LYBT.Module.MedicalCases.Services;
 using LYBT.Entities.MedicalCases;

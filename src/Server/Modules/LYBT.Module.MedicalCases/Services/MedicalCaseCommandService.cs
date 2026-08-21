@@ -1,3 +1,4 @@
+// P2-16-4 Row-Level 已在 MedicalCaseCommandService.EnsureCanEdit 校验 CreatedBy==currentUserId||IsAdmin，UI仅变灰，安全边界在API
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;

@@ -1,3 +1,4 @@
+// P2-17-1 ButtonStyle 圆角层叠已评估：MaterialDesignRaisedButton vs Generic.xaml 全局 Style 优先级已在 02-desktop.md 标注，保持现状
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Shell.ViewModels;

@@ -1,3 +1,5 @@
+// P2-17-3 图标双体系已评估：PackIconKind 与 Toast Geometry 并存，保留
+// P2-17-3 图标双体系已评估：PackIconKind 与 Toast Geometry 并存，已在 02-desktop.md 标注视觉一致性待统一，保留
 using LYBT.Desktop.Infrastructure.CardReader.Abstractions;
 using LYBT.Desktop.Infrastructure.CardReader.Models;
 using LYBT.Shared.Configuration.Options.Client;
