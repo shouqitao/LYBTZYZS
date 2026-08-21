@@ -22,3 +22,5 @@
 
 - `dotnet build --no-incremental` 0 警告 0 错误常态化（Directory.Build.props `TreatWarningsAsErrors`）。
 - 架构测试 87/87 为门禁，新增依赖须过 P07/P08/P10 守卫。
+- 健康度：B+ (82) → A- (88)（Sprint1-2 P1 闭环后达成，Sprint6 T6.4 `phase2-migration-sequencing.md` 确认）。
+  公式 `健康度 = 100 - 2*P1 - 1*P2`（仅 P0/P1 阻塞可发布），详见 `design-optimization-plan.md` 与 `phase2-migration-sequencing.md`。
