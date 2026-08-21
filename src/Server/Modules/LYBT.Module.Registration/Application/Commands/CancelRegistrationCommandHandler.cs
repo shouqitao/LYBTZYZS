@@ -1,7 +1,10 @@
+using LYBT.Infrastructure.Data;
+using LYBT.Module.Registrations.Guards;
 using LYBT.Module.Registrations.Interfaces;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Registrations.Application.Commands;
 
@@ -13,13 +16,19 @@ public sealed class CancelRegistrationCommandHandler
 {
     private readonly IRegistrationRepository _repository;
     private readonly INotificationService _notificationService;
+    private readonly RegistrationStateGuard _stateGuard;
+    private readonly AppDbContext _appDbContext;
 
     public CancelRegistrationCommandHandler(
         IRegistrationRepository repository,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        RegistrationStateGuard stateGuard,
+        AppDbContext appDbContext)
     {
         _repository = repository;
         _notificationService = notificationService;
+        _stateGuard = stateGuard;
+        _appDbContext = appDbContext;
     }
 
     public async Task<Result> Handle(
@@ -29,8 +38,16 @@ public sealed class CancelRegistrationCommandHandler
         if (entity is null)
             return Result.Failure(ErrorCode.RegistrationNotFound, ErrorMessages.Get(ErrorCode.RegistrationNotFound));
 
+        // T1.2: 统一状态守卫 — 已完成医案关联的挂号不可取消
+        LYBT.Entities.MedicalCases.MedicalCase? medicalCase = null;
+        if (entity.MedicalCaseId.HasValue)
+        {
+            medicalCase = await _appDbContext.MedicalCases.AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == entity.MedicalCaseId.Value, cancellationToken);
+        }
         try
         {
+            _stateGuard.EnsureCanCancel(entity, medicalCase);
             entity.Cancel();
         }
         catch (InvalidOperationException ex)

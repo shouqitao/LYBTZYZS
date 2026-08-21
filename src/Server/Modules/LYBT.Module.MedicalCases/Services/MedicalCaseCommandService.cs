@@ -15,6 +15,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using LYBT.Module.MedicalCases.Guards;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -37,6 +38,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IValidator<MedicalCaseInputDto> _inputValidator;
         private readonly IValidator<ConsultationInputDto> _consultationValidator;
         private readonly IMedicalCaseTimeService _timeService;
+        private readonly MedicalCaseStateGuard _stateGuard;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -50,7 +52,8 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseMapper mapper,
             IValidator<MedicalCaseInputDto> inputValidator,
             IValidator<ConsultationInputDto> consultationValidator,
-            IMedicalCaseTimeService timeService)
+            IMedicalCaseTimeService timeService,
+            MedicalCaseStateGuard stateGuard)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -64,6 +67,7 @@ namespace LYBT.Module.MedicalCases.Services
             _inputValidator = inputValidator ?? throw new ArgumentNullException(nameof(inputValidator));
             _consultationValidator = consultationValidator ?? throw new ArgumentNullException(nameof(consultationValidator));
             _timeService = timeService ?? throw new ArgumentNullException(nameof(timeService));
+            _stateGuard = stateGuard ?? throw new ArgumentNullException(nameof(stateGuard));
         }
 
         /// <summary>
@@ -219,8 +223,8 @@ namespace LYBT.Module.MedicalCases.Services
             // 权限检查
             ValidateEditPermission(medicalCase, currentUserId, isAdmin);
 
-            // P0-4 (R3 C2): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人）
-            ValidateEditReason(medicalCase, request, currentUserId);
+            // T1.2: 统一状态守卫入口 — IsLocked/Completed/IsPrinted/异人（via MedicalCaseStateGuard）
+            _stateGuard.EnsureCanEdit(medicalCase, request.EditReason, currentUserId);
 
             // T5-3 #16 (US-MC-017): 更新前快照（审计字段 diff）
             var before = CaptureSnapshot(medicalCase);
@@ -256,26 +260,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// P0-4+P0-5 (R3 C2 + R4 C1): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人，改 BusinessException 带 TypedErrorCode）
+        /// P0-4+P0-5 委托至 MedicalCaseStateGuard 统一入口（T1.2）
         /// </summary>
         private void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
-        {
-            var isPrintedEdit = medicalCase.IsPrinted && medicalCase.PrintVersion > 0;
-            var isCompletedEdit = medicalCase.CaseStatus == MedicalCaseStatus.Completed;
-            // P1-10: 用诊所本地日界判定 IsLocked（非 UTC），与前后端一致
-            var isLockedEdit = _timeService.IsLocked(medicalCase);
-            var isForeignEdit = medicalCase.UserId != currentUserId;
-            if ((isPrintedEdit || isCompletedEdit || isLockedEdit || isForeignEdit) && string.IsNullOrWhiteSpace(request.EditReason))
-            {
-                if (isPrintedEdit)
-                    throw new BusinessException(ErrorCode.McPrintedRequiresReason, "医案已打印，修改内容需提供编辑原因");
-                if (isLockedEdit)
-                    throw new BusinessException(ErrorCode.McCannotEditCase, "医案已锁定（隔天），编辑需提供编辑原因");
-                if (isForeignEdit)
-                    throw new BusinessException(ErrorCode.McCannotEditCase, "非创建医生编辑需提供编辑原因");
-                throw new BusinessException(ErrorCode.McCannotEditCase, "已完成医案编辑需提供编辑原因");
-            }
-        }
+            => _stateGuard.EnsureCanEdit(medicalCase, request.EditReason, currentUserId);
 
         /// <summary>
         /// T5-3 #16: 更新前快照（审计字段 diff 对比基准）

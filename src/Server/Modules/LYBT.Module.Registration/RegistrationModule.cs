@@ -45,6 +45,9 @@ public static class RegistrationModule
         // 注册 Application 层验证器
         services.AddValidatorsFromAssemblyContaining<CreateRegistrationValidator>();
 
+        // T1.2: 状态守卫统一入口
+        services.AddScoped<Guards.RegistrationStateGuard>();
+
         // 注册 SignalR 实时通知 (US-REG-008)
         services.AddSingleton<RegistrationConnectionManager>();
         services.AddScoped<INotificationService, NotificationService>();

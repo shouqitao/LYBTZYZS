@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Validators.BusinessRules;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
+using LYBT.Module.MedicalCases.Guards;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -28,19 +29,22 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
         private readonly IRegistrationCrossModuleService _registrationCrossModule;
+        private readonly MedicalCaseStateGuard _stateGuard;
 
         public MedicalCaseStateService(
             IMedicalCaseRepository repository,
             IUserCrossModuleService userCrossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
-            IRegistrationCrossModuleService registrationCrossModule)
+            IRegistrationCrossModuleService registrationCrossModule,
+            MedicalCaseStateGuard stateGuard)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
             _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
+            _stateGuard = stateGuard ?? throw new ArgumentNullException(nameof(stateGuard));
         }
 
         /// <summary>
@@ -122,6 +126,9 @@ namespace LYBT.Module.MedicalCases.Services
                     medicalCaseId, operatorId);
                 throw new UnauthorizedAccessException("无权限完成此医案：仅创建医生或管理员可完成");
             }
+
+            // T1.2: 统一状态守卫 — 已锁定医案不可完成
+            _stateGuard.EnsureNotLocked(medicalCase);
 
             // 工作流验证（skipWorkflowValidation=false 时执行）
             if (!skipWorkflowValidation)

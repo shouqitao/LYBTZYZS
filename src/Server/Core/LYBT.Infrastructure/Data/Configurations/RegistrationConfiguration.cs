@@ -35,6 +35,12 @@ public class RegistrationConfiguration : BaseEntityConfiguration<Registration>
         // 索引: MedicalCaseId (可空，接诊后填入)
         builder.HasIndex(r => r.MedicalCaseId);
 
+        // T1.2: 单患者单待就诊约束 — Waiting/InProgress 仅一待就诊（过滤唯一索引兜底并发竞态，R14-04/R41）
+        builder.HasIndex(r => r.PatientId)
+            .IsUnique()
+            .HasFilter("[Status] IN (0, 1) AND [IsDeleted] = 0")
+            .HasDatabaseName("UX_Registrations_PatientId_Pending");
+
         // QueueNumber: 当日顺序号
         builder.Property(r => r.QueueNumber).IsRequired();
 
