@@ -12,6 +12,7 @@
 | TD-003 | Desktop 162 失败（存量环境：STA/WPF 线程 + SysAdmin 登录）— 需容器化/单测去环境 | 测试 | P1 | ⬜ 待办 | Phase2 |
 | TD-004 | 部署仅 HTTP 明文（公网需 HTTPS，ADR-0014） | 安全 | P2 | ⬜ 待办 | 运维 |
 | TD-005 | 项目数 29（含 Legacy 兼容）— 待方案 A 收敛后评估合并 | 结构 | P2 | ⬜ 待办 | 后续 |
+| TD-006 | `AesGcmValueConverter.Encrypt` 写容错（异常返回原文）为历史明文迁移期软着陆，下版本收紧为抛异常（与 `Decrypt` 读严格 `CryptographicException→422` 对齐） | 安全 | P3 | ⬜ 待办 | 下版本 |
 
 ## 依赖升级策略
 
