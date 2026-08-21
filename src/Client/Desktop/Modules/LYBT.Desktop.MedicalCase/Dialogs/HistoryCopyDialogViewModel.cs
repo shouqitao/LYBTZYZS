@@ -529,10 +529,10 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                 var model = detail == null ? null : _mapper.ToItem(detail);
                 SelectedCaseDetail = model;
 
-                // 提取处方药材列表用于复制（Model 型）
+                // 提取处方药材列表用于复制（T4.4: Clone 深拷贝，避免修改新处方污染原集合）
                 if (model?.PrescriptionItems != null && model.PrescriptionItems.Any())
                 {
-                    SelectedPrescriptionItems = model.PrescriptionItems.ToList();
+                    SelectedPrescriptionItems = model.PrescriptionItems.Select(i => i.Clone()).ToList();
                 }
                 else
                 {
