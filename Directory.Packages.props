@@ -39,7 +39,6 @@
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
     <!-- MediatR: CQRS and Domain Events -->
     <PackageVersion Include="MediatR" Version="12.4.1" />
-    <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="12.3.0" />
 
   </ItemGroup>
   <ItemGroup Label="Web API Packages">
@@ -120,8 +119,6 @@
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
   </ItemGroup>
   <ItemGroup Label="Code Analysis and Quality">
-    <!-- 代码分析器 -->
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- 代码覆盖率工具 -->
     <!-- coverlet.msbuild 已移除 - 使用 coverlet.collector + runsettings 替代 -->
     <PackageVersion Include="ReportGenerator" Version="5.5.5" />
