@@ -3,6 +3,7 @@ using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using FluentValidation;
 using LYBT.Infrastructure.Caching;
+using LYBT.Shared.Models.Validators.Consultation;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
@@ -33,6 +34,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly PrescriptionItemService _itemService;
         private readonly MedicalCaseMapper _mapper;
         private readonly IValidator<MedicalCaseInputDto> _inputValidator;
+        private readonly IValidator<ConsultationInputDto> _consultationValidator;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -44,7 +46,8 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCasePrescriptionService prescriptionService,
             PrescriptionItemService itemService,
             MedicalCaseMapper mapper,
-            IValidator<MedicalCaseInputDto> inputValidator)
+            IValidator<MedicalCaseInputDto> inputValidator,
+            IValidator<ConsultationInputDto> consultationValidator)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -56,6 +59,7 @@ namespace LYBT.Module.MedicalCases.Services
             _itemService = itemService ?? throw new ArgumentNullException(nameof(itemService));
             _mapper = mapper;
             _inputValidator = inputValidator ?? throw new ArgumentNullException(nameof(inputValidator));
+            _consultationValidator = consultationValidator ?? throw new ArgumentNullException(nameof(consultationValidator));
         }
 
         /// <summary>
@@ -119,9 +123,10 @@ namespace LYBT.Module.MedicalCases.Services
             // 如果DTO中提供了诊断数据，填充Consultation字段
             if (request.Consultation != null)
             {
+                // P0-8: 手动校验 Consultation（原直接映射绕过 ValidationBehavior）
+                await _consultationValidator.ValidateAndThrowAsync(request.Consultation, cancellationToken);
+
                 // T5-P2-10: 创建时也验证TcmDiagnosis非空
-                // 注: UpdateConsultationAsync 通过 FluentValidation Pipeline 验证，
-                // 但 CreateFromInputDtoAsync 的 Consultation 数据是直接映射，不经过验证器
                 if (string.IsNullOrWhiteSpace(request.Consultation.TcmDiagnosis))
                 {
                     _logger.LogInformation("[SVC] MedicalCase.Create -> TcmDiagnosisEmpty");
