@@ -123,22 +123,27 @@ namespace LYBT.Module.MedicalCases.Services
                 {
                     return await action();
                 }
-                catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex) when (attempt < maxRetries)
+                catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
                 {
+                    // P1-17: 最后一次不再重试，跳出循环走下方 409 转换（原 when-filter 会让原始异常逃逸成 500）
+                    if (attempt >= maxRetries) break;
                     logger.LogWarning(ex, "[SVC] MedicalCase.{Operation} -> ConcurrencyRetry - Attempt={Attempt}",
                         operationName, attempt);
                     await Task.Delay(100 * attempt);
                 }
-                catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改") && attempt < maxRetries)
+                catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改"))
                 {
+                    if (attempt >= maxRetries) break;
                     logger.LogWarning("[SVC] MedicalCase.{Operation} -> ConcurrencyRetry - Attempt={Attempt}",
                         operationName, attempt);
                     await Task.Delay(100 * attempt);
                 }
             }
 
+            // P1-17: 重试耗尽后转 409（原抛原始 DbUpdateConcurrencyException → 500；Biz Handler 按 ConflictException 映射 409）
             logger.LogError("[SVC] MedicalCase.{Operation} -> MaxRetriesExceeded", operationName);
-            throw new DbUpdateConcurrencyException($"{operationName}失败：并发冲突，请刷新后重试");
+            throw new LYBT.Shared.ExceptionHandling.Exceptions.ConflictException(
+                $"{operationName}失败：数据已被其他用户修改，请刷新后重试");
         }
 
         /// <summary>

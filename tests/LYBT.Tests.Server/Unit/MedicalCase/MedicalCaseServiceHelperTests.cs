@@ -60,14 +60,29 @@ public class MedicalCaseServiceHelperTests
     }
 
     [Fact]
+    public async Task ExecuteWithConcurrencyRetryAsync_Exhausted_ShouldThrow_Conflict409()
+    {
+        // Arrange（P1-17）：重试耗尽后应抛 ConflictException（409）而非原始 DbUpdateConcurrencyException（500）
+        var logger = NullLogger.Instance;
+
+        // Act
+        var act = () => MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync<int>(
+            () => throw new Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException("Concurrency conflict"),
+            "TestOperation",
+            logger);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<LYBT.Shared.ExceptionHandling.Exceptions.ConflictException>(act);
+        ex.GetHttpStatusCode().Should().Be(409);
+    }
+
+    [Fact]
     public async Task ExecuteWithConcurrencyRetryAsync_WithMaxRetriesExceeded_ShouldThrow()
     {
         // Arrange
         var logger = NullLogger.Instance;
 
-        // Act & Assert
-        // 注意: 当 attempt == maxRetries 时, catch 条件 (attempt < maxRetries) 为 false,
-        // 所以最后一次重试的异常会直接抛出, 而不是 InvalidOperationException
+        // Act & Assert（P1-17 更新）: 重试耗尽后应抛 ConflictException（409），而非原始 DbUpdateConcurrencyException（500）
         var act = async () => await MedicalCaseServiceHelper.ExecuteWithConcurrencyRetryAsync<string>(
             async () =>
             {
@@ -78,7 +93,9 @@ public class MedicalCaseServiceHelperTests
             logger,
             maxRetries: 3);
 
-        await act.Should().ThrowAsync<Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException>();
+        var ex = await Record.ExceptionAsync(act);
+        ex.Should().BeOfType<LYBT.Shared.ExceptionHandling.Exceptions.ConflictException>();
+        (ex as LYBT.Shared.ExceptionHandling.Exceptions.ConflictException)!.GetHttpStatusCode().Should().Be(409);
     }
 
     #endregion
