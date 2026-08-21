@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +36,23 @@ public class DeployService : IDeployService
         await using var stream = new FileStream(filePath, FileMode.Create);
         await content.CopyToAsync(stream, cancellationToken);
 
-        _logger.LogInformation("更新包已上传: {FileName}, 大小: {Size} bytes", fileName, content.Length);
+        // P0-2: 计算 SHA256 并写入 .update-pending + .update-pending.sha256（供 Program 热更新校验）
+        stream.Close(); // 确保落盘后再计算
+        var sha256 = await ComputeSha256Async(filePath, cancellationToken);
+        var flagPath = Path.Combine(AppContext.BaseDirectory, ".update-pending");
+        var shaPath = Path.Combine(AppContext.BaseDirectory, ".update-pending.sha256");
+        await File.WriteAllTextAsync(flagPath, filePath, cancellationToken);
+        await File.WriteAllTextAsync(shaPath, sha256, cancellationToken);
+
+        _logger.LogInformation("更新包已上传: {FileName}, 大小: {Size} bytes, SHA256: {Sha256}", fileName, content.Length, sha256);
         return Result<(string, long)>.Success((fileName, content.Length));
+    }
+
+    private static async Task<string> ComputeSha256Async(string filePath, CancellationToken ct)
+    {
+        await using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var sha = SHA256.Create();
+        var hash = await sha.ComputeHashAsync(fs, ct);
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

@@ -343,6 +343,17 @@ stateDiagram-v2
 ## 7. 安全考虑
 
 > **v1.0 实现范围**（D3 决策 2026-06-28）：补 Token 族旋转 + 登录限流 + 登出撤销 + 安全审计日志。重放检测标 v2.0。
+> **2026-08-21 P0-2**：热更新增加 SHA256 侧车校验（`DeployService` 写 `.update-pending.sha256`，`Program` 启动时强制比对，不一致拒绝解压），阻断 RCE/篡改。
+
+### 7.0 热更新签名
+
+| 项 | 说明 |
+|----|------|
+| 写入点 | `DeployService.SaveUpdatePackageAsync`（上传 ZIP 时） |
+| 侧车文件 | `AppContext.BaseDirectory/.update-pending`（zip 路径） + `.update-pending.sha256`（hex 小写） |
+| 校验点 | `Program.Main` 热更新段 `ZipFile.ExtractToDirectory` 前 |
+| 失败行为 | `Log.Fatal` + `Environment.Exit(1)`，不解压，双 flag 清理 |
+| 单测 | `tests/LYBT.Tests.Server/Unit/Infrastructure/HotUpdateShaTests.cs` 篡改检测 |
 
 ### 7.1 Token 重放检测 (Token Family)
 

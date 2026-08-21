@@ -6,6 +6,7 @@
 /// Issue #1932: 配置文件整合 - 统一appsettings.json + .env环境变量模式
 /// refactor-logging-system: 实现Serilog两阶段初始化(Bootstrap + Final Logger)
 /// </summary>
+using System.Security.Cryptography;
 using System.Text;
 using DotNetEnv;
 using LYBT.Entities.Users;
@@ -40,15 +41,30 @@ public class Program
         // 修复Windows控制台中文乱码问题
         Console.OutputEncoding = Encoding.UTF8;
 
-        // ── 热更新：检查并应用待更新包 ──
+        // ── 热更新：检查并应用待更新包（P0-2：SHA256 校验防篡改/RCE） ──
         var updateFlag = Path.Combine(AppContext.BaseDirectory, ".update-pending");
+        var shaFlag = Path.Combine(AppContext.BaseDirectory, ".update-pending.sha256");
         if (File.Exists(updateFlag))
         {
             try
             {
-                var zipPath = await File.ReadAllTextAsync(updateFlag);
+                var zipPath = (await File.ReadAllTextAsync(updateFlag)).Trim();
                 if (File.Exists(zipPath))
                 {
+                    // P0-2: 若存在 .sha 侧车文件则强制校验，不一致拒绝解压
+                    if (File.Exists(shaFlag))
+                    {
+                        var expected = (await File.ReadAllTextAsync(shaFlag)).Trim().ToLowerInvariant();
+                        var actual = await ComputeFileSha256Async(zipPath);
+                        if (!string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase))
+                        {
+                            Console.Error.WriteLine($"[UPDATE] SHA256 校验失败: expected={expected} actual={actual} —— 拒绝解压（防篡改）");
+                            Log.Fatal("[UPDATE] 热更新 SHA256 校验失败 expected={Expected} actual={Actual} zip={ZipPath} —— 拒绝解压", expected, actual, zipPath);
+                            File.Delete(updateFlag);
+                            try { File.Delete(shaFlag); } catch { }
+                            Environment.Exit(1);
+                        }
+                    }
                     Console.WriteLine("[UPDATE] 检测到更新包，正在应用...");
                     var currentDir = AppContext.BaseDirectory;
                     System.IO.Compression.ZipFile.ExtractToDirectory(
@@ -60,11 +76,14 @@ public class Program
                     Console.WriteLine("[UPDATE] 更新完成，重新启动...");
                 }
                 File.Delete(updateFlag);
+                try { if (File.Exists(shaFlag)) File.Delete(shaFlag); } catch { }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[UPDATE] 更新失败: {ex.Message}");
-                File.Delete(updateFlag);
+                Log.Error(ex, "[UPDATE] 热更新应用失败");
+                try { File.Delete(updateFlag); } catch { }
+                try { if (File.Exists(shaFlag)) File.Delete(shaFlag); } catch { }
             }
         }
 
@@ -611,4 +630,13 @@ public class Program
           "_comment": "自动生成 Development 模板——本地开发按需补充（连接串/JWT 等）"
         }
         """;
+
+    /// <summary>P0-2：计算文件 SHA256（小写 hex），供热更新校验</summary>
+    private static async Task<string> ComputeFileSha256Async(string path)
+    {
+        await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var sha = SHA256.Create();
+        var hash = await sha.ComputeHashAsync(fs);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
 }

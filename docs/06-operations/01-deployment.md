@@ -109,12 +109,20 @@ cd /home/player/lybt-api && bash start.sh
 - 配置在 `Server:Endpoints` 段（非 `Kestrel:Endpoints`）
 - 启用 HTTPS: `Https:Enabled=true` + 填证书路径 → 重启
 
+### 热更新安全（P0-2，2026-08-21）
+
+- `DeployService.SaveUpdatePackageAsync` 计算 ZIP 的 SHA256 并写入 `AppContext.BaseDirectory/.update-pending.sha256`（侧车），同时写入 `.update-pending` 指向 zip 路径
+- `Program.Main` 热更新段启动时若存在 `.update-pending.sha256` 则强制校验 `ComputeSHA256(zipPath) == expected`，不一致 `Log.Fatal` + `Environment.Exit(1)` 拒绝解压（防篡改/RCE）
+- 校验失败不解压、不删 zip 便于取证；成功后双 flag 均清理
+
 ### 发布前门禁
 
 ```bash
 dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~WebApiSystemTests|FullyQualifiedName~DeploymentConfigTests"
 ```
 通过 = 启动无崩溃 + 路由注册全 + FallbackPolicy 401 + 配置契约校验。
+
+热更新校验单测：`dotnet test --filter HotUpdateSha` 绿（篡改检测）
 
 ### Newman 验证
 
