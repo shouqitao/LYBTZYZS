@@ -21,7 +21,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Items;
 ///
 /// 属性名与PrescriptionDetailDto保持一致，确保XAML绑定兼容
 ///
-/// TODO(P1-3 保留): 本类暂不迁移 BindableBase→ObservableObject+[ObservableProperty]。
+/// TODO 2026-08-21 xiao(P1-3 保留): 本类暂不迁移 BindableBase→ObservableObject+[ObservableProperty]。
 /// 实验（2026-08-18）证实 Mapperly（Riok.Mapperly）源生成器看不到 CommunityToolkit.Mvvm
 /// 源生成器产出的属性成员：PrescriptionMapper 的 [MapperIgnoreSource/Target] 报
 /// RMG004/RMG021「member not found」+ RMG066「No members are mapped」→ 生成空映射 →
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Items;
 /// </summary>
 public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
-    // TODO: 静态mapper与DI风格不一致，未来改为构造注入（需同步改造Mapperly生成代码的实例化路径）
+    // TODO 2026-08-21 xiao: 静态mapper与DI风格不一致，未来改为构造注入（需同步改造Mapperly生成代码的实例化路径）
     private static readonly PrescriptionMapper s_mapper = new();
 
     /// <summary>

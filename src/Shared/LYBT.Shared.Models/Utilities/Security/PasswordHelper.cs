@@ -8,7 +8,7 @@ namespace LYBT.Shared.Models.Utilities.Security
     /// <summary>
     /// 纯密码工具类（生成/策略）——哈希与验证统一走 Identity UserManager（PBKDF2），本类不提供哈希方法
     /// </summary>
-    // TODO: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5）
+    // TODO 2026-08-21 xiao: 超大类型，建议拆分（详见 docs/compose/reports/code-review-duplicates.md 🟡5，已评估保留：纯生成/策略无哈希，拆分收益低）
     public static class PasswordHelper
     {
         #region 密码强度验证功能

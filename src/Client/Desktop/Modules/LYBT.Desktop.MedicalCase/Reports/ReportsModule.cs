@@ -11,7 +11,7 @@ using Prism.Mvvm;
 namespace LYBT.Desktop.MedicalCase.Reports;
 
 // STUB: 报表模块 - 当前为存根实现，仅提供基础导航
-// TODO: 后续迭代完善报表功能
+// TODO 2026-08-21 xiao: 后续迭代完善报表功能（当前仅基础导航，趋势/绩效待迭代）
 [Module(ModuleName = nameof(ReportsModule))]
 public class ReportsModule : IModule
 {

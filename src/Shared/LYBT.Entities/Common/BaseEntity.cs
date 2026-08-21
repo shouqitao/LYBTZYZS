@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LYBT.Entities.Common
 {
+    // T2.5 Checklist: ApplicationUser 继承 IdentityUser 而非 BaseEntity，手抄字段需同步本类：
+    // Id / CreatedAt / UpdatedAt / CreatedBy / UpdatedBy / RowVersion / IsDeleted（新增审计字段时同步）
     /// <summary>
     /// 实体基类 - 提供统一的基础字段和审计功能
     /// 适用于凌隐宝堂中医诊所系统的所有业务实体

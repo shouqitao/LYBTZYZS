@@ -212,7 +212,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// </summary>
         private void LoadTodayStatistics()
         {
-            // TODO: US-SHELL-005 - 从服务获取今日统计数据
+            // TODO 2026-08-21 xiao: US-SHELL-005 - 从服务获取今日统计数据（当前写死，待报表服务接入）
             TodayConsultationCount = 0;
             PendingCaseCount = 0;
         }
