@@ -170,29 +170,21 @@ graph TB
 | Usage | string(200) | 否 | 用法 |
 | Remark | string(200) | 否 | 备注 |
 
-### Patient (患者)
+### Patient (患者) — v1.0 简化版（7 字段 + BaseEntity 审计）
+
+> **v1.0 简化决策**：文档原 20+ 字段（MaritalStatus/IdType/Address/AllergyHistory/MedicalHistory/BloodType/EmergencyContact*/DisableReason/LastVisitTime/VisitCount 等）已裁剪，仅保留姓名/性别等核心建档字段。裁剪字段延期至 v2.0（见 ADR-2026-08-20-Patient-Simplification，代码 `PatientModel.cs` 为 SSOT）。
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | Name | string(100) | 是 | 姓名 |
 | PinYinCode | string(50) | 否 | 拼音码 (搜索用) |
 | Gender | Gender | 是 | 性别 |
-| MaritalStatus | int | 是 | 婚姻状况 |
 | BirthDate | DateTime? | 否 | 出生日期 |
-| IdType | int | 是 | 证件类型 (默认 0) |
-| IdNumber | string(50) | 否 | 身份证号 (敏感) |
-| PhoneNumber | string(20) | 否 | 手机号 (敏感) |
-| Address | string(256) | 否 | 地址 (敏感) |
-| AllergyHistory | string(500) | 否 | 过敏史 (敏感) |
-| MedicalHistory | string(1000) | 否 | 病史 (敏感) |
-| BloodType | int | 是 | 血型 |
-| EmergencyContactName | string? | 否 | 紧急联系人姓名 |
-| EmergencyContactPhone | string? | 否 | 紧急联系人电话 (敏感) |
-| EmergencyContactRelation | string? | 否 | 紧急联系人关系 |
+| IdNumber | string(50) | 否 | 身份证号 (敏感, `[SensitiveData(IdentityInfo, Partial)]`) |
+| PhoneNumber | string(20) | 否 | 手机号 (敏感, `[SensitiveData(ContactInfo, Partial)]`) |
 | Status | CommonStatus | 是 | 状态 (PAT-D05: 禁用主要场景为患者已故; 禁用后禁止创建新医案) |
-| DisableReason | string(128) | 否 | 禁用原因 |
-| LastVisitTime | DateTime? | 否 | 最后就诊 |
-| VisitCount | int | 是 | 就诊次数 |
+
+**基类字段** (BaseEntity): Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted
 
 **计算属性**: Age (从 BirthDate 计算，NotMapped)
 
@@ -461,14 +453,13 @@ entity.HasIndex(e => e.PatientId)
 
 > **设计取舍**: NFR 并发用户 1-3 人，并发创建重复草稿概率极低。代码层 BR-001 检查为主，DB 唯一索引为兜底保障。
 
-### 敏感数据
+### 敏感数据 — v1.0 仅 IdNumber/PhoneNumber（Patient 简化后）
 
 Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏:
-- IdNumber (身份证号)
-- PhoneNumber (手机号)
-- Address (地址)
-- AllergyHistory (过敏史)
-- MedicalHistory (病史)
+- IdNumber (身份证号, `SensitiveData(IdentityInfo, Partial)`)
+- PhoneNumber (手机号, `SensitiveData(ContactInfo, Partial)`)
+
+> **v1.0 注**：文档原 Address/AllergyHistory/MedicalHistory/EmergencyContactPhone 等敏感字段随 Patient 裁剪延期至 v2.0，代码 `PatientModel.cs:47,55` 仅保留上述两字段。
 
 ### 软删除
 
@@ -485,5 +476,6 @@ Patient 实体的以下字段标记为敏感数据，日志和序列化时脱敏
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-08-20 | v2.2 | **P0-7 Patient 简化对齐**：Patient 20+ 字段裁剪为 7 字段（Name/PinYinCode/Gender/BirthDate/IdNumber/PhoneNumber/Status + BaseEntity），与 `PatientModel.cs` 代码 SSOT 对齐；敏感数据 Address/AllergyHistory/MedicalHistory 等延期至 v2.0。 |
 | 2026-06-28 | v2.1 | **spec S3 批次2 提炼（542→~420 行）**：MedicalCase 业务生命周期状态转换表/Registration 联动/打印保护覆盖层改链接到 07-medical-cases.md（留状态枚举）；辅助实体重复段（MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 重复描述）合并为概览表；RefreshToken 字段表（🧲 代码不存在）压成 D3 spec 引用。变更历史见 git log。 |
 | 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |
