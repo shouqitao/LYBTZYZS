@@ -98,14 +98,8 @@ public abstract class BaseUsersController : BaseCrudController
             new UpdateUserCommand(id, input, operatorId, operatorId, currentRole),
             ct
         );
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.Error?.Contains("不存在") == true)
-                return NotFound(result.Error);
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权更新该用户");
-            return BusinessFail(result.Error ?? "更新失败");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
         LogOperation("更新用户成功", result.Value, id);
         return Success(result.Value, "用户更新成功");
     }
@@ -120,13 +114,7 @@ public abstract class BaseUsersController : BaseCrudController
         var (operatorId, _, currentRole) = GetOperator();
         var result = await Sender.Send(new DeleteUserCommand(id, operatorId, currentRole), ct);
         if (!result.IsSuccess)
-        {
-            if (result.Error?.Contains("不存在") == true)
-                return NotFound(result.Error);
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权删除该用户");
-            return BusinessFail(result.Error ?? "删除失败");
-        }
+            return HandleResult(result);
         LogOperation("删除用户成功", null, id);
         return Success("删除成功");
     }
@@ -143,12 +131,8 @@ public abstract class BaseUsersController : BaseCrudController
             new ToggleUserStatusCommand(id, operatorId, operatorRole),
             ct
         );
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权切换该用户状态");
-            return BusinessFail(result.Error ?? "切换状态失败");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
 
         LogOperation("切换用户状态", null, id);
         return Success(result.Value, "状态已切换");
@@ -163,14 +147,8 @@ public abstract class BaseUsersController : BaseCrudController
 
         var (operatorId, _, operatorRole) = GetOperator();
         var result = await Sender.Send(new RestoreUserCommand(id, operatorId, operatorRole), ct);
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.Error?.Contains("未被删除") == true)
-                return BusinessFail(result.Error);
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权恢复该用户");
-            return NotFound(result.Error ?? "用户不存在");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
 
         LogOperation("恢复用户", null, id);
         return Success(result.Value, "用户恢复成功");
@@ -273,13 +251,7 @@ public abstract class BaseUsersController : BaseCrudController
         var result = await Sender.Send(new ChangeProfileCommand(id, dto, currentUserId), ct);
 
         if (!result.IsSuccess)
-        {
-            if (result.Error?.StartsWith("只能修改") == true)
-                return Forbid(result.Error);
-            if (result.Error == "用户不存在")
-                return NotFound(result.Error);
-            return BusinessFail(result.Error ?? "个人资料修改失败");
-        }
+            return HandleResult(result, useAuthMapping: true);
 
         LogOperation(
             "修改个人资料",
@@ -310,13 +282,7 @@ public abstract class BaseUsersController : BaseCrudController
         );
 
         if (!result.IsSuccess)
-        {
-            if (result.Error?.StartsWith("只能修改") == true)
-                return Forbid(result.Error);
-            if (result.Error == "用户不存在")
-                return NotFound(result.Error);
-            return BusinessFail(result.Error ?? "密码修改失败");
-        }
+            return HandleResult(result);
 
         LogOperation("修改密码", new { UserId = id }, id);
         return Success("密码修改成功");

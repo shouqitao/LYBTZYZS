@@ -238,15 +238,11 @@ public class FormulasController : BaseCrudController
                 new UpdateEntityCommand<FormulaInputDto, FormulaDetailDto>(id, input, operatorId, operatorRole),
                 ct
             );
-            if (!result.IsSuccess || result.Value == null)
-            {
-                if (result.ErrorCode == ErrorCode.Forbidden)
-                    return Forbid(result.Error ?? "无权更新该验方");
-                return BusinessFail(result.Error ?? "更新失败");
-            }
+            if (!result.IsSuccess)
+                return HandleResult(result, useAuthMapping: true);
 
             LogOperation("更新验方成功", result.Value, id);
-            return Success(result.Value, "验方更新成功");
+            return Success(result.Value!, "验方更新成功");
         }
 
         /// <summary>
@@ -267,11 +263,7 @@ public class FormulasController : BaseCrudController
                 ct
             );
             if (!result.IsSuccess)
-            {
-                if (result.ErrorCode == ErrorCode.Forbidden)
-                    return Forbid(result.Error ?? "无权删除该验方");
-                return NotFound(result.Error ?? "验方不存在");
-            }
+                return HandleResult(result, useAuthMapping: true);
 
             LogOperation("删除验方成功", null, id);
             return Success(true, "删除成功");
@@ -294,17 +286,13 @@ public class FormulasController : BaseCrudController
                 new ToggleEntityStatusCommand<Formula, FormulaDetailDto>(id, operatorId, operatorRole),
                 ct
             );
-            if (!result.IsSuccess || result.Value == null)
-            {
-                if (result.ErrorCode == ErrorCode.Forbidden)
-                    return Forbid(result.Error ?? "无权切换该验方状态");
-                return BusinessFail(result.Error ?? "切换状态失败");
-            }
+            if (!result.IsSuccess)
+                return HandleResult(result, useAuthMapping: true);
 
-            LogOperation("切换验方状态", new { NewStatus = result.Value.Status }, id);
+            LogOperation("切换验方状态", new { NewStatus = result.Value!.Status }, id);
             return Success(
-                result.Value,
-                $"验方已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+                result.Value!,
+                $"验方已{(result.Value!.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
             );
         }
 

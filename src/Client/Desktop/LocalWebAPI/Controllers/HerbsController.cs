@@ -119,15 +119,11 @@ public class HerbsController : BaseCrudController
             new UpdateEntityCommand<HerbInputDto, HerbDetailDto>(id, input, operatorId, operatorRole),
             ct
         );
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权更新该药材");
-            return BusinessFail(result.Error ?? "更新失败");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
 
-        LogOperation("更新药材", result.Value, result.Value.Id);
-        return Success(result.Value, "药材更新成功");
+        LogOperation("更新药材", result.Value, result.Value!.Id);
+        return Success(result.Value!, "药材更新成功");
     }
 
     /// <summary>
@@ -147,11 +143,7 @@ public class HerbsController : BaseCrudController
             ct
         );
         if (!result.IsSuccess)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权删除该药材");
-            return BusinessFail(result.Error ?? "删除失败");
-        }
+            return HandleResult(result, useAuthMapping: true);
 
         LogOperation("删除药材", new { Id = id }, id);
         return Success<object?>(null, "药材删除成功");
@@ -173,17 +165,13 @@ public class HerbsController : BaseCrudController
             new ToggleEntityStatusCommand<Herb, HerbDetailDto>(id, operatorId, operatorRole),
             ct
         );
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权切换该药材状态");
-            return BusinessFail(result.Error ?? "切换状态失败");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
 
-        LogOperation("切换药材状态", new { NewStatus = result.Value.Status }, id);
+        LogOperation("切换药材状态", new { NewStatus = result.Value!.Status }, id);
         return Success(
-            result.Value,
-            $"药材已{(result.Value.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
+            result.Value!,
+            $"药材已{(result.Value!.Status == CommonStatus.Enabled ? "启用" : "禁用")}"
         );
     }
 

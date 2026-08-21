@@ -261,11 +261,7 @@ public class PatientsController : BaseCrudController
             ct
         );
         if (!result.IsSuccess)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权删除该患者");
-            return BusinessFail(result.Error ?? "删除失败");
-        }
+            return HandleResult(result, useAuthMapping: true);
 
         return Success(true, "删除成功");
     }
@@ -286,14 +282,10 @@ public class PatientsController : BaseCrudController
             new TogglePatientStatusCommand(id, operatorId, operatorRole),
             ct
         );
-        if (!result.IsSuccess || result.Value == null)
-        {
-            if (result.ErrorCode == ErrorCode.Forbidden)
-                return Forbid(result.Error ?? "无权切换该患者状态");
-            return BusinessFail(result.Error ?? "切换状态失败");
-        }
+        if (!result.IsSuccess)
+            return HandleResult(result, useAuthMapping: true);
 
-        return Success(result.Value, "状态已切换");
+        return Success(result.Value!, "状态已切换");
     }
 
     /// <summary>
