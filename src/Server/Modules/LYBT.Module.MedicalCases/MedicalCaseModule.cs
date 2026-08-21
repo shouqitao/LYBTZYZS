@@ -36,6 +36,8 @@ namespace LYBT.Module.MedicalCases
             services.AddScoped<IMedicalCaseCommandService, MedicalCaseCommandService>();
             services.AddScoped<IMedicalCaseQueryService, MedicalCaseQueryService>();
             services.AddScoped<IMedicalCaseStateService, MedicalCaseStateService>();
+            // P1-10: 运营时间服务（诊所本地时区日界）
+            services.AddScoped<IMedicalCaseTimeService, MedicalCaseTimeService>();
 
             // U3-1: 处方内部操作与生命周期服务（从CommandService拆分）
             services.AddScoped<MedicalCasePrescriptionService>();

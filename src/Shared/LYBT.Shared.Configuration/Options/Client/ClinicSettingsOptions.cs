@@ -40,4 +40,9 @@ public sealed class ClinicSettingsOptions
     /// 电子邮箱
     /// </summary>
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 运营时区（P1-10）：日界判定用，默认 Asia/Shanghai；若空回退 MedicalCaseTime 静态默认
+    /// </summary>
+    public string? Timezone { get; set; } = "Asia/Shanghai";
 }

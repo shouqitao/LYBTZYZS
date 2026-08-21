@@ -90,10 +90,25 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>
         /// 是否已锁定(隔天不可编辑). 动态计算: CompletedAt.Date &lt; Today
+        /// P1-10: 日界 = 诊所本地时间（Asia/Shanghai），非 UTC 非服务器本地——见 LYBT.Entities.MedicalCases.MedicalCaseTime
         /// </summary>
         public bool IsLocked => CaseStatus == MedicalCaseStatus.Completed &&
                                 CompletedAt.HasValue &&
-                                CompletedAt.Value.Date < DateTime.Today;
+                                ClinicLocalDate(CompletedAt.Value) < ClinicLocalDate(DateTime.UtcNow);
+
+        private static DateTime ClinicLocalDate(DateTime utc)
+        {
+            try
+            {
+                if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai");
+                return TimeZoneInfo.ConvertTimeFromUtc(utc, tz).Date;
+            }
+            catch
+            {
+                return utc.Date;
+            }
+        }
 
         // ========== 扩展字段 ==========
 

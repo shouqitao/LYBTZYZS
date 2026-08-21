@@ -104,8 +104,9 @@ namespace LYBT.Entities.MedicalCases
         /// 是否已锁定
         /// 锁定条件：已完成状态 且 非当天（完成或创建）
         /// Suspended/Active状态不受跨日限制，可随时编辑
+        /// P1-10: 日界 = 诊所本地时间（Asia/Shanghai），非 UTC——由 MedicalCaseTime 静态帮助裁决
         /// </summary>
-        public bool IsLocked => IsCompleted && CompletedAt.HasValue && CompletedAt.Value.Date < DateTime.UtcNow.Date;
+        public bool IsLocked => IsCompleted && CompletedAt.HasValue && MedicalCaseTime.ClinicLocalDate(CompletedAt.Value) < MedicalCaseTime.ClinicLocalDate(DateTime.UtcNow);
 
         /// <summary>
         /// 是否活跃（可编辑状态）

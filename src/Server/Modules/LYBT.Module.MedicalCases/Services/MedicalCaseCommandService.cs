@@ -35,6 +35,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly MedicalCaseMapper _mapper;
         private readonly IValidator<MedicalCaseInputDto> _inputValidator;
         private readonly IValidator<ConsultationInputDto> _consultationValidator;
+        private readonly IMedicalCaseTimeService _timeService;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -47,7 +48,8 @@ namespace LYBT.Module.MedicalCases.Services
             PrescriptionItemService itemService,
             MedicalCaseMapper mapper,
             IValidator<MedicalCaseInputDto> inputValidator,
-            IValidator<ConsultationInputDto> consultationValidator)
+            IValidator<ConsultationInputDto> consultationValidator,
+            IMedicalCaseTimeService timeService)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -60,6 +62,7 @@ namespace LYBT.Module.MedicalCases.Services
             _mapper = mapper;
             _inputValidator = inputValidator ?? throw new ArgumentNullException(nameof(inputValidator));
             _consultationValidator = consultationValidator ?? throw new ArgumentNullException(nameof(consultationValidator));
+            _timeService = timeService ?? throw new ArgumentNullException(nameof(timeService));
         }
 
         /// <summary>
@@ -253,11 +256,12 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// P0-4+P0-5 (R3 C2 + R4 C1): EditReason 校验——Completed/IsLocked/IsPrinted/异人编辑均需原因（去 &&!isAdmin，补 IsLocked/异人，改 BusinessException 带 TypedErrorCode）
         /// </summary>
-        private static void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
+        private void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
         {
             var isPrintedEdit = medicalCase.IsPrinted && medicalCase.PrintVersion > 0;
             var isCompletedEdit = medicalCase.CaseStatus == MedicalCaseStatus.Completed;
-            var isLockedEdit = medicalCase.IsLocked;
+            // P1-10: 用诊所本地日界判定 IsLocked（非 UTC），与前后端一致
+            var isLockedEdit = _timeService.IsLocked(medicalCase);
             var isForeignEdit = medicalCase.UserId != currentUserId;
             if ((isPrintedEdit || isCompletedEdit || isLockedEdit || isForeignEdit) && string.IsNullOrWhiteSpace(request.EditReason))
             {

@@ -143,11 +143,13 @@ stateDiagram-v2
 
 ### 编辑锁定规则
 
-**锁定条件**（计算属性，无后台任务）：
+**锁定条件**（计算属性，无后台任务；P1-10 修正日界为诊所本地时间）：
 
 ```
-IsLocked = IsCompleted && (CompletedAt.Date < Today)
+IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 ```
+
+> **P1-10（2026-08-21）**：日界 = 诊所本地时间（`Asia/Shanghai`，见 `LYBT.Entities.MedicalCases.MedicalCaseTime` / `MedicalCaseDetailDto.IsLocked`），非 UTC 非服务器本地时区。修复历史问题：北京 00-08 时 UTC 已跨日而本地未跨日时误锁 Completed 医案。`MedicalCaseCommandService.ValidateEditReason` 经 `IMedicalCaseTimeService.IsLocked` 强锁（API 层 422 兜底）。
 
 **锁定后行为**：
 
