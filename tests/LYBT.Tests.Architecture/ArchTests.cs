@@ -1,3 +1,4 @@
+// P2-19-1 P07白名单已评估：LocalWebAPI 6引用在TestAssemblies.Server未含时被掩盖，已在P07显式豁免
 using System.Reflection;
 using NetArchTest.Rules;
 

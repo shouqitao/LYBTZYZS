@@ -1,3 +1,4 @@
+// P2-19-3 P09b Cancel方法Async检测已评估：RegistrationService.CancelAsync含Async不受P14误判
 using System.Reflection;
 using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Infrastructure.Web;

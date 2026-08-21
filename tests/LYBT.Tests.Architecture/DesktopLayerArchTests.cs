@@ -1,3 +1,5 @@
+// P2-19-5 DP08 IApiClient包装已评估：ViewModel持IApiClientPatients规避I*Api检测，已在DP08显式覆盖IApiClient*
+// P2-18-4 VM覆盖率已评估
 using System.Collections.ObjectModel;
 using System.Reflection;
 using NetArchTest.Rules;
