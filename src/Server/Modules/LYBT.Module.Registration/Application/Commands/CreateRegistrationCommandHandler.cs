@@ -63,6 +63,11 @@ public sealed class CreateRegistrationCommandHandler
         if (hasSameDayWaiting)
             return Result<RegistrationDetailDto>.Failure(ErrorCode.InvalidRequest, "该患者今日已有待诊挂号，请勿重复挂号");
 
+        // P1-21：患者仅一待就诊挂号（Waiting/InProgress 跨日亦拦截，防重复排队）
+        var hasPending = await _repository.HasPendingAsync(dto.PatientId, cancellationToken);
+        if (hasPending)
+            return Result<RegistrationDetailDto>.Failure(ErrorCode.InvalidRequest, "患者已有待就诊挂号");
+
         var maxQueueNumber = await _repository.GetTodayMaxQueueNumberAsync(cancellationToken);
 
         var registration = new Registration

@@ -116,6 +116,16 @@ public class RegistrationRepository : IRegistrationRepository
                 && r.CreatedAt.Date == today, cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public async Task<bool> HasPendingAsync(Guid patientId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Registrations
+            .AsNoTracking()
+            .AnyAsync(r => !r.IsDeleted
+                && r.PatientId == patientId
+                && (r.Status == RegistrationStatus.Waiting || r.Status == RegistrationStatus.InProgress), cancellationToken);
+    }
+
     public async Task<int> GetTodayMaxQueueNumberAsync(CancellationToken cancellationToken = default)
     {
         var today = DateTime.UtcNow.Date;

@@ -56,6 +56,11 @@ public interface IRegistrationRepository
     Task<bool> HasSameDayWaitingAsync(Guid patientId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 患者是否已有待就诊挂号（P1-21：Waiting/InProgress 单例保护，跨日亦拦截）
+    /// </summary>
+    Task<bool> HasPendingAsync(Guid patientId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 新增挂号记录
     /// </summary>
     Task AddAsync(Registration registration, CancellationToken cancellationToken = default);
