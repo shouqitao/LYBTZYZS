@@ -20,36 +20,9 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// ILocalAuthApi + ILocalUserApi (local, raw DTOs).</para>
 /// <para>Remote methods return ApiResponse&lt;T&gt;; local-only methods return raw DTOs.</para>
 /// </remarks>
-public interface IApiClientIdentity : IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>
+public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
 {
-    // ========== 认证端点（原 IApiClientAuth，路由 /api/v1/auth/*） ==========
-
-    /// <summary>
-    /// 用户登录认证。
-    /// </summary>
-    /// <param name="loginRequest">Login request containing username, password, and remember-me option.</param>
-    /// <returns>Login response with JWT token, user info, and expiration.</returns>
-    Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest);
-
-    /// <summary>
-    /// 使用存储的 AutoLoginToken 自动登录。
-    /// </summary>
-    /// <param name="request">Auto-login request containing username and AutoLoginToken.</param>
-    /// <returns>Login response with JWT token, user info, and new AutoLoginToken.</returns>
-    Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request);
-
-    /// <summary>
-    /// 用户登出——使当前 JWT 令牌失效。
-    /// </summary>
-    /// <param name="logoutRequest">Logout request information.</param>
-    Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest);
-
-    /// <summary>
-    /// 使用刷新令牌刷新访问令牌。
-    /// </summary>
-    /// <param name="request">Refresh token request.</param>
-    /// <returns>New token pair (AccessToken + RefreshToken).</returns>
-    Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request);
+    // ========== 认证扩展端点（IAuthApiClient 含 Login/LoginWithAutoToken/Logout/RefreshToken） ==========
 
     /// <summary>
     /// 从 Authorization 头校验令牌（GET 方法）。
@@ -64,73 +37,7 @@ public interface IApiClientIdentity : IEntityApiSegment<UserListDto, UserDetailD
     /// <returns>Health check response.</returns>
     Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
 
-    // ========== 用户管理端点（原 IApiClientUsers，路由 /api/v1/users/*） ==========
-
-    /// <summary>
-    /// 分页获取用户列表。
-    /// </summary>
-    /// <param name="page">Page number (default 1).</param>
-    /// <param name="pageSize">Page size (default 20).</param>
-    /// <param name="keyword">Search keyword (optional).</param>
-    Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(
-        int page = 1,
-        int pageSize = 20,
-        string? keyword = null);
-
-    /// <summary>
-    /// 按 ID 获取用户详情。
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id);
-
-    /// <summary>
-    /// 创建新用户。
-    /// </summary>
-    /// <param name="request">User input data.</param>
-    Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request);
-
-    /// <summary>
-    /// 更新现有用户。
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="request">User input data.</param>
-    Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request);
-
-    /// <summary>
-    /// 删除用户（软删除）。
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    Task<ApiResponse> DeleteUserAsync(Guid id);
-
-    /// <summary>
-    /// 修改用户个人资料。
-    /// Issue #1891
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="request">Profile change data.</param>
-    Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request);
-
-    /// <summary>
-    /// 修改用户密码。
-    /// Issue #1887-1892
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="request">Password change request.</param>
-    Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request);
-
-    /// <summary>
-    /// 管理员重置用户密码。
-    /// Issue #1910
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    /// <param name="request">Reset password request.</param>
-    Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request);
-
-    /// <summary>
-    /// 切换用户状态（启用/禁用）。
-    /// </summary>
-    /// <param name="id">User ID.</param>
-    Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id);
+    // ========== 用户管理扩展端点（IUserManagementApiClient 含 CRUD/Profile/ToggleStatus） ==========
 
     /// <summary>
     /// 批量删除用户。
