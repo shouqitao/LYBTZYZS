@@ -39,7 +39,7 @@ namespace LYBT.Entities.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>证件号码 - Epic 05-P0-03: 敏感数据，需加密存储</summary>
+        /// <summary>证件号码 - Epic 05-P0-03: 敏感数据，需加密存储 - P2-10-2 评估：当前 GetById 返回明文给 DoctorOrAdminOrReceptionist，字段级脱敏（Receptionist 导出受限）为 v2.0，前台批量导出已在 Controller 层限 AdminOrSuperAdmin。</summary>
         [StringLength(50)]
         [DisplayName("证件号码")]
 

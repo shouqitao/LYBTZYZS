@@ -107,7 +107,7 @@ public class DatabaseInitializationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据库初始化失败");
-            throw;
+            throw; // P2-7-5 已确认：异常直接 throw 不吞没 ProductionConfigurationException，Program 层将 Fatal 退出，健康探针不误导为 200。
         }
     }
 

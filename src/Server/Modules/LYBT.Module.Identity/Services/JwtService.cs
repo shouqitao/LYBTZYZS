@@ -18,6 +18,7 @@ namespace LYBT.Module.Identity.Services;
 /// 简化的JWT服务实现
 /// 遵循适度设计原则，仅提供必要的认证功能
 /// unify-configuration-system: 迁移到 LYBT.Shared.Configuration
+/// P2-7-2 评估：Token Family 旋转与重放检测属 v2.0（09-security-architecture.md 已标 🧲），当前仅 Jti 未落地 FamilyId，符合 D3 B+ 分阶段交付。
 /// </summary>
 public class JwtService : IJwtService
 {

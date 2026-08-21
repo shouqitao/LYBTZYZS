@@ -55,6 +55,15 @@ namespace LYBT.WebAPI.Middleware
                     EnsureClaim(claims, existingClaims, "roles", role);
                 }
 
+                // P2-7-7 IsSysAdmin 大小写容错：本地签发 "true" 小写，远程策略 RequireClaim 大小写敏感，归一化为小写 "true"
+                var isSysAdminClaim = existingClaims.FirstOrDefault(c => c.Type == "IsSysAdmin");
+                if (isSysAdminClaim != null && !string.Equals(isSysAdminClaim.Value, "true", StringComparison.Ordinal))
+                {
+                    // 若已存在非小写值，额外补充小写等价声明（Policy 比对大小写敏感，补充后两种形式均命中）
+                    if (!existingClaims.Any(c => c.Type == "IsSysAdmin" && c.Value == "true"))
+                        claims.Add(new Claim("IsSysAdmin", "true"));
+                }
+
                 // 如果有新的claims需要添加，创建新的ClaimsPrincipal
                 if (claims.Any())
                 {
