@@ -502,3 +502,5 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 <!-- F6 P3 batch: P3-7-... 已评估 -->
 
 <!-- F7 P3 batch: remaining P3 已评估 -->
+
+<!-- F8 P3 final 3 已评估，P2+P3 103项全部闭环 -->
