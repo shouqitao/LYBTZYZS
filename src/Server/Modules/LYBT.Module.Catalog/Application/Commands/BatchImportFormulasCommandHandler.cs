@@ -62,6 +62,7 @@ public class BatchImportFormulasCommandHandler(
                     continue;
                 }
 
+                // P1-15/P1-8：ExistsByNameAsync 带 [IsDeleted]=0 过滤，已软删同名视为不存在（过滤唯一索引允许重建）
                 if (await repository.ExistsByNameAsync(item.Name, null, cancellationToken))
                 {
                     result.FailureCount++;

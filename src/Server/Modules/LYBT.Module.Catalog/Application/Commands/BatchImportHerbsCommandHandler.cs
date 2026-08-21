@@ -63,13 +63,23 @@ public class BatchImportHerbsCommandHandler : IRequestHandler<BatchImportHerbsCo
                             var existingHerb = await _herbRepository.GetByNameAsync(dto.Name, cancellationToken);
                             if (existingHerb != null)
                             {
-                                existingHerb.UpdateProfile(
-                                    dto.Name, dto.Unit, dto.Price, dto.PinYinCode,
-                                    dto.Category, dto.Properties, dto.Origin, dto.Spec,
-                                    dto.CostPrice, dto.Effect, dto.Usage, dto.Remark,
-                                    request.CurrentUserId);
-                                await _herbRepository.UpdateAsync(existingHerb, cancellationToken);
-                                result.SuccessCount++;
+                                // P1-15：已软删的同名记录视为不存在，不复活旧审计链，直接新建（过滤唯一索引允许）
+                                if (existingHerb.IsDeleted)
+                                {
+                                    var newEntity = CatalogDtoMapper.ToEntity(dto, request.CurrentUserId);
+                                    await _herbRepository.AddAsync(newEntity, cancellationToken);
+                                    result.SuccessCount++;
+                                }
+                                else
+                                {
+                                    existingHerb.UpdateProfile(
+                                        dto.Name, dto.Unit, dto.Price, dto.PinYinCode,
+                                        dto.Category, dto.Properties, dto.Origin, dto.Spec,
+                                        dto.CostPrice, dto.Effect, dto.Usage, dto.Remark,
+                                        request.CurrentUserId);
+                                    await _herbRepository.UpdateAsync(existingHerb, cancellationToken);
+                                    result.SuccessCount++;
+                                }
                             }
                             continue;
 

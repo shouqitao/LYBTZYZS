@@ -163,6 +163,7 @@
 **业务规则**:
 
 1. 导入路径：`BatchImportAsync` 接收客户端已解析的 DTO 列表（JSON）——**唯一路径**（2026-08-13 移除服务端 Excel 解析）
+2. **软删隔离（P1-15，2026-08-21）**：同名药材若已软删（`IsDeleted=true`）视为“不存在”，Update 策略不复活旧记录而新建（新 `Guid` 新 `CreatedAt`，旧记录保持删除），过滤唯一索引 `[IsDeleted]=0` 允许重建
 2. `DuplicateStrategy` 处理重名药材：`Skip` 跳过保留原记录 / `Update` 用新数据覆盖 / `Error` 遇到重复立即报错终止
 3. 单次上限 10000 条，超出拒绝
 4. 导入时自动生成 PinyinAbbreviation
