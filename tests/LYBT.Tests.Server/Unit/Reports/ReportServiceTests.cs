@@ -120,7 +120,7 @@ public class ReportServiceTests : IDisposable
             CreatePrescription(case1.Id, CreateItem("黄芪", 10, 25m)), // 250
             CreatePrescription(case2.Id, CreateItem("甘草", 10, 10m))); // 100
 
-        var result = await _sut.GetIncomeTrendAsync(Day1, Day2, ReportGranularity.Day, CancellationToken.None);
+        var result = await _sut.GetIncomeTrendAsync(Day1, Day2, ReportGranularity.Day, null, CancellationToken.None);
 
         result.Labels.Should().Equal("08-01", "08-02");
         result.Registration.Should().Equal(50m, 30m);
@@ -141,7 +141,7 @@ public class ReportServiceTests : IDisposable
         await AddCaseAsync(case1, monday);
         await AddAsync(CreatePrescription(case1.Id, CreateItem("黄芪", 10, 10m))); // 100
 
-        var result = await _sut.GetIncomeTrendAsync(monday, sunday, ReportGranularity.Week, CancellationToken.None);
+        var result = await _sut.GetIncomeTrendAsync(monday, sunday, ReportGranularity.Week, null, CancellationToken.None);
 
         result.Labels.Should().Equal("08-03");
         result.Registration.Should().Equal(70m);
@@ -156,7 +156,7 @@ public class ReportServiceTests : IDisposable
         var end = new DateTime(2026, 8, 31);
         await AddRegistrationAsync(CreateRegistration(Guid.NewGuid(), 50), new DateTime(2026, 8, 15));
 
-        var result = await _sut.GetIncomeTrendAsync(start, end, ReportGranularity.Month, CancellationToken.None);
+        var result = await _sut.GetIncomeTrendAsync(start, end, ReportGranularity.Month, null, CancellationToken.None);
 
         result.Labels.Should().Equal("2026-08");
         result.Registration.Should().Equal(50m);
@@ -171,7 +171,7 @@ public class ReportServiceTests : IDisposable
         await AddCaseAsync(CreateCase("张医生"), Day1);
         await AddCaseAsync(CreateCase("李医生"), Day3);
 
-        var result = await _sut.GetConsultationTrendAsync(Day1, Day3, ReportGranularity.Day, CancellationToken.None);
+        var result = await _sut.GetConsultationTrendAsync(Day1, Day3, ReportGranularity.Day, null, CancellationToken.None);
 
         result.Labels.Should().Equal("08-01", "08-02", "08-03");
         result.Counts.Should().Equal(2, 0, 1);
@@ -189,7 +189,7 @@ public class ReportServiceTests : IDisposable
             CreatePrescription(caseA1.Id, CreateItem("黄芪", 10, 10m), CreateItem("甘草", 10, 5m)), // 150
             CreatePrescription(caseA2.Id, CreateItem("当归", 10, 5m))); // 50
 
-        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day2, CancellationToken.None);
+        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day2, null, CancellationToken.None);
 
         result.Should().ContainSingle();
         var doctor = result[0];
@@ -205,7 +205,7 @@ public class ReportServiceTests : IDisposable
         var case1 = CreateCase("张医生");
         await AddCaseAsync(case1, Day1);
 
-        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day1, CancellationToken.None);
+        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day1, null, CancellationToken.None);
 
         var doctor = result.Single();
         doctor.MedicineFeeTotal.Should().Be(0);
@@ -233,7 +233,7 @@ public class ReportServiceTests : IDisposable
         p2First.PatientId = p2;
         await AddCaseAsync(p2First, new DateTime(2026, 8, 6));
 
-        var result = await _sut.GetPatientFlowAsync(monday, sunday, ReportGranularity.Week, CancellationToken.None);
+        var result = await _sut.GetPatientFlowAsync(monday, sunday, ReportGranularity.Week, null, CancellationToken.None);
 
         result.Labels.Should().Equal("08-03");
         result.NewPatients.Should().Equal(2);
@@ -251,7 +251,7 @@ public class ReportServiceTests : IDisposable
             CreatePrescription(case1.Id, CreateItem("甘草", 10, 1m), CreateItem("黄芪", 10, 1m)),
             CreatePrescription(case2.Id, CreateItem("当归", 10, 1m)));
 
-        var result = await _sut.GetHerbRankingAsync(Day1, Day1, 1, CancellationToken.None);
+        var result = await _sut.GetHerbRankingAsync(Day1, Day1, 1, null, CancellationToken.None);
 
         result.Should().ContainSingle();
         result[0].HerbName.Should().Be("甘草");

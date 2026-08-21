@@ -23,6 +23,9 @@ public class RegistrationConfiguration : BaseEntityConfiguration<Registration>
         // 索引: 按医生查询挂号队列
         builder.HasIndex(r => r.DoctorId);
 
+        // P1-23: 报表行级过滤（Doctor 仅本人 + 时间范围）复合索引
+        builder.HasIndex(r => new { r.DoctorId, r.CreatedAt }).HasDatabaseName("IX_Registrations_DoctorId_CreatedAt");
+
         // 索引: 按状态筛选 (Waiting 队列查询高频)
         builder.HasIndex(r => r.Status);
 

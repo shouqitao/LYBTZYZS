@@ -14,6 +14,7 @@
 | 表 | 行级安全 | 实现方式 |
 | --- | :---: | ------ |
 | MedicalCases | ✅ | Doctor 仅查自己创建的（代码检查） |
+| Reports | ✅ | Doctor 仅本人统计（P1-23，2026-08-21），Admin/SuperAdmin 全量（`ReportsController.GetDoctorFilter` 下推 Repository） |
 | Consultations | ✅ | 通过 MedicalCase 聚合根间接访问 |
 | Prescriptions | ✅ | 通过 MedicalCase 聚合根间接访问 |
 | Users | ✅ | Admin 仅管理非 SuperAdmin 用户 |

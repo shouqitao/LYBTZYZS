@@ -29,6 +29,13 @@ public class ReportsController : BaseApiController
         _reportService = reportService;
     }
 
+    /// <summary>P1-23 行级权限：Doctor 仅看本人报表（filter=ownId），Admin 全量（null）</summary>
+    private Guid? GetDoctorFilter()
+    {
+        var (operatorId, _, operatorRole) = GetOperator();
+        return operatorRole == LYBT.Shared.Models.Enums.UserRole.Doctor ? operatorId : null;
+    }
+
     /// <summary>
     /// 获取日收入统计
     /// </summary>
@@ -45,7 +52,7 @@ public class ReportsController : BaseApiController
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
 
-        var dto = await _reportService.GetDailyIncomeAsync(start, end, cancellationToken);
+        var dto = await _reportService.GetDailyIncomeAsync(start, end, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -66,7 +73,7 @@ public class ReportsController : BaseApiController
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
 
-        var dto = await _reportService.GetDailyConsultationsAsync(start, end, cancellationToken);
+        var dto = await _reportService.GetDailyConsultationsAsync(start, end, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -87,7 +94,7 @@ public class ReportsController : BaseApiController
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
 
-        var dto = await _reportService.GetDailyHerbUsageAsync(start, end, cancellationToken);
+        var dto = await _reportService.GetDailyHerbUsageAsync(start, end, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -106,7 +113,7 @@ public class ReportsController : BaseApiController
         var end = endDate ?? DateTime.Today;
         var start = startDate ?? end.AddDays(-29);
 
-        var dto = await _reportService.GetIncomeTrendAsync(start, end, granularity, cancellationToken);
+        var dto = await _reportService.GetIncomeTrendAsync(start, end, granularity, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -125,7 +132,7 @@ public class ReportsController : BaseApiController
         var end = endDate ?? DateTime.Today;
         var start = startDate ?? end.AddDays(-29);
 
-        var dto = await _reportService.GetConsultationTrendAsync(start, end, granularity, cancellationToken);
+        var dto = await _reportService.GetConsultationTrendAsync(start, end, granularity, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -146,7 +153,7 @@ public class ReportsController : BaseApiController
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
 
-        var dto = await _reportService.GetDoctorPerformanceAsync(start, end, cancellationToken);
+        var dto = await _reportService.GetDoctorPerformanceAsync(start, end, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -168,7 +175,7 @@ public class ReportsController : BaseApiController
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
 
-        var dto = await _reportService.GetHerbRankingAsync(start, end, top, cancellationToken);
+        var dto = await _reportService.GetHerbRankingAsync(start, end, top, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }
@@ -187,7 +194,7 @@ public class ReportsController : BaseApiController
         var end = endDate ?? DateTime.Today;
         var start = startDate ?? end.AddDays(-29);
 
-        var dto = await _reportService.GetPatientFlowAsync(start, end, granularity, cancellationToken);
+        var dto = await _reportService.GetPatientFlowAsync(start, end, granularity, GetDoctorFilter(), cancellationToken);
 
         return Success(dto, "查询成功");
     }

@@ -137,7 +137,7 @@ public class ReportRepositoryTests : IDisposable
         await AddRegistrationAsync(reg3, Day2);
         await AddRegistrationAsync(reg4, Day1);
 
-        var result = await _sut.GetRegistrationFeeByDayAsync(Day1, Day2, CancellationToken.None);
+        var result = await _sut.GetRegistrationFeeByDayAsync(Day1, Day2, null, CancellationToken.None);
 
         result.Should().HaveCount(2);
         result.Single(x => x.Date == Day1).Value.Should().Be(50);
@@ -163,7 +163,7 @@ public class ReportRepositoryTests : IDisposable
         var p3 = CreatePrescription(active.Id, CreateItem("人参", 10, 100m)); // 应排除
         await AddAsync(p1, p2, p3);
 
-        var result = await _sut.GetMedicineFeeByDayAsync(Day1, Day2, CancellationToken.None);
+        var result = await _sut.GetMedicineFeeByDayAsync(Day1, Day2, null, CancellationToken.None);
 
         result.Should().HaveCount(2);
         result.Single(x => x.Date == Day1).Value.Should().Be(250);
@@ -179,7 +179,7 @@ public class ReportRepositoryTests : IDisposable
         await AddCaseAsync(CreateCase("王医生", MedicalCaseStatus.Active), Day2); // 未完成不计
         await AddCaseAsync(CreateCase("赵医生", isDeleted: true), Day3); // 已删除不计
 
-        var result = await _sut.GetConsultationCountByDayAsync(Day1, Day3, CancellationToken.None);
+        var result = await _sut.GetConsultationCountByDayAsync(Day1, Day3, null, CancellationToken.None);
 
         result.Should().HaveCount(2);
         result.Single(x => x.Date == Day1).Count.Should().Be(2);
@@ -210,7 +210,7 @@ public class ReportRepositoryTests : IDisposable
         var pB = CreatePrescription(caseB.Id, CreateItem("人参", 5, 5m)); // 25
         await AddAsync(pA1, pA2, pB);
 
-        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day2, CancellationToken.None);
+        var result = await _sut.GetDoctorPerformanceAsync(Day1, Day2, null, CancellationToken.None);
 
         result.Should().HaveCount(3);
 
@@ -256,7 +256,7 @@ public class ReportRepositoryTests : IDisposable
         var p3 = CreatePrescription(case3.Id, CreateItem("黄芪", 10, 1m));
         await AddAsync(p1, p2, p3);
 
-        var result = await _sut.GetHerbRankingAsync(Day1, Day2, 2, CancellationToken.None);
+        var result = await _sut.GetHerbRankingAsync(Day1, Day2, 2, null, CancellationToken.None);
 
         result.Should().HaveCount(2);
         result[0].HerbName.Should().Be("甘草");
@@ -294,7 +294,7 @@ public class ReportRepositoryTests : IDisposable
         p3Only.PatientId = patient3;
         await AddCaseAsync(p3Only, Day2);
 
-        var result = await _sut.GetPatientFlowByDayAsync(Day1, Day3, CancellationToken.None);
+        var result = await _sut.GetPatientFlowByDayAsync(Day1, Day3, null, CancellationToken.None);
 
         result.Should().HaveCount(3);
         result.Single(x => x.Date == Day1).NewPatients.Should().Be(1);

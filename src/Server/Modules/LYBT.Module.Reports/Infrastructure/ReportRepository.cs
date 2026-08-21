@@ -22,12 +22,15 @@ public class ReportRepository : IReportRepository
     public async Task<decimal> GetRegistrationFeeTotalAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
         return await _context
             .Registrations.Where(r =>
-                !r.IsDeleted && r.CreatedAt >= startDate && r.CreatedAt < endDate.AddDays(1)
+                !r.IsDeleted
+                && r.CreatedAt >= startDate && r.CreatedAt < endDate.AddDays(1)
+                && (!doctorIdFilter.HasValue || r.DoctorId == doctorIdFilter.Value)
             )
             .SumAsync(r => r.RegistrationFee, cancellationToken);
     }
@@ -36,6 +39,7 @@ public class ReportRepository : IReportRepository
     public async Task<decimal> GetMedicineFeeTotalAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -45,6 +49,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             )
             .Select(mc => mc.Id)
             .ToListAsync(cancellationToken);
@@ -62,6 +67,7 @@ public class ReportRepository : IReportRepository
     public async Task<int> GetConsultationCountAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -70,7 +76,8 @@ public class ReportRepository : IReportRepository
                 !mc.IsDeleted
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
-                && mc.CaseStatus == MedicalCaseStatus.Completed,
+                && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value),
             cancellationToken
         );
     }
@@ -79,6 +86,7 @@ public class ReportRepository : IReportRepository
     public async Task<List<DoctorCountDto>> GetConsultationsByDoctorAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -88,6 +96,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             )
             .GroupBy(mc => mc.DoctorName)
             .Select(g => new DoctorCountDto { DoctorName = g.Key, Count = g.Count() })
@@ -99,10 +108,11 @@ public class ReportRepository : IReportRepository
     public async Task<List<HerbUsageItemDto>> GetHerbUsageAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await HerbUsageQuery(startDate, endDate)
+        return await HerbUsageQuery(startDate, endDate, doctorIdFilter)
             .OrderByDescending(h => h.UsageCount)
             .ToListAsync(cancellationToken);
     }
@@ -111,12 +121,14 @@ public class ReportRepository : IReportRepository
     public async Task<List<ReportDayValueDto>> GetRegistrationFeeByDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
         return await _context
             .Registrations.Where(r =>
                 !r.IsDeleted && r.CreatedAt >= startDate && r.CreatedAt < endDate.AddDays(1)
+                && (!doctorIdFilter.HasValue || r.DoctorId == doctorIdFilter.Value)
             )
             .GroupBy(r => r.CreatedAt.Date)
             .Select(g => new ReportDayValueDto(g.Key, g.Sum(r => r.RegistrationFee)))
@@ -127,6 +139,7 @@ public class ReportRepository : IReportRepository
     public async Task<List<ReportDayValueDto>> GetMedicineFeeByDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -137,6 +150,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             join p in _context.Prescriptions on mc.Id equals p.MedicalCaseId
             where !p.IsDeleted
             join pi in _context.PrescriptionItems on p.Id equals pi.PrescriptionId
@@ -149,6 +163,7 @@ public class ReportRepository : IReportRepository
     public async Task<List<ReportDayCountDto>> GetConsultationCountByDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -158,6 +173,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             )
             .GroupBy(mc => mc.CreatedAt.Date)
             .Select(g => new ReportDayCountDto(g.Key, g.Count()))
@@ -168,6 +184,7 @@ public class ReportRepository : IReportRepository
     public async Task<List<DoctorPerformancePointDto>> GetDoctorPerformanceAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -176,6 +193,7 @@ public class ReportRepository : IReportRepository
             && mc.CreatedAt >= startDate
             && mc.CreatedAt < endDate.AddDays(1)
             && mc.CaseStatus == MedicalCaseStatus.Completed
+            && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
         );
 
         // 单次查询（P1-2 2026-08-14）: 以医案为驱动按医生分组，各指标用相关子查询聚合（挂号费/药费/处方数）——
@@ -226,10 +244,11 @@ public class ReportRepository : IReportRepository
         DateTime startDate,
         DateTime endDate,
         int top,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await HerbUsageQuery(startDate, endDate)
+        return await HerbUsageQuery(startDate, endDate, doctorIdFilter)
             .OrderByDescending(h => h.UsageCount)
             .Take(top)
             .ToListAsync(cancellationToken);
@@ -239,6 +258,7 @@ public class ReportRepository : IReportRepository
     public async Task<List<PatientFlowPointDto>> GetPatientFlowByDayAsync(
         DateTime startDate,
         DateTime endDate,
+        Guid? doctorIdFilter = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -248,6 +268,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             )
             .Select(mc => new { mc.PatientId, Day = mc.CreatedAt.Date })
             .Distinct()
@@ -281,7 +302,7 @@ public class ReportRepository : IReportRepository
     /// <summary>
     /// 药材使用聚合公共查询（排行/日统计共用，聚合下推数据库执行）。
     /// </summary>
-    private IQueryable<HerbUsageItemDto> HerbUsageQuery(DateTime startDate, DateTime endDate)
+    private IQueryable<HerbUsageItemDto> HerbUsageQuery(DateTime startDate, DateTime endDate, Guid? doctorIdFilter = null)
     {
         return from mc in _context.MedicalCases
             where
@@ -289,6 +310,7 @@ public class ReportRepository : IReportRepository
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
+                && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
             join p in _context.Prescriptions on mc.Id equals p.MedicalCaseId
             where !p.IsDeleted
             join pi in _context.PrescriptionItems on p.Id equals pi.PrescriptionId

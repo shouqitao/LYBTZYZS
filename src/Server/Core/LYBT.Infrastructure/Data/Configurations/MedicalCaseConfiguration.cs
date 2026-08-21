@@ -38,6 +38,10 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         builder.HasIndex(m => m.UserId)
               .HasDatabaseName("IX_MedicalCases_UserId");
 
+        // P1-23: 报表行级过滤（Doctor 仅本人 + 时间范围）复合索引
+        builder.HasIndex(m => new { m.UserId, m.CreatedAt })
+              .HasDatabaseName("IX_MedicalCases_UserId_CreatedAt");
+
         // CODE-05/06: MedicalCase -> Patient FK (DDD 跨聚合 ID 引用，无导航属性)
         builder.HasOne<Patient>()
               .WithMany()
