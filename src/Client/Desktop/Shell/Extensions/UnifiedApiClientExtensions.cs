@@ -76,9 +76,13 @@ public static class UnifiedApiClientExtensions
             var credentialVault = container.Resolve<ICredentialVault>();
 
             var apiClientOptions = Options.Create(apiOptions);
+            // T5.4: 优先通过 IHttpClientFactory（Polly + 15s Timeout），回退为手工链（无工厂时）
+            IHttpClientFactory? httpClientFactory = null;
+            try { if (container.IsRegistered<IHttpClientFactory>()) httpClientFactory = container.Resolve<IHttpClientFactory>(); } catch { }
             var tokenRefreshHandler = new TokenRefreshHandler(
                 tokenStorage,
                 credentialVault,
+                httpClientFactory,
                 apiClientOptions,
                 container.Resolve<ILogger<TokenRefreshHandler>>(),
                 userActivityState: null

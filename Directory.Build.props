@@ -16,7 +16,7 @@
     <!-- P2-1-4 本地与 CI 一致：告警即错误（0/0 门禁） -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
-    <WarningsNotAsErrors />
+    <WarningsNotAsErrors>CS0618</WarningsNotAsErrors>
 
     <!-- 抑制XML文档注释警告 - Issue #789 -->
     <!-- CS1591: 缺少公共可见类型或成员的XML注释 -->

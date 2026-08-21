@@ -46,6 +46,7 @@ namespace LYBT.Desktop.Foundation.Http
         public TokenRefreshHandler(
             ITokenStorageService tokenStorage,
             ICredentialVault credentialVault,
+            IHttpClientFactory? httpClientFactory,
             IOptions<ApiClientOptions> apiOptions,
             ILogger<TokenRefreshHandler> logger,
             IUserActivityState? userActivityState = null,
@@ -58,21 +59,43 @@ namespace LYBT.Desktop.Foundation.Http
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
             _eventAggregator = eventAggregator;
 
-            // 创建专用HttpClient用于RefreshToken调用（不包含TokenRefreshHandler，避免循环依赖）
-            var apiBaseUrl = _apiOptions.BaseUrl;
-            var ignoreSslErrors = _apiOptions.IgnoreSslErrors;
-
-            var httpHandler = new HttpClientHandler();
-            if (ignoreSslErrors)
+            // T5.4: 优先使用 IHttpClientFactory（Polly + 复用），回退为手工 HttpClient（循环依赖避免 path 由调用方注入工厂时为空）
+            if (httpClientFactory != null)
             {
-                httpHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                _refreshHttpClient = httpClientFactory.CreateClient("RefreshToken");
+                _refreshHttpClient.BaseAddress = new Uri(_apiOptions.BaseUrl);
+                _refreshHttpClient.Timeout = TimeSpan.FromSeconds(30);
             }
-
-            _refreshHttpClient = new HttpClient(httpHandler)
+            else
             {
-                BaseAddress = new Uri(apiBaseUrl),
-                Timeout = TimeSpan.FromSeconds(30)
-            };
+                // 回退：手工 HttpClient（仅旧工厂链未注入工厂时）
+                var apiBaseUrl = _apiOptions.BaseUrl;
+                var ignoreSslErrors = _apiOptions.IgnoreSslErrors;
+
+                var httpHandler = new HttpClientHandler();
+                if (ignoreSslErrors)
+                {
+                    httpHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                }
+
+                _refreshHttpClient = new HttpClient(httpHandler)
+                {
+                    BaseAddress = new Uri(apiBaseUrl),
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
+            }
+        }
+
+        [Obsolete("Use ctor with IHttpClientFactory", false)]
+        public TokenRefreshHandler(
+            ITokenStorageService tokenStorage,
+            ICredentialVault credentialVault,
+            IOptions<ApiClientOptions> apiOptions,
+            ILogger<TokenRefreshHandler> logger,
+            IUserActivityState? userActivityState = null,
+            IEventAggregator? eventAggregator = null)
+            : this(tokenStorage, credentialVault, null, apiOptions, logger, userActivityState, eventAggregator)
+        {
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
