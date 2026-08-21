@@ -42,6 +42,9 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         builder.HasIndex(m => new { m.UserId, m.CreatedAt })
               .HasDatabaseName("IX_MedicalCases_UserId_CreatedAt");
 
+        // P2-11-1 报表时间范围索引：无 User 过滤时按 CreatedAt Range（日收入/处方趋势）
+        builder.HasIndex(m => m.CreatedAt).HasDatabaseName("IX_MedicalCases_CreatedAt");
+
         // CODE-05/06: MedicalCase -> Patient FK (DDD 跨聚合 ID 引用，无导航属性)
         builder.HasOne<Patient>()
               .WithMany()

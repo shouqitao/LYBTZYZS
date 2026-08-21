@@ -37,6 +37,8 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private readonly IDialogService? _dialogService;
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
     private CancellationTokenSource? _timerCts;
+    // P2-14-7 SignalR 退订：保留 EventAggregator 订阅 token 以便 Destruct 时取消
+    private SubscriptionToken? _registrationRefreshedToken;
 
     #region Observable Properties
 
@@ -90,10 +92,11 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _signalRClient = signalRClient ?? throw new ArgumentNullException(nameof(signalRClient));
         _dialogService = dialogService;
+        _eventAggregatorAccessor = eventAggregator;
         PageTitle = "挂号队列";
 
-        // US-REG-008: SignalR 推送 / 降级轮询触发时刷新队列
-        eventAggregator.GetEvent<RegistrationRefreshedEvent>().Subscribe(OnRegistrationRefreshed);
+        // US-REG-008: SignalR 推送 / 降级轮询触发时刷新队列 - P2-14-7 保留 token 便于退订（防已释放 VM 仍回调）
+        _registrationRefreshedToken = eventAggregator.GetEvent<RegistrationRefreshedEvent>().Subscribe(OnRegistrationRefreshed);
 
         var currentRole = SessionManager.CurrentUser?.Role;
         IsReceptionist = currentRole == UserRole.Receptionist || currentRole == UserRole.Admin || currentRole == UserRole.SuperAdmin;
@@ -134,6 +137,24 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         StopAutoRefresh();
         _ = _signalRClient.StopAsync();
     }
+
+    protected override void OnDisposing()
+    {
+        // P2-14-7 退订：ViewModel 销毁时取消 EventAggregator 强引用，避免 Dispatcher 回调已释放实例
+        if (_registrationRefreshedToken != null)
+        {
+            try { _eventAggregatorAccessor?.GetEvent<RegistrationRefreshedEvent>().Unsubscribe(_registrationRefreshedToken); } catch { }
+            // 备用：直接 via Services.EventAggregator（NavigableViewModelBase 持有）
+            try { Services.EventAggregator.GetEvent<RegistrationRefreshedEvent>().Unsubscribe(OnRegistrationRefreshed); } catch { }
+        }
+        _ = _signalRClient.StopAsync();
+        StopAutoRefresh();
+        base.OnDisposing();
+    }
+
+    // 为 OnDisposing 退订提供 accessor（构造时已注入 eventAggregator，未存字段则通过 Services 兜底）
+    private IEventAggregator? _eventAggregatorAccessor;
+
 
     private void StartAutoRefresh()
     {

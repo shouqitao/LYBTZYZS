@@ -17,6 +17,8 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
     /// 继承NavigableViewModelBase获得导航、日志、EventAggregator、RegionManager等服务，
     /// 通过IMasterDetailServices组合获取列表/详情/分页/搜索等Master-Detail专用服务。
     /// 事件桥接和命令逻辑已提取到 ServiceEventBridge 和 MasterDetailCommandGroup。
+    /// P2-13-1 评估：继承链 MasterDetail→Navigable→ObservableObject 三层，已抽组合 IMasterDetailServices + MasterDetailCommandGroup + ServiceEventBridge，
+    /// 符合“组合优于继承”，暂不二次重构（若再增 CRUD 变体可进一步拆 MasterDetail 到纯组合不继承）。
     /// </summary>
     /// <typeparam name="TListItem">列表项类型</typeparam>
     /// <typeparam name="TDetail">详情模型类型</typeparam>
