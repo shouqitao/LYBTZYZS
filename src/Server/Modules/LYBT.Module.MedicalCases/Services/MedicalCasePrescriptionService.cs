@@ -8,6 +8,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// <summary>
     /// 医案处方服务 - Prescription 生命周期操作
     /// U3-1: 从 MedicalCaseCommandService 拆分，聚焦处方三态流程（标记/创建/更新/删除/复制）
+    /// P2-9-5 评估：历史处方价格已在 PrescriptionItem.UnitPrice 快照（创建时拷贝 Herb.Price），FormulaHerbItem 仅模板不快照，处方价格不受验方后续调价影响。
     /// </summary>
     public class MedicalCasePrescriptionService
     {

@@ -6,7 +6,7 @@ using MediatR;
 namespace LYBT.Module.Registrations.Application.Commands;
 
 /// <summary>
-/// 取消挂号处理器。
+/// 取消挂号处理器。P2-10-6 已在 Registration.Cancel() 校验 MedicalCaseId.HasValue 则不可取消（已接诊），08-registration.md 规则已在实体层守卫。
 /// </summary>
 public sealed class CancelRegistrationCommandHandler
     : IRequestHandler<CancelRegistrationCommand, Result>

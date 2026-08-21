@@ -289,6 +289,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 关闭医案（直接标记为Completed——P1-11 2026-08-14: 权限判断改方法级 Authorize，
         /// 强制关闭仅限 Admin/SuperAdmin——Doctor 无 force-close 权限 US-MC-012）
+        /// P2-12-4 评估：Doctor 完成自己医案走 CompleteAsync（Doctor 权限），此 close 为 Admin 强制关闭（跳过工作流），11-business-flows 与 13b 已对齐。
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPut("{id}/close")]

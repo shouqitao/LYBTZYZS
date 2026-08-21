@@ -448,6 +448,7 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 生成医案编号（格式：MC + 年月日 + 序号）
         /// T5-P2-11: 参考 LocalMedicalCaseDataSource.GenerateCaseNumber
+        /// P2-9-8 评估：CaseNumber 基于 DB CountByPrefix 递增，多实例下需单实例部署（01-deployment.md 已声明），K8s 扩容需分布式锁（v2.0 备选）。
         /// </summary>
         private async Task<string> GenerateCaseNumberAsync(CancellationToken cancellationToken = default)
         {

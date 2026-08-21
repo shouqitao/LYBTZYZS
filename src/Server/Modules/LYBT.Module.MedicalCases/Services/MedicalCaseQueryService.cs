@@ -16,6 +16,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// 医案查询服务实现 - 读操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：GetById, GetList, Search等查询操作
+    /// P2-9-6 评估：HasPrescription 为内存计算（Prescription!=null），列表查询先 ToListAsync 后 Mapper 内存计算，避免 IQueryable 投影翻译失败。
     /// </summary>
     public class MedicalCaseQueryService : BaseService<MedicalCase>, IMedicalCaseQueryService
     {
