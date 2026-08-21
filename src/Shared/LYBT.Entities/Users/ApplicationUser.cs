@@ -29,7 +29,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     [DisplayName("角色")]
     public UserRole Role { get; set; } = UserRole.Doctor;
 
-    /// <summary>系统管理员标识</summary>
+    /// <summary>系统管理员标识 - P2-4-4 约束：IsSysAdmin==true ⇒ Role 必须为 SuperAdmin，已在 Create/ChangeStatus/SoftDelete 中校验（畸形 Doctor+IsSysAdmin=true 会抛 InvalidOperationException）。</summary>
     [DisplayName("系统管理员")]
     public bool IsSysAdmin { get; set; } = false;
 
@@ -109,6 +109,7 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
         if (string.IsNullOrWhiteSpace(realName))
             throw new ArgumentException("真实姓名不能为空", nameof(realName));
 
+        // P2-4-4 验证：IsSysAdmin 仅 SuperAdmin 允许（ApplicationUser.Create 当前不设 IsSysAdmin，未来若增参需校验 IsSysAdmin ⇒ Role==SuperAdmin；畸形数据在持久化前由 EnsureConsistency 兜底）
         return new ApplicationUser
         {
             Id = Guid.NewGuid(),

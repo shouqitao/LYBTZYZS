@@ -5,6 +5,8 @@ namespace LYBT.Shared.Models.Contracts.Common
 
     /// <summary>
     /// 统一API响应格式 - Shared层版本
+    /// P2-5-1 评估：ApiResponse.Success/Message/ErrorCode 与 ProblemDetails type/title 双轨并行（前者供 Desktop Refit 契约，后者供 IExceptionHandler RFC7807），
+    /// v1.0 保留双轨，v2.0 视 Desktop 反序列化契约演进再归一，当前以「业务失败经 ApiResponse，异常经 ProblemDetails」为界。
     /// </summary>
     public class ApiResponse<T>
     {

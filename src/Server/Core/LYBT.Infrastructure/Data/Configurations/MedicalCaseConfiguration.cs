@@ -45,6 +45,8 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         // P2-11-1 报表时间范围索引：无 User 过滤时按 CreatedAt Range（日收入/处方趋势）
         builder.HasIndex(m => m.CreatedAt).HasDatabaseName("IX_MedicalCases_CreatedAt");
 
+        // P2-4-8 说明：Consultation 为共享主键 1:1（HasForeignKey<Consultation>(c=>c.Id)），Prescription 为独立 FK 1:0..1（HasForeignKey<Prescription>(p=>p.MedicalCaseId)），
+        // 前者省一列后者显式 MedicalCaseId，性能/查询语义取舍，已在 04-data-model.md 标注。
         // CODE-05/06: MedicalCase -> Patient FK (DDD 跨聚合 ID 引用，无导航属性)
         builder.HasOne<Patient>()
               .WithMany()

@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- P2-5-7 刻意允许：Entities 依赖 Shared.Models 仅复用 UserRole 等枚举（纯值类型），使领域实体不重定义枚举；08-shared.md 已标注“枚举复用例外”，避免反向依赖争议 -->
     <ProjectReference Include="..\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
   </ItemGroup>
