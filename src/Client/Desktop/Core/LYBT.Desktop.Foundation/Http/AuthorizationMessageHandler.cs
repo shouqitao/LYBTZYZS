@@ -1,5 +1,6 @@
 using System.Net.Http;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Shared.Logging.Http;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Foundation.Http
@@ -31,6 +32,15 @@ namespace LYBT.Desktop.Foundation.Http
                 _logger.LogDebug("跳过匿名端点的Token检查: {Url}", request.RequestUri);
                 return await base.SendAsync(request, cancellationToken);
             }
+
+            // T5.3: 透传 X-Correlation-ID（从当前 Activity / TraceIdentifier 回写至下一次请求）
+            try
+            {
+                var correlationId = System.Diagnostics.Activity.Current?.Id ?? Guid.NewGuid().ToString("N")[..12];
+                if (!request.Headers.Contains(CorrelationIdMiddleware.CorrelationIdHeader))
+                    request.Headers.TryAddWithoutValidation(CorrelationIdMiddleware.CorrelationIdHeader, correlationId);
+            }
+            catch { }
 
             // 获取存储的令牌
             var token = await _tokenStorage.GetTokenAsync();
