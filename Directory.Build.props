@@ -24,7 +24,8 @@
     <!-- CS1572: XML注释包含与实际参数不匹配的参数标记 -->
     <!-- CS1573: XML注释中的参数与实际参数不匹配 -->
     <!-- CS1587: XML注释没有放在有效语言元素上 -->
-    <NoWarn>$(NoWarn);CS1591;CS1570;CS1572;CS1573;CS1587</NoWarn>
+    <!-- P3-2 去 CS1570 掩盖错别字：保留 CS1591/1572/1573/1587，CS1570（XML 格式错误）不再抑制以暴露注释拼写错误 -->
+    <NoWarn>$(NoWarn);CS1591;CS1572;CS1573;CS1587</NoWarn>
 
     <!-- 优化设置 -->
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>

@@ -397,3 +397,5 @@ Entity (DataAnnotations)
 | 2026-02-26 | v1.2 | DOC3-03: 补全 4 个缺失 Shared 项目文档 (Primitives/Validators/ExceptionHandling/Configuration)；DOC3-13: 新增 SensitiveDataAttribute 设计章节 |
 | 2026-02-23 | v1.1 | 一致性审计: 新增 MedicalCaseBusinessRules 组件文档 (设计来源: design-deepening-phase3 + design-issues-solutions #4) |
 | 2026-02-10 | v1.0 | 初始版本，从 shared-layer-architecture/dto-architecture specs 整合 |
+
+<!-- P3-3 PagedResult双定义：Contracts/Common/PagedResult vs Desktop.Contracts/Results/PaginatedResult 已在08-shared.md标注“Entities可依赖Shared.Models枚举是例外”，分页模型双定义待v2统一 -->

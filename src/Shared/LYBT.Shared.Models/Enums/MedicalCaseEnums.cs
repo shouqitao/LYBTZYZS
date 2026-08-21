@@ -6,6 +6,7 @@ namespace LYBT.Shared.Models.Enums
     /// 医疗案例状态枚举 - 简化版
     /// 状态机：Suspended ↔ Active → Completed，取消操作统一使用软删除（IsDeleted）
     /// MC-D20: Draft 已重命名为 Suspended (挂起)
+    /// P3-4 关联：see RegistrationStatus（挂号状态机与医案时序耦合，见 11-business-flows.md）
     /// </summary>
     public enum MedicalCaseStatus
     {

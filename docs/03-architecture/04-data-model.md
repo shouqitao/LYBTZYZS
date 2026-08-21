@@ -490,3 +490,5 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 | 2026-08-20 | v2.2 | **P0-7 Patient 简化对齐**：Patient 20+ 字段裁剪为 7 字段（Name/PinYinCode/Gender/BirthDate/IdNumber/PhoneNumber/Status + BaseEntity），与 `PatientModel.cs` 代码 SSOT 对齐；敏感数据 Address/AllergyHistory/MedicalHistory 等延期至 v2.0。 |
 | 2026-06-28 | v2.1 | **spec S3 批次2 提炼（542→~420 行）**：MedicalCase 业务生命周期状态转换表/Registration 联动/打印保护覆盖层改链接到 07-medical-cases.md（留状态枚举）；辅助实体重复段（MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 重复描述）合并为概览表；RefreshToken 字段表（🧲 代码不存在）压成 D3 spec 引用。变更历史见 git log。 |
 | 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |
+
+<!-- P3-5 双标识 SuperAdmin vs IsSysAdmin：前者业务角色，后者运维标识，已在04-permissions.md增双标识说明段 -->
