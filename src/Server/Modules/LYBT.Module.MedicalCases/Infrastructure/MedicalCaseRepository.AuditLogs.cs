@@ -36,10 +36,18 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         /// 记录医案审计日志（US-MC-017）
         /// 审计表无 FK 约束，医案物理删除后审计记录仍保留用于统计
         /// </summary>
-        public async Task AddAuditLogAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
+        public Task AddAuditLogAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default)
+            => AddAuditLogAsync(log, true, cancellationToken);
+
+        /// <summary>
+        /// P1-19：saveChanges=false 时仅加入 ChangeTracker，由调用方与业务同一次 SaveChanges 提交（原子性）。
+        /// 仅日志不经立即落库——业务失败则审计同回滚，保证「审计与业务同事务」。
+        /// </summary>
+        public async Task AddAuditLogAsync(MedicalCaseAuditLog log, bool saveChanges, CancellationToken cancellationToken = default)
         {
             await _context.MedicalCaseAuditLogs.AddAsync(log, cancellationToken);
-            await SaveChangesAsync(cancellationToken);
+            if (saveChanges)
+                await SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

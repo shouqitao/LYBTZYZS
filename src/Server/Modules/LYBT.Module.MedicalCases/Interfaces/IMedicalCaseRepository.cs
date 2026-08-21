@@ -125,6 +125,9 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// </summary>
         Task AddAuditLogAsync(MedicalCaseAuditLog log, CancellationToken cancellationToken = default);
 
+        /// <summary>追加审计日志但立即 SaveChanges；false = 仅加入 ChangeTracker，由调用方统一 SaveChanges（P1-19 原子性）</summary>
+        Task AddAuditLogAsync(MedicalCaseAuditLog log, bool saveChanges, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// 物理删除医案（US-MC-014 取消语义）
         /// 级联清除聚合：MedicalCase + Consultation + Prescription + PrescriptionItems + PrintLogs（DB 级联）

@@ -242,12 +242,13 @@ namespace LYBT.Module.MedicalCases.Services
             // 打印保护简化（2026-08-03）：打印后修改内容 → IsPrinted=false、PrintVersion++（提示重新打印）
             MedicalCaseServiceHelper.ResetPrintMarker(medicalCase);
 
-            // 保存
+            // P1-19: 先追加审计（saveChanges=false，仅入 ChangeTracker）再统一 Update 单次 SaveChanges——
+            // 审计与业务同事务原子提交；若 UpdateAsync 失败则审计同回滚，杜绝「审计丢失/业务已落」
+            await WriteUpdateAuditAsync(medicalCase, request, currentUserId, before, cancellationToken);
+
+            // 保存（含审计日志同次提交）
             var result = await _repository.UpdateAsync(medicalCase, cancellationToken);
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
-
-            // T5-3 #16 (US-MC-017): 更新审计（含字段 diff）——原仅取消操作写审计
-            await WriteUpdateAuditAsync(medicalCase, request, currentUserId, before, cancellationToken);
 
             _logger.LogInformation("[SVC] MedicalCase.Save completed - MedicalCaseId={MedicalCaseId}", medicalCaseId);
             return result;
@@ -315,6 +316,7 @@ namespace LYBT.Module.MedicalCases.Services
                 return;
 
             var operatorInfo = await _userCrossModule.GetUserBasicInfoAsync(currentUserId, cancellationToken);
+            // P1-19: saveChanges=false——审计入 ChangeTracker，由 UpdateAsync 单次 SaveChanges 原子提交
             await _repository.AddAuditLogAsync(new MedicalCaseAuditLog
             {
                 Id = Guid.NewGuid(),
@@ -330,7 +332,7 @@ namespace LYBT.Module.MedicalCases.Services
                 OldValues = System.Text.Json.JsonSerializer.Serialize(changed.ToDictionary(k => k.Key, v => v.Value.Old)),
                 NewValues = System.Text.Json.JsonSerializer.Serialize(changed.ToDictionary(k => k.Key, v => v.Value.New)),
                 CreatedAt = DateTime.UtcNow
-            }, cancellationToken);
+            }, saveChanges: false, cancellationToken);
         }
 
         /// <summary>审计操作类型：更新</summary>
