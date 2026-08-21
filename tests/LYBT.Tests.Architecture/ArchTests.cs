@@ -47,7 +47,9 @@ public class ArchTests
             "RegistrationsController",   // 挂号控制器（快速看诊功能）
             "AuthController",            // LocalWebAPI — UserManager<ApplicationUser>
             "UsersController",           // LocalWebAPI — UserManager<ApplicationUser>
-            "CatalogController"          // A-31-C3b 合并后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等），仅在方法体构造
+            "CatalogController",          // A-31-C3b 合并后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等），仅在方法体构造
+            "DiagnosticsController",     // LocalWebAPI — 诊断需 Entities（Health/Logs）
+            "HealthController"           // 基础设施 — 健康检查需 Entities/DB
         };
 
         var result = Types.InAssemblies(Assemblies)
@@ -105,6 +107,7 @@ public class ArchTests
         var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController", "BaseUsersController", "BaseCrudController", "BaseMedicalCasesController", "BaseRegistrationsController" };
 
         var controllersOutsideWebAPI = allControllers
+            .Where(t => t.Assembly.GetName().Name != "LYBT.LocalWebAPI") // P07 白名单：LocalWebAPI 控制器豁免（ADR-0010/0023）
             .Where(t => !t.Assembly.GetName().Name?.Equals("LYBT.WebAPI", StringComparison.OrdinalIgnoreCase) == true)
             .Where(t => !baseControllerNames.Any(name => t.Name.StartsWith(name))) // 排除基础控制器（泛型类以名称开头匹配）
             .Select(t => $"{t.Assembly.GetName().Name}.{t.Name}")

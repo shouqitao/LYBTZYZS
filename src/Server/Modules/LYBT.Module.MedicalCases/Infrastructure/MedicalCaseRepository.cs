@@ -15,6 +15,8 @@ namespace LYBT.Module.MedicalCases.Infrastructure
     /// 医案仓储 - 简化版，减少过度复杂的Include策略
     /// 按职责拆分为 partial 文件：PendingCases（待看诊）、AuditLogs（审计日志）、Update（更新）
     /// ADR-0017: 注入医案模块自己的 DbContext
+    /// P0-4/ADR-0024: 聚合根唯一入口 — Prescription/Consultation 仅经本仓储（MedicalCase 聚合内），禁止跨聚合直查 AppDbContext.Prescriptions；
+    /// 跨聚合需经 IMedicalCaseCrossModuleService / ICatalogCrossModuleService 接口（见 0024 双JWT隔离 + 聚合边界标注）
     /// </summary>
     public partial class MedicalCaseRepository : BaseRepository<MedicalCase, MedicalCaseDbContext>, IMedicalCaseRepository
     {

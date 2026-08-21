@@ -441,6 +441,8 @@ public class ServerArchTests
 
         foreach (var controller in controllerTypes)
         {
+            // LocalWebAPI 为 P07 白名单，控制器豁免 P09 类级 Authorize 检查（双模式 Local 认证另管）
+            if (controller.Assembly.GetName().Name == "LYBT.LocalWebAPI") continue;
             // 类级别必须有 [Authorize] 或 [AllowAnonymous]
             var hasClassLevelAuth = controller.GetCustomAttributes(true)
                 .Any(attr => attr.GetType().Name == "AuthorizeAttribute");

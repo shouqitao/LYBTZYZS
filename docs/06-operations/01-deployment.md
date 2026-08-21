@@ -115,6 +115,12 @@ cd /home/player/lybt-api && bash start.sh
 - `Program.Main` 热更新段启动时若存在 `.update-pending.sha256` 则强制校验 `ComputeSHA256(zipPath) == expected`，不一致 `Log.Fatal` + `Environment.Exit(1)` 拒绝解压（防篡改/RCE）
 - 校验失败不解压、不删 zip 便于取证；成功后双 flag 均清理
 
+### 双 JWT 密钥隔离校验（P0-4，ADR-0024，2026-08-21）
+
+- 远程 `Jwt:SecretKey`（`JwtOptions`）与本地 `Jwt:SecretKey`（`LocalJwtOptions` 同节名但分宿主）生产**必须不同值**（`LocalJwtOptionsValidator` 强校验）
+- 发布前 `grep -c "Jwt__SecretKey" start.sh` 确认双值不同；相同值启动 `Fatal`
+- 本地 `SecurityAuditLogs` 已 SQLite 落库，联网后同步（v2.0 前先可追溯）
+
 ### 发布前门禁
 
 ```bash

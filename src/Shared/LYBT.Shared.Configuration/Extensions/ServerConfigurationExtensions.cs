@@ -23,7 +23,8 @@ public static class ServerConfigurationExtensions
         services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
         services.AddSingleton<IValidateOptions<DatabaseOptions>, DatabaseOptionsValidator>();
         services.AddSingleton<IValidateOptions<SecurityOptions>, SecurityOptionsValidator>();
-        services.AddSingleton<IValidateOptions<LocalJwtOptions>, LocalJwtOptionsValidator>();
+        services.AddSingleton<IValidateOptions<LocalJwtOptions>>(sp =>
+            new LocalJwtOptionsValidator(sp.GetRequiredService<IConfiguration>()));
 
         // JWT 配置
         services.AddOptions<JwtOptions>()
