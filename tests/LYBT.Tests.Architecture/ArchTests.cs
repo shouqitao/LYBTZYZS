@@ -48,6 +48,8 @@ public class ArchTests
             "AuthController",            // LocalWebAPI — UserManager<ApplicationUser>
             "UsersController",           // LocalWebAPI — UserManager<ApplicationUser>
             "CatalogController",          // A-31-C3b 合并后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等），仅在方法体构造
+            "HerbsController",             // P1-24 拆分后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等）
+            "FormulasController",          // P1-24 拆分后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Formula> 等）
             "DiagnosticsController",     // LocalWebAPI — 诊断需 Entities（Health/Logs）
             "HealthController"           // 基础设施 — 健康检查需 Entities/DB
         };

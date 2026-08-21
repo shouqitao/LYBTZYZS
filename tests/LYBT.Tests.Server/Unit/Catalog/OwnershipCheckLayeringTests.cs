@@ -12,7 +12,8 @@ namespace LYBT.Tests.Server;
 public class OwnershipCheckLayeringTests
 {
     [Theory]
-    [InlineData(typeof(LYBT.WebAPI.Controllers.CatalogController))]
+    [InlineData(typeof(LYBT.WebAPI.Controllers.HerbsController))]
+    [InlineData(typeof(LYBT.WebAPI.Controllers.FormulasController))]
     [InlineData(typeof(LYBT.WebAPI.Controllers.PatientsController))]
     public void RemoteControllers_DoNotDefineCheckOwnershipHelper(Type controllerType)
     {
@@ -27,7 +28,7 @@ public class OwnershipCheckLayeringTests
     }
 
     [Theory]
-    [InlineData(typeof(LYBT.WebAPI.Controllers.CatalogController))]
+    [InlineData(typeof(LYBT.WebAPI.Controllers.HerbsController))]
     [InlineData(typeof(LYBT.WebAPI.Controllers.PatientsController))]
     public void RemoteControllers_UpdateDeleteToggle_StillExposeEndpoints(Type controllerType)
     {
@@ -37,6 +38,18 @@ public class OwnershipCheckLayeringTests
             var m = controllerType.GetMethod(name);
             m.Should().NotBeNull($"{controllerType.Name}.{name} 应存在（P1-7/8/9 仅移所有权检查）");
             // async 端点返回 Task<IActionResult>
+            m!.ReturnType.Should().BeAssignableTo(typeof(Task<IActionResult>));
+        }
+    }
+
+    [Fact]
+    public void FormulasController_UpdateDeleteToggle_StillExposeEndpoints()
+    {
+        // P1-24 拆分后 FormulasController 用独立方法名（UpdateFormula/DeleteFormula/ToggleFormulaStatus）
+        foreach (var name in new[] { "UpdateFormula", "DeleteFormula", "ToggleFormulaStatus" })
+        {
+            var m = typeof(LYBT.WebAPI.Controllers.FormulasController).GetMethod(name);
+            m.Should().NotBeNull($"FormulasController.{name} 应存在（P1-7/8/9 仅移所有权检查）");
             m!.ReturnType.Should().BeAssignableTo(typeof(Task<IActionResult>));
         }
     }

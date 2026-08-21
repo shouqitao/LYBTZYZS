@@ -460,7 +460,7 @@ public class ServerArchTests
 
         // 合并检查: batch-enable/disable 端点必须使用 AdminOrSuperAdmin 授权策略
         var batchEndpoints = new[] { "batch-enable", "batch-disable" };
-        var batchControllers = new[] { "CatalogController" };
+        var batchControllers = new[] { "HerbsController", "FormulasController" }; // P1-24 拆分后双控制器
         var violatingEndpoints = new List<string>();
 
         var webApiAssembly = ServerAssemblies.FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI");
@@ -943,7 +943,7 @@ public class ServerArchTests
         var cqrsControllers = new[]
         {
             "UsersController", "BaseUsersController",
-            "PatientsController", "CatalogController",
+            "PatientsController", "HerbsController", "FormulasController",
             "AuthController", "RegistrationsController", "BaseRegistrationsController"
         };
 

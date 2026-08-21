@@ -15,7 +15,7 @@ public class ExportDetailTests
     [Fact]
     public void HerbExport_ReturnsListOfHerbListDto_WithFullFields()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.HerbsController); // P1-24 拆分后
         var method = type.GetMethod("HerbExport", BindingFlags.Public | BindingFlags.Instance);
         method.Should().NotBeNull();
         var produces = method!.GetCustomAttributes<ProducesResponseTypeAttribute>()
@@ -34,7 +34,7 @@ public class ExportDetailTests
     [Fact]
     public void FormulaExport_ReturnsListOfFormulaDetailDto_WithHerbs()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.FormulasController); // P1-24 拆分后
         var method = type.GetMethod("FormulaExport", BindingFlags.Public | BindingFlags.Instance);
         method.Should().NotBeNull();
         var produces = method!.GetCustomAttributes<ProducesResponseTypeAttribute>()
@@ -54,7 +54,7 @@ public class ExportDetailTests
     public void FormulaExport_UsesExportDetailsAsync_NotGetPaged()
     {
         // 通过方法体 IL 间接验证：FormulaExport 应调用 ExportDetailsAsync（含 Herbs），而非 GetPagedAsync（仅 ListDto）
-        var method = typeof(LYBT.WebAPI.Controllers.CatalogController).GetMethod("FormulaExport", BindingFlags.Public | BindingFlags.Instance);
+        var method = typeof(LYBT.WebAPI.Controllers.FormulasController).GetMethod("FormulaExport", BindingFlags.Public | BindingFlags.Instance); // P1-24 拆分后
         method.Should().NotBeNull();
         // 简单检查：方法参数名应为 category（对齐 IFormulaApi），而非 keyword
         var param = method!.GetParameters().FirstOrDefault(p => p.Name == "category");

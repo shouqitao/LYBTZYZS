@@ -243,7 +243,7 @@ stateDiagram-v2
 
 ## 6. Policy-to-Endpoint Matrix
 
-> **注意**：以下矩阵反映代码实际策略（2026-08-19 审计）。控制器不存在的章节已删除；药材/验方由 `CatalogController` 统一管理。完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)。
+> **注意**：以下矩阵反映代码实际策略（2026-08-19 审计）。控制器不存在的章节已删除；药材/验方由 P1-24 拆分后的 `HerbsController`/`FormulasController` 管理（2026-08-21 前为 `CatalogController`）。完整权限矩阵见 [04-permissions.md](../01-product/04-permissions.md)。
 
 ### AuthController (`/api/v1/auth`)
 
@@ -301,9 +301,9 @@ stateDiagram-v2
 | `PUT /{id}/suspend` | DoctorOrAdmin | 挂起医案 |
 | `PUT /{id}/cancel` | DoctorOrAdmin | 取消医案 |
 
-### CatalogController (`/api/v1/herbs`, `/api/v1/formulas`)
+### HerbsController (`/api/v1/herbs`) / FormulasController (`/api/v1/formulas`)（P1-24 拆分自 CatalogController）
 
-> 药材与验方由 `CatalogController` 统一管理，无独立 HerbsController/FormulasController。
+> 药材（HerbsController）与验方（FormulasController）策略一致（类级 DoctorOrAdmin，写操作 AdminOrSuperAdmin）；下表为共网策略。
 
 | 端点 | Policy | 备注 |
 |------|--------|------|

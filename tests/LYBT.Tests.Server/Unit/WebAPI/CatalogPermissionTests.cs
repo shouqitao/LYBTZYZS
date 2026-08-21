@@ -8,7 +8,7 @@ namespace LYBT.Tests.Server;
 
 /// <summary>
 /// Catalog 权限收紧守卫（I-5 / F-L4-01：药材/验方 batch-import、import-template、export（及 export-all）必须 AdminOrSuperAdmin）
-/// Remote 端：LYBT.WebAPI.Controllers.CatalogController
+/// Remote 端：P1-24 拆分后 HerbsController（药材）/ FormulasController（验方）
 /// </summary>
 public class CatalogPermissionTests
 {
@@ -30,7 +30,7 @@ public class CatalogPermissionTests
     [Fact]
     public void RemoteHerbImportExportEndpoints_RequireAdminOrSuperAdmin()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.HerbsController);
         foreach (var methodName in HerbBatchImportLike)
         {
             var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
@@ -45,7 +45,7 @@ public class CatalogPermissionTests
     [Fact]
     public void RemoteFormulaImportExportEndpoints_RequireAdminOrSuperAdmin()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.FormulasController);
         foreach (var methodName in FormulaBatchImportLike)
         {
             var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
@@ -57,12 +57,13 @@ public class CatalogPermissionTests
         }
     }
 
-    [Fact]
-    public void RemoteCatalogController_ClassLevel_IsDoctorOrAdmin_ButMethodLevelOverrides()
+[Theory]
+    [InlineData(typeof(LYBT.WebAPI.Controllers.HerbsController))]
+    [InlineData(typeof(LYBT.WebAPI.Controllers.FormulasController))]
+    public void RemoteCatalogController_ClassLevel_IsDoctorOrAdmin_ButMethodLevelOverrides(Type type)
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
         var classAuth = type.GetCustomAttribute<AuthorizeAttribute>();
-        classAuth.Should().NotBeNull("类级应有 DoctorOrAdmin（只读列表/详情仍 Doctor 可查）");
+        classAuth.Should().NotBeNull($"{type.Name} 类级应有 DoctorOrAdmin（只读列表/详情仍 Doctor 可查）");
         classAuth!.Policy.Should().Be(PolicyConstants.DoctorOrAdmin);
     }
 }

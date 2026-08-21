@@ -14,7 +14,7 @@ public class CategoryFilterTests
     [Fact]
     public void CatalogController_FormulaExport_HasCategoryFromQueryParam()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.FormulasController); // P1-24 拆分后
         var method = type.GetMethod("FormulaExport", BindingFlags.Public | BindingFlags.Instance);
         method.Should().NotBeNull();
         var param = method!.GetParameters().FirstOrDefault(p => p.Name == "category");

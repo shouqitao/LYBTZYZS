@@ -34,7 +34,7 @@ public class ImportExportJsonTests
     [Fact]
     public void HerbTemplateAndExport_ReturnJson_NotFile()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.HerbsController); // P1-24 拆分后
         AssertJsonResponse(
             type.GetMethod("HerbImportTemplate")!,
             "药材导入模板端点必须返回 ApiResponse（JSON）"
@@ -52,7 +52,7 @@ public class ImportExportJsonTests
     [Fact]
     public void FormulaTemplateAndExport_ReturnJson_NotFile()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
+        var type = typeof(LYBT.WebAPI.Controllers.FormulasController); // P1-24 拆分后
         AssertJsonResponse(
             type.GetMethod("FormulaImportTemplate")!,
             "验方导入模板端点必须返回 ApiResponse（JSON）"
@@ -66,21 +66,21 @@ public class ImportExportJsonTests
     [Fact]
     public void NoImportExcelEndpoint_ServiceSideExcelRemoved()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
-        type.GetMethod("ImportExcel")
-            .Should()
-            .BeNull(
-                "服务端 Excel 解析路径（import-excel）已移除——只留 DTO/JSON batch-import（US-HERB-006）"
-            );
+        // P1-24 拆分后：双控制器均无 ImportExcel
+        typeof(LYBT.WebAPI.Controllers.HerbsController).GetMethod("ImportExcel")
+            .Should().BeNull("服务端 Excel 解析路径（import-excel）已移除（Herbs）");
+        typeof(LYBT.WebAPI.Controllers.FormulasController).GetMethod("ImportExcel")
+            .Should().BeNull("服务端 Excel 解析路径（import-excel）已移除（Formulas）");
     }
 
     [Fact]
     public void BatchImportDtoEndpoint_StillExists()
     {
-        var type = typeof(LYBT.WebAPI.Controllers.CatalogController);
-        type.GetMethod("BatchImport")
-            .Should()
-            .NotBeNull("batch-import（DTO/JSON）是唯一导入路径——必须保留");
+        // P1-24 拆分后：HerbsController.BatchImport + FormulasController.BatchImportFormulas
+        typeof(LYBT.WebAPI.Controllers.HerbsController).GetMethod("BatchImport")
+            .Should().NotBeNull("batch-import（DTO/JSON）是药材唯一导入路径——必须保留");
+        typeof(LYBT.WebAPI.Controllers.FormulasController).GetMethod("ImportFormulas")
+            .Should().NotBeNull("batch-import（DTO/JSON）是验方唯一导入路径——必须保留");
     }
 
     private static void AssertJsonResponse(MethodInfo method, string because)

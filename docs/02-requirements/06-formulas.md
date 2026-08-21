@@ -73,7 +73,7 @@ stateDiagram-v2
 4. 默认按 CreatedAt DESC 排序
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -98,7 +98,7 @@ stateDiagram-v2
 3. 共享验方对 Doctor 只读
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
 
 ---
 
@@ -141,7 +141,7 @@ stateDiagram-v2
 - 后端校验：herbId 不存在/已删除 → 422（引用校验）；空 herbs → 400（AC）
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -172,7 +172,7 @@ stateDiagram-v2
 - 一人正在验证药材，另一人同时更新验方药材列表 → 药材列表替换后触发状态重新评估（FLAW-F1），最终状态取决于最后一次操作
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`、`src/Server/Modules/LYBT.Module.Formula/Interfaces/IFormulaService.cs`
 
 ---
 
@@ -198,7 +198,7 @@ stateDiagram-v2
 4. 支持批量删除
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
 
 ---
 
@@ -226,7 +226,7 @@ stateDiagram-v2
 5. 客户端本地解析 Excel（2026-08-13：后端不涉及 Excel——服务端收 JSON/DTO，Excel 解析由前端负责，如 NPOI 类库已移除）
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpPost `formulas/batch-import`——DTO/JSON 唯一路径)
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs` (HttpPost `formulas/batch-import`——DTO/JSON 唯一路径)
 
 ---
 
@@ -359,7 +359,7 @@ stateDiagram-v2
 4. **处方导入对话框仅展示 `ValidationStatus=Validated` 且 `Status=Enabled` 的验方**（MC-D08，见 [07-medical-cases.md](07-medical-cases.md)）
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
 
 ---
 
@@ -383,7 +383,7 @@ stateDiagram-v2
 3. 恢复后验方状态保持删除前的 ValidationStatus
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs`
 
 ---
 
@@ -409,7 +409,7 @@ stateDiagram-v2
 3. 客户端负责 Excel 生成（如需）；后端只出 JSON
 
 
-**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/CatalogController.cs` (HttpGet `formulas/export`/`formulas/import-template`)、`IFormulaService`
+**实现参考**: `src/Server/Services/LYBT.WebAPI/Controllers/FormulasController.cs` (HttpGet `formulas/export`/`formulas/import-template`)、`IFormulaService`
 
 ---
 
@@ -427,7 +427,7 @@ stateDiagram-v2
 - [ ] 克隆副本名称/药材组成与源验方一致
 - [ ] 远程模式补端点（WebAPI 当前缺失——T 批次待补）
 
-**实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/CatalogController.cs`（clone）、Desktop `IFormulaApi.cs`/`FormulasHttpApiClient.cs`
+**实现参考**: `src/Client/Desktop/LocalWebAPI/Controllers/FormulasController.cs`（clone）、Desktop `IFormulaApi.cs`/`FormulasHttpApiClient.cs`
 
 ---
 

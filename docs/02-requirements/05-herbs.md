@@ -36,7 +36,7 @@
 3. 结果受 OutputCache 缓存（`HerbsCache` 策略）提升查询性能
 
 
-**实现参考**: `CatalogController.cs` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
+**实现参考**: `HerbsController.cs` (HttpGet list), `IHerbService`, OutputCache `HerbsCache`
 
 ---
 
@@ -61,7 +61,7 @@
 2. 药材详情同样受 OutputCache 缓存
 
 
-**实现参考**: `CatalogController.cs` (HttpGet `{id}`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpGet `{id}`), `IHerbService`
 
 ---
 
@@ -87,7 +87,7 @@
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
 
-**实现参考**: `CatalogController.cs` (HttpPost create), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpPost create), `IHerbService`
 
 ---
 
@@ -113,7 +113,7 @@
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
 
-**实现参考**: `CatalogController.cs` (HttpPut `{id}`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpPut `{id}`), `IHerbService`
 
 ---
 
@@ -140,7 +140,7 @@
 3. 软删除通过全局查询过滤器自动隐藏
 
 
-**实现参考**: `CatalogController.cs` (HttpDelete `{id}`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpDelete `{id}`), `IHerbService`
 
 ---
 
@@ -171,7 +171,7 @@
 6. **批量上限（模块规则）**：单次批量导入最多 10000 条记录
 
 
-**实现参考**: `CatalogController.cs` (HttpPost `batch-import`——DTO/JSON 唯一导入路径)
+**实现参考**: `HerbsController.cs` (HttpPost `batch-import`——DTO/JSON 唯一导入路径)
 
 ---
 
@@ -197,7 +197,7 @@
 3. 与 US-HERB-013 的导出端点不同：本端点导出全部，US-HERB-013 支持筛选导出 + 模板下载
 
 
-**实现参考**: `CatalogController.cs` (HttpGet `export-all`)
+**实现参考**: `HerbsController.cs` (HttpGet `export-all`)
 
 ---
 
@@ -222,7 +222,7 @@
 2. 此端点允许 Doctor 与 Admin 查询（开方者需了解药材状态）
 
 
-**实现参考**: `CatalogController.cs` (HttpGet `{id}/check-reference`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpGet `{id}/check-reference`), `IHerbService`
 
 ---
 
@@ -247,7 +247,7 @@
 2. 用于批量删除前的预检
 
 
-**实现参考**: `CatalogController.cs` (HttpPost `batch-check-reference`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpPost `batch-check-reference`), `IHerbService`
 
 ---
 
@@ -277,7 +277,7 @@
 - 禁用的药材不出现在新建处方的药材选择列表中（前台不可查药材）
 
 
-**实现参考**: `CatalogController.cs` (HttpPost `{id}/toggle-status`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpPost `{id}/toggle-status`), `IHerbService`
 
 ---
 
@@ -302,7 +302,7 @@
 2. 恢复仅还原药材记录本身，不还原关联处方（处方删除独立）
 
 
-**实现参考**: `CatalogController.cs` (HttpPost `{id}/restore`), `IHerbService`
+**实现参考**: `HerbsController.cs` (HttpPost `{id}/restore`), `IHerbService`
 
 ---
 
@@ -328,7 +328,7 @@
 3. 端点受 `AdminOrSuperAdmin` 策略保护（写操作仅 Admin，已落地 C2）
 
 
-**实现参考**: `CatalogController.cs` (batch-enable), `CatalogController.cs` (batch-disable), `CatalogController.cs` (batch-delete), `IHerbService`
+**实现参考**: `HerbsController.cs` (batch-enable), `HerbsController.cs` (batch-disable), `HerbsController.cs` (batch-delete), `IHerbService`
 
 ---
 
@@ -354,7 +354,7 @@
 3. 导出与模板由 `IHerbService` 生成
 
 
-**实现参考**: `CatalogController.cs` (HttpGet `export`), `CatalogController.cs` (HttpGet `import-template`)
+**实现参考**: `HerbsController.cs` (HttpGet `export`), `HerbsController.cs` (HttpGet `import-template`)
 
 ---
 

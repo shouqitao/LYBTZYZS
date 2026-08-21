@@ -25,13 +25,15 @@ public class ImportExportRouteParityTests
 
     private static readonly Type[] RemoteControllers =
     {
-        typeof(LYBT.WebAPI.Controllers.CatalogController),
+        typeof(LYBT.WebAPI.Controllers.HerbsController),
+        typeof(LYBT.WebAPI.Controllers.FormulasController),
         typeof(LYBT.WebAPI.Controllers.PatientsController),
     };
 
     private static readonly Type[] LocalControllers =
     {
-        typeof(LYBT.LocalWebAPI.Controllers.CatalogController),
+        typeof(LYBT.LocalWebAPI.Controllers.HerbsController),
+        typeof(LYBT.LocalWebAPI.Controllers.FormulasController),
         typeof(LYBT.LocalWebAPI.Controllers.PatientsController),
     };
 
