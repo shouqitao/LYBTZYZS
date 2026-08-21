@@ -1,3 +1,4 @@
+// P3-6 双配置 DefaultConnection 已评估：ServerConfigurationExtensions 双源优先级（Database:ConnectionString>ConnectionStrings:DefaultConnection）已在07-configuration.md注明
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Configuration.Validation;

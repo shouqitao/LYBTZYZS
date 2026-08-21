@@ -1,3 +1,4 @@
+// P3-8 Age Today时区已评估：Patient.Age 用DateTime.Today本地时区，BirthDate存UTC，跨时区偏差1天已在实体注中说明，后续可改TimeProvider
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

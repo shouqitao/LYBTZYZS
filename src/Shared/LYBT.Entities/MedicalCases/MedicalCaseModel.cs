@@ -1,3 +1,4 @@
+// P3-9 打印双真相已评估：MedicalCase PrintCount/PrintLogs.Count以PrintLogs.Count为准，事务内以Log为准
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

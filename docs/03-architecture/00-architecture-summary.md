@@ -97,3 +97,5 @@
 - ~~`docs/compose/specs/2026-06-28-prd-code-reconciliation.md`~~（已归档）— PRD-代码对账，见 [13-traceability-matrix.md](../02-requirements/13-traceability-matrix.md)
 
 <!-- P3-1 29 vs 30：sln 29业务+1 Tools=30概念项目，文档29不含Tools，已在13c-current-status标注 -->
+
+<!-- P3-10 双真相互补等28项已归档 Good First Issues，见 architecture-deep-review P3全表 -->

@@ -1,3 +1,4 @@
+// P2-13-8 / P3-7 诊断级别 Receptionist 已评估：DiagnosticsController日志级别调整限AdminOrSuperAdmin，前台需管理员介入可接受
 using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
