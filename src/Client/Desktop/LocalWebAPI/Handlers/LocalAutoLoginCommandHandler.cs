@@ -1,3 +1,4 @@
+// P2-15-6 LocalAutoLogin 双密钥已评估：离线/在线切换时旧本地 Token 在远程 invalid 需重登录，已在 09-security-architecture.md 双JWT隔离段说明体验权衡
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

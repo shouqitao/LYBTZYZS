@@ -1,3 +1,4 @@
+// P2-15-5 SwitchingApiClient 切离线时未取消进行中请求已评估：CreateRegistration 幂等由 Registration 单例校验（AnyAsync Waiting/InProgress）兜底，重试不会重复挂号
 // ---------------------------------------------------------------------------
 // SwitchingApiClient — Runtime-switchable IApiClient proxy
 // ---------------------------------------------------------------------------

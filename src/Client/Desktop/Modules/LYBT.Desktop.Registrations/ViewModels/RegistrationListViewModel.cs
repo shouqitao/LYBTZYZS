@@ -1,3 +1,4 @@
+// P2-16-1 Clinical/Admin 重复引用已评估：见 02-desktop.md P1-2 段，保留编译期依赖+ModuleCatalog懒加载
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -323,6 +324,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         }
     }
 
+    // P2-16-3 评估：Cancel 按钮 CanExecute 仅 Receptionist 且 Source==Receptionist，Server 策略 ReceptionistOnly 双校验，离线分叉已在 P1-29 对齐
     private bool CanCancelRegistration() =>
         IsReceptionist
         && SelectedRegistration is { Status: RegistrationStatus.Waiting, Source: RegistrationSource.Receptionist }

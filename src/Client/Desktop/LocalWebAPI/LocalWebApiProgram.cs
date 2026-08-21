@@ -1,3 +1,4 @@
+// P2-15-1 LocalWebApi 5100 硬编码已评估：端口冲突时 LocalWebApiProgram 启动失败已在 05-dual-mode.md 标注退避为 5101 自动重试（v2），当前单机单 Desktop 场景可接受
 using System.Threading.RateLimiting;
 using System.Text.Json.Serialization;
 using LYBT.Entities.Users;
