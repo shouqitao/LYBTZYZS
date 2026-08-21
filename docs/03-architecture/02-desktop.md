@@ -866,3 +866,5 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 <!-- F5 P3 batch: P3-5-5/5-6/6-2/6-6/6-7 已评估 -->
 
 <!-- F6 P3 batch: P3-7-... 已评估 -->
+
+<!-- F7 P3 batch: remaining P3 已评估 -->
