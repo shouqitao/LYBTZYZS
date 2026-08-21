@@ -13,4 +13,7 @@ public interface ICatalogCrossModuleService
 
     /// <summary>批量获取药材单价（用于处方项UnitPrice自动填充）</summary>
     Task<Dictionary<Guid, decimal>> GetHerbPricesAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default);
+
+    /// <summary>批量查询已存在的药材ID（T4.1 50→1：单次 IN 校验存在性）</summary>
+    Task<HashSet<Guid>> GetExistingHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default);
 }

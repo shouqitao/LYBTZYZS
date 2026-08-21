@@ -2,7 +2,9 @@ using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -148,6 +150,12 @@ namespace LYBT.Module.MedicalCases.Services
             if (prescriptionDto.Items == null || !prescriptionDto.Items.Any()) return items;
 
             var allHerbIds = prescriptionDto.Items.Select(i => i.HerbId).Distinct().ToList();
+
+            // T4.1: 批量校验药材存在性（50→1 单次 IN，避免 N+1逐条 ExistsAsync）
+            var existingHerbIds = await _herbCrossModule.GetExistingHerbIdsAsync(allHerbIds, cancellationToken);
+            var missingHerbIds = allHerbIds.Except(existingHerbIds).ToList();
+            if (missingHerbIds.Count > 0)
+                throw new BusinessException(ErrorCode.HerbNotFound, $"存在 {missingHerbIds.Count} 个不存在的药材，已忽略或请检查药材库");
 
             // AD-02: 过滤禁用药材，禁止加入处方
             var disabledHerbIds = await _herbCrossModule.GetDisabledHerbIdsAsync(allHerbIds, cancellationToken);

@@ -53,6 +53,14 @@ public class CatalogCrossModuleService : ICatalogCrossModuleService
         return herbs.ToDictionary(h => h.Id, h => h.Price);
     }
 
+    public async Task<HashSet<Guid>> GetExistingHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
+    {
+        var idList = herbIds.Distinct().ToList();
+        if (idList.Count == 0) return new HashSet<Guid>();
+        var existing = await _context.Herbs.AsNoTracking().Where(h => idList.Contains(h.Id) && !h.IsDeleted).Select(h => h.Id).ToListAsync(cancellationToken);
+        return existing.ToHashSet();
+    }
+
     public async Task<HashSet<Guid>> GetDisabledHerbIdsAsync(IEnumerable<Guid> herbIds, CancellationToken cancellationToken = default)
     {
         var idList = herbIds.ToList();
