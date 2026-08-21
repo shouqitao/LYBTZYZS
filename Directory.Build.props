@@ -13,9 +13,8 @@
   <!-- 统一编译配置 -->
   <PropertyGroup>
     <!-- 统一编译器设置 -->
-    <!-- CI 环境告警即错误，本地保持宽松 -->
-    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
-    <TreatWarningsAsErrors Condition="'$(CI)' != 'true'">false</TreatWarningsAsErrors>
+    <!-- P2-1-4 本地与 CI 一致：告警即错误（0/0 门禁） -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
 

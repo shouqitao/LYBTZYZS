@@ -12,6 +12,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.26" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26" />
+    <!-- P2-1-2 评估：Microsoft.Extensions.* 存在 8.0.0/8.0.1/8.0.2/8.0.3 漂移，评估统一到 8.0.1/8.0.2 会导致 NU1605（EF Core 8.0.26 依赖 Logging.Abstractions >=8.0.2，需 8.0.3）及 NU1603（部分 8.0.2 版本不存在）；保留兼容漂移，待 9.0 统一升级 -->
     <!-- Microsoft Extensions 系列 - 使用 8.0.x 兼容版本 -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />

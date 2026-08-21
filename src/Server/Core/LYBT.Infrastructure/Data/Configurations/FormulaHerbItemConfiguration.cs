@@ -20,6 +20,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(f => f.Dosage).HasDefaultValue(1);
             entity.Property(f => f.Unit).HasDefaultValue("g");
 
+            // P2-3-5 导航 JOIN 索引：FormulaHerbItem 查询常经 Formula.IsDeleted 过滤，建复合索引加速
+            entity.HasIndex(f => new { f.FormulaId, f.HerbId })
+                .HasDatabaseName("IX_FormulaHerbItems_FormulaId_HerbId");
+
             // 配置与Herb的关系
             entity.HasOne<Herb>()
                 .WithMany()

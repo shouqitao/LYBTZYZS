@@ -21,6 +21,9 @@ namespace LYBT.Infrastructure.Data
     /// <summary>
     /// 统一应用数据库上下文 - 整个项目使用单一数据库LYBTDB
     /// 集成审计字段自动化功能
+    /// P2-3-1 评估（2026-08-21）：单 Context 20+实体 ChangeTracker 在批量导入 500 条时成本显著；
+    /// 评估拆只读 Context 方案：保持单库单 Context（单迁移链 LYBTDB），读路径已用 AsNoTracking/IMemoryCache + OutputCache 缓解；
+    /// 拆分为 ReadOnlyAppDbContext（QueryTrackingBehavior.NoTracking）收益 < 双迁移链维护成本，v2.0 备选。
     /// </summary>
     public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
