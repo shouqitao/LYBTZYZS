@@ -66,4 +66,15 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
         return await _context.Herbs
             .FirstOrDefaultAsync(h => h.Name == name && !h.IsDeleted, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<Guid, string>> GetNamesByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0) return new Dictionary<Guid, string>();
+        return await _context.Herbs
+            .AsNoTracking()
+            .Where(h => idList.Contains(h.Id) && !h.IsDeleted)
+            .ToDictionaryAsync(h => h.Id, h => h.Name, ct);
+    }
 }

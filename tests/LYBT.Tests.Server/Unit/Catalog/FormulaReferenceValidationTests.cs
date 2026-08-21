@@ -95,6 +95,8 @@ internal sealed class FakeHerbRepository : IHerbRepository
 
     public Task<Herb?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(ExistingHerb);
     public Task<Herb?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken ct = default) => Task.FromResult(ExistingHerb);
+    public Task<Dictionary<Guid, string>> GetNamesByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+        => Task.FromResult(ids.ToDictionary(id => id, id => ExistingHerb?.Name ?? string.Empty));
     public Task<Herb> UpdateAsync(Herb entity, CancellationToken ct = default) => Task.FromResult(entity);
     public Task<Herb> AddAsync(Herb entity, CancellationToken ct = default) => Task.FromResult(entity);
     public Task<bool> DeleteAsync(Guid id, CancellationToken ct = default) => Task.FromResult(true);

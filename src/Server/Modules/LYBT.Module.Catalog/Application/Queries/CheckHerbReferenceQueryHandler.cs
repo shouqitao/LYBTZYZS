@@ -61,13 +61,8 @@ public class CheckHerbReferenceQueryHandler
         if (herbIds.Count == 0)
             return Result<List<HerbReferenceCheckDto>>.Success(new List<HerbReferenceCheckDto>());
 
-        var herbs = new Dictionary<Guid, string>();
-        foreach (var herbId in herbIds)
-        {
-            var herb = await _herbRepository.GetByIdAsync(herbId, cancellationToken);
-            if (herb != null)
-                herbs[herb.Id] = herb.Name;
-        }
+        // P1-11: 批量名称查询（单次 IN），原逐 ID GetByIdAsync 造成 N+1
+        var herbs = await _herbRepository.GetNamesByIdsAsync(herbIds, cancellationToken);
 
         var prescriptionCounts = await _referenceRepository
             .GetBatchPrescriptionReferenceCountsAsync(herbIds, cancellationToken);
