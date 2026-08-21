@@ -1,6 +1,7 @@
-using LYBT.Infrastructure.Web;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Reports.Interfaces;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Reports;
 using LYBT.Shared.Models.Enums;
@@ -154,13 +155,15 @@ public class ReportsController : BaseApiController
     public async Task<IActionResult> GetHerbRanking(
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
-        [FromQuery] int top = 10,
+        [FromQuery] int top = ReportOptions.DefaultTopConst,
         CancellationToken cancellationToken = default)
     {
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
             return BadRequest("开始日期不能晚于结束日期");
+        if (top <= 0 || top > ReportOptions.MaxTopConst)
+            return ValidationFail($"top 必须在 1-{ReportOptions.MaxTopConst} 之间");
         var dto = await _reportService.GetHerbRankingAsync(start, end, top, GetDoctorFilter(), cancellationToken);
         return Success(dto, "查询成功");
     }

@@ -1,3 +1,4 @@
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
@@ -170,8 +171,8 @@ namespace LYBT.Infrastructure.Web
         /// </summary>
         protected IActionResult? ValidatePagination(int page, int pageSize)
         {
-            if (page <= 0 || pageSize <= 0 || pageSize > 100)
-                return ValidationFail("分页参数无效：page 和 pageSize 必须大于 0，pageSize 不能超过 100");
+            if (page <= 0 || pageSize <= 0 || pageSize > BatchOptions.DefaultMaxBatchSize)
+                return ValidationFail($"分页参数无效：page 和 pageSize 必须大于 0，pageSize 不能超过 {BatchOptions.DefaultMaxBatchSize}");
 
             return null;
         }

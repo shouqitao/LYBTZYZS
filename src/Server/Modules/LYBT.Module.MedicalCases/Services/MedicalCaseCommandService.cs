@@ -16,6 +16,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using Microsoft.Extensions.Logging;
 using LYBT.Module.MedicalCases.Guards;
+using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 
 namespace LYBT.Module.MedicalCases.Services
@@ -443,11 +444,11 @@ namespace LYBT.Module.MedicalCases.Services
         {
             var today = DateTime.Today;
             var dateStr = today.ToString("yyyyMMdd");
-            var prefix = $"MC{dateStr}";
+            var prefix = $"{MedicalCaseNumberOptions.DefaultPrefix}{dateStr}";
 
             // 查询今天的医案数量（包含软删除的，避免编号重复）
             var count = await _repository.CountByPrefixAsync(prefix, cancellationToken);
-            return $"{prefix}{(count + 1):D3}";
+            return $"{prefix}{(count + 1).ToString($"D{MedicalCaseNumberOptions.DefaultPadLength}")}";
         }
 
         #endregion
