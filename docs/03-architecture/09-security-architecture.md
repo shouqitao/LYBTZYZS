@@ -365,6 +365,12 @@ stateDiagram-v2
 | 审计补偿 | `LocalWebAPI` 本地 `SecurityAuditLogs` SQLite 落库，联网后 `IAuditSyncService` 同步到远程（v2.0 完整 Sync 前先可追溯） |
 | 文档 | `docs/03-architecture/decisions/0024-dual-jwt-isolation.md` 为 SSOT |
 
+### 7.011 SignalR 最小权限（P1-22，2026-08-21）
+
+- `RegistrationHub` 类级 `[Authorize(DoctorOrAdmin)]`；`OnConnectedAsync` 校验 query `doctorId` 必须等于登录用户 `NameIdentifier` 方可入组（防伪造他人 ID 订阅）
+- `NotificationService` 按 `GetDoctorGroup(doctorId)` 分组推送（`Clients.Group`），无 `Clients.All` 全量广播
+- `RegistrationConnectionManager` 用 `ConcurrentDictionary`（线程安全）
+
 ### 7.02 患者敏感字段透明加密（P1-9，2026-08-21）
 
 | 项 | 说明 |
