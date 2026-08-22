@@ -1,0 +1,2924 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "tQV5o",
+      "x": 0,
+      "y": 0,
+      "name": "Backup Management Page",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$surface",
+      "children": [
+        {
+          "type": "frame",
+          "id": "SSxlW",
+          "name": "Sidebar",
+          "clip": true,
+          "width": 240,
+          "height": 900,
+          "fill": "$sidebar-bg",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pXLeV",
+              "name": "Logo Row",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": 24,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "q3MVXb",
+                  "name": "Logo Icon Box",
+                  "width": 36,
+                  "height": 36,
+                  "fill": "$primary",
+                  "cornerRadius": 8
+                },
+                {
+                  "type": "text",
+                  "id": "dusaE",
+                  "name": "System Title",
+                  "fill": "#FFFFFF",
+                  "content": "凌隐宝堂",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "m3ZlD",
+              "name": "Nav Items",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "padding": [
+                8,
+                12
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BDpQL",
+                  "name": "Nav 工作台",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "v1TRC",
+                      "name": "Icon 工作台",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "layout-dashboard",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QKDcx",
+                      "name": "Label 工作台",
+                      "fill": "$sidebar-text",
+                      "content": "工作台",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "flce6",
+                  "name": "Nav 患者管理",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "wEh2M",
+                      "name": "Icon 患者管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "users",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eNLvU",
+                      "name": "Label 患者管理",
+                      "fill": "$sidebar-text",
+                      "content": "患者管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "O4dLE",
+                  "name": "Nav 预约挂号",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "fgCRA",
+                      "name": "Icon 预约挂号",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "calendar",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "U0KJe",
+                      "name": "Label 预约挂号",
+                      "fill": "$sidebar-text",
+                      "content": "预约挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WkMMw",
+                  "name": "Nav 诊疗记录",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yuBAo",
+                      "name": "Icon 诊疗记录",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "stethoscope",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "carUt",
+                      "name": "Label 诊疗记录",
+                      "fill": "$sidebar-text",
+                      "content": "诊疗记录",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Unwvk",
+                  "name": "Nav 药房管理",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yjHzs",
+                      "name": "Icon 药房管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "pill",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Qtsmo",
+                      "name": "Label 药房管理",
+                      "fill": "$sidebar-text",
+                      "content": "药房管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "q4ODq",
+                  "name": "Nav 收费结算",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "nKT1Q",
+                      "name": "Icon 收费结算",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "credit-card",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X4jtc",
+                      "name": "Label 收费结算",
+                      "fill": "$sidebar-text",
+                      "content": "收费结算",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WhsG1",
+                  "name": "Nav 数据备份",
+                  "width": "fill_container",
+                  "fill": "#ffffff1f",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "lsYnC",
+                      "name": "Icon 数据备份",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "database",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IyUxb",
+                      "name": "Label 数据备份",
+                      "fill": "#FFFFFF",
+                      "content": "数据备份",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DvjSF",
+                  "name": "Nav 系统设置",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "E1Vzb3",
+                      "name": "Icon 系统设置",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings",
+                      "library": "lucide",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VufN5",
+                      "name": "Label 系统设置",
+                      "fill": "$sidebar-text",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "vGP3y",
+          "name": "Content Area",
+          "width": "fill_container",
+          "height": 900,
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Su3jN",
+              "name": "Header Bar",
+              "width": "fill_container",
+              "height": 64,
+              "fill": "$surface-card",
+              "gap": 16,
+              "padding": [
+                0,
+                32
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "d1OYV4",
+                  "name": "Header Left",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gYD63",
+                      "name": "Page Title",
+                      "fill": "$on-surface",
+                      "content": "数据备份管理",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 20,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uV6bn",
+                      "name": "Breadcrumb",
+                      "fill": "$on-surface-secondary",
+                      "content": "系统设置 / 数据备份",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nqoHG",
+                  "name": "Header Right",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Vdi8S",
+                      "name": "Notification Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "bell",
+                      "library": "lucide",
+                      "fill": "$on-surface-secondary"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "SS1ua",
+                      "name": "Help Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "info",
+                      "library": "lucide",
+                      "fill": "$on-surface-secondary"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Fm3Zq",
+                      "name": "Avatar",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "$primary",
+                      "cornerRadius": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hP4Zq",
+                          "name": "Avatar Text",
+                          "fill": "#FFFFFF",
+                          "content": "管",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hyx5N",
+              "name": "Header Divider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$divider"
+            },
+            {
+              "type": "frame",
+              "id": "F9iay",
+              "name": "Main Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 24,
+              "padding": [
+                24,
+                32
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "glO0I",
+                  "name": "Left Panel - Status",
+                  "width": 560,
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gz6Jo",
+                      "name": "Database Status Card",
+                      "width": "fill_container",
+                      "fill": "$surface-card",
+                      "cornerRadius": 12,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000014",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 20,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AicmK",
+                          "name": "Card Title",
+                          "fill": "$on-surface",
+                          "content": "数据库状态",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gLIRn",
+                          "name": "Status Grid",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "W3iu0",
+                              "name": "Status 连接状态",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "gAj9S",
+                                  "name": "Status Icon 连接状态",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "circle-check",
+                                  "library": "lucide",
+                                  "fill": "$success"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "D4AJKR",
+                                  "name": "Status Label 连接状态",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "连接状态",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "j6XiMX",
+                                  "name": "Status Value 连接状态",
+                                  "fill": "$on-surface",
+                                  "content": "正常运行",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JhoZY",
+                              "name": "Status 数据库类型",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "F6fzD",
+                                  "name": "Status Icon 数据库类型",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "server",
+                                  "library": "lucide",
+                                  "fill": "$primary-light"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "yr0tH",
+                                  "name": "Status Label 数据库类型",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "数据库类型",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Y0dfLw",
+                                  "name": "Status Value 数据库类型",
+                                  "fill": "$on-surface",
+                                  "content": "SQL Server",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "V4Tb4U",
+                              "name": "Status 数据库大小",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "S7DyiC",
+                                  "name": "Status Icon 数据库大小",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "hard-drive",
+                                  "library": "lucide",
+                                  "fill": "$primary-light"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WZwdb",
+                                  "name": "Status Label 数据库大小",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "数据库大小",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "w96dJ",
+                                  "name": "Status Value 数据库大小",
+                                  "fill": "$on-surface",
+                                  "content": "2.4 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PEk8j",
+                              "name": "Status 最后备份",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "layout": "vertical",
+                              "gap": 8,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "HJ86M",
+                                  "name": "Status Icon 最后备份",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "timer",
+                                  "library": "lucide",
+                                  "fill": "$warning"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "zcnvO",
+                                  "name": "Status Label 最后备份",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "最后备份",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WDb3y",
+                                  "name": "Status Value 最后备份",
+                                  "fill": "$on-surface",
+                                  "content": "2024-01-15 08:30",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rliuC",
+                          "name": "Status Divider",
+                          "width": "fill_container",
+                          "height": 1,
+                          "fill": "$divider"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qGoiy",
+                          "name": "DB Info Rows",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "nRBfR",
+                              "name": "Info 服务器地址",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "aX8zi",
+                                  "name": "Key 服务器地址",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "服务器地址",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EL3g3",
+                                  "name": "Val 服务器地址",
+                                  "fill": "$on-surface",
+                                  "content": "60.190.215.86",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "llJ88",
+                              "name": "Info 数据库名",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tdP17",
+                                  "name": "Key 数据库名",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "数据库名",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "q0KtVZ",
+                                  "name": "Val 数据库名",
+                                  "fill": "$on-surface",
+                                  "content": "LYBTZYZS",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A7T8A2",
+                              "name": "Info 实例模式",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tXlkH",
+                                  "name": "Key 实例模式",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "实例模式",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "F5r72A",
+                                  "name": "Val 实例模式",
+                                  "fill": "$on-surface",
+                                  "content": "双模式（Remote + LocalDB）",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cHM0g",
+                              "name": "Info 字符集",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KJzrh",
+                                  "name": "Key 字符集",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "字符集",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "T5oMk",
+                                  "name": "Val 字符集",
+                                  "fill": "$on-surface",
+                                  "content": "UTF-8",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lu1RP",
+                      "name": "Action Buttons Card",
+                      "width": "fill_container",
+                      "fill": "$surface-card",
+                      "cornerRadius": 12,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000014",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VoB2u",
+                          "name": "Action Title",
+                          "fill": "$on-surface",
+                          "content": "备份与恢复操作",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FkZhA",
+                          "name": "Button Row",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fBoCr",
+                              "name": "Backup Button",
+                              "width": "fill_container",
+                              "fill": "$primary",
+                              "cornerRadius": 8,
+                              "gap": 10,
+                              "padding": [
+                                14,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "R0Tuv",
+                                  "name": "Backup Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "download",
+                                  "library": "lucide",
+                                  "fill": "#FFFFFF"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Mm6k2",
+                                  "name": "Backup Label",
+                                  "fill": "#FFFFFF",
+                                  "content": "立即备份",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "aXRsh",
+                              "name": "Restore Button",
+                              "width": "fill_container",
+                              "fill": "$surface-card",
+                              "cornerRadius": 8,
+                              "stroke": "$primary",
+                              "strokeWidth": 1.5,
+                              "gap": 10,
+                              "padding": [
+                                14,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "AXw5A",
+                                  "name": "Restore Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "upload",
+                                  "library": "lucide",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "samhd",
+                                  "name": "Restore Label",
+                                  "fill": "$primary",
+                                  "content": "数据恢复",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UOtfz",
+                          "name": "Button Row 2",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "p5z81",
+                              "name": "Export Button",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "gap": 8,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "d6PW3",
+                                  "name": "Export Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "file-output",
+                                  "library": "lucide",
+                                  "fill": "$on-surface-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "H8xHiT",
+                                  "name": "Export Label",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "导出备份",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "g1c3r",
+                              "name": "Verify Button",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "gap": 8,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "hAzwN",
+                                  "name": "Verify Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "shield-check",
+                                  "library": "lucide",
+                                  "fill": "$on-surface-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "gsHvz",
+                                  "name": "Verify Label",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "校验完整性",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WOyd4",
+                              "name": "Schedule Button",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "gap": 8,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "hS7j9",
+                                  "name": "Schedule Icon",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "calendar-check",
+                                  "library": "lucide",
+                                  "fill": "$on-surface-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Vd5er",
+                                  "name": "Schedule Label",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "计划任务",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "RvLxj",
+                          "name": "Backup Hint",
+                          "fill": "$on-surface-secondary",
+                          "content": "自动备份已启用 · 每日凌晨 03:00 执行全量备份",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qCwZs",
+                      "name": "Storage Info Card",
+                      "width": "fill_container",
+                      "fill": "$surface-card",
+                      "cornerRadius": 12,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000014",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "yQwkC",
+                          "name": "Storage Title",
+                          "fill": "$on-surface",
+                          "content": "存储空间",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ziqFP",
+                          "name": "Progress Container",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "NvQr1",
+                              "name": "Progress Text",
+                              "fill": "$on-surface-secondary",
+                              "content": "已使用 12.6 GB / 50 GB",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CX7Qn",
+                              "name": "Progress Bar Bg",
+                              "width": "fill_container",
+                              "height": 8,
+                              "fill": "$divider",
+                              "cornerRadius": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "nhe3g",
+                                  "name": "Progress Bar Fill",
+                                  "width": 302,
+                                  "height": 8,
+                                  "fill": "$primary",
+                                  "cornerRadius": 4
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "rQ5ya",
+                          "name": "Storage Note",
+                          "fill": "$on-surface-secondary",
+                          "content": "剩余空间充足，可进行约 15 次全量备份",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LssT5",
+                  "name": "Right Panel - History",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FZXDO",
+                      "name": "History Card",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface-card",
+                      "cornerRadius": 12,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000014",
+                        "offset": {
+                          "x": 0,
+                          "y": 2
+                        },
+                        "blur": 8
+                      },
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "tB73R",
+                          "name": "History Header",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "gjZUR",
+                              "name": "History Title",
+                              "fill": "$on-surface",
+                              "content": "备份历史记录",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 16,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q2QAgi",
+                              "name": "Filter Button",
+                              "fill": "$surface",
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "OAITU",
+                                  "name": "Filter Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "sliders-horizontal",
+                                  "library": "lucide",
+                                  "fill": "$on-surface-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "DYmFt",
+                                  "name": "Filter Text",
+                                  "fill": "$on-surface-secondary",
+                                  "content": "全部类型",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "dn6zz",
+                          "name": "Table Header",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "gap": 16,
+                          "padding": [
+                            10,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PZacQ",
+                              "name": "TH Type",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 72,
+                              "content": "类型",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R9LAU",
+                              "name": "TH Name",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 220,
+                              "content": "文件名",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "c4MJR",
+                              "name": "TH Size",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 72,
+                              "content": "大小",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "c98sU",
+                              "name": "TH Time",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 140,
+                              "content": "时间",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R8XZg",
+                              "name": "TH Status",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 72,
+                              "content": "状态",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MBV1s",
+                              "name": "TH Action",
+                              "fill": "$on-surface-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": 80,
+                              "content": "操作",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YCNzP",
+                          "name": "Table Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "M9D7Ev",
+                              "name": "Row 1",
+                              "width": "fill_container",
+                              "fill": "#00000000",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Bja7q",
+                                  "name": "Badge 1",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tbh78",
+                                      "name": "Type 1",
+                                      "fill": "$primary",
+                                      "content": "Full",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "HHG9p",
+                                  "name": "Fname 1",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Full_20240115_0300.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "i70WfJ",
+                                  "name": "Size 1",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.4 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "iu12n",
+                                  "name": "Time 1",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-15 03:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eQEam",
+                                  "name": "Status 1",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "uj9cc",
+                                      "name": "Stxt 1",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GkC5M",
+                                  "name": "Action 1",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "O6LT7",
+                                      "name": "Download 1",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "apY1s",
+                                      "name": "Trash 1",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Cp337",
+                              "name": "Row 2",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "EtzLx",
+                                  "name": "Badge 2",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "zJChN",
+                                      "name": "Type 2",
+                                      "fill": "$primary-light",
+                                      "content": "Incr",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "frZW5",
+                                  "name": "Fname 2",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Incr_20240114_1500.trn",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "p4lii",
+                                  "name": "Size 2",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "156 MB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "pGhcL",
+                                  "name": "Time 2",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-14 15:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "y9DEI",
+                                  "name": "Status 2",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "oD5ds",
+                                      "name": "Stxt 2",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xtM7B",
+                                  "name": "Action 2",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "F9RAi",
+                                      "name": "Download 2",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "Z7th4x",
+                                      "name": "Trash 2",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "h3yeV",
+                              "name": "Row 3",
+                              "width": "fill_container",
+                              "fill": "#00000000",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "O06DL",
+                                  "name": "Badge 3",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "oKTV7",
+                                      "name": "Type 3",
+                                      "fill": "$primary",
+                                      "content": "Full",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "RJXyt",
+                                  "name": "Fname 3",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Full_20240114_0300.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mxFxS",
+                                  "name": "Size 3",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.3 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "FFDcZ",
+                                  "name": "Time 3",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-14 03:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Z7av6",
+                                  "name": "Status 3",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I71qO",
+                                      "name": "Stxt 3",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xTUAW",
+                                  "name": "Action 3",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aEgYA",
+                                      "name": "Download 3",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "Gbb8J",
+                                      "name": "Trash 3",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pkJoA",
+                              "name": "Row 4",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "CXsuj",
+                                  "name": "Badge 4",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "W3lGX1",
+                                      "name": "Type 4",
+                                      "fill": "$primary-light",
+                                      "content": "Incr",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "T15F9L",
+                                  "name": "Fname 4",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Incr_20240113_1500.trn",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BQxpF",
+                                  "name": "Size 4",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "148 MB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "X92gvs",
+                                  "name": "Time 4",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-13 15:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "oor8k",
+                                  "name": "Status 4",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "QEIzE",
+                                      "name": "Stxt 4",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "i6r1q",
+                                  "name": "Action 4",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "D0z9zq",
+                                      "name": "Download 4",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "O0SFSv",
+                                      "name": "Trash 4",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "D7TDNh",
+                              "name": "Row 5",
+                              "width": "fill_container",
+                              "fill": "#00000000",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "xxhRC",
+                                  "name": "Badge 5",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "B92mL",
+                                      "name": "Type 5",
+                                      "fill": "$primary",
+                                      "content": "Full",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "tlE4E",
+                                  "name": "Fname 5",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Full_20240113_0300.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "v77cEy",
+                                  "name": "Size 5",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.2 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c20PZE",
+                                  "name": "Time 5",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-13 03:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "s6kTcM",
+                                  "name": "Status 5",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "J3cVpi",
+                                      "name": "Stxt 5",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zxxP6",
+                                  "name": "Action 5",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "X9T0b",
+                                      "name": "Download 5",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "D8SUN",
+                                      "name": "Trash 5",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XCyEx",
+                              "name": "Row 6",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "c44o1h",
+                                  "name": "Badge 6",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Is15O",
+                                      "name": "Type 6",
+                                      "fill": "$primary-light",
+                                      "content": "Incr",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "He01U",
+                                  "name": "Fname 6",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Incr_20240112_1500.trn",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EyE1o",
+                                  "name": "Size 6",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "142 MB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cEGqx",
+                                  "name": "Time 6",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-12 15:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "KY3yD",
+                                  "name": "Status 6",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ZWSn2",
+                                      "name": "Stxt 6",
+                                      "fill": "$warning",
+                                      "content": "警告",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "E4R5Hq",
+                                  "name": "Action 6",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "a0gbq9",
+                                      "name": "Download 6",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "d8lTnt",
+                                      "name": "Trash 6",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "p8qFV",
+                              "name": "Row 7",
+                              "width": "fill_container",
+                              "fill": "#00000000",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "PF8GV",
+                                  "name": "Badge 7",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "CIx8Q",
+                                      "name": "Type 7",
+                                      "fill": "$primary",
+                                      "content": "Full",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "aatuA",
+                                  "name": "Fname 7",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Full_20240112_0300.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YBINz",
+                                  "name": "Size 7",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.1 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YKihy",
+                                  "name": "Time 7",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-12 03:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "W1fQZF",
+                                  "name": "Status 7",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "OPbss",
+                                      "name": "Stxt 7",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "B8QWVB",
+                                  "name": "Action 7",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "P1Sc2d",
+                                      "name": "Download 7",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "sp1pE",
+                                      "name": "Trash 7",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YC4yv",
+                              "name": "Row 8",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "NwHuJ",
+                                  "name": "Badge 8",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "c2SNnH",
+                                      "name": "Type 8",
+                                      "fill": "$primary-dark",
+                                      "content": "Manual",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "galNR",
+                                  "name": "Fname 8",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Manual_20240111_1430.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bfORW",
+                                  "name": "Size 8",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.0 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bZVqB",
+                                  "name": "Time 8",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-11 14:30",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "z4Coi",
+                                  "name": "Status 8",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Qm1Th",
+                                      "name": "Stxt 8",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fqHI1",
+                                  "name": "Action 8",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "QrklA",
+                                      "name": "Download 8",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "wYiaN",
+                                      "name": "Trash 8",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ED6US",
+                              "name": "Row 9",
+                              "width": "fill_container",
+                              "fill": "#00000000",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "DkXh1",
+                                  "name": "Badge 9",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qyAKz",
+                                      "name": "Type 9",
+                                      "fill": "$primary",
+                                      "content": "Full",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "OG9mY",
+                                  "name": "Fname 9",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Full_20240111_0300.bak",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rKhO5",
+                                  "name": "Size 9",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "2.0 GB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "l0b2o",
+                                  "name": "Time 9",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-11 03:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UnQPA",
+                                  "name": "Status 9",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "NfrIS",
+                                      "name": "Stxt 9",
+                                      "fill": "$error",
+                                      "content": "失败",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rLvru",
+                                  "name": "Action 9",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Lj9Pw",
+                                      "name": "Download 9",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "l0OZlR",
+                                      "name": "Trash 9",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R0ubJs",
+                              "name": "Row 10",
+                              "width": "fill_container",
+                              "fill": "$surface",
+                              "gap": 16,
+                              "padding": [
+                                12,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "zT7wt",
+                                  "name": "Badge 10",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "S83vsR",
+                                      "name": "Type 10",
+                                      "fill": "$primary-light",
+                                      "content": "Incr",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "p7siM",
+                                  "name": "Fname 10",
+                                  "fill": "$on-surface",
+                                  "textGrowth": "fixed-width",
+                                  "width": 220,
+                                  "content": "LYBTZYZS_Incr_20240110_1500.trn",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kT83S",
+                                  "name": "Size 10",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 72,
+                                  "content": "135 MB",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WbzQJ",
+                                  "name": "Time 10",
+                                  "fill": "$on-surface-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": 140,
+                                  "content": "2024-01-10 15:00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Oodvs",
+                                  "name": "Status 10",
+                                  "width": 72,
+                                  "fill": "#000000",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "justifyContent": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kWex2",
+                                      "name": "Stxt 10",
+                                      "fill": "$success",
+                                      "content": "成功",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZmEuQ",
+                                  "name": "Action 10",
+                                  "width": 80,
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "XJ4B2",
+                                      "name": "Download 10",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "download",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "kRcN2",
+                                      "name": "Trash 10",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "trash-2",
+                                      "library": "lucide",
+                                      "fill": "$on-surface-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iEQKG",
+                          "name": "Pagination",
+                          "width": "fill_container",
+                          "padding": [
+                            8,
+                            0,
+                            0,
+                            0
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "wJ3e3",
+                              "name": "Page Info",
+                              "fill": "$on-surface-secondary",
+                              "content": "显示 1-10 条，共 42 条记录",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "POs4G",
+                              "name": "Page Buttons",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "IllGf",
+                                  "name": "Page ‹",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "d32NmG",
+                                      "name": "Pg ‹ Text",
+                                      "fill": "$on-surface",
+                                      "content": "‹",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "XASnM",
+                                  "name": "Page 1",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "$primary",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "DHJN8",
+                                      "name": "Pg 1 Text",
+                                      "fill": "#FFFFFF",
+                                      "content": "1",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "OgPgs",
+                                  "name": "Page 2",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "A6p8WJ",
+                                      "name": "Pg 2 Text",
+                                      "fill": "$on-surface",
+                                      "content": "2",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "TgNVn",
+                                  "name": "Page 3",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nmLUB",
+                                      "name": "Pg 3 Text",
+                                      "fill": "$on-surface",
+                                      "content": "3",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "u0uuc",
+                                  "name": "Page 4",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ziIgT",
+                                      "name": "Pg 4 Text",
+                                      "fill": "$on-surface",
+                                      "content": "4",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "F0X9Pt",
+                                  "name": "Page 5",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ZQGb0",
+                                      "name": "Pg 5 Text",
+                                      "fill": "$on-surface",
+                                      "content": "5",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "w6ERb",
+                                  "name": "Page ›",
+                                  "width": 32,
+                                  "height": 32,
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SwFbu",
+                                      "name": "Pg › Text",
+                                      "fill": "$on-surface",
+                                      "content": "›",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#9C786C"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FAFAFA"
+    },
+    "surface-card": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "on-surface": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "on-surface-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "success": {
+      "type": "color",
+      "value": "#4CAF50"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#FF9800"
+    },
+    "error": {
+      "type": "color",
+      "value": "#F44336"
+    },
+    "sidebar-bg": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "sidebar-text": {
+      "type": "color",
+      "value": "#D7CCC8"
+    },
+    "sidebar-active": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Roboto"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Roboto"
+    }
+  },
+  "fileToken": "f3b620a6-6ed3-4ec5-949b-4c011042af66"
+}

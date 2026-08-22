@@ -1,0 +1,2366 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "g6PuD",
+      "x": 0,
+      "y": 0,
+      "name": "Log Level Control Window",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Brjw7",
+          "name": "Sidebar",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$primary-deep",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            24,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "DfiOk",
+              "name": "Logo Area",
+              "width": "fill_container",
+              "height": 64,
+              "gap": 12,
+              "padding": [
+                0,
+                24
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QXyan",
+                  "name": "Logo Icon",
+                  "width": 36,
+                  "height": 36,
+                  "fill": "$amber",
+                  "cornerRadius": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V8NXM",
+                      "name": "Logo Text",
+                      "fill": "$primary-deep",
+                      "content": "中",
+                      "fontFamily": "$font-body",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "tkxqC",
+                  "name": "System Name",
+                  "fill": "#FFFFFF",
+                  "content": "中医诊所管理系统",
+                  "fontFamily": "$font-body",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PnJ5c",
+              "name": "Divider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "#FFFFFF33"
+            },
+            {
+              "type": "frame",
+              "id": "f38Ae",
+              "name": "Navigation",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "padding": [
+                8,
+                12
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "aJfPd",
+                  "name": "仪表盘",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "uGvrs",
+                      "name": "仪表盘 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "dashboard",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "n4Axbg",
+                      "name": "仪表盘 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "仪表盘",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gKN4I",
+                  "name": "患者管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "DmJv0",
+                      "name": "患者管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "person",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bJbzw",
+                      "name": "患者管理 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "患者管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XRLv0",
+                  "name": "诊疗管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "z3zzT",
+                      "name": "诊疗管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "medical_services",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "N7eKf",
+                      "name": "诊疗管理 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "诊疗管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gW9Bz",
+                  "name": "库存管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "j1u1z",
+                      "name": "库存管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "inventory",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XvaXf",
+                      "name": "库存管理 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "库存管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n9dWD",
+                  "name": "收费管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "NtAu7",
+                      "name": "收费管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "receipt_long",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "B2lcV",
+                      "name": "收费管理 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "收费管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JeKZj",
+                  "name": "预约管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "IKVoN",
+                      "name": "预约管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "calendar_month",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF99"
+                    },
+                    {
+                      "type": "text",
+                      "id": "mwvwr",
+                      "name": "预约管理 Text",
+                      "fill": "#FFFFFF99",
+                      "content": "预约管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "P6N6d9",
+                  "name": "系统设置",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#FFFFFF22",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "y9MU4",
+                      "name": "系统设置 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "e9l8V",
+                      "name": "系统设置 Text",
+                      "fill": "#FFFFFF",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qDEQS",
+                  "name": "日志控制",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#FFFFFF22",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "y5Oigi",
+                      "name": "日志控制 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "terminal",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MTgXg",
+                      "name": "日志控制 Text",
+                      "fill": "#FFFFFF",
+                      "content": "日志控制",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qsoFo",
+          "name": "Right Section",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "V3wv7r",
+              "name": "Content Area",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZA8Uz",
+                  "name": "Page Header",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ubwN5",
+                      "name": "Header Left",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "z1Ya4",
+                          "name": "Page Title",
+                          "fill": "$text-primary",
+                          "content": "日志级别控制",
+                          "fontFamily": "$font-body",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pgrFV",
+                          "name": "Page Subtitle",
+                          "fill": "$text-secondary",
+                          "content": "管理系统各模块的日志记录级别与配置",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GgryZ",
+                      "name": "Header Right",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "YFTli",
+                          "name": "Auto Refresh Toggle",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GnloM",
+                              "name": "Toggle Track",
+                              "width": 40,
+                              "height": 22,
+                              "fill": "$primary",
+                              "cornerRadius": 11,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "i9qnj",
+                                  "layoutPosition": "absolute",
+                                  "x": 19,
+                                  "y": 2,
+                                  "name": "Toggle Thumb",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "#FFFFFF",
+                                  "cornerRadius": 9
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ta6wi",
+                              "name": "Auto Refresh Label",
+                              "fill": "$text-secondary",
+                              "content": "自动刷新",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XG2Ph",
+                  "name": "Main Content",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cHI4r",
+                      "name": "Settings Panel",
+                      "width": 480,
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "B5vcEg",
+                          "name": "Module Log Levels Card",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 12,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#4E342E15",
+                            "offset": {
+                              "x": 0,
+                              "y": 2
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "b3dECT",
+                              "name": "Card Title",
+                              "fill": "$text-primary",
+                              "content": "模块日志级别",
+                              "fontFamily": "$font-body",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "X0tZo",
+                              "name": "Card Divider",
+                              "width": "fill_container",
+                              "height": 1,
+                              "fill": "#E8E0D8"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R8p8G",
+                              "name": "WebAPI Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "c2eKB",
+                                  "name": "WebAPI Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "zHmfT",
+                                      "name": "WebAPI Name",
+                                      "fill": "$text-primary",
+                                      "content": "WebAPI",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Vm5xr",
+                                      "name": "WebAPI Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "Web API 请求与响应日志",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "C32hk3",
+                                  "name": "WebAPI Select",
+                                  "width": 140,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "hoI74",
+                                      "name": "WebAPI Level",
+                                      "fill": "$text-primary",
+                                      "content": "Information",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "NowMj",
+                                      "name": "WebAPI Arrow",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "keyboard_arrow_down",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "G2ugl",
+                              "name": "Database Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "aXI8x",
+                                  "name": "Database Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "e9aYMM",
+                                      "name": "Database Name",
+                                      "fill": "$text-primary",
+                                      "content": "Database",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "qMdrr",
+                                      "name": "Database Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "数据库操作与查询日志",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "m24qdE",
+                                  "name": "Database Select",
+                                  "width": 140,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LuPfk",
+                                      "name": "Database Level",
+                                      "fill": "$text-primary",
+                                      "content": "Warning",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "QnIu1",
+                                      "name": "Database Arrow",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "keyboard_arrow_down",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dKLNd",
+                              "name": "Auth Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "slp3E",
+                                  "name": "Auth Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tywHR",
+                                      "name": "Auth Name",
+                                      "fill": "$text-primary",
+                                      "content": "Auth",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "BIvo3",
+                                      "name": "Auth Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "身份认证与授权日志",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "V02BC",
+                                  "name": "Auth Select",
+                                  "width": 140,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tNuYb",
+                                      "name": "Auth Level",
+                                      "fill": "$text-primary",
+                                      "content": "Error",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "O7tbOS",
+                                      "name": "Auth Arrow",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "keyboard_arrow_down",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Wzi0k",
+                              "name": "UI Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "QDAeB",
+                                  "name": "UI Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "csuH7",
+                                      "name": "UI Name",
+                                      "fill": "$text-primary",
+                                      "content": "UI",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "YKyTh",
+                                      "name": "UI Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "桌面客户端交互日志",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "h69rKG",
+                                  "name": "UI Select",
+                                  "width": 140,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "gap": 8,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SlFIC",
+                                      "name": "UI Level",
+                                      "fill": "$text-primary",
+                                      "content": "Debug",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "ugzmG",
+                                      "name": "UI Arrow",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "keyboard_arrow_down",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GzIMK",
+                          "name": "Config Card",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 12,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#4E342E15",
+                            "offset": {
+                              "x": 0,
+                              "y": 2
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "gLyN9",
+                              "name": "Config Title",
+                              "fill": "$text-primary",
+                              "content": "日志配置",
+                              "fontFamily": "$font-body",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R15Zd",
+                              "name": "Config Divider",
+                              "width": "fill_container",
+                              "height": 1,
+                              "fill": "#E8E0D8"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Itb5q",
+                              "name": "日志文件大小限制 Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "SiUbs",
+                                  "name": "日志文件大小限制 Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LCCMI",
+                                      "name": "日志文件大小限制 Label",
+                                      "fill": "$text-primary",
+                                      "content": "日志文件大小限制",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "GGId8",
+                                      "name": "日志文件大小限制 Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "单个日志文件最大容量",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dlhdt",
+                                  "name": "日志文件大小限制 Input",
+                                  "width": 120,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nivDj",
+                                      "name": "日志文件大小限制 Value",
+                                      "fill": "$text-primary",
+                                      "content": "50 MB",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "E8QzHd",
+                              "name": "日志保留天数 Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "cvC0U",
+                                  "name": "日志保留天数 Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "r2kWTl",
+                                      "name": "日志保留天数 Label",
+                                      "fill": "$text-primary",
+                                      "content": "日志保留天数",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "WjO9E",
+                                      "name": "日志保留天数 Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "超过保留期的日志自动清理",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GdyB2",
+                                  "name": "日志保留天数 Input",
+                                  "width": 120,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ozb8H",
+                                      "name": "日志保留天数 Value",
+                                      "fill": "$text-primary",
+                                      "content": "30 天",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d1QsUt",
+                              "name": "实时日志行数 Row",
+                              "width": "fill_container",
+                              "gap": 12,
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "d8Hpy2",
+                                  "name": "实时日志行数 Info",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "dAaD5",
+                                      "name": "实时日志行数 Label",
+                                      "fill": "$text-primary",
+                                      "content": "实时日志行数",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "hLBtB",
+                                      "name": "实时日志行数 Desc",
+                                      "fill": "$text-secondary",
+                                      "content": "实时查看区域显示的最大行数",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "oMFy3",
+                                  "name": "实时日志行数 Input",
+                                  "width": 120,
+                                  "height": 36,
+                                  "fill": "#FBF7F3",
+                                  "cornerRadius": 8,
+                                  "stroke": "#E8E0D8",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "OLxcx",
+                                      "name": "实时日志行数 Value",
+                                      "fill": "$text-primary",
+                                      "content": "500 行",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OVuSd",
+                          "name": "Button Bar",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "justifyContent": "end",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "l4veCw",
+                              "name": "Save Button",
+                              "height": 40,
+                              "fill": "$primary",
+                              "cornerRadius": 8,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "eGTcB",
+                                  "name": "Save Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "save",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#FFFFFF"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "x9Dje",
+                                  "name": "Save Label",
+                                  "fill": "#FFFFFF",
+                                  "content": "保存设置",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ytmkh",
+                              "name": "Clear Button",
+                              "height": 40,
+                              "fill": "#00000000",
+                              "cornerRadius": 8,
+                              "stroke": "#E8E0D8",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "KtQSf",
+                                  "name": "Clear Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "delete_sweep",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$text-secondary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wNyFp",
+                                  "name": "Clear Label",
+                                  "fill": "$text-secondary",
+                                  "content": "清空日志",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "j4GutG",
+                              "name": "Export Button",
+                              "height": 40,
+                              "fill": "#00000000",
+                              "cornerRadius": 8,
+                              "stroke": "$amber",
+                              "strokeWidth": 1,
+                              "gap": 8,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "EptVV",
+                                  "name": "Export Icon",
+                                  "width": 18,
+                                  "height": 18,
+                                  "icon": "download",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$amber"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "xHce1",
+                                  "name": "Export Label",
+                                  "fill": "$amber",
+                                  "content": "导出日志",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "casig",
+                      "name": "Log Viewer Panel",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "g6UPU",
+                          "name": "Log Viewer Card",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 12,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#4E342E15",
+                            "offset": {
+                              "x": 0,
+                              "y": 2
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "t5N3xZ",
+                              "name": "Log Header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "fill": "#FBF7F3",
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                16
+                              ],
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "lck8P",
+                                  "name": "Log Title",
+                                  "fill": "$text-primary",
+                                  "content": "实时日志",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fae1A",
+                                  "name": "Log Header Right",
+                                  "gap": 12,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "g47HOG",
+                                      "name": "Status Dot",
+                                      "fill": "#4CAF50",
+                                      "width": 8,
+                                      "height": 8
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "NFr5b",
+                                      "name": "Status Text",
+                                      "fill": "#4CAF50",
+                                      "content": "运行中",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "VkvXy",
+                                      "name": "Filter Button",
+                                      "width": 64,
+                                      "height": 28,
+                                      "fill": "#00000000",
+                                      "cornerRadius": 6,
+                                      "stroke": "#E8E0D8",
+                                      "strokeWidth": 1,
+                                      "gap": 4,
+                                      "padding": [
+                                        0,
+                                        8
+                                      ],
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "r7eQb",
+                                          "name": "Filter Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "filter_list",
+                                          "library": "Material Symbols Rounded",
+                                          "fill": "$text-secondary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "d4wXg3",
+                                          "name": "Filter Label",
+                                          "fill": "$text-secondary",
+                                          "content": "筛选",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 11,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "aIF5E",
+                                      "name": "Filter Label",
+                                      "fill": "$text-secondary",
+                                      "content": "筛选",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uMGnm",
+                              "name": "Log Content",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "fill": "#2F2A26",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ydreo",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "zy9Md",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:01",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "g3a2q",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "s9uMH",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "UoPcB",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[WebAPI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ztt7R",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "GET /api/patients - 200 OK (12ms)",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "bJ3su",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "g2Lge",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:02",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "zB6A0",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "S0utG",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xQQXd",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[Auth]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "faZRI",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "用户 'admin' 登录成功",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "U2hW8",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "OgtNY",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:03",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "KuzKZ",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#2196F333",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ILQmA",
+                                          "name": "Level Text",
+                                          "fill": "#2196F3",
+                                          "content": "DEBUG",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xeMsl",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[Database]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "EWf0w",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "SELECT * FROM Prescriptions WHERE Id = @p0",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M7EvNj",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "E2lgfZ",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:03",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "QBxN1",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#FFB30033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "LcBIn",
+                                          "name": "Level Text",
+                                          "fill": "#FFB300",
+                                          "content": "WARN",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "gEYiF",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[Database]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "DIhXg",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "查询执行时间超过阈值: 1.2s",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "HezTV",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "KoiXn",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:04",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pq4CQ",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "f25Cf",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "F2aQpk",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[WebAPI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Rddyx",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "POST /api/prescriptions - 201 Created (45ms)",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DywId",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kb1L5",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:05",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gUNcE",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#F4433633",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "iBsCG",
+                                          "name": "Level Text",
+                                          "fill": "#F44336",
+                                          "content": "ERROR",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "f699b",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[Auth]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pLQGM",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Token 验证失败: 用户令牌已过期",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eB5hr",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "fKDff",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:05",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "bBRx7",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Mh9Kt",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZnFCs",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[UI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "VINOb",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "加载患者列表视图",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "t3Fm5",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "KxyPG",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:06",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TRqgP",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#2196F333",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "o6JQ9h",
+                                          "name": "Level Text",
+                                          "fill": "#2196F3",
+                                          "content": "DEBUG",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "hIBdR",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[WebAPI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "vrnQ7",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "WebSocket 连接已建立: client-001",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "pQPti",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "eVZwG",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:07",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "c2lTsz",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "SiLnc",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "w8UhWz",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[Database]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "dCSnl",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "事务提交成功: TxId=8f3a2b",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G8CVAL",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Nxag4",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:08",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "mTXcs",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#FFB30033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "y2FK0M",
+                                          "name": "Level Text",
+                                          "fill": "#FFB300",
+                                          "content": "WARN",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pPp8v",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[WebAPI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "KEIub",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "请求频率过高: IP=192.168.1.100",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Z60Y6r",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LCqAc",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:09",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "HPsHV",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "uHwvH",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "y2Rak",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[UI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RfEbq",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "刷新仪表盘数据",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "k7cYtC",
+                                  "name": "Log Line",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LicUL",
+                                      "name": "Timestamp",
+                                      "fill": "#8D8078",
+                                      "content": "14:32:10",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Ig7nN",
+                                      "name": "Level Badge",
+                                      "height": 18,
+                                      "fill": "#4CAF5033",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        0,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "TON0E",
+                                          "name": "Level Text",
+                                          "fill": "#4CAF50",
+                                          "content": "INFO",
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 11,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Ctzf9",
+                                      "name": "Module Tag",
+                                      "fill": "#FFB300",
+                                      "content": "[WebAPI]",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "HbQv1",
+                                      "name": "Message",
+                                      "fill": "#E8E0D8",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "GET /api/dashboard/stats - 200 OK (8ms)",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "L3WiHO",
+              "name": "Status Bar",
+              "width": "fill_container",
+              "height": 32,
+              "fill": "$primary",
+              "gap": 12,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "H3gNN6",
+                  "name": "Status Version",
+                  "fill": "#FFFFFF99",
+                  "content": "v1.0.0",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "WJvgM",
+                  "name": "Status Separator",
+                  "width": 1,
+                  "height": 16,
+                  "fill": "#FFFFFF33"
+                },
+                {
+                  "type": "icon",
+                  "id": "qN1ro",
+                  "name": "Status Server Icon",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "cloud",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#4CAF50"
+                },
+                {
+                  "type": "text",
+                  "id": "uGlW3",
+                  "name": "Status Server",
+                  "fill": "#FFFFFFCC",
+                  "content": "服务器连接正常",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "GiilC",
+                  "name": "Status Separator 2",
+                  "width": 1,
+                  "height": 16,
+                  "fill": "#FFFFFF33"
+                },
+                {
+                  "type": "icon",
+                  "id": "V1XQd",
+                  "name": "Status DB Icon",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "database",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#4CAF50"
+                },
+                {
+                  "type": "text",
+                  "id": "AhTA4",
+                  "name": "Status DB",
+                  "fill": "#FFFFFFCC",
+                  "content": "数据库连接正常",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "P65pp",
+                  "name": "Status Right",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "end",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mhztD",
+                      "name": "Status User",
+                      "fill": "#FFFFFFCC",
+                      "content": "管理员: admin",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "K1sOB",
+                      "name": "Status Time",
+                      "fill": "#FFFFFFCC",
+                      "content": "14:32:10",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-deep": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "amber": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#2F2A26"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D8078"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "sidebar-width": {
+      "type": "number",
+      "value": 240
+    },
+    "statusbar-height": {
+      "type": "number",
+      "value": 32
+    }
+  },
+  "fileToken": "729d281f-ea92-40e3-82d7-3811a8c88fcf"
+}
