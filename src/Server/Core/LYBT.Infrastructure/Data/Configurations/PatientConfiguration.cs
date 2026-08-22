@@ -22,8 +22,9 @@ public class PatientConfiguration : BaseEntityConfiguration<Patient>
         builder.HasIndex(p => p.IdNumber).IsUnique().HasFilter("[IsDeleted] = 0 AND [IdNumber] IS NOT NULL").HasDatabaseName("IX_Patients_IdNumber");
 
         // P1-9：敏感字段透明加密（AES-GCM，落库密文，日志仍脱敏双层）
-        builder.Property(p => p.IdNumber).HasConversion(new AesGcmValueConverter());
-        builder.Property(p => p.PhoneNumber).HasConversion(new AesGcmValueConverter());
+        // 加密后 Base64 长度显著大于明文（Phone 11→64，IdNumber 18→62，50 字符明文→104），列需扩容至 200 以容纳密文
+        builder.Property(p => p.IdNumber).HasConversion(new AesGcmValueConverter()).HasMaxLength(200);
+        builder.Property(p => p.PhoneNumber).HasConversion(new AesGcmValueConverter()).HasMaxLength(200);
 
         // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
     }
