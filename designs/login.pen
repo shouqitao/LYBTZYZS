@@ -6,7 +6,7 @@
       "id": "Phae8",
       "x": 0,
       "y": 0,
-      "name": "登录界面-良医堂",
+      "name": "登录界面",
       "clip": true,
       "width": 1440,
       "height": 900,
@@ -119,11 +119,11 @@
                 {
                   "type": "text",
                   "id": "s7ZCUm",
-                  "name": "系统名称-良医堂",
+                  "name": "系统名称",
                   "fill": "#FFFFFF",
-                  "content": "良医堂",
+                  "content": "凌隐宝堂中医诊所",
                   "fontFamily": "$font-brand",
-                  "fontSize": 50,
+                  "fontSize": 40,
                   "fontWeight": "600",
                   "letterSpacing": 10
                 },
@@ -134,7 +134,7 @@
                   "fill": "#F0DFC8",
                   "content": "中医诊所管理系统",
                   "fontFamily": "$font-body",
-                  "fontSize": 19,
+                  "fontSize": 18,
                   "fontWeight": "normal",
                   "letterSpacing": 8
                 },
@@ -208,8 +208,8 @@
                       "type": "text",
                       "id": "el5aG",
                       "name": "版权行",
-                      "fill": "#A8927E",
-                      "content": "凌隐宝堂中医诊所 · 数字化门诊管理",
+                      "fill": "$text-secondary",
+                      "content": "中医诊所管理系统 · 数字化门诊管理",
                       "fontFamily": "$font-body",
                       "fontSize": 12,
                       "fontWeight": "normal"
@@ -218,10 +218,10 @@
                       "type": "text",
                       "id": "enkvO",
                       "name": "版权行2",
-                      "fill": "#8F7A68",
-                      "content": "© 2026 LiangYinTang Clinic System",
+                      "fill": "$text-secondary",
+                      "content": "© 2026 中医诊所管理系统",
                       "fontFamily": "$font-body",
-                      "fontSize": 11,
+                      "fontSize": 12,
                       "fontWeight": "normal"
                     }
                   ]
@@ -245,7 +245,7 @@
                   "name": "登录表单",
                   "width": 420,
                   "layout": "vertical",
-                  "gap": 26,
+                  "gap": 24,
                   "children": [
                     {
                       "type": "text",
@@ -254,7 +254,7 @@
                       "fill": "$text-primary",
                       "content": "欢迎登录",
                       "fontFamily": "$font-body",
-                      "fontSize": 30,
+                      "fontSize": 28,
                       "fontWeight": "600"
                     },
                     {
@@ -262,7 +262,7 @@
                       "id": "N1gsN",
                       "name": "欢迎副标题",
                       "fill": "$text-secondary",
-                      "content": "请使用您的账号登录良医堂中医诊所管理系统",
+                      "content": "请使用您的账号登录中医诊所管理系统",
                       "fontFamily": "$font-body",
                       "fontSize": 14,
                       "fontWeight": "normal"
@@ -279,7 +279,7 @@
                           "type": "text",
                           "id": "Q4cKvc",
                           "name": "用户名标签",
-                          "fill": "#4A403A",
+                          "fill": "$text-primary",
                           "content": "用户名",
                           "fontFamily": "$font-body",
                           "fontSize": 13,
@@ -357,7 +357,7 @@
                           "type": "text",
                           "id": "g7hY5c",
                           "name": "密码标签",
-                          "fill": "#4A403A",
+                          "fill": "$text-primary",
                           "content": "密码",
                           "fontFamily": "$font-body",
                           "fontSize": 13,
@@ -428,6 +428,7 @@
                       "id": "r06io",
                       "name": "选项行",
                       "width": "fill_container",
+                      "gap": 24,
                       "justifyContent": "space_between",
                       "alignItems": "center",
                       "children": [
@@ -466,7 +467,7 @@
                               "type": "text",
                               "id": "h8FFg",
                               "name": "记住密码文字",
-                              "fill": "#5C534D",
+                              "fill": "$text-secondary",
                               "content": "记住密码",
                               "fontFamily": "$font-body",
                               "fontSize": 13,
@@ -475,14 +476,34 @@
                           ]
                         },
                         {
-                          "type": "text",
-                          "id": "TT7g6",
-                          "name": "忘记密码链接",
-                          "fill": "$primary",
-                          "content": "忘记密码？",
-                          "fontFamily": "$font-body",
-                          "fontSize": 13,
-                          "fontWeight": "500"
+                          "type": "frame",
+                          "id": "WbPDb",
+                          "name": "自动登录",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YwuJF",
+                              "name": "复选框",
+                              "width": 20,
+                              "height": 20,
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 5,
+                              "stroke": "#B8AFA6",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "text",
+                              "id": "K6irf",
+                              "name": "自动登录文字",
+                              "fill": "$text-secondary",
+                              "content": "自动登录",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },
@@ -556,7 +577,7 @@
                       "fill": "$text-secondary",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "良医堂中医诊所管理系统 · V1.0.0",
+                      "content": "中医诊所管理系统 v1.0+dfbd92c",
                       "textAlign": "center",
                       "fontFamily": "$font-body",
                       "fontSize": 12,
@@ -573,7 +594,7 @@
           "id": "KcJ6q",
           "name": "底部状态栏",
           "width": "fill_container",
-          "height": 60,
+          "height": 48,
           "fill": "$bg-warm",
           "stroke": "#E7DFD7",
           "strokeWidth": {
@@ -689,6 +710,7 @@
               "type": "frame",
               "id": "hCBUu",
               "name": "连接状态区",
+              "width": 340,
               "gap": 10,
               "alignItems": "center",
               "children": [
@@ -730,6 +752,44 @@
                   "fontFamily": "$font-body",
                   "fontSize": 12,
                   "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Rqwy2",
+                  "name": "API配置按钮",
+                  "fill": "#00000000",
+                  "cornerRadius": 16,
+                  "stroke": "#D9CFC3",
+                  "strokeWidth": 1,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ebdmo",
+                      "name": "配置图标",
+                      "fill": "$primary",
+                      "content": "⚙",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UTBzh",
+                      "name": "配置文字",
+                      "fill": "$primary",
+                      "content": "API配置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
                 }
               ]
             }
