@@ -10,7 +10,7 @@ namespace LYBT.Tests.Desktop.Integration.LocalApi;
 
 [Trait("Category", "LocalApi")]
 [Collection("LocalApi")]
-public class SysadminLocalTests : LocalApiTestBase
+public class SysadminLocalTests : LocalWebApiTestBase
 {
     [Fact]
     [Trait("US", "US-AUTH-001")]

@@ -21,11 +21,13 @@ public class LocalApiCollection
 {
 }
 
+// 方案 D：LocalWebApiTestBase 为唯一 E2E 基类（合并 LocalApiTestBase + LocalWebApiControllerTestBase，统一经 SharedHost）
+
 /// <summary>
 /// LocalAPI E2E 基类 — WebApplication 内存启动 LocalWebAPI（LocalDB）
 /// 复用 LocalWebApiProgram.CreateApplication 确保与生产注册一致，解决 appsettings.json 路径问题
 /// </summary>
-public abstract class LocalApiTestBase : IAsyncLifetime
+public abstract class LocalWebApiTestBase : IAsyncLifetime
 {
     private readonly string _dbName = $"LYBTZYZS_LocalApi_{Guid.NewGuid():N}";
     private string _connectionString = null!;

@@ -11,7 +11,7 @@ namespace LYBT.Tests.Desktop.Integration.LocalApi;
 
 [Trait("Category", "LocalApi")]
 [Collection("LocalApi")]
-public class ReceptionistLocalTests : LocalApiTestBase
+public class ReceptionistLocalTests : LocalWebApiTestBase
 {
     [Fact]
     [Trait("US", "US-PAT-003")]

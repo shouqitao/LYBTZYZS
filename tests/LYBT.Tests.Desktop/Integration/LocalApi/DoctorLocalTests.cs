@@ -11,7 +11,7 @@ namespace LYBT.Tests.Desktop.Integration.LocalApi;
 
 [Trait("Category", "LocalApi")]
 [Collection("LocalApi")]
-public class DoctorLocalTests : LocalApiTestBase
+public class DoctorLocalTests : LocalWebApiTestBase
 {
     [Fact]
     [Trait("US", "US-MC-001")]

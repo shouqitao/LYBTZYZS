@@ -12,6 +12,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.LocalWebAPI.Auth;
 using LYBT.LocalWebAPI.Data;
+using LYBT.Infrastructure.Hosting;
 using LYBT.Module.Catalog;
 using LYBT.Module.Identity;
 using LYBT.Module.Identity.Services;
@@ -115,28 +116,11 @@ public static class LocalWebApiProgram
 
         builder.Services.AddSingleton<LoggingLevelManager>();
 
-        // 注册模块 Service（与远程 WebAPI 使用相同的 Service/Repository 层）
-        builder.Services.AddIdentityModule(builder.Configuration);
-        builder.Services.AddPatientsModule(builder.Configuration);
-        builder.Services.AddCatalogModule(builder.Configuration);
+        // 方案 D：业务模块经 SharedHost 统一注册（Server 与 Local 同源，新增模块仅改 SharedHost 一处）
+        builder.Services.AddSharedBusinessModules(builder.Configuration);
 
-        builder.Services.AddMedicalCaseModule(builder.Configuration);
-        builder.Services.AddRegistrationModule(builder.Configuration);
-        builder.Services.AddReportsModule(builder.Configuration);
-
-        // 缓存失效服务（MedicalCase 模块依赖 ICacheInvalidationService——远程 WebAPI 在
-        // DatabaseServiceCollectionExtensions 注册，LocalWebAPI 需对齐；AddOutputCache 供
-        // CacheInvalidationService 按 tag 驱逐依赖 + AddMemoryCache 供 IMemoryCache，desktop-di-fix 2026-08-14）
-        builder.Services.AddMemoryCache();
-        builder.Services.AddOutputCache();
-        builder.Services.AddSingleton<
-            LYBT.Infrastructure.Caching.ICacheInvalidationService,
-            LYBT.Infrastructure.Caching.CacheInvalidationService
-        >();
-
-        // SignalR（RegistrationModule 的 NotificationService 依赖 IHubContext<RegistrationHub>
-        // ——AddSignalR 注册 Hub 上下文；远程在 Program.cs 注册，LocalWebAPI 需对齐，desktop-di-fix 2026-08-14）
-        builder.Services.AddSignalR();
+        // 共享基础设施（MemoryCache/OutputCache/CacheInvalidation/SignalR）经 SharedHost 统一
+        builder.Services.AddSharedInfrastructure(builder.Configuration);
 
         // LocalWebAPI CQRS Handlers（Auth）
         builder.Services.AddMediatR(cfg =>

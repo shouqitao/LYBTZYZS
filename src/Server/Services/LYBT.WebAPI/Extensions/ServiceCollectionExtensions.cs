@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using LYBT.Infrastructure.Serialization;
 using LYBT.Shared.Logging.Http;
 using LYBT.WebAPI.Serialization;
+using LYBT.Infrastructure.Hosting;
 using LYBT.Module.Catalog;
 using LYBT.Module.Identity;
 using LYBT.Shared.Models.Spi;
@@ -86,35 +87,8 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 使用简化的模块注册方法
-        // 每个模块负责注册自己的服务、仓储、验证器等
-
-        // 1. 认证用户模块（A-31-C3a: Auth+Users 合并）
-        services.AddIdentityModule(configuration);
-
-        // 2. 挂号模块 - Sprint 2
-        // 必须在 Users 和 MedicalCase 之前注册，因为 UserService 和 MedicalCaseCommandService 依赖 IRegistrationRepository
-        services.AddRegistrationModule(configuration);
-
-        // 3. 患者模块
-        services.AddPatientsModule(configuration);
-
-        // 4. 中药模块
-        services.AddCatalogModule(configuration);
-
-        // 5. 配方模块
-        
-        // 诊断和处方功能已整合到MedicalCase聚合根
-
-        // 6. 病例模块
-        services.AddMedicalCaseModule(configuration);
-
-        // 7. 报表模块
-        services.AddReportsModule(configuration);
-
-        // SPI 注册表（新增报表/库存仅新增类 + DI 注册）
-        services.AddSpiRegistries();
-
+        // 方案 D：业务模块经 SharedHost 统一注册（Server 与 LocalWebAPI 同源，新增模块仅改 SharedHost 一处）
+        services.AddSharedBusinessModules(configuration);
         return services;
     }
 
