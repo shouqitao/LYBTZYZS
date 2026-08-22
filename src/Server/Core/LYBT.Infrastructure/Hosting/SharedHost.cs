@@ -51,9 +51,32 @@ public static class SharedHost
     /// </summary>
     public static WebApplication ConfigurePipeline(this WebApplication app, bool isLocal = false)
     {
-        // 异常处理（所有环境）— 统一 JSON 500
-        // 实际异常链由 Business/SystemExceptionHandler 承载，此处仅保底
-        app.UseExceptionHandler("/error");
+        // 异常处理 — 内联 lambda（无需 /error 端点），包含 InnerException 以定位 EF SaveChanges 失败等根因
+        app.UseExceptionHandler(exceptionHandlerApp =>
+        {
+            exceptionHandlerApp.Run(async context =>
+            {
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+                var innerMessage = error?.InnerException?.Message;
+                var message = innerMessage != null
+                    ? $"{error!.Message} | Inner: {innerMessage}"
+                    : error?.Message ?? "Internal server error";
+                // 若 InnerException 还有 InnerException（SqlException 常见多层），追加第二层
+                var innerInner = error?.InnerException?.InnerException?.Message;
+                if (innerInner != null && innerInner != innerMessage) message += $" | Inner2: {innerInner}";
+                var response = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(message);
+                response.RequestId = context.TraceIdentifier;
+                await System.Text.Json.JsonSerializer.SerializeAsync(
+                    context.Response.Body, response,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+                    });
+            });
+        });
 
         if (!isLocal)
         {
@@ -124,6 +147,8 @@ public static class SharedHost
         services.AddOutputCache();
         services.AddSignalR();
         services.AddHttpContextAccessor();
+        // 缓存失效服务（MedicalCase 模块依赖 ICacheInvalidationService）
+        services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
         return services;
     }
 

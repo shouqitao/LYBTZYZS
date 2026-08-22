@@ -183,10 +183,8 @@ public static class LocalWebApiProgram
 
         var app = builder.Build();
 
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.UseRateLimiter();
-        app.MapControllers();
+        // 中间件管道 — 经 SharedHost 统一（含 UseExceptionHandler 兜底）
+        app.ConfigurePipeline(isLocal: true);
 
         return app;
     }
