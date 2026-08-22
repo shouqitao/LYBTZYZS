@@ -126,6 +126,83 @@
           "children": [
             {
               "type": "frame",
+              "id": "jlkw2",
+              "name": "搜索框",
+              "width": 340,
+              "height": 40,
+              "fill": "#F5EFE8",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 10,
+              "padding": [
+                0,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "GcpbE",
+                  "name": "搜索",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "search",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "MnO1f",
+                  "name": "占位文字",
+                  "fill": "#B49B8F",
+                  "content": "搜索姓名 / 手机号 / 身份证号",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "F04dKi",
+              "name": "筛选按钮",
+              "height": 40,
+              "fill": "$surface",
+              "cornerRadius": 20,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                0,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "RfVJV",
+                  "name": "筛选",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "tune",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "WUEWt",
+                  "name": "按钮文字",
+                  "fill": "$primary",
+                  "content": "筛选",
+                  "fontFamily": "$font-ui",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
               "id": "PZp0W",
               "name": "新增患者按钮",
               "height": 40,
@@ -253,77 +330,34 @@
             },
             {
               "type": "frame",
-              "id": "jlkw2",
-              "name": "搜索框",
-              "width": 340,
-              "height": 40,
-              "fill": "#F5EFE8",
-              "cornerRadius": 20,
-              "stroke": "$border",
-              "strokeWidth": 1,
-              "gap": 10,
-              "padding": [
-                0,
-                14
-              ],
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "icon",
-                  "id": "GcpbE",
-                  "name": "搜索",
-                  "width": 20,
-                  "height": 20,
-                  "icon": "search",
-                  "library": "Material Symbols Rounded",
-                  "fill": "$text-secondary"
-                },
-                {
-                  "type": "text",
-                  "id": "MnO1f",
-                  "name": "占位文字",
-                  "fill": "#B49B8F",
-                  "content": "搜索姓名 / 手机号 / 身份证号",
-                  "fontFamily": "$font-ui",
-                  "fontSize": 13,
-                  "fontWeight": "normal"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "F04dKi",
-              "name": "筛选按钮",
-              "height": 40,
-              "fill": "$surface",
-              "cornerRadius": 20,
-              "stroke": "$border",
-              "strokeWidth": 1,
+              "id": "s6ajC",
+              "name": "批量删除按钮",
+              "width": 96,
+              "height": 36,
+              "fill": "#B00020",
+              "cornerRadius": 6,
               "gap": 6,
-              "padding": [
-                0,
-                14
-              ],
+              "justifyContent": "center",
               "alignItems": "center",
               "children": [
                 {
                   "type": "icon",
-                  "id": "RfVJV",
-                  "name": "筛选",
+                  "id": "jrMjZ",
+                  "name": "删除图标",
                   "width": 18,
                   "height": 18,
-                  "icon": "tune",
+                  "icon": "delete",
                   "library": "Material Symbols Rounded",
-                  "fill": "$primary"
+                  "fill": "#FFFFFF"
                 },
                 {
                   "type": "text",
-                  "id": "WUEWt",
-                  "name": "按钮文字",
-                  "fill": "$primary",
-                  "content": "筛选",
+                  "id": "m8BKsS",
+                  "name": "批量删除文字",
+                  "fill": "#FFFFFF",
+                  "content": "批量删除",
                   "fontFamily": "$font-ui",
-                  "fontSize": 14,
+                  "fontSize": 13,
                   "fontWeight": "500"
                 }
               ]
@@ -2351,7 +2385,8 @@
                           "fill": "$text-secondary",
                           "content": "2",
                           "fontFamily": "$font-ui",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2375,7 +2410,8 @@
                           "fill": "$text-secondary",
                           "content": "3",
                           "fontFamily": "$font-ui",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2399,7 +2435,8 @@
                           "fill": "$text-secondary",
                           "content": "…",
                           "fontFamily": "$font-ui",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2423,7 +2460,8 @@
                           "fill": "$text-secondary",
                           "content": "43",
                           "fontFamily": "$font-ui",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3408,6 +3446,36 @@
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "imGRm",
+              "name": "GridSplitter",
+              "width": 12,
+              "height": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "J782O6",
+                  "name": "分割线",
+                  "fill": "#E8DED5",
+                  "width": 1,
+                  "height": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "cVr2Y",
+                  "name": "拖拽柄",
+                  "width": 6,
+                  "height": 48,
+                  "fill": "#D9A05B",
+                  "cornerRadius": 3
                 }
               ]
             }

@@ -1,0 +1,1735 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "OP6i1",
+      "x": 0,
+      "y": 0,
+      "name": "System Settings Window",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$background",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "u97GE",
+          "x": 0,
+          "y": 0,
+          "name": "Sidebar",
+          "width": 240,
+          "height": 900,
+          "fill": "$primary-dark",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            24,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "OzeJZ",
+              "name": "Logo Area",
+              "width": "fill_container",
+              "height": 80,
+              "gap": 12,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "U7v942",
+                  "name": "Logo Icon",
+                  "width": 40,
+                  "height": 40,
+                  "fill": "$amber",
+                  "cornerRadius": 8
+                },
+                {
+                  "type": "text",
+                  "id": "DQDI2",
+                  "name": "System Name",
+                  "fill": "#FFFFFF",
+                  "content": "中医诊所管理系统",
+                  "fontFamily": "$font-body",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ocZyE",
+              "name": "Navigation Section",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "padding": [
+                8,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GlO4l",
+                  "name": "Nav 系统设置",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#ffffff1f",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "z3IAMd",
+                      "name": "系统设置 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$amber"
+                    },
+                    {
+                      "type": "text",
+                      "id": "C2mIX",
+                      "name": "系统设置 Text",
+                      "fill": "#FFFFFF",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S4Wk7",
+                  "name": "Nav 诊所管理",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "bnEjF",
+                      "name": "诊所管理 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "local_hospital",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "m27PMW",
+                      "name": "诊所管理 Text",
+                      "fill": "#ffffffd9",
+                      "content": "诊所管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hCrHX",
+                  "name": "Nav 预约管理",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "sdDYI",
+                      "name": "预约管理 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "calendar_today",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZfPX0",
+                      "name": "预约管理 Text",
+                      "fill": "#ffffffd9",
+                      "content": "预约管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FD1MJ",
+                  "name": "Nav 患者档案",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "j4Zvc",
+                      "name": "患者档案 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "person",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "fHbER",
+                      "name": "患者档案 Text",
+                      "fill": "#ffffffd9",
+                      "content": "患者档案",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M3Ks5",
+                  "name": "Nav 药品管理",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yXSOv",
+                      "name": "药品管理 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "local_pharmacy",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "n2PR7",
+                      "name": "药品管理 Text",
+                      "fill": "#ffffffd9",
+                      "content": "药品管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "O8i31b",
+                  "name": "Nav 数据统计",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "IO2yV",
+                      "name": "数据统计 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "bar_chart",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "W6OLcZ",
+                      "name": "数据统计 Text",
+                      "fill": "#ffffffd9",
+                      "content": "数据统计",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "onC57",
+                  "name": "Nav 员工管理",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "GX4X8",
+                      "name": "员工管理 Icon",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "group",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#ffffffb3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t2yTgc",
+                      "name": "员工管理 Text",
+                      "fill": "#ffffffd9",
+                      "content": "员工管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "SrQ0F",
+          "layoutPosition": "absolute",
+          "x": 240,
+          "y": 0,
+          "name": "Content Wrapper",
+          "width": 1200,
+          "height": 868,
+          "children": [
+            {
+              "type": "frame",
+              "id": "N6mVAY",
+              "name": "Content Area",
+              "width": 1200,
+              "height": 836,
+              "layout": "vertical",
+              "gap": 24,
+              "padding": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NlnOh",
+                  "name": "Page Header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "e35Hx",
+                      "name": "Page Title",
+                      "fill": "$text-primary",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 24,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TNGjv",
+                      "name": "Breadcrumb",
+                      "fill": "$text-secondary",
+                      "content": "首页 / 系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "FupxH",
+                  "name": "Settings Grid",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VJLuI",
+                      "name": "Row 1",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "gap": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kabg5",
+                          "name": "Clinic Info Card",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$card-bg",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "MowIp",
+                              "name": "Card Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "SLahC",
+                                  "name": "Card Icon",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "local_hospital",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "HPuuK",
+                                  "name": "Card Title",
+                                  "fill": "$text-primary",
+                                  "content": "诊所信息",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZRM9c",
+                              "name": "Fields Container",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FAxkm",
+                                  "name": "Field 诊所名称",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "PEk3w",
+                                      "name": "诊所名称 Label",
+                                      "fill": "$text-secondary",
+                                      "content": "诊所名称",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "QNF8o",
+                                      "name": "诊所名称 Input",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "OTjRx",
+                                          "name": "诊所名称 Value",
+                                          "fill": "$text-primary",
+                                          "content": "凌隐宝堂中医诊所",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "x66Ez",
+                                  "name": "Field 详细地址",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "YvGsX",
+                                      "name": "详细地址 Label",
+                                      "fill": "$text-secondary",
+                                      "content": "详细地址",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ySREF",
+                                      "name": "详细地址 Input",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ojvKy",
+                                          "name": "详细地址 Value",
+                                          "fill": "$text-primary",
+                                          "content": "浙江省杭州市西湖区文三路123号",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "t9YNjr",
+                                  "name": "Field 联系电话",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "pgkv3",
+                                      "name": "联系电话 Label",
+                                      "fill": "$text-secondary",
+                                      "content": "联系电话",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "A8QJM",
+                                      "name": "联系电话 Input",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "VXf2S",
+                                          "name": "联系电话 Value",
+                                          "fill": "$text-primary",
+                                          "content": "0571-88886666",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tLdKG",
+                                  "name": "Field 营业时间",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "aSPk9",
+                                      "name": "营业时间 Label",
+                                      "fill": "$text-secondary",
+                                      "content": "营业时间",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TcTxb",
+                                      "name": "营业时间 Input",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "AkGAv",
+                                          "name": "营业时间 Value",
+                                          "fill": "$text-primary",
+                                          "content": "周一至周六 08:30-17:30",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z0oVLp",
+                              "name": "Save Button",
+                              "height": 36,
+                              "fill": "$primary",
+                              "cornerRadius": 6,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "zJ7Lx",
+                                  "name": "Save Text",
+                                  "fill": "#FFFFFF",
+                                  "content": "保存更改",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SNasG",
+                          "name": "Feature Toggles Card",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$card-bg",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "cGNkS",
+                              "name": "Feature Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "A3dJMC",
+                                  "name": "Feature Icon",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "toggle_on",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "r32YX1",
+                                  "name": "Feature Title",
+                                  "fill": "$text-primary",
+                                  "content": "功能开关",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "I5Tgox",
+                              "name": "Toggles Container",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "h0VeH",
+                                  "name": "Toggle 预约管理",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "msyg3",
+                                      "name": "预约管理 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "i9ukO",
+                                          "name": "预约管理 Label",
+                                          "fill": "$text-primary",
+                                          "content": "预约管理",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xf01p",
+                                          "name": "预约管理 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "开启患者在线预约功能",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Z0h3I",
+                                      "name": "预约管理 Track",
+                                      "width": 44,
+                                      "height": 24,
+                                      "fill": "$toggle-on",
+                                      "cornerRadius": 12,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "r1JGj",
+                                          "name": "预约管理 Thumb",
+                                          "fill": "#FFFFFF",
+                                          "width": 20,
+                                          "height": 20
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "U206TV",
+                                  "name": "Toggle 短信通知",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "a0Yj9",
+                                      "name": "短信通知 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "x3bch",
+                                          "name": "短信通知 Label",
+                                          "fill": "$text-primary",
+                                          "content": "短信通知",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "JiSb8",
+                                          "name": "短信通知 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "预约提醒和通知短信",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Q1Zml",
+                                      "name": "短信通知 Track",
+                                      "width": 44,
+                                      "height": 24,
+                                      "fill": "$toggle-on",
+                                      "cornerRadius": 12,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "I9IMh",
+                                          "name": "短信通知 Thumb",
+                                          "fill": "#FFFFFF",
+                                          "width": 20,
+                                          "height": 20
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "jX56E",
+                                  "name": "Toggle 打印处方",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "NN6yU",
+                                      "name": "打印处方 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Jvoed",
+                                          "name": "打印处方 Label",
+                                          "fill": "$text-primary",
+                                          "content": "打印处方",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "S2INmK",
+                                          "name": "打印处方 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "支持处方和收据打印",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RU6Ls",
+                                      "name": "打印处方 Track",
+                                      "width": 44,
+                                      "height": 24,
+                                      "fill": "$toggle-off",
+                                      "cornerRadius": 12,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "O9o7Z",
+                                          "name": "打印处方 Thumb",
+                                          "fill": "#FFFFFF",
+                                          "width": 20,
+                                          "height": 20
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xhrTZ",
+                                  "name": "Toggle 电子病历",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "iep30",
+                                      "name": "电子病历 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "m34U6",
+                                          "name": "电子病历 Label",
+                                          "fill": "$text-primary",
+                                          "content": "电子病历",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "J2SrH",
+                                          "name": "电子病历 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "启用电子病历系统",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "nrcxI",
+                                      "name": "电子病历 Track",
+                                      "width": 44,
+                                      "height": 24,
+                                      "fill": "$toggle-on",
+                                      "cornerRadius": 12,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "xiK7o",
+                                          "name": "电子病历 Thumb",
+                                          "fill": "#FFFFFF",
+                                          "width": 20,
+                                          "height": 20
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "gC4QN",
+                              "name": "Feature Save Button",
+                              "height": 36,
+                              "fill": "$primary",
+                              "cornerRadius": 6,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "zJWhE",
+                                  "name": "Feature Save Text",
+                                  "fill": "#FFFFFF",
+                                  "content": "保存设置",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "A7wUp",
+                      "name": "Row 2",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "gap": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UG6CP",
+                          "name": "Data Management Card",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$card-bg",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "U27SLI",
+                              "name": "Data Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "acv7l",
+                                  "name": "Data Icon",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "storage",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "F8quX",
+                                  "name": "Data Title",
+                                  "fill": "$text-primary",
+                                  "content": "数据管理",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "q3u57",
+                              "name": "Data Actions Container",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 12,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GIbHD",
+                                  "name": "Action 导入数据",
+                                  "width": "fill_container",
+                                  "height": 56,
+                                  "fill": "$input-bg",
+                                  "cornerRadius": 8,
+                                  "gap": 12,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aK1uH",
+                                      "name": "导入数据 Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "upload",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "WQQMb",
+                                      "name": "导入数据 Info",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "TpJbW",
+                                          "name": "导入数据 Label",
+                                          "fill": "$text-primary",
+                                          "content": "导入数据",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "vVN7v",
+                                          "name": "导入数据 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "从Excel/CSV导入患者和处方数据",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "SYxXM",
+                                      "name": "导入数据 Arrow",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "chevron_right",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "HMEEQ",
+                                  "name": "Action 导出数据",
+                                  "width": "fill_container",
+                                  "height": 56,
+                                  "fill": "$input-bg",
+                                  "cornerRadius": 8,
+                                  "gap": 12,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "GoIsU",
+                                      "name": "导出数据 Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "download",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "u3jnK",
+                                      "name": "导出数据 Info",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Usy7m",
+                                          "name": "导出数据 Label",
+                                          "fill": "$text-primary",
+                                          "content": "导出数据",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Q0I1o1",
+                                          "name": "导出数据 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "导出系统数据为备份文件",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "nGjbH",
+                                      "name": "导出数据 Arrow",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "chevron_right",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "lulb0",
+                                  "name": "Action 自动备份",
+                                  "width": "fill_container",
+                                  "height": 56,
+                                  "fill": "$input-bg",
+                                  "cornerRadius": 8,
+                                  "gap": 12,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "FWhA1",
+                                      "name": "自动备份 Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "backup",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xfB9U",
+                                      "name": "自动备份 Info",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "S51H5",
+                                          "name": "自动备份 Label",
+                                          "fill": "$text-primary",
+                                          "content": "自动备份",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "O8L9o2",
+                                          "name": "自动备份 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "每日自动备份数据库",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "Whu6y",
+                                      "name": "自动备份 Arrow",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "chevron_right",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "OujRS",
+                                  "name": "Action 恢复数据",
+                                  "width": "fill_container",
+                                  "height": 56,
+                                  "fill": "$input-bg",
+                                  "cornerRadius": 8,
+                                  "gap": 12,
+                                  "padding": [
+                                    0,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "hcsoX",
+                                      "name": "恢复数据 Icon",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "history",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$primary"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "m0EFN",
+                                      "name": "恢复数据 Info",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "D3Qei",
+                                          "name": "恢复数据 Label",
+                                          "fill": "$text-primary",
+                                          "content": "恢复数据",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "m6oZHL",
+                                          "name": "恢复数据 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "从备份文件恢复数据",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "kFu25",
+                                      "name": "恢复数据 Arrow",
+                                      "width": 20,
+                                      "height": 20,
+                                      "icon": "chevron_right",
+                                      "library": "Material Symbols Rounded",
+                                      "fill": "$text-secondary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hnn2c",
+                          "name": "Security Settings Card",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "$card-bg",
+                          "cornerRadius": 12,
+                          "layout": "vertical",
+                          "gap": 20,
+                          "padding": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "nfIEC",
+                              "name": "Security Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "rmADR",
+                                  "name": "Security Icon",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "shield",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "PX7sA",
+                                  "name": "Security Title",
+                                  "fill": "$text-primary",
+                                  "content": "安全设置",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k4YsaS",
+                              "name": "Security Fields",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "YQUeG",
+                                  "name": "Security 密码最小长度",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ger1J",
+                                      "name": "密码最小长度 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "lunm5",
+                                          "name": "密码最小长度 Label",
+                                          "fill": "$text-primary",
+                                          "content": "密码最小长度",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "p07xTF",
+                                      "name": "密码最小长度 Input",
+                                      "width": 180,
+                                      "height": 36,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GP5dy",
+                                          "name": "密码最小长度 Value",
+                                          "fill": "$text-primary",
+                                          "content": "8位",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DAA4L",
+                                  "name": "Security 登录失败锁定",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "kPsY3",
+                                      "name": "登录失败锁定 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "u51XO",
+                                          "name": "登录失败锁定 Label",
+                                          "fill": "$text-primary",
+                                          "content": "登录失败锁定",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "X8e2d",
+                                      "name": "登录失败锁定 Input",
+                                      "width": 180,
+                                      "height": 36,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cXMQa",
+                                          "name": "登录失败锁定 Value",
+                                          "fill": "$text-primary",
+                                          "content": "5次后锁定30分钟",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vJvUU",
+                                  "name": "Security 会话超时",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "rnW43",
+                                      "name": "会话超时 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Wl5tL",
+                                          "name": "会话超时 Label",
+                                          "fill": "$text-primary",
+                                          "content": "会话超时",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Vrmqj",
+                                      "name": "会话超时 Input",
+                                      "width": 180,
+                                      "height": 36,
+                                      "fill": "$input-bg",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Fu2iu",
+                                          "name": "会话超时 Value",
+                                          "fill": "$text-primary",
+                                          "content": "30分钟",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eWy8d",
+                                  "name": "Security 双因素认证",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "y3tz6",
+                                      "name": "双因素认证 Info",
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "K7GJFl",
+                                          "name": "双因素认证 Label",
+                                          "fill": "$text-primary",
+                                          "content": "双因素认证",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "LEI5i",
+                                          "name": "双因素认证 Desc",
+                                          "fill": "$text-secondary",
+                                          "content": "启用手机验证码二次验证",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "wPHa7",
+                                      "name": "双因素认证 Track",
+                                      "width": 44,
+                                      "height": 24,
+                                      "fill": "$toggle-off",
+                                      "cornerRadius": 12,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "D4h0J",
+                                          "name": "双因素认证 Thumb",
+                                          "fill": "#FFFFFF",
+                                          "width": 20,
+                                          "height": 20
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rdRTl",
+                              "name": "Security Save Button",
+                              "height": 36,
+                              "fill": "$primary",
+                              "cornerRadius": 6,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "A04fqU",
+                                  "name": "Security Save Text",
+                                  "fill": "#FFFFFF",
+                                  "content": "保存安全设置",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TQtre",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 868,
+          "name": "Status Bar",
+          "width": 1440,
+          "height": 32,
+          "fill": "$primary",
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "GD2wn",
+              "name": "Status Left",
+              "fill": "#FFFFFF",
+              "content": "系统版本 v2.1.0",
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "i4PncO",
+              "name": "Status Right",
+              "fill": "#FFFFFF",
+              "content": "管理员: admin@clinic.com",
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "amber": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "background": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#2F2A26"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D8078"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "sidebar-width": {
+      "type": "number",
+      "value": 240
+    },
+    "statusbar-height": {
+      "type": "number",
+      "value": 32
+    },
+    "card-bg": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "border-color": {
+      "type": "color",
+      "value": "#E8E0D8"
+    },
+    "input-bg": {
+      "type": "color",
+      "value": "#F5F0EB"
+    },
+    "success": {
+      "type": "color",
+      "value": "#4CAF50"
+    },
+    "toggle-on": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "toggle-off": {
+      "type": "color",
+      "value": "#C4B8B0"
+    }
+  },
+  "fileToken": "98ed2241-7b6e-41f3-8199-751da2edceb2"
+}

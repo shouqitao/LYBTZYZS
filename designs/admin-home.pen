@@ -1417,7 +1417,8 @@
                           "fill": "$text-secondary",
                           "content": "更新诊所宣传册出诊时间表",
                           "fontFamily": "$font-cn",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",

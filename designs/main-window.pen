@@ -270,7 +270,7 @@
                       "id": "p3WWZ",
                       "name": "诊所名",
                       "fill": "$sidebar-bright",
-                      "content": "凌隐宝堂",
+                      "content": "中医诊所管理系统",
                       "fontFamily": "$font-serif",
                       "fontSize": 17,
                       "fontWeight": "600"
@@ -300,21 +300,22 @@
               "children": [
                 {
                   "type": "frame",
-                  "id": "PMz30",
+                  "id": "PeBOy",
                   "name": "分组_总览",
                   "width": "fill_container",
-                  "layout": "vertical",
+                  "gap": 8,
                   "padding": [
                     14,
-                    4,
+                    12,
                     4,
                     4
                   ],
-                  "justifyContent": "end",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "V9Y2Ol",
+                      "id": "ROKnz",
                       "name": "分组文字",
                       "fill": "#8A6E5D",
                       "content": "总　览",
@@ -322,6 +323,16 @@
                       "fontSize": 11,
                       "fontWeight": "normal",
                       "letterSpacing": 2
+                    },
+                    {
+                      "type": "icon",
+                      "id": "Tc3VX",
+                      "name": "分组箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "keyboard_arrow_down",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#8A6E5D"
                     }
                   ]
                 },
@@ -345,21 +356,22 @@
                 },
                 {
                   "type": "frame",
-                  "id": "mNiIa",
+                  "id": "FitvZ",
                   "name": "分组_患者管理",
                   "width": "fill_container",
-                  "layout": "vertical",
+                  "gap": 8,
                   "padding": [
                     14,
-                    4,
+                    12,
                     4,
                     4
                   ],
-                  "justifyContent": "end",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "Hr8h1",
+                      "id": "muucI",
                       "name": "分组文字",
                       "fill": "#8A6E5D",
                       "content": "患者管理",
@@ -367,6 +379,16 @@
                       "fontSize": 11,
                       "fontWeight": "normal",
                       "letterSpacing": 2
+                    },
+                    {
+                      "type": "icon",
+                      "id": "jBegT",
+                      "name": "分组箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "keyboard_arrow_down",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#8A6E5D"
                     }
                   ]
                 },
@@ -414,21 +436,22 @@
                 },
                 {
                   "type": "frame",
-                  "id": "GYtZo",
+                  "id": "nlDpL",
                   "name": "分组_药房管理",
                   "width": "fill_container",
-                  "layout": "vertical",
+                  "gap": 8,
                   "padding": [
                     14,
-                    4,
+                    12,
                     4,
                     4
                   ],
-                  "justifyContent": "end",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "r6pxXG",
+                      "id": "v1zgY",
                       "name": "分组文字",
                       "fill": "#8A6E5D",
                       "content": "药房管理",
@@ -436,6 +459,16 @@
                       "fontSize": 11,
                       "fontWeight": "normal",
                       "letterSpacing": 2
+                    },
+                    {
+                      "type": "icon",
+                      "id": "RfqRW",
+                      "name": "分组箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "keyboard_arrow_down",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#8A6E5D"
                     }
                   ]
                 },
@@ -469,21 +502,22 @@
                 },
                 {
                   "type": "frame",
-                  "id": "ZsbWI",
+                  "id": "WqLQk",
                   "name": "分组_数据与系统",
                   "width": "fill_container",
-                  "layout": "vertical",
+                  "gap": 8,
                   "padding": [
                     14,
-                    4,
+                    12,
                     4,
                     4
                   ],
-                  "justifyContent": "end",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
-                      "id": "XlIhe",
+                      "id": "ttEuq",
                       "name": "分组文字",
                       "fill": "#8A6E5D",
                       "content": "数据与系统",
@@ -491,6 +525,16 @@
                       "fontSize": 11,
                       "fontWeight": "normal",
                       "letterSpacing": 2
+                    },
+                    {
+                      "type": "icon",
+                      "id": "f6VwPs",
+                      "name": "分组箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "keyboard_arrow_down",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#8A6E5D"
                     }
                   ]
                 },
@@ -853,6 +897,45 @@
                           "fontFamily": "$font-ui",
                           "fontSize": 13,
                           "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QyI1B",
+                          "name": "面包屑行",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "j2A0P",
+                              "name": "面包屑-首页",
+                              "fill": "$primary",
+                              "content": "首页",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "yMLq8",
+                              "name": "面包屑-分隔",
+                              "fill": "$text-secondary",
+                              "content": "›",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "RqYlU",
+                              "name": "面包屑-当前页",
+                              "fill": "$text-secondary",
+                              "content": "今日工作台",
+                              "fontFamily": "$font-ui",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
                         }
                       ]
                     },

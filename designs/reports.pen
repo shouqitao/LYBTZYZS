@@ -241,7 +241,8 @@
                       "content": "就诊报表",
                       "textAlign": "center",
                       "fontFamily": "$font-cn",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "rectangle",
@@ -274,7 +275,8 @@
                       "content": "药材报表",
                       "textAlign": "center",
                       "fontFamily": "$font-cn",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "rectangle",
@@ -307,7 +309,8 @@
                       "content": "趋势分析",
                       "textAlign": "center",
                       "fontFamily": "$font-cn",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "rectangle",
@@ -3470,7 +3473,8 @@
                           "fill": "$text-secondary",
                           "content": "今日",
                           "fontFamily": "$font-cn",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3495,7 +3499,8 @@
                           "fill": "$text-secondary",
                           "content": "本周",
                           "fontFamily": "$font-cn",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3546,7 +3551,8 @@
                           "fill": "$text-secondary",
                           "content": "本年",
                           "fontFamily": "$font-cn",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }

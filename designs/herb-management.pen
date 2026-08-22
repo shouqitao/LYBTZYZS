@@ -1,0 +1,3654 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Usah0",
+      "x": 0,
+      "y": 0,
+      "name": "中药药材管理",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "URzWt",
+          "name": "顶部工具栏",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "$bg-card",
+          "stroke": "$border",
+          "strokeWidth": {
+            "bottom": 1
+          },
+          "gap": 16,
+          "padding": [
+            0,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "KTR5Z",
+              "name": "Logo图标",
+              "width": 28,
+              "height": 28,
+              "icon": "spa",
+              "library": "Material Symbols Rounded",
+              "fill": "$primary"
+            },
+            {
+              "type": "text",
+              "id": "umUUj",
+              "name": "系统标题",
+              "fill": "$text-primary",
+              "content": "中医诊所管理系统",
+              "fontFamily": "$font-body",
+              "fontSize": 16,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "yGcXz",
+              "name": "分隔符",
+              "fill": "$text-secondary",
+              "content": "/药材管理",
+              "fontFamily": "$font-body",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "b3TQF",
+              "name": "间隔",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "embxf",
+              "name": "新增药材按钮",
+              "fill": "$primary",
+              "cornerRadius": 6,
+              "gap": 6,
+              "padding": [
+                8,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "HM5iW",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "add",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "Cp9Rc",
+                  "fill": "#FFFFFF",
+                  "content": "新增药材",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VBrbY",
+              "name": "导入按钮",
+              "fill": "$bg-card",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                8,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "WPLr7",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "upload",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "FEL8H",
+                  "fill": "$text-primary",
+                  "content": "导入",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "t0rt6i",
+              "name": "导出按钮",
+              "fill": "$bg-card",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                8,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Lekha",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "download",
+                  "library": "Material Symbols Rounded",
+                  "fill": "$primary"
+                },
+                {
+                  "type": "text",
+                  "id": "IewIX",
+                  "fill": "$text-primary",
+                  "content": "导出",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gm91E",
+          "name": "主体区域",
+          "width": "fill_container",
+          "height": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Y89lFD",
+              "name": "侧边栏",
+              "width": 240,
+              "height": "fill_container",
+              "fill": "$bg-card",
+              "stroke": "$border",
+              "strokeWidth": {
+                "right": 1
+              },
+              "layout": "vertical",
+              "gap": 2,
+              "padding": [
+                12,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Aw6na",
+                  "name": "导航标题",
+                  "width": "fill_container",
+                  "padding": [
+                    8,
+                    20,
+                    6,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TX9SS",
+                      "fill": "$text-secondary",
+                      "content": "导航菜单",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "QPpjC",
+                  "name": "药材管理-选中",
+                  "width": "fill_container",
+                  "fill": "#6d4c4114",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "x5J2YT",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "local_florist",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "akuur",
+                      "fill": "$primary",
+                      "content": "药材管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hIjGR",
+                  "name": "患者管理",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "foahL",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "person",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PhfBz",
+                      "fill": "$text-primary",
+                      "content": "患者管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o54QcJ",
+                  "name": "预约排班",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "M2P09",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "calendar_month",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ucWGe",
+                      "fill": "$text-primary",
+                      "content": "预约排班",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gfR0f",
+                  "name": "处方管理",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "WUjTN",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "receipt_long",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "GtCOO",
+                      "fill": "$text-primary",
+                      "content": "处方管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uyVAy",
+                  "name": "库存盘点",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "S6TTAH",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "inventory_2",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "B6e3T",
+                      "fill": "$text-primary",
+                      "content": "库存盘点",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oiMPD",
+                  "name": "收费结算",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "wRB1n",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "payments",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "o00zMD",
+                      "fill": "$text-primary",
+                      "content": "收费结算",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ODXFU",
+                  "name": "统计报表",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "YhEN7",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "analytics",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t6jCFU",
+                      "fill": "$text-primary",
+                      "content": "统计报表",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BYbX8",
+                  "name": "侧边栏底部间隔",
+                  "width": 1,
+                  "height": "fill_container"
+                },
+                {
+                  "type": "frame",
+                  "id": "Q8waWs",
+                  "name": "系统标题2",
+                  "width": "fill_container",
+                  "padding": [
+                    8,
+                    20,
+                    6,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QKsvI",
+                      "fill": "$text-secondary",
+                      "content": "系统",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S80OLE",
+                  "name": "系统设置",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mkN1Q",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wXB9n",
+                      "fill": "$text-primary",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OhipP",
+                  "name": "帮助中心",
+                  "width": "fill_container",
+                  "cornerRadius": 8,
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "doHsO",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "help",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "BAfap",
+                      "fill": "$text-primary",
+                      "content": "帮助中心",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tsJLs",
+              "name": "内容区",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": [
+                16,
+                20
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Ftbn9",
+                  "name": "搜索栏",
+                  "width": "fill_container",
+                  "height": 40,
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L2AoLJ",
+                      "name": "搜索输入框",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "$bg-card",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "uPWDe",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "search",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "EFbRe",
+                          "name": "搜索占位文本",
+                          "fill": "$text-secondary",
+                          "content": "搜索药材名称、拼音或功效…",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UOfeT",
+                      "name": "筛选按钮",
+                      "height": 40,
+                      "fill": "$bg-card",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Z5Indx",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "filter_alt",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "y4N1j",
+                          "fill": "$text-primary",
+                          "content": "筛选",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ujg70",
+                  "name": "统计标签栏",
+                  "width": "fill_container",
+                  "height": 36,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "WHkEN",
+                      "name": "标签-全部",
+                      "fill": "#6d4c411a",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w8pSV",
+                          "fill": "$primary",
+                          "content": "全部",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "i0H54R",
+                          "fill": "$primary",
+                          "content": "128",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Cwqww",
+                      "name": "标签-在库",
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vppTl",
+                          "fill": "$text-secondary",
+                          "content": "在库",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12
+                        },
+                        {
+                          "type": "text",
+                          "id": "a7RGMp",
+                          "fill": "$text-secondary",
+                          "content": "96",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FSYhx",
+                      "name": "标签-缺货",
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HNulW",
+                          "fill": "$text-secondary",
+                          "content": "缺货",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12
+                        },
+                        {
+                          "type": "text",
+                          "id": "WSEQY",
+                          "fill": "$text-secondary",
+                          "content": "8",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "filpv",
+                      "name": "标签-停用",
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "A57WAK",
+                          "fill": "$text-secondary",
+                          "content": "停用",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12
+                        },
+                        {
+                          "type": "text",
+                          "id": "v1VIp",
+                          "fill": "$text-secondary",
+                          "content": "24",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SBrQ2",
+                  "name": "表格容器",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "$bg-card",
+                  "cornerRadius": 8,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tujAd",
+                      "name": "表头行",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#F5F0EB",
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ao8de",
+                          "name": "表头-药材名称",
+                          "fill": "$text-secondary",
+                          "content": "药材名称",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "T9yKZd",
+                          "name": "表头-拼音",
+                          "fill": "$text-secondary",
+                          "content": "拼音",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JFA9Z",
+                          "name": "表头-性味",
+                          "fill": "$text-secondary",
+                          "content": "性味",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "IfLiA",
+                          "name": "表头-归经",
+                          "fill": "$text-secondary",
+                          "content": "归经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cUt8X",
+                          "name": "表头-功效",
+                          "fill": "$text-secondary",
+                          "content": "功效",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tSMnX",
+                          "name": "表头-状态",
+                          "fill": "$text-secondary",
+                          "content": "状态",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gyFFV",
+                          "name": "表头-库存",
+                          "fill": "$text-secondary",
+                          "content": "库存",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "zZ1k6",
+                          "name": "表头-操作",
+                          "fill": "$text-secondary",
+                          "content": "操作",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ouTcO",
+                      "name": "行-黄芪",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WV8fM",
+                          "fill": "$text-primary",
+                          "content": "黄芪",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "k1OgZ",
+                          "fill": "$text-secondary",
+                          "content": "huang qi",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ufiMg",
+                          "fill": "$text-primary",
+                          "content": "甘，微温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "y2QfiH",
+                          "fill": "$text-primary",
+                          "content": "脾、肺经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e5bWV",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "补气升阳，固表止汗，利水消肿",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "D4GKqo",
+                          "name": "状态-黄芪",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "t8jQJc",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "zS55t",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "pdij5",
+                          "fill": "$text-primary",
+                          "content": "256 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kgKEo",
+                          "name": "操作-黄芪",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "KboH7",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "HLUPU",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "KaHPJ",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s8gcYi",
+                      "name": "行-当归",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lDU2b",
+                          "fill": "$text-primary",
+                          "content": "当归",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NhmWl",
+                          "fill": "$text-secondary",
+                          "content": "dang gui",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "lg5r9",
+                          "fill": "$text-primary",
+                          "content": "甘、辛，温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "zhz6R",
+                          "fill": "$text-primary",
+                          "content": "肝、心、脾经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "lVFee",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "补血活血，调经止痛，润肠通便",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NeUJi",
+                          "name": "状态-当归",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "JuOvs",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "hVCe9",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "z6WK1",
+                          "fill": "$text-primary",
+                          "content": "189 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "a3ebld",
+                          "name": "操作-当归",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "K1POj4",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "laeVp",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "BfmaN",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xE2rm",
+                      "name": "行-人参",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mTXgy",
+                          "fill": "$text-primary",
+                          "content": "人参",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bHyem",
+                          "fill": "$text-secondary",
+                          "content": "ren shen",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "trp1V",
+                          "fill": "$text-primary",
+                          "content": "甘、微苦，微温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VFnFf",
+                          "fill": "$text-primary",
+                          "content": "脾、肺、心经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RGrDF",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "大补元气，复脉固脱，补脾益肺",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qWdqt",
+                          "name": "状态-人参",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "cuLju",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "lYtzR",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "ggbqh",
+                          "fill": "$text-primary",
+                          "content": "42 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "U23rSr",
+                          "name": "操作-人参",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "anmlu",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "YJDyl",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "fSoiL",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c1fxA",
+                      "name": "行-白术",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iPejW",
+                          "fill": "$text-primary",
+                          "content": "白术",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "y9mJIg",
+                          "fill": "$text-secondary",
+                          "content": "bai zhu",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "no2k5",
+                          "fill": "$text-primary",
+                          "content": "苦、甘，温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "b4tEIz",
+                          "fill": "$text-primary",
+                          "content": "脾、胃经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rRXmz",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "健脾益气，燥湿利水，止汗",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ShbZC",
+                          "name": "状态-白术",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "kG4no",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "CiaVx",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "MXgiz",
+                          "fill": "$text-primary",
+                          "content": "178 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QHi67",
+                          "name": "操作-白术",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "YMnXB",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "Aq3ZE",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "wdNKE",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Bd0Vq",
+                      "name": "行-茯苓",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xdAwC",
+                          "fill": "$text-primary",
+                          "content": "茯苓",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Xrvsy",
+                          "fill": "$text-secondary",
+                          "content": "fu ling",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Sqtv1",
+                          "fill": "$text-primary",
+                          "content": "甘、淡，平",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uij2M",
+                          "fill": "$text-primary",
+                          "content": "心、肺、脾、肾经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CuwYV",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "利水渗湿，健脾，宁心",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yXHKX",
+                          "name": "状态-茯苓",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "X6pMP",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "rXhbe",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "gOg67",
+                          "fill": "$text-primary",
+                          "content": "320 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WzLlU",
+                          "name": "操作-茯苓",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "hz4kL",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "t9SnB",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "ktGfb",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kbmwm",
+                      "name": "行-川芎",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gaDoA",
+                          "fill": "$text-primary",
+                          "content": "川芎",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xMQd3",
+                          "fill": "$text-secondary",
+                          "content": "chuan xiong",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xt5VP",
+                          "fill": "$text-primary",
+                          "content": "辛，温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ekMXO",
+                          "fill": "$text-primary",
+                          "content": "肝、胆、心包经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "IpGXX",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "活血行气，祛风止痛",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T4R77n",
+                          "name": "状态-川芎",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "RDPwn",
+                              "fill": "$danger",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "f3wZRh",
+                              "fill": "$danger",
+                              "content": "缺货",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "n0QE1g",
+                          "fill": "$text-primary",
+                          "content": "0 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EnHBb",
+                          "name": "操作-川芎",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "P68l5K",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "xRUUc",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "N35jt",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Jq17s",
+                      "name": "行-白芍",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "nxggx",
+                          "fill": "$text-primary",
+                          "content": "白芍",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "k2QvS5",
+                          "fill": "$text-secondary",
+                          "content": "bai shao",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fcntK",
+                          "fill": "$text-primary",
+                          "content": "苦、酸，微寒",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "S4Bjq",
+                          "fill": "$text-primary",
+                          "content": "肝、脾经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kvayS",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "养血敛阴，柔肝止痛，平抑肝阳",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EVYUj",
+                          "name": "状态-白芍",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "EcS51",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "h0nrM",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "rE8Bt",
+                          "fill": "$text-primary",
+                          "content": "145 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JhDdO",
+                          "name": "操作-白芍",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "XO0RJ",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "RzyJy",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "ljP5u",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gXNgu",
+                      "name": "行-熟地黄",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K6MyqM",
+                          "fill": "$text-primary",
+                          "content": "熟地黄",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "IvcdU",
+                          "fill": "$text-secondary",
+                          "content": "shu di huang",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "X5eOxp",
+                          "fill": "$text-primary",
+                          "content": "甘，微温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "U9XhkN",
+                          "fill": "$text-primary",
+                          "content": "肝、肾经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "m2avb",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "补血滋阴，益精填髓",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yMdte",
+                          "name": "状态-熟地黄",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "p2HvGK",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "Mg4KY",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "EfJYb",
+                          "fill": "$text-primary",
+                          "content": "98 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zf3pk",
+                          "name": "操作-熟地黄",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "A2IGZk",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "MS13x",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "gpEyW",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WLGP2",
+                      "name": "行-甘草",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dpH9X",
+                          "fill": "$text-primary",
+                          "content": "甘草",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "iyC0E",
+                          "fill": "$text-secondary",
+                          "content": "gan cao",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tn2FL",
+                          "fill": "$text-primary",
+                          "content": "甘，平",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e3UGAz",
+                          "fill": "$text-primary",
+                          "content": "心、肺、脾、胃经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fnlRx",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "补脾益气，清热解毒，调和诸药",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OeFl7",
+                          "name": "状态-甘草",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "MFWlR",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "HYpyf",
+                              "fill": "$success",
+                              "content": "在库",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "usU7e",
+                          "fill": "$text-primary",
+                          "content": "412 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ufW42",
+                          "name": "操作-甘草",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "g0UWN",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "cifoJ",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "vNwSF",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vWcTM",
+                      "name": "行-半夏",
+                      "width": "fill_container",
+                      "height": 44,
+                      "stroke": "$border-light",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OUEqi",
+                          "fill": "$text-primary",
+                          "content": "半夏",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "apYIX",
+                          "fill": "$text-secondary",
+                          "content": "ban xia",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gFYq5",
+                          "fill": "$text-primary",
+                          "content": "辛，温",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "zMRnh",
+                          "fill": "$text-primary",
+                          "content": "脾、胃、肺经",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DmePL",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "燥湿化痰，降逆止呕，消痞散结",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ficc3",
+                          "name": "状态-半夏",
+                          "width": 80,
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "S0tR69",
+                              "fill": "$text-secondary",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "p41pX",
+                              "fill": "$text-secondary",
+                              "content": "停用",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "J92O72",
+                          "fill": "$text-primary",
+                          "content": "67 kg",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "S1dDe",
+                          "name": "操作-半夏",
+                          "width": 90,
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "j2pWRg",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "visibility",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "h7vnym",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "FsRR5",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fT4Yb",
+                  "name": "分页栏",
+                  "width": "fill_container",
+                  "height": 40,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kvVZY",
+                      "fill": "$text-secondary",
+                      "content": "共 128 条记录，第 1/13 页",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "h35EzI",
+                      "name": "分页控件",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J0yGa",
+                          "name": "上一页",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$bg-card",
+                          "cornerRadius": 6,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "XYFfm",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "chevron_left",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BzWtu",
+                          "name": "页码-1",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary",
+                          "cornerRadius": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Hk1cg",
+                              "fill": "#FFFFFF",
+                              "content": "1",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OMm5g",
+                          "name": "页码-2",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "#00000000",
+                          "cornerRadius": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "WRLly",
+                              "fill": "$text-primary",
+                              "content": "2",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KcSdz",
+                          "name": "页码-3",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "#00000000",
+                          "cornerRadius": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "EoITM",
+                              "fill": "$text-primary",
+                              "content": "3",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qY00F",
+                          "name": "页码-4",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "#00000000",
+                          "cornerRadius": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RIeod",
+                              "fill": "$text-primary",
+                              "content": "4",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SfeNG",
+                          "name": "页码-5",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "#00000000",
+                          "cornerRadius": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yUByB",
+                              "fill": "$text-primary",
+                              "content": "5",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Fk2qx",
+                          "name": "下一页",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$bg-card",
+                          "cornerRadius": 6,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "IPwqW",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "chevron_right",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$text-secondary"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TJYan",
+              "name": "详情面板",
+              "width": 340,
+              "height": "fill_container",
+              "fill": "$bg-card",
+              "stroke": "$border",
+              "strokeWidth": {
+                "left": 1
+              },
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "FtINb",
+                  "name": "详情头部",
+                  "width": "fill_container",
+                  "height": 48,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ax9CJ",
+                      "fill": "$text-primary",
+                      "content": "药材详情",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "YnFlR",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "close",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e9Vnk",
+                  "name": "详情内容",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": [
+                    0,
+                    16,
+                    16,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gOpN1",
+                      "name": "药材图片区",
+                      "width": "fill_container",
+                      "height": 140,
+                      "fill": "#F5F0EB",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "jPxVY",
+                          "width": 48,
+                          "height": 48,
+                          "icon": "local_florist",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p5az84",
+                          "fill": "$text-primary",
+                          "content": "黄芪",
+                          "fontFamily": "$font-body",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "OydCg",
+                          "fill": "$text-secondary",
+                          "content": "Astragalus membranaceus",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t6E6SW",
+                      "name": "基本信息区",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F1pmqh",
+                          "name": "字段-拼音",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DF5V3",
+                              "fill": "$text-secondary",
+                              "content": "拼音",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "M2hrN2",
+                              "fill": "$text-primary",
+                              "content": "huang qi",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xpFrP",
+                          "name": "字段-性味",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "norRB",
+                              "fill": "$text-secondary",
+                              "content": "性味",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "NwvtF",
+                              "fill": "$text-primary",
+                              "content": "甘，微温",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vNGNp",
+                          "name": "字段-归经",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "NtQJK",
+                              "fill": "$text-secondary",
+                              "content": "归经",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "JNolI",
+                              "fill": "$text-primary",
+                              "content": "脾、肺经",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qFEii",
+                          "name": "字段-产地",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nMEl9",
+                              "fill": "$text-secondary",
+                              "content": "产地",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "mOlmQ",
+                              "fill": "$text-primary",
+                              "content": "内蒙古、山西、甘肃",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yEw5j",
+                          "name": "字段-采集季节",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fEnwp",
+                              "fill": "$text-secondary",
+                              "content": "采集季节",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SrcGG",
+                              "fill": "$text-primary",
+                              "content": "春、秋二季",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Y6OM9S",
+                          "name": "字段-炮制方法",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "s1tKZl",
+                              "fill": "$text-secondary",
+                              "content": "炮制方法",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qbT9G",
+                              "fill": "$text-primary",
+                              "content": "切厚片，生用或蜜炙",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P2hOD5",
+                      "name": "功效区域",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "o3PoqF",
+                          "fill": "$text-primary",
+                          "content": "功效",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CKOef",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌",
+                          "lineHeight": 1.6,
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ncALE",
+                      "name": "库存价格区",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PcyxY",
+                          "name": "库存卡片",
+                          "width": "fill_container",
+                          "fill": "#F5F0EB",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": 12,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ct1NR",
+                              "fill": "$text-secondary",
+                              "content": "当前库存",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "NDro7",
+                              "fill": "$text-primary",
+                              "content": "256 kg",
+                              "fontFamily": "$font-body",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f2cXQ",
+                              "fill": "$success",
+                              "content": "预警值: 50 kg",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gNYBc",
+                          "name": "价格卡片",
+                          "width": "fill_container",
+                          "fill": "#F5F0EB",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": 12,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Sovwb",
+                              "fill": "$text-secondary",
+                              "content": "采购单价",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SHXGf",
+                              "fill": "$primary",
+                              "content": "¥68/kg",
+                              "fontFamily": "$font-body",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "beHgt",
+                              "fill": "$text-secondary",
+                              "content": "零售价: ¥85/kg",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vtPxr",
+                      "name": "操作按钮区",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "S5Ii8",
+                          "name": "编辑按钮",
+                          "width": "fill_container",
+                          "height": 38,
+                          "fill": "$primary",
+                          "cornerRadius": 8,
+                          "gap": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "zeUBS",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "edit",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#FFFFFF"
+                            },
+                            {
+                              "type": "text",
+                              "id": "OwKdV",
+                              "fill": "#FFFFFF",
+                              "content": "编辑",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j4DMDS",
+                          "name": "删除按钮",
+                          "width": "fill_container",
+                          "height": 38,
+                          "fill": "#00000000",
+                          "cornerRadius": 8,
+                          "stroke": "$danger",
+                          "strokeWidth": 1,
+                          "gap": 6,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "NmrQd",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$danger"
+                            },
+                            {
+                              "type": "text",
+                              "id": "VFKW7",
+                              "fill": "$danger",
+                              "content": "删除",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "F4FyBa",
+          "name": "状态栏",
+          "width": "fill_container",
+          "height": 32,
+          "fill": "$primary-deep",
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "l92Bu",
+              "fill": "#ffffffb3",
+              "content": "© 2024 中医诊所管理系统 v2.1.0",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "Vpqlv",
+              "name": "状态栏右侧",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ILtdu",
+                  "fill": "#ffffffb3",
+                  "content": "管理员: 张医生",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "RyiMd",
+                  "fill": "#FFB300",
+                  "content": "在线",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Q2Ixcz",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 0,
+          "name": "弹窗遮罩层",
+          "width": 1440,
+          "height": 900,
+          "fill": "#00000066",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "D1136d",
+              "layoutPosition": "absolute",
+              "x": 320,
+              "y": 80,
+              "name": "新增药材弹窗",
+              "width": 560,
+              "height": 640,
+              "fill": "$bg-card",
+              "cornerRadius": 16,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "g9vbF",
+                  "name": "弹窗头部",
+                  "width": "fill_container",
+                  "height": 56,
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "padding": [
+                    0,
+                    24
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ur4uU",
+                      "fill": "$text-primary",
+                      "content": "新增药材",
+                      "fontFamily": "$font-body",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "rE2q7",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "close",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AD5Cx",
+                  "name": "弹窗内容",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": [
+                    20,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "y7fQCu",
+                      "name": "行1-名称拼音",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vKrAV",
+                          "name": "药材名称字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "U6H0Q",
+                              "fill": "$text-primary",
+                              "content": "药材名称 *",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qETPQ",
+                              "name": "名称输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "c4VBL",
+                                  "fill": "$text-secondary",
+                                  "content": "请输入药材名称",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Xkmr9",
+                          "name": "拼音字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PXCHS",
+                              "fill": "$text-primary",
+                              "content": "拼音",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "aCnGo",
+                              "name": "拼音输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "J7RWA",
+                                  "fill": "$text-secondary",
+                                  "content": "请输入拼音",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "C7oMIS",
+                      "name": "行2-性味归经",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Qbx55",
+                          "name": "性味字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "g0t4jb",
+                              "fill": "$text-primary",
+                              "content": "性味 *",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "b8vAj",
+                              "name": "性味输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MrNSP",
+                                  "fill": "$text-secondary",
+                                  "content": "如：甘，微温",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bUO5q",
+                          "name": "归经字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OxKtd",
+                              "fill": "$text-primary",
+                              "content": "归经 *",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AZijf",
+                              "name": "归经输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "SH3SZ",
+                                  "fill": "$text-secondary",
+                                  "content": "如：脾、肺经",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "J07ld",
+                      "name": "功效字段",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pV8hL",
+                          "fill": "$text-primary",
+                          "content": "功效 *",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UxE5p",
+                          "name": "功效输入框",
+                          "width": "fill_container",
+                          "height": 56,
+                          "fill": "$bg",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ByuJI",
+                              "fill": "$text-secondary",
+                              "content": "请输入功效描述",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "j7ABZT",
+                      "name": "行3-库存价格",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "C6cxkv",
+                          "name": "库存字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KOKpb",
+                              "fill": "$text-primary",
+                              "content": "初始库存 (kg)",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "N0rgb",
+                              "name": "库存输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "cqVHm",
+                                  "fill": "$text-secondary",
+                                  "content": "0",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gsyqc",
+                          "name": "采购价字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "G5wQb",
+                              "fill": "$text-primary",
+                              "content": "采购价 (元/kg)",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iLeVJ",
+                              "name": "采购价输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "j68LZd",
+                                  "fill": "$text-secondary",
+                                  "content": "0.00",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Pdgez",
+                      "name": "行4-产地",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "O0D2EI",
+                          "name": "产地字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BMsAo",
+                              "fill": "$text-primary",
+                              "content": "产地",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xyhIt",
+                              "name": "产地输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "pu52Z",
+                                  "fill": "$text-secondary",
+                                  "content": "请输入产地",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pwKZC",
+                          "name": "预警值字段",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YJdUP",
+                              "fill": "$text-primary",
+                              "content": "库存预警值 (kg)",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Df1cf",
+                              "name": "预警值输入框",
+                              "width": "fill_container",
+                              "height": 40,
+                              "fill": "$bg",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KAXl5",
+                                  "fill": "$text-secondary",
+                                  "content": "50",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t5EhAV",
+                  "name": "弹窗底部",
+                  "width": "fill_container",
+                  "height": 60,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    24,
+                    16,
+                    24
+                  ],
+                  "justifyContent": "end",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CHSqO",
+                      "name": "取消按钮",
+                      "height": 38,
+                      "fill": "$bg",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "irRZq",
+                          "fill": "$text-primary",
+                          "content": "取消",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ja8g6",
+                      "name": "确定按钮",
+                      "height": 38,
+                      "fill": "$primary",
+                      "cornerRadius": 8,
+                      "gap": 6,
+                      "padding": [
+                        0,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xncPj",
+                          "fill": "#FFFFFF",
+                          "content": "确定添加",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-deep": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "amber": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "bg-card": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#2F2A26"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D8078"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E8E0D8"
+    },
+    "border-light": {
+      "type": "color",
+      "value": "#F0EBE5"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "success": {
+      "type": "color",
+      "value": "#4CAF50"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#FF9800"
+    },
+    "danger": {
+      "type": "color",
+      "value": "#E53935"
+    },
+    "sidebar-width": {
+      "type": "number",
+      "value": 240
+    },
+    "statusbar-height": {
+      "type": "number",
+      "value": 32
+    },
+    "detail-width": {
+      "type": "number",
+      "value": 340
+    }
+  },
+  "fileToken": "42a18288-6923-4315-a63a-70cb7606d8c2"
+}
