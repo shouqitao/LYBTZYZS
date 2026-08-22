@@ -40,11 +40,13 @@ public class FormulasController : BaseCrudController
     /// <summary>
     /// 获取验方分页列表
     /// </summary>
-    [HttpGet("/api/v1/formulas")]
-    public async Task<IActionResult> GetFormulaList(
+    [HttpGet]
+    public override async Task<IActionResult> GetList(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? keyword = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] CommonStatus? status = null,
         CancellationToken ct = default
     )
     {
