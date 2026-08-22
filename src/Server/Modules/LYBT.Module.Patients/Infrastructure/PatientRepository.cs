@@ -82,7 +82,11 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     /// <inheritdoc/>
     public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken cancellationToken = default)
     {
-        return await _context.Patients
-            .FirstOrDefaultAsync(p => p.IdNumber == idNumber && !p.IsDeleted, cancellationToken);
+        // IdNumber 经 AesGcmValueConverter 非确定性加密（随机 nonce），SQL 层等值查询因密文不同而无法命中，需内存解密后比对
+        var candidates = await _context.Patients
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted)
+            .ToListAsync(cancellationToken);
+        return candidates.FirstOrDefault(p => p.IdNumber == idNumber);
     }
 }
