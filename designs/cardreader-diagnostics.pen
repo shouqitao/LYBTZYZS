@@ -1,0 +1,1593 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "xTP7a",
+      "x": 0,
+      "y": 0,
+      "name": "Card Reader Diagnostics",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "E1VvH",
+          "name": "Header",
+          "width": "fill_container",
+          "height": 64,
+          "fill": "$primary-dark",
+          "gap": 16,
+          "padding": [
+            0,
+            32
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "k3YLOt",
+              "name": "Menu Icon",
+              "width": 24,
+              "height": 24,
+              "icon": "menu",
+              "library": "Material Symbols Rounded",
+              "fill": "#FFFFFF"
+            },
+            {
+              "type": "text",
+              "id": "J8FfS3",
+              "name": "System Title",
+              "fill": "#FFFFFF",
+              "content": "凌隐宝堂中医诊所管理系统",
+              "fontFamily": "$font-body",
+              "fontSize": 18,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "YszwW",
+              "name": "Separator",
+              "fill": "#9C786C",
+              "content": "|",
+              "fontFamily": "$font-body",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "nMwGq",
+              "name": "Page Title",
+              "fill": "#EFEBE9",
+              "content": "读卡器诊断工具",
+              "fontFamily": "$font-body",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "xh1IL",
+              "name": "Header Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "FMZrX",
+              "name": "Breadcrumb",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WrvzN",
+                  "name": "Breadcrumb Home",
+                  "fill": "#9C786C",
+                  "content": "首页",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "H3ahat",
+                  "name": "Breadcrumb Sep",
+                  "fill": "#6D4C4180",
+                  "content": "/",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "VT97y",
+                  "name": "Breadcrumb Device",
+                  "fill": "#9C786C",
+                  "content": "设备管理",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "xYbT6",
+                  "name": "Breadcrumb Sep2",
+                  "fill": "#6D4C4180",
+                  "content": "/",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "TVaRE",
+                  "name": "Breadcrumb Current",
+                  "fill": "#EFEBE9",
+                  "content": "读卡器诊断",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AOdYd",
+          "name": "Main Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 20,
+          "padding": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "xXMY0",
+              "name": "Left Column",
+              "width": 320,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "odqgC",
+                  "name": "Device Status Card",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n1GPzU",
+                      "name": "Card Title",
+                      "fill": "$text-secondary",
+                      "content": "设备状态",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yrdus",
+                      "name": "Status Divider",
+                      "width": "fill_container",
+                      "height": 1,
+                      "fill": "$divider"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ncC1w",
+                      "name": "Connection Status Row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "RFvkG",
+                          "name": "Status Indicator",
+                          "fill": "$success",
+                          "width": 12,
+                          "height": 12
+                        },
+                        {
+                          "type": "text",
+                          "id": "Rcchf",
+                          "name": "Status Label",
+                          "fill": "$text-secondary",
+                          "content": "连接状态",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CgGb2",
+                          "name": "Status Value",
+                          "fill": "$success",
+                          "content": "已连接",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u78cd",
+                      "name": "Model Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "B686CM",
+                          "name": "Model Label",
+                          "fill": "$text-secondary",
+                          "content": "设备型号",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jBZzm",
+                          "name": "Model Value",
+                          "fill": "$text-primary",
+                          "content": "HD100",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Q9FoEd",
+                      "name": "Port Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "C94B1",
+                          "name": "Port Label",
+                          "fill": "$text-secondary",
+                          "content": "通信端口",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "w63wy",
+                          "name": "Port Value",
+                          "fill": "$text-primary",
+                          "content": "COM3",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GMRhJ",
+                      "name": "Baud Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u3zOI",
+                          "name": "Baud Label",
+                          "fill": "$text-secondary",
+                          "content": "波特率",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "v4AYp5",
+                          "name": "Baud Value",
+                          "fill": "$text-primary",
+                          "content": "9600",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TctZQ",
+                  "name": "Driver Info Panel",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AZ8YT",
+                      "name": "Driver Title",
+                      "fill": "$text-secondary",
+                      "content": "驱动信息",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p2M1OC",
+                      "name": "Driver Divider",
+                      "width": "fill_container",
+                      "height": 1,
+                      "fill": "$divider"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NRBq6",
+                      "name": "Driver 驱动版本 Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "CVCGG",
+                          "name": "驱动版本 Label",
+                          "fill": "$text-secondary",
+                          "content": "驱动版本",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "vivwe",
+                          "name": "驱动版本 Value",
+                          "fill": "$text-primary",
+                          "content": "v2.4.1",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DZ9x7",
+                      "name": "Driver 驱动状态 Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "qohI3",
+                          "name": "驱动状态 Label",
+                          "fill": "$text-secondary",
+                          "content": "驱动状态",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Jh9Vc",
+                          "name": "驱动状态 Value",
+                          "fill": "$text-primary",
+                          "content": "正常运行",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e5Lvjd",
+                      "name": "Driver INF文件 Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L7MQD",
+                          "name": "INF文件 Label",
+                          "fill": "$text-secondary",
+                          "content": "INF文件",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PQC4A",
+                          "name": "INF文件 Value",
+                          "fill": "$text-primary",
+                          "content": "hd100_x64.inf",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BdF5x",
+                      "name": "Driver 数字签名 Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zLLgE",
+                          "name": "数字签名 Label",
+                          "fill": "$text-secondary",
+                          "content": "数字签名",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "a6xtgI",
+                          "name": "数字签名 Value",
+                          "fill": "$text-primary",
+                          "content": "已验证",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W2YpW",
+                      "name": "Driver 安装日期 Row",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "v2FTD",
+                          "name": "安装日期 Label",
+                          "fill": "$text-secondary",
+                          "content": "安装日期",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DVyg5",
+                          "name": "安装日期 Value",
+                          "fill": "$text-primary",
+                          "content": "2025-01-15",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "zMjOF",
+              "name": "Quick Actions Card",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 8,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000A",
+                "offset": {
+                  "x": 0,
+                  "y": 1
+                },
+                "blur": 4
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WGLDg",
+                  "name": "Quick Actions Title",
+                  "fill": "$text-secondary",
+                  "content": "快捷操作",
+                  "fontFamily": "$font-body",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "TKGhh",
+                  "name": "Quick Divider",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "$divider"
+                },
+                {
+                  "type": "frame",
+                  "id": "Q4GxA",
+                  "name": "Refresh Button",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$primary-surface",
+                  "cornerRadius": 4,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Fe5tM",
+                      "name": "Refresh Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "refresh",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "L2Tll5",
+                      "name": "Refresh Label",
+                      "fill": "$text-primary",
+                      "content": "刷新设备列表",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "c915rW",
+                  "name": "Sync Button",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$primary-surface",
+                  "cornerRadius": 4,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "b6wrj",
+                      "name": "Sync Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "sync",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IMudd",
+                      "name": "Sync Label",
+                      "fill": "$text-primary",
+                      "content": "同步设备状态",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZgjYp",
+                  "name": "Download Button",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$primary-surface",
+                  "cornerRadius": 4,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "lDf6u",
+                      "name": "Download Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "download",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "WLtvT",
+                      "name": "Download Label",
+                      "fill": "$text-primary",
+                      "content": "更新驱动程序",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dKYHE",
+                  "name": "Settings Button",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$primary-surface",
+                  "cornerRadius": 4,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "SbmAU",
+                      "name": "Settings Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dk3AH",
+                      "name": "Settings Label",
+                      "fill": "$text-primary",
+                      "content": "高级设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iGzfQ",
+              "name": "Right Column",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Kp600",
+                  "name": "Test Result Log Card",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "F0Ifm",
+                      "name": "Log Header",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HjTu6",
+                          "name": "Log Title",
+                          "fill": "$text-secondary",
+                          "content": "测试结果日志",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "y6MZDU",
+                          "name": "Clear Log Button",
+                          "fill": "$primary-surface",
+                          "cornerRadius": 4,
+                          "gap": 4,
+                          "padding": [
+                            4,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "ejX7T",
+                              "name": "Clear Icon",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "delete",
+                              "library": "Material Symbols Rounded",
+                              "fill": "$primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R9Obqu",
+                              "name": "Clear Label",
+                              "fill": "$primary",
+                              "content": "清空",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LYhXK",
+                      "name": "Log Divider",
+                      "width": "fill_container",
+                      "height": 1,
+                      "fill": "$divider"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Q0fztD",
+                      "name": "Log Container",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#FAFAFA",
+                      "cornerRadius": 4,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UhMCP",
+                          "name": "Log Entry 14:32:01",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "L26ZPt",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:01",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "x4uu6l",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "cWbWY",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "系统启动，开始检测读卡器...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "c9Jyk",
+                          "name": "Log Entry 14:32:01",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "u4h3al",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:01",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "A97HbH",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "NIjiR",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "正在扫描USB端口...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tJqc5",
+                          "name": "Log Entry 14:32:02",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "f2GrU",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:02",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "F6dhO8",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "ALJ2b",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "发现设备: HD100 (COM3)",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QlPNo",
+                          "name": "Log Entry 14:32:02",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ckTo5",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:02",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "XSDnA",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "Yr6wK",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "加载驱动程序 v2.4.1...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N2RYW9",
+                          "name": "Log Entry 14:32:03",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "B7qXh",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:03",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "nhQQf",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "h5WnLH",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "驱动程序加载成功",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p23nDv",
+                          "name": "Log Entry 14:32:03",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "HDHPW",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:03",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "n9zpf",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "LLAFY",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "初始化通信通道...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N6ldb",
+                          "name": "Log Entry 14:32:04",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "NJck8",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:04",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "zeaJB",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "P0iiO",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "通信通道建立成功",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Sdeee",
+                          "name": "Log Entry 14:32:05",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Filrp",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:05",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "w0IIN",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "gxSKe",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "执行初始化测试...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Bn8xA",
+                          "name": "Log Entry 14:32:06",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yXJWR",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:06",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "V340eb",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "sBD5Z",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "初始化测试通过",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tIHyb",
+                          "name": "Log Entry 14:32:10",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eTGnn",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:10",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "ckDY2",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "EZa0F",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "执行读卡测试...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YbTnz",
+                          "name": "Log Entry 14:32:12",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fuz8u",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:12",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "nlZnL",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "YSKa2",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "读卡测试完成，读取数据正常",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "U9HqPD",
+                          "name": "Log Entry 14:32:15",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XdrD4",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:15",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "vovty",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "j1f9b",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "尝试读取第二张卡片...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "J5Xanv",
+                          "name": "Log Entry 14:32:17",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E0MvF1",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:17",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "H0Zbw",
+                              "name": "Log Dot",
+                              "fill": "$error",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "PLYy9",
+                              "name": "Log Message",
+                              "fill": "$error",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "错误: 卡片未检测到，请重新放置",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oDJuM",
+                          "name": "Log Entry 14:32:20",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "UN986",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:20",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "T8EaDO",
+                              "name": "Log Dot",
+                              "fill": "$text-hint",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "NHQWa",
+                              "name": "Log Message",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "重新尝试读卡...",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sMDnZ",
+                          "name": "Log Entry 14:32:22",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "FROEM",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:22",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "z2C71",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "DPDZ9",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "读卡成功，数据校验通过",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "B2XUC",
+                          "name": "Log Entry 14:32:25",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zncUJ",
+                              "name": "Log Time",
+                              "fill": "$text-hint",
+                              "content": "14:32:25",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "BqTLM",
+                              "name": "Log Dot",
+                              "fill": "$success",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "text",
+                              "id": "IS8o4",
+                              "name": "Log Message",
+                              "fill": "$success",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "所有诊断测试完成",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GVe8H",
+                      "name": "Status Bar",
+                      "width": "fill_container",
+                      "height": 32,
+                      "fill": "$primary-surface",
+                      "cornerRadius": 4,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#00000008",
+                        "offset": {
+                          "x": 0,
+                          "y": -1
+                        },
+                        "blur": 2
+                      },
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lelYb",
+                          "name": "Status Count",
+                          "fill": "$text-secondary",
+                          "content": "共 16 条记录",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "BrZzS",
+                          "name": "Success Count",
+                          "fill": "$success",
+                          "content": "成功: 12",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "G7HdqG",
+                          "name": "Error Count",
+                          "fill": "$error",
+                          "content": "失败: 1",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#9C786C"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "primary-surface": {
+      "type": "color",
+      "value": "#EFEBE9"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#BDBDBD"
+    },
+    "success": {
+      "type": "color",
+      "value": "#4CAF50"
+    },
+    "error": {
+      "type": "color",
+      "value": "#F44336"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#FF9800"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Roboto"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "Roboto Mono"
+    },
+    "gap-sm": {
+      "type": "number",
+      "value": 8
+    },
+    "gap-md": {
+      "type": "number",
+      "value": 16
+    },
+    "gap-lg": {
+      "type": "number",
+      "value": 24
+    }
+  },
+  "fileToken": "ae92ec6e-e0ab-429d-b7ce-8a1dc34212c6"
+}

@@ -1,0 +1,3274 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "Ithb9",
+      "x": 0,
+      "y": 0,
+      "name": "医案编辑页面",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "#F5F5F5",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "DOTZW",
+          "name": "顶部栏",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "layout": "vertical",
+          "padding": [
+            0,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "XYkcZ",
+              "name": "面包屑行",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "L61Zf",
+                  "name": "返回图标",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "arrow_back",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#757575"
+                },
+                {
+                  "type": "text",
+                  "id": "TFop9",
+                  "name": "医案管理",
+                  "fill": "#757575",
+                  "content": "医案管理",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "hKs5v",
+                  "name": "面包屑分隔",
+                  "fill": "#BDBDBD",
+                  "content": "/",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "yE5Wd",
+                  "name": "编辑医案",
+                  "fill": "#212121",
+                  "content": "编辑医案",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "Y4A7Aj",
+              "name": "分隔线",
+              "fill": "#E0E0E0",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "b3tpB",
+              "name": "工作流行",
+              "width": "fill_container",
+              "height": 56,
+              "padding": [
+                0,
+                32
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xL3qn",
+                  "name": "步骤-患者登记",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "oy0VU",
+                      "name": "圆圈-患者登记",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "#6D4C41",
+                      "cornerRadius": 16,
+                      "stroke": "#6D4C41",
+                      "strokeWidth": 2,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "n88YwT",
+                          "x": 8,
+                          "y": 8,
+                          "name": "完成勾",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "check",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "jh55z",
+                      "name": "步骤名-患者登记",
+                      "fill": "#6D4C41",
+                      "content": "患者登记",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "EUhsH",
+                  "name": "连接线-0",
+                  "fill": "#6D4C41",
+                  "width": 60,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "jUcvA",
+                  "name": "步骤-初诊记录",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PXpJC",
+                      "name": "圆圈-初诊记录",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "stroke": "#6D4C41",
+                      "strokeWidth": 2,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R9oB6u",
+                          "x": 10,
+                          "y": 7,
+                          "name": "步骤号",
+                          "fill": "#6D4C41",
+                          "content": "2",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "ugytf",
+                      "name": "步骤名-初诊记录",
+                      "fill": "#6D4C41",
+                      "content": "初诊记录",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "PfJu7",
+                  "name": "连接线-1",
+                  "fill": "#E0E0E0",
+                  "width": 60,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "YSPMw",
+                  "name": "步骤-处方开具",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RmfdK",
+                      "name": "圆圈-处方开具",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "stroke": "#BDBDBD",
+                      "strokeWidth": 2,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "goT3q",
+                          "x": 10,
+                          "y": 7,
+                          "name": "步骤号",
+                          "fill": "#9E9E9E",
+                          "content": "3",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "j2B4JB",
+                      "name": "步骤名-处方开具",
+                      "fill": "#9E9E9E",
+                      "content": "处方开具",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "d4OZ1",
+                  "name": "连接线-2",
+                  "fill": "#E0E0E0",
+                  "width": 60,
+                  "height": 2
+                },
+                {
+                  "type": "frame",
+                  "id": "V8Y4g5",
+                  "name": "步骤-收费确认",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NaBT8",
+                      "name": "圆圈-收费确认",
+                      "width": 32,
+                      "height": 32,
+                      "fill": "#00000000",
+                      "cornerRadius": 16,
+                      "stroke": "#BDBDBD",
+                      "strokeWidth": 2,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ModH2",
+                          "x": 10,
+                          "y": 7,
+                          "name": "步骤号",
+                          "fill": "#9E9E9E",
+                          "content": "4",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "MT6jh",
+                      "name": "步骤名-收费确认",
+                      "fill": "#9E9E9E",
+                      "content": "收费确认",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 13
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "ZiDQ8",
+              "name": "分隔线2",
+              "fill": "#E0E0E0",
+              "width": "fill_container",
+              "height": 1
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "NxHWC",
+          "name": "内容主体",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 20,
+          "padding": [
+            20,
+            32,
+            0,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "TcCeY",
+              "name": "左栏-患者信息",
+              "width": 280,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "umDmM",
+                  "name": "患者信息卡",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ExPbB",
+                      "name": "卡片标题栏",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#6D4C41",
+                      "cornerRadius": [
+                        8,
+                        8,
+                        0,
+                        0
+                      ],
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "i9n9T",
+                          "name": "患者图标",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "person",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fgjy2",
+                          "name": "卡片标题",
+                          "fill": "#FFFFFF",
+                          "content": "患者基本信息",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZCxVi",
+                      "name": "卡片内容",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "j4Hui",
+                          "name": "姓名行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OQtWY",
+                              "name": "姓名标签",
+                              "fill": "#757575",
+                              "content": "姓  名",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "op7PH",
+                              "name": "姓名值",
+                              "fill": "#212121",
+                              "content": "张秀英",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "djj3V",
+                          "name": "性别行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QZt4u",
+                              "name": "性别标签",
+                              "fill": "#757575",
+                              "content": "性  别",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MIg4M",
+                              "name": "性别值",
+                              "fill": "#212121",
+                              "content": "女",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Emn2Y",
+                          "name": "年龄行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KjsT9",
+                              "name": "年龄标签",
+                              "fill": "#757575",
+                              "content": "年  龄",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "thD3J",
+                              "name": "年龄值",
+                              "fill": "#212121",
+                              "content": "42 岁",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "L9dhi",
+                          "name": "电话行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "t0iWZ",
+                              "name": "电话标签",
+                              "fill": "#757575",
+                              "content": "电  话",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "CPtAk",
+                              "name": "电话值",
+                              "fill": "#212121",
+                              "content": "138****6789",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "usjP9",
+                          "name": "卡片内分割线",
+                          "fill": "#E0E0E0",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KutwD",
+                          "name": "过敏警示框",
+                          "width": "fill_container",
+                          "fill": "#FFF3E0",
+                          "cornerRadius": 6,
+                          "gap": 8,
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "I8FSpO",
+                              "name": "警示图标",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "warning",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#E65100"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "zmgo8",
+                              "name": "过敏文字区",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TGAaK",
+                                  "name": "过敏标题",
+                                  "fill": "#E65100",
+                                  "content": "过敏史",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EermC",
+                                  "name": "过敏内容",
+                                  "fill": "#BF360C",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "青霉素、磺胺类药物",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "iVmHV",
+                  "name": "就诊信息卡",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SmAKK",
+                      "name": "就诊标题栏",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#8D6E63",
+                      "cornerRadius": [
+                        8,
+                        8,
+                        0,
+                        0
+                      ],
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "YshXE",
+                          "name": "日历图标",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "calendar_today",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "to1HK",
+                          "name": "就诊标题",
+                          "fill": "#FFFFFF",
+                          "content": "就诊信息",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SzrHe",
+                      "name": "就诊内容",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "j3cBSD",
+                          "name": "就诊日期行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "us1cZ",
+                              "name": "日期标签",
+                              "fill": "#757575",
+                              "content": "就诊日期",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R6Gnlg",
+                              "name": "日期值",
+                              "fill": "#212121",
+                              "content": "2026-08-15",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IHncR",
+                          "name": "就诊类型行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rBG0Q",
+                              "name": "类型标签",
+                              "fill": "#757575",
+                              "content": "就诊类型",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "rC2PP",
+                              "name": "类型值",
+                              "fill": "#212121",
+                              "content": "初诊",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "D2tCp",
+                          "name": "医师行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qBzZn",
+                              "name": "医师标签",
+                              "fill": "#757575",
+                              "content": "主治医师",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "T0O3A",
+                              "name": "医师值",
+                              "fill": "#212121",
+                              "content": "李明远",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "t02uU",
+              "name": "中栏-诊断编辑",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yIBRm",
+                  "name": "字段卡-主诉",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#E0E0E0",
+                  "strokeWidth": {
+                    "left": 3
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xh1uA",
+                      "name": "字段头-主诉",
+                      "width": "fill_container",
+                      "height": 40,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "oqF1Z",
+                          "name": "字段图标-主诉",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "record_voice_over",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#6D4C41"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Ci7vl",
+                          "name": "字段标题-主诉",
+                          "fill": "#212121",
+                          "content": "主诉",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SUQC5",
+                      "name": "字段体-主诉",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        14,
+                        14,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BHJYp",
+                          "name": "字段内容-主诉",
+                          "fill": "#424242",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "反复头痛、头晕3月余，加重伴失眠1周。",
+                          "lineHeight": 1.7,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "x1vtUM",
+                  "name": "字段卡-现病史",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#E0E0E0",
+                  "strokeWidth": {
+                    "left": 3
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "lqUy4",
+                      "name": "字段头-现病史",
+                      "width": "fill_container",
+                      "height": 40,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "A4aVk",
+                          "name": "字段图标-现病史",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "history",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#6D4C41"
+                        },
+                        {
+                          "type": "text",
+                          "id": "feo39",
+                          "name": "字段标题-现病史",
+                          "fill": "#212121",
+                          "content": "现病史",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K8vrA",
+                      "name": "字段体-现病史",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        14,
+                        14,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Wvl5d",
+                          "name": "字段内容-现病史",
+                          "fill": "#424242",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "患者3月前无明显诱因出现头痛、头晕，呈阵发性胀痛，以两侧太阳穴为甚，伴恶心，未予重视。近1周上述症状加重，伴有入睡困难、多梦易醒，遂来我院就诊。",
+                          "lineHeight": 1.7,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vMVY3",
+                  "name": "字段卡-舌诊",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#E0E0E0",
+                  "strokeWidth": {
+                    "left": 3
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CkGGN",
+                      "name": "字段头-舌诊",
+                      "width": "fill_container",
+                      "height": 40,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "Pk3Rk",
+                          "name": "字段图标-舌诊",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "visibility",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#6D4C41"
+                        },
+                        {
+                          "type": "text",
+                          "id": "c8MJ6",
+                          "name": "字段标题-舌诊",
+                          "fill": "#212121",
+                          "content": "舌诊",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t5etN",
+                      "name": "字段体-舌诊",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        14,
+                        14,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E2DGjG",
+                          "name": "字段内容-舌诊",
+                          "fill": "#424242",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "舌质淡红，苔薄白微腻，舌体胖大有齿痕。",
+                          "lineHeight": 1.7,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oyyjL",
+                  "name": "字段卡-脉诊",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#E0E0E0",
+                  "strokeWidth": {
+                    "left": 3
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LyxDP",
+                      "name": "字段头-脉诊",
+                      "width": "fill_container",
+                      "height": 40,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "w9UykZ",
+                          "name": "字段图标-脉诊",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "favorite",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#6D4C41"
+                        },
+                        {
+                          "type": "text",
+                          "id": "s6HXD",
+                          "name": "字段标题-脉诊",
+                          "fill": "#212121",
+                          "content": "脉诊",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OpKv6",
+                      "name": "字段体-脉诊",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        14,
+                        14,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p8VTf",
+                          "name": "字段内容-脉诊",
+                          "fill": "#424242",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "脉弦滑，右关脉弦细。",
+                          "lineHeight": 1.7,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BFvVs",
+                  "name": "诊断行",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tZZaX",
+                      "name": "中医诊断卡",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000D",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BOPuk",
+                          "name": "中医诊断头",
+                          "width": "fill_container",
+                          "height": 40,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            14
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Q65VUV",
+                              "name": "中医图标",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "spa",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#6D4C41"
+                            },
+                            {
+                              "type": "text",
+                              "id": "n5qUWP",
+                              "name": "中医诊断标题",
+                              "fill": "#212121",
+                              "content": "中医诊断",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "w2LF8",
+                          "name": "中医诊断体",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            14,
+                            14,
+                            14
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WbwCE",
+                              "name": "中医病名行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tLGA2",
+                                  "name": "中医病名标签",
+                                  "fill": "#757575",
+                                  "content": "病名",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aGys2",
+                                  "name": "中医病名值框",
+                                  "fill": "#F3E5F5",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ndL3S",
+                                      "name": "中医病名值",
+                                      "fill": "#6A1B9A",
+                                      "content": "眩晕",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "SrTtB",
+                              "name": "证型行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "iB3jp",
+                                  "name": "证型标签",
+                                  "fill": "#757575",
+                                  "content": "证型",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "samMP",
+                                  "name": "证型值框",
+                                  "fill": "#E8EAF6",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "U4zDG",
+                                      "name": "证型值",
+                                      "fill": "#283593",
+                                      "content": "痰浊中阻",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pVRNj",
+                      "name": "西医诊断卡",
+                      "width": "fill_container",
+                      "fill": "#FFFFFF",
+                      "cornerRadius": 8,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000D",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XpWJ6",
+                          "name": "西医诊断头",
+                          "width": "fill_container",
+                          "height": 40,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            14
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "jhK0d",
+                              "name": "西医图标",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "medical_services",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#1565C0"
+                            },
+                            {
+                              "type": "text",
+                              "id": "QXW9r",
+                              "name": "西医诊断标题",
+                              "fill": "#212121",
+                              "content": "西医诊断",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yFbh7",
+                          "name": "西医诊断体",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            14,
+                            14,
+                            14
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "hL5aF",
+                              "name": "西医病名行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "vODPQ",
+                                  "name": "西医病名标签",
+                                  "fill": "#757575",
+                                  "content": "诊断",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "db88a",
+                                  "name": "西医病名值框",
+                                  "fill": "#E3F2FD",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "w8XTdZ",
+                                      "name": "西医病名值",
+                                      "fill": "#1565C0",
+                                      "content": "高血压病 2级",
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VfqDY",
+                              "name": "西医备注行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "H8ulCX",
+                                  "name": "西医备注标签",
+                                  "fill": "#757575",
+                                  "content": "备注",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Glfcr",
+                                  "name": "西医备注值",
+                                  "fill": "#424242",
+                                  "content": "伴焦虑状态",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "K8N8I",
+              "name": "右栏-处方区",
+              "width": 420,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "zDcsS",
+                  "name": "处方卡",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#6D4C41",
+                  "strokeWidth": {
+                    "top": 3
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "kttRF",
+                      "name": "处方标题栏",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "#6D4C41",
+                      "cornerRadius": [
+                        8,
+                        8,
+                        0,
+                        0
+                      ],
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "HAuDO",
+                          "name": "处方标题左",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "ekTeo",
+                              "name": "处方图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "medication",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#FFFFFF"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KCOq9",
+                              "name": "处方标题",
+                              "fill": "#FFFFFF",
+                              "content": "处方 · 半夏白术天麻汤加减",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KEnl0",
+                      "name": "处方体",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "A16yk",
+                          "name": "表头行",
+                          "width": "fill_container",
+                          "height": 38,
+                          "fill": "#EFEBE9",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "q8R9kU",
+                              "name": "头-序号",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "U2Ldg",
+                                  "name": "序号头",
+                                  "fill": "#5D4037",
+                                  "content": "#",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t330iJ",
+                              "name": "头-药名",
+                              "width": 120,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "pcQu6",
+                                  "name": "药名头",
+                                  "fill": "#5D4037",
+                                  "content": "药材名称",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "j1mJTy",
+                              "name": "头-剂量",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "o1EK4n",
+                                  "name": "剂量头",
+                                  "fill": "#5D4037",
+                                  "content": "剂量(g)",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R6tIzi",
+                              "name": "头-先煎",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "AjHRw",
+                                  "name": "先煎头",
+                                  "fill": "#5D4037",
+                                  "content": "先煎",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "poQ8H",
+                              "name": "头-备注",
+                              "width": 86,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Lsjq3",
+                                  "name": "用法头",
+                                  "fill": "#5D4037",
+                                  "content": "用法",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "u93ANE",
+                              "name": "头-操作",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lUfDi",
+                                  "name": "操作头",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "more_horiz",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#5D4037"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pgR0K",
+                          "name": "药行-法半夏",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FFFFFF",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "d7q3N",
+                              "name": "序号-0",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "e6ld8",
+                                  "fill": "#9E9E9E",
+                                  "content": "1",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "J3bA8p",
+                              "name": "药名-法半夏",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Q02TGe",
+                                  "fill": "#212121",
+                                  "content": "法半夏",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tKDYl",
+                              "name": "剂量-法半夏",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "RHKTD",
+                                  "fill": "#424242",
+                                  "content": "12",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z7ncj0",
+                              "name": "先煎-法半夏",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "D3adXX",
+                              "name": "用法-法半夏",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Dxq3a",
+                              "name": "操作-法半夏",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "SyyG3",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RNsDf",
+                          "name": "药行-白术",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FAFAFA",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "LrjRZ",
+                              "name": "序号-1",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Va8MX",
+                                  "fill": "#9E9E9E",
+                                  "content": "2",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ye74C",
+                              "name": "药名-白术",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "mXJuc",
+                                  "fill": "#212121",
+                                  "content": "白术",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "o7UMKp",
+                              "name": "剂量-白术",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "EMXkS",
+                                  "fill": "#424242",
+                                  "content": "15",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hZ9em",
+                              "name": "先煎-白术",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EXX93",
+                              "name": "用法-白术",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "gLD2C",
+                              "name": "操作-白术",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Gmhci",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mskU7",
+                          "name": "药行-天麻",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FFFFFF",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "r6Khi",
+                              "name": "序号-2",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "V5JDI8",
+                                  "fill": "#9E9E9E",
+                                  "content": "3",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hDFsv",
+                              "name": "药名-天麻",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "gYKtZ",
+                                  "fill": "#212121",
+                                  "content": "天麻",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "E592DG",
+                              "name": "剂量-天麻",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "hTjlh",
+                                  "fill": "#424242",
+                                  "content": "10",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JMb2T",
+                              "name": "先煎-天麻",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "MSO9M",
+                              "name": "用法-天麻",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JQs9r",
+                              "name": "操作-天麻",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "mSE9Z",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "DmPSS",
+                          "name": "药行-茯苓",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FAFAFA",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uBChw",
+                              "name": "序号-3",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LcvCy",
+                                  "fill": "#9E9E9E",
+                                  "content": "4",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "w0HW66",
+                              "name": "药名-茯苓",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IsfFf",
+                                  "fill": "#212121",
+                                  "content": "茯苓",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bKj6S",
+                              "name": "剂量-茯苓",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "b4UaYT",
+                                  "fill": "#424242",
+                                  "content": "20",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RSTr6",
+                              "name": "先煎-茯苓",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "K43DIM",
+                              "name": "用法-茯苓",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XUuPi",
+                              "name": "操作-茯苓",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "taOzq",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "F1c06g",
+                          "name": "药行-陈皮",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FFFFFF",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "VznIc",
+                              "name": "序号-4",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "P5tL41",
+                                  "fill": "#9E9E9E",
+                                  "content": "5",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AOXyE",
+                              "name": "药名-陈皮",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "o2FT1",
+                                  "fill": "#212121",
+                                  "content": "陈皮",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UB3S3",
+                              "name": "剂量-陈皮",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "y209tU",
+                                  "fill": "#424242",
+                                  "content": "6",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tqJ9y",
+                              "name": "先煎-陈皮",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R03Z2Q",
+                              "name": "用法-陈皮",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pY1L5",
+                              "name": "操作-陈皮",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "L5h2r",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "XYX03",
+                          "name": "药行-甘草",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FAFAFA",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "NrQRS",
+                              "name": "序号-5",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Zm6gD",
+                                  "fill": "#9E9E9E",
+                                  "content": "6",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rAfN5",
+                              "name": "药名-甘草",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FOzay",
+                                  "fill": "#212121",
+                                  "content": "甘草",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "c1uxM",
+                              "name": "剂量-甘草",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Z4M8XF",
+                                  "fill": "#424242",
+                                  "content": "3",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mc596",
+                              "name": "先煎-甘草",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "M4pzO",
+                              "name": "用法-甘草",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "r71fkq",
+                                  "fill": "#757575",
+                                  "content": "炙",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CSrSo",
+                              "name": "操作-甘草",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "JMhbb",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "lhtUN",
+                          "name": "药行-钩藤",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FFFFFF",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "X9y6N",
+                              "name": "序号-6",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Bbcii",
+                                  "fill": "#9E9E9E",
+                                  "content": "7",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q2zIN",
+                              "name": "药名-钩藤",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "cuaTP",
+                                  "fill": "#212121",
+                                  "content": "钩藤",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "r2ijB",
+                              "name": "剂量-钩藤",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "S2OSkP",
+                                  "fill": "#424242",
+                                  "content": "15",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xtkqy",
+                              "name": "先煎-钩藤",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "jDqjG",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "check_circle",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#2E7D32"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "um81Y",
+                              "name": "用法-钩藤",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "h9iLR",
+                                  "fill": "#757575",
+                                  "content": "后下",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "SLfBc",
+                              "name": "操作-钩藤",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ZHUOF",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Q353F",
+                          "name": "药行-菊花",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FAFAFA",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "CaqVV",
+                              "name": "序号-7",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "uDxXE",
+                                  "fill": "#9E9E9E",
+                                  "content": "8",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "T1hKN",
+                              "name": "药名-菊花",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "f38JDM",
+                                  "fill": "#212121",
+                                  "content": "菊花",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wg5WQ",
+                              "name": "剂量-菊花",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "I9RC73",
+                                  "fill": "#424242",
+                                  "content": "10",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "X5MMv",
+                              "name": "先煎-菊花",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hUGM3",
+                              "name": "用法-菊花",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TX7mG",
+                              "name": "操作-菊花",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "MxoN4",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "C2fGeG",
+                          "name": "药行-石菖蒲",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FFFFFF",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "obEG0",
+                              "name": "序号-8",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "QjKPl",
+                                  "fill": "#9E9E9E",
+                                  "content": "9",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hOmDd",
+                              "name": "药名-石菖蒲",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "GDpnR",
+                                  "fill": "#212121",
+                                  "content": "石菖蒲",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ouwju",
+                              "name": "剂量-石菖蒲",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "G2bBpD",
+                                  "fill": "#424242",
+                                  "content": "10",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "F3fJD2",
+                              "name": "先煎-石菖蒲",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PkBT8",
+                              "name": "用法-石菖蒲",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NAEQA",
+                              "name": "操作-石菖蒲",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "HfiT1",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GC5Gl",
+                          "name": "药行-川芎",
+                          "width": "fill_container",
+                          "height": 34,
+                          "fill": "#FAFAFA",
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I3VW9D",
+                              "name": "序号-9",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "iBKjP",
+                                  "fill": "#9E9E9E",
+                                  "content": "10",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RODQW",
+                              "name": "药名-川芎",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "nSGQM",
+                                  "fill": "#212121",
+                                  "content": "川芎",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "IMqvP",
+                              "name": "剂量-川芎",
+                              "width": 70,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "mIUt2",
+                                  "fill": "#424242",
+                                  "content": "6",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ysZMZ",
+                              "name": "先煎-川芎",
+                              "width": 50,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JVH4f",
+                              "name": "用法-川芎",
+                              "width": 86,
+                              "height": "fill_container",
+                              "alignItems": "center"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NkMEd",
+                              "name": "操作-川芎",
+                              "width": 36,
+                              "height": "fill_container",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ATPgr",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "close",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#BDBDBD"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "JIiE7",
+                          "name": "表尾",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "#EFEBE9",
+                          "cornerRadius": [
+                            0,
+                            0,
+                            8,
+                            8
+                          ],
+                          "stroke": "#E0E0E0",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "R2RkKy",
+                              "name": "添加药材图标",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "add_circle",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#6D4C41"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KvNMk",
+                              "name": "添加药材文字",
+                              "fill": "#6D4C41",
+                              "content": "添加药材",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e1Bgc",
+                  "name": "服法卡",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": "#E0E0E0",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000D",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "X5Mb7X",
+                      "name": "服法标题",
+                      "width": "fill_container",
+                      "height": 40,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "v3y3F",
+                          "name": "服法图标",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "local_pharmacy",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#6D4C41"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QeRaJ",
+                          "name": "服法标题文字",
+                          "fill": "#212121",
+                          "content": "服法与医嘱",
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ik18R",
+                      "name": "服法体",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": [
+                        0,
+                        14,
+                        14,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Ii4Mh",
+                          "name": "频次行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "b9K3a",
+                              "name": "频次标签",
+                              "fill": "#757575",
+                              "content": "频  次",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "V66aoL",
+                              "name": "频次值",
+                              "fill": "#212121",
+                              "content": "每日一剂，水煎服",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MeGYf",
+                          "name": "时间行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "G87p1J",
+                              "name": "时间标签",
+                              "fill": "#757575",
+                              "content": "用法",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wbIvB",
+                              "name": "时间值",
+                              "fill": "#212121",
+                              "content": "早、晚饭后温服",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Md8iN",
+                          "name": "煎法行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "lg759",
+                              "name": "煎法标签",
+                              "fill": "#757575",
+                              "content": "煎  法",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "haLK0",
+                              "name": "煎法值",
+                              "fill": "#212121",
+                              "content": "先浸泡30分钟，武火煮沸后文火煎20分钟",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ixS9W",
+                          "name": "疗程行",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "I1XNC",
+                              "name": "疗程标签",
+                              "fill": "#757575",
+                              "content": "疗  程",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "fYrLi",
+                              "name": "疗程值",
+                              "fill": "#212121",
+                              "content": "7剂，两周后复诊",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "XwKpe",
+          "name": "底部操作栏",
+          "width": "fill_container",
+          "height": 60,
+          "fill": "#FFFFFF",
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000000D",
+            "offset": {
+              "x": 0,
+              "y": -1
+            },
+            "blur": 3
+          },
+          "gap": 12,
+          "padding": [
+            0,
+            32
+          ],
+          "justifyContent": "end",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "E2QZZ",
+              "name": "取消按钮",
+              "height": 40,
+              "fill": "#F5F5F5",
+              "cornerRadius": 8,
+              "stroke": "#E0E0E0",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                0,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zo5TT",
+                  "name": "取消文字",
+                  "fill": "#616161",
+                  "content": "取消",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "r5HFz",
+              "name": "暂存按钮",
+              "height": 40,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": "#6D4C41",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                0,
+                20
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "ogMFV",
+                  "name": "暂存图标",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "save",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#6D4C41"
+                },
+                {
+                  "type": "text",
+                  "id": "kYZo0",
+                  "name": "暂存文字",
+                  "fill": "#6D4C41",
+                  "content": "暂存",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gzaws",
+              "name": "完成按钮",
+              "height": 40,
+              "fill": "#5D4037",
+              "cornerRadius": 8,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#4E342E40",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 4
+              },
+              "gap": 6,
+              "padding": [
+                0,
+                28
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "IiSW1",
+                  "name": "完成图标",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "check",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "xmdnR",
+                  "name": "完成文字",
+                  "fill": "#FFFFFF",
+                  "content": "完成诊断",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#BDBDBD"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#E65100"
+    },
+    "warning-bg": {
+      "type": "color",
+      "value": "#FFF3E0"
+    },
+    "success": {
+      "type": "color",
+      "value": "#2E7D32"
+    },
+    "info-blue": {
+      "type": "color",
+      "value": "#1565C0"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "gap-sm": {
+      "type": "number",
+      "value": 8
+    },
+    "gap-md": {
+      "type": "number",
+      "value": 16
+    },
+    "gap-lg": {
+      "type": "number",
+      "value": 24
+    }
+  },
+  "fileToken": "89e0890a-62b3-4216-8a97-5ceca257dc72"
+}

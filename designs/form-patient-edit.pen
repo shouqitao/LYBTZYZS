@@ -1,0 +1,1219 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "W14bR8",
+      "x": 0,
+      "y": 0,
+      "name": "Patient Edit Form",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "mIN0C",
+          "name": "Sidebar",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$sidebar-bg",
+          "layout": "vertical",
+          "padding": [
+            24,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "v1eaU",
+              "name": "Logo Area",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": [
+                0,
+                20,
+                20,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "yTFEa",
+                  "name": "Logo Icon",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "local_hospital",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#EFEBE9"
+                },
+                {
+                  "type": "text",
+                  "id": "SGC2A",
+                  "name": "Logo Text",
+                  "fill": "$sidebar-text",
+                  "content": "凌隐宝堂",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "GZIZd",
+              "name": "Navigation",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VqqHG",
+                  "name": "Nav Item 工作台",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "UoQ6k",
+                      "name": "工作台 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "dashboard",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "oGjZW",
+                      "name": "工作台 Label",
+                      "fill": "#D7CCC8",
+                      "content": "工作台",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hI72S",
+                  "name": "Nav Item 患者管理",
+                  "width": "fill_container",
+                  "fill": "$sidebar-active",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Vbj2u",
+                      "name": "患者管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "group",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pdFqr",
+                      "name": "患者管理 Label",
+                      "fill": "#FFFFFF",
+                      "content": "患者管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t6Ln3d",
+                  "name": "Nav Item 预约管理",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "NFNAr",
+                      "name": "预约管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "calendar_month",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "G7FN5y",
+                      "name": "预约管理 Label",
+                      "fill": "#D7CCC8",
+                      "content": "预约管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OmgJ4",
+                  "name": "Nav Item 诊疗记录",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "DGfAt",
+                      "name": "诊疗记录 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "medical_services",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "geEGF",
+                      "name": "诊疗记录 Label",
+                      "fill": "#D7CCC8",
+                      "content": "诊疗记录",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DqE2j",
+                  "name": "Nav Item 药房管理",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Y0khZ",
+                      "name": "药房管理 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "medication",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QrBrC",
+                      "name": "药房管理 Label",
+                      "fill": "#D7CCC8",
+                      "content": "药房管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Sig3p",
+                  "name": "Nav Item 数据统计",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "xmKwW",
+                      "name": "数据统计 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "analytics",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Hq4qC",
+                      "name": "数据统计 Label",
+                      "fill": "#D7CCC8",
+                      "content": "数据统计",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "s51eBZ",
+                  "name": "Nav Item 系统设置",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "RbOFl",
+                      "name": "系统设置 Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#BCAAA4"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MIdut",
+                      "name": "系统设置 Label",
+                      "fill": "#D7CCC8",
+                      "content": "系统设置",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wUa04",
+          "name": "Main Area",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "vvLPB",
+              "name": "Header",
+              "width": "fill_container",
+              "height": 64,
+              "fill": "$surface",
+              "padding": [
+                0,
+                32
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AHb5H",
+                  "name": "Page Title",
+                  "fill": "$text-primary",
+                  "content": "编辑患者信息",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "APu7S",
+              "name": "Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "padding": [
+                0,
+                32,
+                32,
+                32
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QECyp",
+                  "name": "Breadcrumb",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    16,
+                    0
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "X9jMW4",
+                      "name": "BC Home",
+                      "fill": "$text-secondary",
+                      "content": "患者管理",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "Xl62M",
+                      "name": "BC Separator",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron_right",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-hint"
+                    },
+                    {
+                      "type": "text",
+                      "id": "u9KBsE",
+                      "name": "BC Current",
+                      "fill": "$text-primary",
+                      "content": "编辑患者",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Pxexe",
+                  "name": "Form Card",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "riFVL",
+                      "name": "Form Title Row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "padding": [
+                        0,
+                        0,
+                        16,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "qjdiY",
+                          "name": "Form Icon",
+                          "width": 24,
+                          "height": 24,
+                          "icon": "edit",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "U8mbI",
+                          "name": "Form Title",
+                          "fill": "$text-primary",
+                          "content": "患者信息",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 18,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "fezjr",
+                      "name": "Divider",
+                      "fill": "$divider",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qi37P",
+                      "name": "Form Columns",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "gap": 48,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "qzMtx",
+                          "name": "Left Column - Basic Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kBH4X",
+                              "name": "Section Title 1",
+                              "fill": "$primary",
+                              "content": "基本信息",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wAGlJ",
+                              "name": "Field: 姓名",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "sk5Vt",
+                                  "name": "姓名 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ceHa5",
+                                      "name": "姓名 Label",
+                                      "fill": "$text-primary",
+                                      "content": "姓名",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xtf6G",
+                                      "name": "姓名 Required",
+                                      "fill": "$required",
+                                      "content": "*",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "VHdU0",
+                                  "name": "姓名 Input",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "LGOZb",
+                                      "name": "姓名 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入患者姓名",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uNBR6",
+                              "name": "Field: 性别",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "K7C4j",
+                                  "name": "性别 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "E6M3aC",
+                                      "name": "性别 Label",
+                                      "fill": "$text-primary",
+                                      "content": "性别",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "zyaUg",
+                                      "name": "性别 Required",
+                                      "fill": "$required",
+                                      "content": "*",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SkaQ5",
+                                  "name": "Gender Options",
+                                  "gap": 24,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "C6mEWa",
+                                      "name": "Male Option",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "BasN4",
+                                          "name": "Male Radio",
+                                          "fill": "$surface",
+                                          "width": 16,
+                                          "height": 16,
+                                          "stroke": "$primary",
+                                          "strokeWidth": 2
+                                        },
+                                        {
+                                          "type": "ellipse",
+                                          "id": "sBXVZ",
+                                          "layoutPosition": "absolute",
+                                          "x": 4,
+                                          "y": 4,
+                                          "name": "Male Dot",
+                                          "fill": "$primary",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "AO0lP",
+                                          "name": "Male Label",
+                                          "fill": "$text-primary",
+                                          "content": "男",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "S6epT",
+                                      "name": "Female Option",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "jKFOd",
+                                          "name": "Female Radio",
+                                          "fill": "$surface",
+                                          "width": 16,
+                                          "height": 16,
+                                          "stroke": "$input-border",
+                                          "strokeWidth": 2
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Kfdad",
+                                          "name": "Female Label",
+                                          "fill": "$text-primary",
+                                          "content": "女",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BvLfe",
+                              "name": "Field: 出生日期",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "bViCx",
+                                  "name": "出生日期 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "o3Blq6",
+                                      "name": "出生日期 Label",
+                                      "fill": "$text-primary",
+                                      "content": "出生日期",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Nwylx",
+                                      "name": "出生日期 Required",
+                                      "fill": "$required",
+                                      "content": "*",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "u2Rgh",
+                                  "name": "出生日期 Input",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "nPnhg",
+                                      "name": "出生日期 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请选择日期",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "x84HHV",
+                              "name": "Field: 电话",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "UX21L",
+                                  "name": "电话 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qGOMg",
+                                      "name": "电话 Label",
+                                      "fill": "$text-primary",
+                                      "content": "电话",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "S67od",
+                                      "name": "电话 Required",
+                                      "fill": "$required",
+                                      "content": "*",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vTUm9",
+                                  "name": "电话 Input",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "E6LAb",
+                                      "name": "电话 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入联系电话",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wj3RP",
+                              "name": "Field: 身份证号",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "h8Xkn",
+                                  "name": "身份证号 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "pl6UW",
+                                      "name": "身份证号 Label",
+                                      "fill": "$text-primary",
+                                      "content": "身份证号",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ynxNZ",
+                                      "name": "身份证号 Required",
+                                      "fill": "$required",
+                                      "content": "*",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "bvPYa",
+                                  "name": "身份证号 Input",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ozMQf",
+                                      "name": "身份证号 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入身份证号码",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "dJHbS",
+                          "name": "Right Column - Extended Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "tpXyI",
+                              "name": "Section Title 2",
+                              "fill": "$primary",
+                              "content": "扩展信息",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QTHe1",
+                              "name": "Field: 地址",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "TAbel",
+                                  "name": "地址 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "iGHDS",
+                                      "name": "地址 Label",
+                                      "fill": "$text-primary",
+                                      "content": "地址",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "a2A1D0",
+                                  "name": "地址 Input",
+                                  "width": "fill_container",
+                                  "height": 40,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vkltz",
+                                      "name": "地址 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入详细地址",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "B7n6s1",
+                              "name": "Field: 过敏史",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "pfbhh",
+                                  "name": "过敏史 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "W5mTiW",
+                                      "name": "过敏史 Label",
+                                      "fill": "$text-primary",
+                                      "content": "过敏史",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kKuRV",
+                                  "name": "过敏史 Textarea",
+                                  "width": "fill_container",
+                                  "height": 100,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "InnRA",
+                                      "name": "过敏史 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入过敏史信息（如：青霉素过敏）",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YtPue",
+                              "name": "Field: 既往病史",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "qcI8H",
+                                  "name": "既往病史 Label Row",
+                                  "gap": 4,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "q06CV",
+                                      "name": "既往病史 Label",
+                                      "fill": "$text-primary",
+                                      "content": "既往病史",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iB4vf",
+                                  "name": "既往病史 Textarea",
+                                  "width": "fill_container",
+                                  "height": 100,
+                                  "fill": "$surface",
+                                  "cornerRadius": 4,
+                                  "stroke": "$input-border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "padding": 12,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "B0D6Vk",
+                                      "name": "既往病史 Placeholder",
+                                      "fill": "$text-hint",
+                                      "content": "请输入既往病史",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "SyU5H",
+                      "name": "Footer Divider",
+                      "fill": "$divider",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n0DNp",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "padding": [
+                        8,
+                        0,
+                        0,
+                        0
+                      ],
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "tdxe5",
+                          "name": "Cancel Button",
+                          "cornerRadius": 4,
+                          "stroke": "$input-border",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": [
+                            10,
+                            24
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Q1Cyy",
+                              "name": "Cancel Text",
+                              "fill": "$text-secondary",
+                              "content": "取消",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZX9BK",
+                          "name": "Save Button",
+                          "fill": "$primary",
+                          "cornerRadius": 4,
+                          "gap": 8,
+                          "padding": [
+                            10,
+                            32
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "t8Mh1",
+                              "name": "Save Text",
+                              "fill": "#FFFFFF",
+                              "content": "保存",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#9C786C"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#9E9E9E"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "required": {
+      "type": "color",
+      "value": "#D32F2F"
+    },
+    "sidebar-bg": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "sidebar-text": {
+      "type": "color",
+      "value": "#EFEBE9"
+    },
+    "sidebar-active": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "input-border": {
+      "type": "color",
+      "value": "#BDBDBD"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Roboto"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Roboto"
+    }
+  },
+  "fileToken": "caa27714-4344-4156-85e2-a69451b1ea3f"
+}

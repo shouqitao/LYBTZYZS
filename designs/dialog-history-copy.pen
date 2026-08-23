@@ -1,0 +1,861 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "t9hWaV",
+      "x": 0,
+      "y": 0,
+      "name": "Modal Overlay",
+      "width": 640,
+      "height": 560,
+      "fill": "$bg-overlay",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "W4rJm",
+          "x": 0,
+          "y": 0,
+          "name": "Dialog",
+          "clip": true,
+          "width": 640,
+          "height": 560,
+          "fill": "$bg-white",
+          "cornerRadius": 16,
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "wVyhr",
+              "name": "Header",
+              "width": "fill_container",
+              "padding": [
+                16,
+                20
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "z7c5Gv",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "从历史医案复制",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 18,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "JWkww",
+                  "name": "Close Button",
+                  "width": 32,
+                  "height": 32,
+                  "fill": "$bg-gray",
+                  "cornerRadius": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "VjgKq",
+                      "name": "Close Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "x",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "v72dMJ",
+              "name": "Divider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$border-color"
+            },
+            {
+              "type": "frame",
+              "id": "P91du",
+              "name": "Search Area",
+              "width": "fill_container",
+              "fill": "$bg-gray",
+              "gap": 8,
+              "padding": [
+                12,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "DQud0",
+                  "name": "Search Icon",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "search",
+                  "library": "lucide",
+                  "fill": "$text-hint"
+                },
+                {
+                  "type": "frame",
+                  "id": "cwD1O",
+                  "name": "Search Input Frame",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$bg-white",
+                  "cornerRadius": 8,
+                  "stroke": "$border-color",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wsq4Z",
+                      "name": "Search Placeholder",
+                      "fill": "$text-hint",
+                      "content": "搜索患者名/诊断关键词...",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "htf3J",
+              "name": "List Container",
+              "clip": true,
+              "width": "fill_container",
+              "height": 220,
+              "layout": "vertical",
+              "padding": [
+                8,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wl9lW",
+                  "name": "List Header",
+                  "width": "fill_container",
+                  "padding": [
+                    8,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LPx2w",
+                      "name": "Col Date",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "日期",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rufvj",
+                      "name": "Col Diagnosis",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "诊断摘要",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LObY3",
+                      "name": "Col Prescription",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "处方摘要",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "a9zOy9",
+                  "name": "List Divider",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "$border-color"
+                },
+                {
+                  "type": "frame",
+                  "id": "P5S4o",
+                  "name": "Record Row 1",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "fGYvv",
+                      "name": "Date Cell",
+                      "width": 100,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FVzDv",
+                          "name": "Date",
+                          "fill": "$text-primary",
+                          "content": "2024-01-15",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eGk7f",
+                          "name": "Patient",
+                          "fill": "$text-secondary",
+                          "content": "张三",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Eluj7",
+                      "name": "Diagnosis",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "风寒感冒，恶寒发热",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "D52iTf",
+                      "name": "Prescription",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "麻黄汤加减",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "m2jqx0",
+                  "name": "Record Row 2",
+                  "width": "fill_container",
+                  "fill": "$selected-bg",
+                  "cornerRadius": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Cm6Ff",
+                      "name": "Date Cell",
+                      "width": 100,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vhKLD",
+                          "name": "Date",
+                          "fill": "$text-primary",
+                          "content": "2024-01-22",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kYDOJ",
+                          "name": "Patient",
+                          "fill": "$text-secondary",
+                          "content": "李四",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "I3SIQH",
+                      "name": "Diagnosis",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "脾胃虚弱，食欲不振",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pZ6Vc",
+                      "name": "Prescription",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "四君子汤",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Zs2WP",
+                  "name": "Record Row 3",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "stymu",
+                      "name": "Date Cell",
+                      "width": 100,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p9aazq",
+                          "name": "Date",
+                          "fill": "$text-primary",
+                          "content": "2024-02-05",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YvtAP",
+                          "name": "Patient",
+                          "fill": "$text-secondary",
+                          "content": "王五",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Yli9B",
+                      "name": "Diagnosis",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "肝气郁结，胸胁胀痛",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "OxXlo",
+                      "name": "Prescription",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "柴胡疏肝散",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I2sMGb",
+                  "name": "Record Row 4",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CpxJv",
+                      "name": "Date Cell",
+                      "width": 100,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "k9ZHAV",
+                          "name": "Date",
+                          "fill": "$text-primary",
+                          "content": "2024-02-18",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qwcuJ",
+                          "name": "Patient",
+                          "fill": "$text-secondary",
+                          "content": "赵六",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "BEMS3",
+                      "name": "Diagnosis",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "肾阳不足，腰膝酸软",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "NeugZ",
+                      "name": "Prescription",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "金匮肾气丸",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "miK6L",
+                  "name": "Record Row 5",
+                  "width": "fill_container",
+                  "fill": "#00000000",
+                  "cornerRadius": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TrgmJ",
+                      "name": "Date Cell",
+                      "width": 100,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AF35T",
+                          "name": "Date",
+                          "fill": "$text-primary",
+                          "content": "2024-03-01",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VJlNV",
+                          "name": "Patient",
+                          "fill": "$text-secondary",
+                          "content": "张三",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "yY4qJ",
+                      "name": "Diagnosis",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "气血两虚，面色苍白",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wfkkQ",
+                      "name": "Prescription",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 260,
+                      "content": "八珍汤加减",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Gd7eu",
+              "name": "Preview Divider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$border-color"
+            },
+            {
+              "type": "frame",
+              "id": "TRgmt",
+              "name": "Preview Area",
+              "width": "fill_container",
+              "height": 120,
+              "fill": "$bg-gray",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                12,
+                20
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ztkvF",
+                  "name": "Preview Label Row",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yYTC7",
+                      "name": "Preview Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "file-text",
+                      "library": "lucide",
+                      "fill": "$brown-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "T73Tr",
+                      "name": "Preview Label",
+                      "fill": "$brown-primary",
+                      "content": "选中医案详情",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sYzyh",
+                  "name": "Preview Content",
+                  "width": "fill_container",
+                  "fill": "$bg-white",
+                  "cornerRadius": 8,
+                  "stroke": "$border-color",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NxvNk",
+                      "name": "Preview Row 1",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iBnhz",
+                          "name": "Preview Date Label",
+                          "fill": "$text-secondary",
+                          "content": "就诊日期：",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "L4PcHj",
+                          "name": "Preview Date Value",
+                          "fill": "$text-primary",
+                          "content": "2024-01-22",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lUCu6",
+                      "name": "Preview Row 2",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JEyUO",
+                          "name": "Preview Diagnosis Label",
+                          "fill": "$text-secondary",
+                          "content": "诊断：",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "P3DzG",
+                          "name": "Preview Diagnosis Value",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "脾胃虚弱，食欲不振，神疲乏力，大便溏薄",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IIgCx",
+                      "name": "Preview Row 3",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "tlLUa",
+                          "name": "Preview Rx Label",
+                          "fill": "$text-secondary",
+                          "content": "处方：",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CR2GY",
+                          "name": "Preview Rx Value",
+                          "fill": "$brown-dark",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "四君子汤加减：党参15g 白术10g 茯苓10g 甘草6g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "eauDH",
+              "name": "Footer Divider",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$border-color"
+            },
+            {
+              "type": "frame",
+              "id": "w0F6On",
+              "name": "Footer",
+              "width": "fill_container",
+              "gap": 12,
+              "padding": [
+                12,
+                20,
+                16,
+                20
+              ],
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XnkkQ",
+                  "name": "Cancel Button",
+                  "cornerRadius": 8,
+                  "stroke": "$border-color",
+                  "strokeWidth": 1,
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Y4sfR",
+                      "name": "Cancel Label",
+                      "fill": "$text-secondary",
+                      "content": "取消",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vfHP3",
+                  "name": "Copy Button",
+                  "fill": "$brown-primary",
+                  "cornerRadius": 8,
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "fvN5U",
+                      "name": "Copy Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "copy",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "v3cVuX",
+                      "name": "Copy Label",
+                      "fill": "#FFFFFF",
+                      "content": "复制到当前医案",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "brown-primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "brown-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "brown-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "bg-white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "bg-gray": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "bg-overlay": {
+      "type": "color",
+      "value": "#00000066"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#9E9E9E"
+    },
+    "border-color": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "selected-bg": {
+      "type": "color",
+      "value": "#EFEBE9"
+    },
+    "selected-border": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "48e2973e-0886-468f-9c81-7b087ffac40c"
+}

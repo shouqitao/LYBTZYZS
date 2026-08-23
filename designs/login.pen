@@ -121,9 +121,9 @@
                   "id": "s7ZCUm",
                   "name": "系统名称",
                   "fill": "#FFFFFF",
-                  "content": "凌隐宝堂中医诊所",
+                  "content": "中医诊所管理系统",
                   "fontFamily": "$font-brand",
-                  "fontSize": 40,
+                  "fontSize": 36,
                   "fontWeight": "600",
                   "letterSpacing": 10
                 },
@@ -132,7 +132,6 @@
                   "id": "xovBn",
                   "name": "系统名称-副标题",
                   "fill": "#F0DFC8",
-                  "content": "中医诊所管理系统",
                   "fontFamily": "$font-body",
                   "fontSize": 18,
                   "fontWeight": "normal",
@@ -209,16 +208,6 @@
                       "id": "el5aG",
                       "name": "版权行",
                       "fill": "$text-secondary",
-                      "content": "中医诊所管理系统 · 数字化门诊管理",
-                      "fontFamily": "$font-body",
-                      "fontSize": 12,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "text",
-                      "id": "enkvO",
-                      "name": "版权行2",
-                      "fill": "$text-secondary",
                       "content": "© 2026 中医诊所管理系统",
                       "fontFamily": "$font-body",
                       "fontSize": 12,
@@ -254,7 +243,7 @@
                       "fill": "$text-primary",
                       "content": "欢迎登录",
                       "fontFamily": "$font-body",
-                      "fontSize": 28,
+                      "fontSize": 24,
                       "fontWeight": "600"
                     },
                     {
@@ -326,7 +315,7 @@
                                   "fill": "$text-primary",
                                   "content": "admin",
                                   "fontFamily": "$font-body",
-                                  "fontSize": 14,
+                                  "fontSize": 15,
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -404,7 +393,7 @@
                                   "fill": "$text-primary",
                                   "content": "••••••••",
                                   "fontFamily": "$font-body",
-                                  "fontSize": 14,
+                                  "fontSize": 15,
                                   "fontWeight": "normal"
                                 }
                               ]
@@ -564,7 +553,7 @@
                           "fill": "#FFFFFF",
                           "content": "登 录",
                           "fontFamily": "$font-body",
-                          "fontSize": 16,
+                          "fontSize": 14,
                           "fontWeight": "500",
                           "letterSpacing": 6
                         }

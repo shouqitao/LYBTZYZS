@@ -1,0 +1,1665 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "RoJby",
+      "x": 0,
+      "y": 0,
+      "name": "Herb Edit Form",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "children": [
+        {
+          "type": "frame",
+          "id": "p0LSiy",
+          "name": "Sidebar",
+          "width": 240,
+          "height": "fill_container",
+          "fill": "$sidebar-bg",
+          "layout": "vertical",
+          "padding": [
+            24,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "JcqnJ",
+              "name": "Logo Area",
+              "width": "fill_container",
+              "height": 64,
+              "gap": 12,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "PZEhy",
+                  "name": "Logo Icon",
+                  "width": 28,
+                  "height": 28,
+                  "icon": "spa",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#A5D6A7"
+                },
+                {
+                  "type": "text",
+                  "id": "R0LAqg",
+                  "name": "App Name",
+                  "fill": "#E8F5E9",
+                  "content": "凌隐宝堂",
+                  "fontFamily": "$font-cn",
+                  "fontSize": 16,
+                  "fontWeight": "bold"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "NgQ6G",
+              "name": "Sidebar Divider",
+              "fill": "#5D4037",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "MTd3t",
+              "name": "Nav Section",
+              "width": "fill_container",
+              "padding": [
+                16,
+                20,
+                4,
+                20
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zxuVb",
+                  "name": "Nav Section Text",
+                  "fill": "#8D6E63",
+                  "content": "业务管理",
+                  "fontFamily": "$font-cn",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "H7gHVQ",
+              "name": "Nav Items",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 2,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CFS73",
+                  "name": "Nav: 患者管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "h12cis",
+                      "name": "Icon: 患者管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "group",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "JEB9G",
+                      "name": "Label: 患者管理",
+                      "fill": "$sidebar-text",
+                      "content": "患者管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lJ56h",
+                  "name": "Nav: 处方管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "XONoA",
+                      "name": "Icon: 处方管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "description",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Dik2D",
+                      "name": "Label: 处方管理",
+                      "fill": "$sidebar-text",
+                      "content": "处方管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KVxaf",
+                  "name": "Nav: 药材管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "$sidebar-active",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Y5v0cM",
+                      "name": "Icon: 药材管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "spa",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ioYY9",
+                      "name": "Label: 药材管理",
+                      "fill": "#FFFFFF",
+                      "content": "药材管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "g0vBK",
+                  "name": "Nav: 库存管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "wvoEd",
+                      "name": "Icon: 库存管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "inventory_2",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "s08n4",
+                      "name": "Label: 库存管理",
+                      "fill": "$sidebar-text",
+                      "content": "库存管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nioPv",
+                  "name": "Nav: 财务管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#00000000",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "swwaL",
+                      "name": "Icon: 财务管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "account_balance",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rCEwo",
+                      "name": "Label: 财务管理",
+                      "fill": "$sidebar-text",
+                      "content": "财务管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "T70qO",
+                  "name": "Nav: 系统设置",
+                  "width": "fill_container",
+                  "height": 40,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "CZtl1",
+                      "name": "Icon: 系统设置",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "settings",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SpNZr",
+                      "name": "Label: 系统设置",
+                      "fill": "$sidebar-text",
+                      "content": "系统设置",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "f87cs",
+                  "name": "Nav: 用户管理",
+                  "width": "fill_container",
+                  "height": 40,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "qfBIm",
+                      "name": "Icon: 用户管理",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "manage_accounts",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$sidebar-text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eNsJR",
+                      "name": "Label: 用户管理",
+                      "fill": "$sidebar-text",
+                      "content": "用户管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "C1rg3p",
+              "name": "System Section",
+              "width": "fill_container",
+              "padding": [
+                16,
+                20,
+                4,
+                20
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mHaBr",
+                  "name": "System Section Text",
+                  "fill": "#8D6E63",
+                  "content": "系统",
+                  "fontFamily": "$font-cn",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "O6aeZ",
+          "name": "Content Area",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "N5KGe7",
+              "name": "Header Bar",
+              "width": "fill_container",
+              "height": 64,
+              "fill": "$surface",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000D",
+                "offset": {
+                  "x": 0,
+                  "y": 1
+                },
+                "blur": 3
+              },
+              "padding": [
+                0,
+                32
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "LpiEb",
+                  "name": "Breadcrumb",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Nhapx",
+                      "name": "BC: Herb Mgmt",
+                      "fill": "$text-secondary",
+                      "content": "药材管理",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "zTqgy",
+                      "name": "BC: Separator",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "chevron_right",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-hint"
+                    },
+                    {
+                      "type": "text",
+                      "id": "s5aCY",
+                      "name": "BC: Edit Herb",
+                      "fill": "$primary",
+                      "content": "编辑药材",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KHbZE",
+                  "name": "Header Right",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "hEL5B",
+                      "name": "Notification Bell",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "notifications",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Uq4dO",
+                      "name": "Avatar",
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$primary-light",
+                      "cornerRadius": 18,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rxlco",
+                          "name": "Avatar Text",
+                          "fill": "#FFFFFF",
+                          "content": "管",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wklbY",
+              "name": "Page Title Bar",
+              "width": "fill_container",
+              "padding": [
+                20,
+                32,
+                12,
+                32
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oVwKz",
+                  "name": "Title Left",
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    0,
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JweHJ",
+                      "name": "Page Title",
+                      "fill": "$text-primary",
+                      "content": "编辑药材",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 22,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VVNcp",
+                      "name": "Page Subtitle",
+                      "fill": "$text-secondary",
+                      "content": "填写或修改药材的基本信息与库存价格",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 2,
+                      "id": "zTxDg",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 2,
+                      "name": "Title Accent",
+                      "fill": "$primary",
+                      "width": 3,
+                      "height": 28
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ig7CL",
+              "name": "Form Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "padding": [
+                0,
+                32
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "q835bR",
+                  "name": "Form Columns",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vN9ZE",
+                      "name": "Basic Info Column",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "cVD5c",
+                          "name": "Basic Info Card",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000014",
+                            "offset": {
+                              "x": 0,
+                              "y": 1
+                            },
+                            "blur": 4
+                          },
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "y2hfHQ",
+                              "name": "Card Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "kBiJ6",
+                                  "name": "Info Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "info",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "A7c0TA",
+                                  "name": "Card Title",
+                                  "fill": "$text-primary",
+                                  "content": "基本信息",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "MFs6K",
+                              "name": "Header Divider",
+                              "fill": "$divider",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uj1Ze",
+                              "name": "Basic Fields",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Symgp",
+                                  "name": "Field: 药材名称",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "xbkGA",
+                                      "name": "Label Row: 药材名称",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "nLI7g",
+                                          "name": "Label: 药材名称",
+                                          "fill": "$text-primary",
+                                          "content": "药材名称",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xBpoF",
+                                          "name": "Required: 药材名称",
+                                          "fill": "$error",
+                                          "content": "*",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Ou9Ma",
+                                      "name": "Input: 药材名称",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "UG999",
+                                          "name": "Placeholder: 药材名称",
+                                          "fill": "$text-hint",
+                                          "content": "请输入药材名称",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MwEGG",
+                                  "name": "Field: 拼音码",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "P6W79",
+                                      "name": "Label Row: 拼音码",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cny10",
+                                          "name": "Label: 拼音码",
+                                          "fill": "$text-primary",
+                                          "content": "拼音码",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iD4pH",
+                                          "name": "Suffix: 拼音码",
+                                          "fill": "$text-hint",
+                                          "content": "← 输入名称后自动生成",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Cmrwx",
+                                      "name": "Input: 拼音码",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "SD7Jv",
+                                          "name": "Placeholder: 拼音码",
+                                          "fill": "$text-hint",
+                                          "content": "自动生成",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "dnAZp",
+                                  "name": "Field: 性味",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "d00ZI",
+                                      "name": "Label Row: 性味",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "r1hVjB",
+                                          "name": "Label: 性味",
+                                          "fill": "$text-primary",
+                                          "content": "性味",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "vtrJU",
+                                          "name": "Required: 性味",
+                                          "fill": "$error",
+                                          "content": "*",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "WVW34",
+                                      "name": "Input: 性味",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "D9od7R",
+                                          "name": "Placeholder: 性味",
+                                          "fill": "$text-hint",
+                                          "content": "如：甘、微苦，温",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Kp4SO",
+                                  "name": "Field: 归经",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "f4HBV",
+                                      "name": "Label Row: 归经",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "dj5GK",
+                                          "name": "Label: 归经",
+                                          "fill": "$text-primary",
+                                          "content": "归经",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "mMoPK",
+                                          "name": "Required: 归经",
+                                          "fill": "$error",
+                                          "content": "*",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "B8bhEO",
+                                      "name": "Input: 归经",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "DsRw1",
+                                          "name": "Placeholder: 归经",
+                                          "fill": "$text-hint",
+                                          "content": "如：归肺、心、脾经",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "js3DQ",
+                                  "name": "Field: 功效",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "c0dzA",
+                                      "name": "Label Row: 功效",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "QWKXt",
+                                          "name": "Label: 功效",
+                                          "fill": "$text-primary",
+                                          "content": "功效",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dvaKm",
+                                          "name": "Required: 功效",
+                                          "fill": "$error",
+                                          "content": "*",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "N9EzK",
+                                      "name": "Input: 功效",
+                                      "width": "fill_container",
+                                      "height": 88,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        10,
+                                        14
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "HdDiw",
+                                          "name": "Placeholder: 功效",
+                                          "fill": "$text-hint",
+                                          "content": "请输入药材功效描述...",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "exY6C",
+                          "name": "Notes Card",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000014",
+                            "offset": {
+                              "x": 0,
+                              "y": 1
+                            },
+                            "blur": 4
+                          },
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "G947cK",
+                              "name": "Notes Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "NKMrI",
+                                  "name": "Notes Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "sticky_note_2",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Q6ZSpm",
+                                  "name": "Notes Title",
+                                  "fill": "$text-primary",
+                                  "content": "备注",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "U7192B",
+                              "name": "Notes Divider",
+                              "fill": "$divider",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NxXql",
+                              "name": "Notes Content",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "hEU4Q",
+                                  "name": "Input: Notes",
+                                  "width": "fill_container",
+                                  "height": 72,
+                                  "fill": "#FAFAFA",
+                                  "cornerRadius": 6,
+                                  "stroke": "$divider",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    10,
+                                    14
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SyVtf",
+                                      "name": "Placeholder: Notes",
+                                      "fill": "$text-hint",
+                                      "content": "添加备注信息（选填）...",
+                                      "fontFamily": "$font-cn",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vwfNz",
+                      "name": "Price Column",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "s36gSQ",
+                          "name": "Inventory Price Card",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000014",
+                            "offset": {
+                              "x": 0,
+                              "y": 1
+                            },
+                            "blur": 4
+                          },
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "n0ln2",
+                              "name": "Price Card Header",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "padding": [
+                                16,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "h9cvZ",
+                                  "name": "Price Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "payments",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "$primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "usGP4",
+                                  "name": "Price Card Title",
+                                  "fill": "$text-primary",
+                                  "content": "库存与价格",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "XQ9jy",
+                              "name": "Price Header Divider",
+                              "fill": "$divider",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nHvAb",
+                              "name": "Price Fields",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 20,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "x57foS",
+                                  "name": "Field: 计量单位",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "Ati0I",
+                                      "name": "Label Row: 计量单位",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "SFegu",
+                                          "name": "Label: 计量单位",
+                                          "fill": "$text-primary",
+                                          "content": "计量单位",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "S1FbF",
+                                          "name": "Required: 计量单位",
+                                          "fill": "$error",
+                                          "content": "*",
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "i4CSCx",
+                                      "name": "Input: 计量单位",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "justifyContent": "space_between",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "qTLfE",
+                                          "name": "Value: 计量单位",
+                                          "fill": "$text-primary",
+                                          "content": "克 (g)",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "icon",
+                                          "id": "nqlKb",
+                                          "name": "Chevron: 计量单位",
+                                          "width": 20,
+                                          "height": 20,
+                                          "icon": "keyboard_arrow_down",
+                                          "library": "Material Symbols Rounded",
+                                          "fill": "$text-secondary"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S9cTP",
+                                  "name": "Price Row",
+                                  "width": "fill_container",
+                                  "gap": 16,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "C3C45",
+                                      "name": "Unit Price Wrapper",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Kwwmw",
+                                          "name": "Label Row: Unit Price",
+                                          "width": "fill_container",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "cnwZg",
+                                              "name": "Label: Unit Price",
+                                              "fill": "$text-primary",
+                                              "content": "单价",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "TFHoi",
+                                              "name": "Required: Unit Price",
+                                              "fill": "$error",
+                                              "content": "*",
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Jrpd2",
+                                          "name": "Input: Unit Price",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "#FAFAFA",
+                                          "cornerRadius": 6,
+                                          "stroke": "$divider",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "D6kAZ7",
+                                              "name": "Placeholder: Unit Price",
+                                              "fill": "$text-hint",
+                                              "content": "0.00",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "jHbdj",
+                                              "name": "Suffix: Unit Price",
+                                              "fill": "$text-hint",
+                                              "content": "元/克",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "H4DXxv",
+                                      "name": "Stock Wrapper",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 6,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Hxvct",
+                                          "name": "Label Row: Stock",
+                                          "width": "fill_container",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "zpQBU",
+                                              "name": "Label: Stock",
+                                              "fill": "$text-primary",
+                                              "content": "库存数量",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 13,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "LwxhS",
+                                              "name": "Required: Stock",
+                                              "fill": "$error",
+                                              "content": "*",
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ngGU0",
+                                          "name": "Input: Stock",
+                                          "width": "fill_container",
+                                          "height": 40,
+                                          "fill": "#FAFAFA",
+                                          "cornerRadius": 6,
+                                          "stroke": "$divider",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            0,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "JeF4P",
+                                              "name": "Placeholder: Stock",
+                                              "fill": "$text-hint",
+                                              "content": "0",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "omdmL",
+                                              "name": "Suffix: Stock",
+                                              "fill": "$text-hint",
+                                              "content": "克",
+                                              "fontFamily": "$font-cn",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SDOeo",
+                                  "name": "Field: Warning Line",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "WL9zp",
+                                      "name": "Label Row: Warning Line",
+                                      "width": "fill_container",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Q9IBW0",
+                                          "name": "Label: Warning Line",
+                                          "fill": "$text-primary",
+                                          "content": "库存预警线",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "bSgnH",
+                                          "name": "Suffix: Warning Line",
+                                          "fill": "$text-hint",
+                                          "content": "低于此数量时系统将提醒补货",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "SFh8D",
+                                      "name": "Input: Warning Line",
+                                      "width": "fill_container",
+                                      "height": 40,
+                                      "fill": "#FAFAFA",
+                                      "cornerRadius": 6,
+                                      "stroke": "$divider",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        0,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "ROoen",
+                                          "name": "Placeholder: Warning Line",
+                                          "fill": "$text-hint",
+                                          "content": "50",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ked3b",
+                                          "name": "Suffix: Warning Line Unit",
+                                          "fill": "$text-hint",
+                                          "content": "克",
+                                          "fontFamily": "$font-cn",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "M8TCT",
+              "name": "Action Bar",
+              "width": "fill_container",
+              "height": 64,
+              "fill": "$surface",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000D",
+                "offset": {
+                  "x": 0,
+                  "y": -1
+                },
+                "blur": 3
+              },
+              "gap": 12,
+              "padding": [
+                0,
+                32
+              ],
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "FmCGk",
+                  "name": "Cancel Button",
+                  "height": 40,
+                  "cornerRadius": 6,
+                  "stroke": "$divider",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    24
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sYwlL",
+                      "name": "Cancel Label",
+                      "fill": "$text-secondary",
+                      "content": "取 消",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "EzhlP",
+                  "name": "Save Button",
+                  "height": 40,
+                  "fill": "$primary",
+                  "cornerRadius": 6,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    32
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Q3yvPJ",
+                      "name": "Save Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "check",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#FFFFFF"
+                    },
+                    {
+                      "type": "text",
+                      "id": "YDv6R",
+                      "name": "Save Label",
+                      "fill": "#FFFFFF",
+                      "content": "保 存",
+                      "fontFamily": "$font-cn",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#BDBDBD"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "sidebar-bg": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "sidebar-text": {
+      "type": "color",
+      "value": "#BCAAA4"
+    },
+    "sidebar-active": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "error": {
+      "type": "color",
+      "value": "#D32F2F"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Roboto"
+    },
+    "font-cn": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "cca51648-4299-4c26-aa6e-ab5da45a08be"
+}

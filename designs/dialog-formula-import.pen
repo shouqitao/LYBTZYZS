@@ -1,0 +1,1159 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "BRx31",
+      "x": 0,
+      "y": 0,
+      "name": "Import Formula Dialog",
+      "clip": true,
+      "width": 1200,
+      "height": 800,
+      "fill": "#9E9E9E",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "bqICb",
+          "x": 0,
+          "y": 0,
+          "name": "Overlay",
+          "fill": "$overlay",
+          "width": 1200,
+          "height": 800
+        },
+        {
+          "type": "frame",
+          "id": "GP10r",
+          "x": 320,
+          "y": 160,
+          "name": "Dialog",
+          "clip": true,
+          "width": 560,
+          "height": 520,
+          "fill": "$surface",
+          "cornerRadius": 16,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#00000033",
+            "offset": {
+              "x": 0,
+              "y": 8
+            },
+            "blur": 24
+          },
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "KOSYW",
+              "name": "Title Bar",
+              "width": "fill_container",
+              "height": 48,
+              "gap": 8,
+              "padding": [
+                0,
+                20,
+                0,
+                24
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gOrCk",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "导入验方",
+                  "fontFamily": "$font-body",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "S7AUD",
+                  "name": "Close Button",
+                  "width": 32,
+                  "height": 32,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 16,
+                      "id": "irk2x",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Close BG",
+                      "fill": "#00000000",
+                      "width": 32,
+                      "height": 32
+                    },
+                    {
+                      "type": "icon",
+                      "id": "h6gXa",
+                      "layoutPosition": "absolute",
+                      "x": 7,
+                      "y": 7,
+                      "name": "Close Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "x",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "HdfC6",
+              "name": "Divider",
+              "width": "fill_container",
+              "height": 0
+            },
+            {
+              "type": "frame",
+              "id": "Kjt8P",
+              "name": "Body",
+              "clip": true,
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "padding": [
+                10,
+                24
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "e388Rm",
+                  "name": "Search Label",
+                  "fill": "$text-secondary",
+                  "content": "搜索验方",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "Y9N2V",
+                  "name": "Search Box",
+                  "width": "fill_container",
+                  "height": 34,
+                  "fill": "$surface-dim",
+                  "cornerRadius": 8,
+                  "stroke": "$surface-border",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "JNPMb",
+                      "name": "Search Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "search",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "b9BBm",
+                      "name": "Search Placeholder",
+                      "fill": "$text-secondary",
+                      "content": "输入验方名称搜索...",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M1CcEg",
+                      "layoutPosition": "absolute",
+                      "x": 500,
+                      "y": 12,
+                      "name": "Search Dropdown Arrow",
+                      "width": 16,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b61DAA",
+                  "name": "Info Card",
+                  "width": "fill_container",
+                  "height": 60,
+                  "fill": "#EFEBE9",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "oof4d",
+                      "name": "Info Icon Frame",
+                      "width": 40,
+                      "height": 40,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 22,
+                          "id": "OkLXZ",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Info Icon BG",
+                          "fill": "$primary",
+                          "width": 44,
+                          "height": 44
+                        },
+                        {
+                          "type": "icon",
+                          "id": "B5BH35",
+                          "layoutPosition": "absolute",
+                          "x": 12,
+                          "y": 12,
+                          "name": "Herb Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "leaf",
+                          "library": "lucide",
+                          "fill": "$text-on-primary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "o1AKP",
+                      "name": "Info Text Column",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gCjc4",
+                          "name": "Formula Name",
+                          "fill": "$text-primary",
+                          "content": "六味地黄丸",
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "G2bzN",
+                          "name": "Formula Indication",
+                          "fill": "$text-secondary",
+                          "content": "适应症：肾阴虚证 · 腰膝酸软 · 头晕耳鸣",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nzqfa",
+                      "name": "Herb Count",
+                      "fill": "$accent-teal",
+                      "cornerRadius": 12,
+                      "gap": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "r4A8T",
+                          "name": "Herb Count Text",
+                          "fill": "$text-on-primary",
+                          "content": "6 味药材",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k8WYqR",
+                  "name": "Table Section",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "j8Rv87",
+                      "name": "Table Label",
+                      "fill": "$text-secondary",
+                      "content": "药材组成预览",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lrlHT",
+                      "name": "Table Container",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 230,
+                      "cornerRadius": 8,
+                      "stroke": "$surface-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PnhGP",
+                          "name": "Header Row",
+                          "width": "fill_container",
+                          "height": 36,
+                          "fill": "#EFEBE9",
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "n7LiHL",
+                              "name": "H-Index",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "OSt5J",
+                                  "name": "H-Index Text",
+                                  "fill": "$text-secondary",
+                                  "content": "#",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "j3VHq",
+                              "name": "H-Name",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "T9QQW",
+                                  "name": "H-Name Text",
+                                  "fill": "$text-secondary",
+                                  "content": "药材名称",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WbugA",
+                              "name": "H-Dosage",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tpZmD",
+                                  "name": "H-Dosage Text",
+                                  "fill": "$text-secondary",
+                                  "content": "剂量 (g)",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AzXOt",
+                              "name": "H-Note",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Iy7Vm",
+                                  "name": "H-Note Text",
+                                  "fill": "$text-secondary",
+                                  "content": "备注",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f8PUF",
+                          "name": "Row 1",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "EE7ux",
+                              "name": "Cell Index 1",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "DNtBe",
+                                  "name": "Index 1",
+                                  "fill": "$text-secondary",
+                                  "content": "1",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HLlj1",
+                              "name": "Cell Name 1",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "S0ECc",
+                                  "name": "Name 1",
+                                  "fill": "$text-primary",
+                                  "content": "熟地黄",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "g16HR",
+                              "name": "Cell Dosage 1",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "qu8lO",
+                                  "name": "Dosage 1",
+                                  "fill": "$text-primary",
+                                  "content": "24",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "T74J8",
+                              "name": "Cell Note 1",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YKX2l",
+                                  "name": "Note 1",
+                                  "fill": "$text-secondary",
+                                  "content": "滋阴补肾",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Z4RMWP",
+                          "name": "Row 2",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "vYK3s",
+                              "name": "Cell Index 2",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "c3EvsH",
+                                  "name": "Index 2",
+                                  "fill": "$text-secondary",
+                                  "content": "2",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ml4RS",
+                              "name": "Cell Name 2",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "hxfEZ",
+                                  "name": "Name 2",
+                                  "fill": "$text-primary",
+                                  "content": "山茱萸",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AozUt",
+                              "name": "Cell Dosage 2",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VryAw",
+                                  "name": "Dosage 2",
+                                  "fill": "$text-primary",
+                                  "content": "12",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KUWg5",
+                              "name": "Cell Note 2",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "O7AGYE",
+                                  "name": "Note 2",
+                                  "fill": "$text-secondary",
+                                  "content": "补益肝肾",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zJuoo",
+                          "name": "Row 3",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "eXe02",
+                              "name": "Cell Index 3",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "gfDg5",
+                                  "name": "Index 3",
+                                  "fill": "$text-secondary",
+                                  "content": "3",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nYKOu",
+                              "name": "Cell Name 3",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "AP7ik",
+                                  "name": "Name 3",
+                                  "fill": "$text-primary",
+                                  "content": "山药",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Hpxai",
+                              "name": "Cell Dosage 3",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "l8evQ",
+                                  "name": "Dosage 3",
+                                  "fill": "$text-primary",
+                                  "content": "12",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xaMBO",
+                              "name": "Cell Note 3",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Uv7Aw",
+                                  "name": "Note 3",
+                                  "fill": "$text-secondary",
+                                  "content": "补脾益气",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wbHLd",
+                          "name": "Row 4",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "qkvpZ",
+                              "name": "Cell Index 4",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "j5dvdK",
+                                  "name": "Index 4",
+                                  "fill": "$text-secondary",
+                                  "content": "4",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "eQDPE",
+                              "name": "Cell Name 4",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Ukk0q",
+                                  "name": "Name 4",
+                                  "fill": "$text-primary",
+                                  "content": "泽泻",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UrGQH",
+                              "name": "Cell Dosage 4",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "VljgE",
+                                  "name": "Dosage 4",
+                                  "fill": "$text-primary",
+                                  "content": "9",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "j7Zc5",
+                              "name": "Cell Note 4",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "drEiN",
+                                  "name": "Note 4",
+                                  "fill": "$text-secondary",
+                                  "content": "利湿泄浊",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VpDGc",
+                          "name": "Row 5",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lO4o3",
+                              "name": "Cell Index 5",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "u3vihZ",
+                                  "name": "Index 5",
+                                  "fill": "$text-secondary",
+                                  "content": "5",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "r5Glr",
+                              "name": "Cell Name 5",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FjyXb",
+                                  "name": "Name 5",
+                                  "fill": "$text-primary",
+                                  "content": "茯苓",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "I6n2EG",
+                              "name": "Cell Dosage 5",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "XvwE2",
+                                  "name": "Dosage 5",
+                                  "fill": "$text-primary",
+                                  "content": "9",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ppe2n",
+                              "name": "Cell Note 5",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "bIzXH",
+                                  "name": "Note 5",
+                                  "fill": "$text-secondary",
+                                  "content": "淡渗脾湿",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f9h7Pa",
+                          "name": "Row 6",
+                          "width": "fill_container",
+                          "height": 32,
+                          "stroke": "#0000000D",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "padding": [
+                            0,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ko8Cc",
+                              "name": "Cell Index 6",
+                              "width": 36,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "K3vBhT",
+                                  "name": "Index 6",
+                                  "fill": "$text-secondary",
+                                  "content": "6",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "W61aKc",
+                              "name": "Cell Name 6",
+                              "width": 260,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "dNzoF",
+                                  "name": "Name 6",
+                                  "fill": "$text-primary",
+                                  "content": "牡丹皮",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "M27Wi8",
+                              "name": "Cell Dosage 6",
+                              "width": 120,
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ehseu",
+                                  "name": "Dosage 6",
+                                  "fill": "$text-primary",
+                                  "content": "9",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "P7p7su",
+                              "name": "Cell Note 6",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "hKofz",
+                                  "name": "Note 6",
+                                  "fill": "$text-secondary",
+                                  "content": "清泄相火",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "i9UvD",
+              "name": "Footer",
+              "width": "fill_container",
+              "height": 56,
+              "gap": 12,
+              "padding": [
+                0,
+                24
+              ],
+              "justifyContent": "end",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JSQgi",
+                  "name": "Cancel Button",
+                  "height": 36,
+                  "cornerRadius": 8,
+                  "stroke": "$surface-border",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Mk9Ru",
+                      "name": "Cancel Text",
+                      "fill": "$text-secondary",
+                      "content": "取消",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Mn8yC",
+                  "name": "Import Button",
+                  "height": 36,
+                  "fill": "$primary",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#6D4C4133",
+                    "offset": {
+                      "x": 0,
+                      "y": 2
+                    },
+                    "blur": 4
+                  },
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    24
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ukh2b",
+                      "name": "Import Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "download",
+                      "library": "lucide",
+                      "fill": "$text-on-primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "W7hxOE",
+                      "name": "Import Text",
+                      "fill": "$text-on-primary",
+                      "content": "导入到处方",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-dim": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "surface-border": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "overlay": {
+      "type": "color",
+      "value": "#00000066"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "accent-teal": {
+      "type": "color",
+      "value": "#00897B"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    }
+  },
+  "fileToken": "65cc8c16-df9c-42a8-8512-d8aa6a3e184c"
+}
