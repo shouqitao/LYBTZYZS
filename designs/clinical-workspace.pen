@@ -1,0 +1,3414 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "LZJqS",
+      "x": 0,
+      "y": 0,
+      "name": "Doctor Clinical Workspace",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "fCUzf",
+          "name": "Header Bar",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "$primary",
+          "gap": 16,
+          "padding": [
+            12,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Q6tBM",
+              "name": "Logo Area",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "EozXN",
+                  "name": "TCM Icon",
+                  "width": 28,
+                  "height": 28,
+                  "icon": "local_hospital",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "HQaHf",
+                  "name": "System Title",
+                  "fill": "#FFFFFF",
+                  "content": "凌隐宝堂中医诊所",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "cvVMr",
+                  "name": "Separator",
+                  "fill": "#BCAAA4",
+                  "content": "|",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "kWbwd",
+                  "name": "Module Title",
+                  "fill": "#D7CCC8",
+                  "content": "医生临床工作台",
+                  "fontFamily": "$font-body",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KFO5j",
+              "name": "Workflow Steps",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "lCAdi",
+                  "name": "Step 挂号",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "x5RHS0",
+                      "name": "Check",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "check_circle",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#A5D6A7"
+                    },
+                    {
+                      "type": "text",
+                      "id": "hyoGA",
+                      "name": "Step Label",
+                      "fill": "#A5D6A7",
+                      "content": "挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "Hqup6",
+                  "name": "Arrow",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron_right",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#A5D6A7"
+                },
+                {
+                  "type": "frame",
+                  "id": "VJNmJ",
+                  "name": "Step 候诊",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "aeCRg",
+                      "name": "Check",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "check_circle",
+                      "library": "Material Symbols Rounded",
+                      "fill": "#A5D6A7"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UDyMt",
+                      "name": "Step Label",
+                      "fill": "#A5D6A7",
+                      "content": "候诊",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "f0W4Eu",
+                  "name": "Arrow",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron_right",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#A5D6A7"
+                },
+                {
+                  "type": "frame",
+                  "id": "MYO6y",
+                  "name": "Step 问诊",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "E3JVQ",
+                      "name": "Current Dot",
+                      "fill": "#FFCC80",
+                      "width": 10,
+                      "height": 10
+                    },
+                    {
+                      "type": "text",
+                      "id": "V2BU4S",
+                      "name": "Step Label",
+                      "fill": "#FFFFFF",
+                      "content": "问诊",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "q3FuA",
+                  "name": "Arrow",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron_right",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#8D6E63"
+                },
+                {
+                  "type": "frame",
+                  "id": "vozga",
+                  "name": "Step 诊断",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IC8SG",
+                      "name": "Step Label",
+                      "fill": "#BCAAA4",
+                      "content": "诊断",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "VUbCu",
+                  "name": "Arrow",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron_right",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#8D6E63"
+                },
+                {
+                  "type": "frame",
+                  "id": "l5JUrM",
+                  "name": "Step 处方",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iEmd9",
+                      "name": "Step Label",
+                      "fill": "#BCAAA4",
+                      "content": "处方",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "SDo94",
+                  "name": "Arrow",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "chevron_right",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#8D6E63"
+                },
+                {
+                  "type": "frame",
+                  "id": "W18IX",
+                  "name": "Step 收费",
+                  "gap": 6,
+                  "padding": [
+                    4,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OIzAP",
+                      "name": "Step Label",
+                      "fill": "#BCAAA4",
+                      "content": "收费",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cNM3n",
+              "name": "User Area",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "ELk8F",
+                  "name": "Notifications",
+                  "width": 22,
+                  "height": 22,
+                  "icon": "notifications",
+                  "library": "Material Symbols Rounded",
+                  "fill": "#D7CCC8"
+                },
+                {
+                  "type": "ellipse",
+                  "id": "wJUXD",
+                  "name": "Avatar",
+                  "fill": "#8D6E63",
+                  "width": 34,
+                  "height": 34
+                },
+                {
+                  "type": "text",
+                  "id": "BhhA8",
+                  "name": "Doctor Name",
+                  "fill": "#FFFFFF",
+                  "content": "王明德 主任",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gA1sy",
+          "name": "Main Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$bg",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MkZUD",
+              "name": "Left Panel - Patient Queue",
+              "width": 248,
+              "height": "fill_container",
+              "fill": "$surface",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZimTp",
+                  "name": "Queue Header",
+                  "width": "fill_container",
+                  "fill": "$surface-variant",
+                  "gap": 10,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h08cp",
+                      "name": "Queue Title",
+                      "fill": "$text-primary",
+                      "content": "今日待诊",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jJko2",
+                      "name": "Queue Count Badge",
+                      "width": 22,
+                      "height": 18,
+                      "fill": "$primary",
+                      "cornerRadius": 10,
+                      "padding": [
+                        2,
+                        8
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "a9y4BC",
+                      "layoutPosition": "absolute",
+                      "x": 32,
+                      "y": 17,
+                      "name": "Queue Count",
+                      "fill": "#FFFFFF",
+                      "content": "12",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "d0gUP2",
+                  "name": "Search Bar",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "G9W9G",
+                      "name": "Search Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "search",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$text-hint"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XTnoi",
+                      "name": "Search Placeholder",
+                      "fill": "$text-hint",
+                      "content": "搜索患者...",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wfapn",
+                  "name": "Patient List",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "padding": [
+                    4,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "W793up",
+                      "name": "Patient 张三",
+                      "width": "fill_container",
+                      "fill": "$selected-bg",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Z4JkjA",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "s3F14",
+                              "name": "Num",
+                              "fill": "#FFFFFF",
+                              "content": "001",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TCFYl",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "F4Srn",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "nlBVW",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "张三",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rvwbz",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "男 / 56岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "r6oaL",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "yY8Bb",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候15分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HWSvf",
+                          "name": "Status Badge",
+                          "fill": "$primary",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "GIN8O",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "就诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WbggN",
+                      "name": "Patient 李秀英",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IbZKF",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "m7OUVF",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "002",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MrrkO",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SjMpl",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "n0gpyE",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "李秀英",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "JDZqG",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "女 / 45岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "oKpx9",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "o9zsc",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候22分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j6Y6Q",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uj192",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "O1lAta",
+                      "name": "Patient 王建国",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ROwo2",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "os8pN",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "003",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Cvs9Z",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "FmmDI",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "XTOIi",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "王建国",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "uPkDd",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "男 / 62岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RhGeI",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "C2dqUS",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候30分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rvXAL",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RvpWu",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JUnsH",
+                      "name": "Patient 陈美玲",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "B4R0BT",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mnVDp",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "004",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Q8srwM",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "iZkBz",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "z2WxR2",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "陈美玲",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Oa6fr",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "女 / 38岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YQOa2",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LVolu",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候35分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LBonz",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "orml2",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yVKEy",
+                      "name": "Patient 刘德华",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "JZJwe",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CoOmI",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "005",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "W1vb7j",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "T32Er",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YgqRU",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "刘德华",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mhPbm",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "男 / 71岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "O3Fyil",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "qFkc6",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候8分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "hMVc9",
+                          "name": "Status Badge",
+                          "fill": "$accent",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Bru55",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "优先",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t2DGp",
+                      "name": "Patient 赵丽颖",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dSY8e",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jYZIS",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "006",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zFyxe",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Mkore",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "A9quNb",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "赵丽颖",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "sYDXv",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "女 / 29岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "MXcor",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FyuLq",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候42分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "FFVIb",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nvf0E",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ixf1q",
+                      "name": "Patient 孙思明",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "MFggQ",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SozLn",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "007",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vvTPk",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "A2NKE2",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "g2CI1",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "孙思明",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "zHbnV",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "男 / 58岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cc66X",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "bpko8",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候48分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "E8T1Hl",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "g4xAV0",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "I1Zt0F",
+                      "name": "Patient 周婷婷",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XIB44",
+                          "name": "Number",
+                          "width": 32,
+                          "height": 32,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CU8pt",
+                              "name": "Num",
+                              "fill": "$primary",
+                              "content": "008",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n1ZWw",
+                          "name": "Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "H0Ahhu",
+                              "name": "Name Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KN12T",
+                                  "name": "Name",
+                                  "fill": "$text-primary",
+                                  "content": "周婷婷",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "PfRvx",
+                                  "name": "Gender Age",
+                                  "fill": "$text-secondary",
+                                  "content": "女 / 34岁",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "P4vX8",
+                              "name": "Status Row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "T3sK4d",
+                                  "name": "Wait Time",
+                                  "fill": "$text-hint",
+                                  "content": "已等候52分",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ifNjg",
+                          "name": "Status Badge",
+                          "fill": "$success",
+                          "cornerRadius": 8,
+                          "padding": [
+                            2,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DqcVF",
+                              "name": "Status",
+                              "fill": "#FFFFFF",
+                              "content": "候诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 10,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tfeRV",
+              "name": "Center Panel - Consultation",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "$bg",
+              "layout": "vertical",
+              "gap": 10,
+              "padding": [
+                10,
+                14
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jxuFF",
+                  "name": "Patient Info Card",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000015",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "gap": 20,
+                  "padding": [
+                    16,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "JLG5g",
+                      "name": "Basic Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "wULXs",
+                          "name": "Name Row",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xWknF",
+                              "name": "Patient Name",
+                              "fill": "$text-primary",
+                              "content": "张三",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Yx80f",
+                              "name": "Gender Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 12,
+                              "padding": [
+                                3,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JyERt",
+                                  "name": "Gender Text",
+                                  "fill": "$primary",
+                                  "content": "男",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "f0dWj",
+                              "name": "Age",
+                              "fill": "$text-secondary",
+                              "content": "56岁",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "D0APf",
+                              "name": "Patient ID",
+                              "fill": "$text-hint",
+                              "content": "病历号: P2024-00156",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NVLW5",
+                          "name": "Detail Row",
+                          "gap": 24,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "oKKR2",
+                              "name": "Visit Type",
+                              "fill": "$primary",
+                              "content": "初诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MOxF2",
+                              "name": "Department",
+                              "fill": "$text-secondary",
+                              "content": "内科",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "FWV2u",
+                              "name": "Insurance",
+                              "fill": "$text-secondary",
+                              "content": "城镇医保",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k9jja",
+                      "name": "Allergy Warning",
+                      "fill": "#FFEBEE",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "qkWXX",
+                          "name": "Warning Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "warning",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$warning"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pTBIH",
+                          "name": "Warning Title",
+                          "fill": "$warning",
+                          "content": "过敏警示",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Kejm1",
+                          "name": "Warning Icon New",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "warning",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$warning"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TS6ik",
+                          "name": "Allergy Title",
+                          "fill": "$warning",
+                          "content": "过敏警示",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qwjQi",
+                          "name": "Allergy List",
+                          "fill": "#B71C1C",
+                          "content": "青霉素 · 磺胺类 · 花粉",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OwzJx",
+                  "name": "Diagnosis Input Area",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000015",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "enZSJ",
+                      "name": "Diagnosis Header",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "I7W1S",
+                          "name": "Stethoscope",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "stethoscope",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "LRwC9",
+                          "name": "Diagnosis Title",
+                          "fill": "$text-primary",
+                          "content": "诊断录入",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BZzUc",
+                      "name": "Chief Complaint",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u8JiLc",
+                          "name": "Label",
+                          "fill": "$text-secondary",
+                          "content": "主诉",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sLqnV",
+                          "name": "Input",
+                          "width": "fill_container",
+                          "fill": "$surface-variant",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "padding": [
+                            10,
+                            12
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "h5Neyd",
+                              "name": "Value",
+                              "fill": "$text-primary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "反复咳嗽、咳痰伴胸闷2周，加重3天",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s7KJzo",
+                      "name": "Tongue Pulse Row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "t40Gn",
+                          "name": "Tongue Frame",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "N33Ezq",
+                              "name": "Label",
+                              "fill": "$text-secondary",
+                              "content": "舌诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "yxpxA",
+                              "name": "Tongue Input",
+                              "width": "fill_container",
+                              "fill": "$surface-variant",
+                              "cornerRadius": 6,
+                              "layout": "vertical",
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "PyTQp",
+                                  "name": "Value",
+                                  "fill": "$text-primary",
+                                  "content": "舌质红，苔黄腻",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "rAWWq",
+                          "name": "Pulse Frame",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IgHl3",
+                              "name": "Label",
+                              "fill": "$text-secondary",
+                              "content": "脉诊",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "U4m2PT",
+                              "name": "Pulse Input",
+                              "width": "fill_container",
+                              "fill": "$surface-variant",
+                              "cornerRadius": 6,
+                              "layout": "vertical",
+                              "padding": [
+                                10,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JOSJv",
+                                  "name": "Value",
+                                  "fill": "$text-primary",
+                                  "content": "脉滑数",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sz40a",
+                      "name": "Diagnosis Result",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "y6luuK",
+                          "name": "Label",
+                          "fill": "$text-secondary",
+                          "content": "中医诊断",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pnMj9",
+                          "name": "Diag Input",
+                          "width": "fill_container",
+                          "fill": "$surface-variant",
+                          "cornerRadius": 6,
+                          "gap": 8,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "VPhka",
+                              "name": "Value",
+                              "fill": "$text-primary",
+                              "content": "痰热蕴肺证",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "l8IYQu",
+                              "name": "Add Button",
+                              "fill": "$primary",
+                              "cornerRadius": 4,
+                              "gap": 4,
+                              "padding": [
+                                4,
+                                8
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lLaIu",
+                                  "name": "Add Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "add",
+                                  "library": "Material Symbols Rounded",
+                                  "fill": "#FFFFFF"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BbH9t",
+                                  "name": "Add Text",
+                                  "fill": "#FFFFFF",
+                                  "content": "添加",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZZxZ9",
+                  "name": "Prescription Area",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000015",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    14
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v8Fxlt",
+                      "name": "Rx Header",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "zyOUX",
+                          "name": "Rx Icon",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "medication",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$primary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Oe2bx",
+                          "name": "Rx Title",
+                          "fill": "$text-primary",
+                          "content": "处方编辑",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uisv3",
+                          "name": "Rx Spacer",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bKPWZ",
+                          "name": "Rx Count",
+                          "fill": "$text-secondary",
+                          "content": "共6味 · 总量180g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Q3DJJm",
+                          "name": "Add Herb Button",
+                          "fill": "$primary",
+                          "cornerRadius": 6,
+                          "gap": 4,
+                          "padding": [
+                            6,
+                            14
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "B5Fr6",
+                              "name": "Add Icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "add",
+                              "library": "Material Symbols Rounded",
+                              "fill": "#FFFFFF"
+                            },
+                            {
+                              "type": "text",
+                              "id": "t5KCF",
+                              "name": "Add Label",
+                              "fill": "#FFFFFF",
+                              "content": "添加药材",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QzHj9",
+                      "name": "Table Header",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": [
+                        6,
+                        6,
+                        0,
+                        0
+                      ],
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "c7D1eA",
+                          "name": "H1",
+                          "fill": "$text-secondary",
+                          "content": "药材名称",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "EN4Vb",
+                          "name": "H2",
+                          "fill": "$text-secondary",
+                          "content": "剂量",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Sf4GV",
+                          "name": "H3",
+                          "fill": "$text-secondary",
+                          "content": "用法",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "WvmJt",
+                          "name": "H4",
+                          "fill": "$text-secondary",
+                          "content": "备注",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jmnm3",
+                          "name": "H5",
+                          "fill": "$text-secondary",
+                          "content": "操作",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "A1eSN",
+                      "name": "Herb 黄芩",
+                      "width": "fill_container",
+                      "fill": "$surface",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Kl8j6",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "黄芩",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "FrnCl",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "15g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "C6qRhl",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "o8EuB",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "清热燥湿",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "VvzuM",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M1Snhz",
+                      "name": "Herb 浙贝母",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QH6EK",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "浙贝母",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "UVqBY",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "12g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pp5T2",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "UvblU",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "清热化痰",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Ps4sr",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PCLXz",
+                      "name": "Herb 瓜蒌皮",
+                      "width": "fill_container",
+                      "fill": "$surface",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ADOSK",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "瓜蒌皮",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jAB1U",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "10g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "iRHYP",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p7d6S",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "宽胸散结",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "iU4A3",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YMmFE",
+                      "name": "Herb 鱼腥草",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L7ZbkU",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "鱼腥草",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YBjdd",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "20g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Y36QAS",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gTZ0F",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "清热解毒",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "x8dz5",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Xwoa2",
+                      "name": "Herb 桔梗",
+                      "width": "fill_container",
+                      "fill": "$surface",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "uKf0w",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "桔梗",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "MOme6",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "6g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jvPnI",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "E6PKF",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "宣肺祛痰",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "vOpji",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LIMhm",
+                      "name": "Herb 甘草",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "padding": [
+                        6,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "b8AOx",
+                          "name": "Name",
+                          "fill": "$text-primary",
+                          "content": "甘草",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JdrVV",
+                          "name": "Dose",
+                          "fill": "$primary",
+                          "content": "3g",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JSep5",
+                          "name": "Usage",
+                          "fill": "$text-secondary",
+                          "content": "煎服",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Nd3oP",
+                          "name": "Note",
+                          "fill": "$text-hint",
+                          "content": "调和诸药",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "qRnVd",
+                          "name": "Delete",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "delete",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b7I01P",
+                  "name": "Action Bar",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    0
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DEz6T",
+                      "name": "Save Draft Button",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        10,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "QrE7M",
+                          "name": "Save Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "save",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cnHUL",
+                          "name": "Save Label",
+                          "fill": "$text-primary",
+                          "content": "保存草稿",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wqtLm",
+                      "name": "Print Button",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        10,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "y0MGg",
+                          "name": "Print Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "print",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-secondary"
+                        },
+                        {
+                          "type": "text",
+                          "id": "UnamQ",
+                          "name": "Print Label",
+                          "fill": "$text-primary",
+                          "content": "打印处方",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "DAEgx",
+                      "name": "Spacer",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eDXfS",
+                      "name": "Complete Button",
+                      "fill": "$primary",
+                      "cornerRadius": 6,
+                      "gap": 8,
+                      "padding": [
+                        12,
+                        28
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "fadp5",
+                          "name": "Check Icon",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "check_circle",
+                          "library": "Material Symbols Rounded",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "text",
+                          "id": "So88L",
+                          "name": "Complete Label",
+                          "fill": "#FFFFFF",
+                          "content": "完成问诊",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CKIM6",
+              "name": "Right Panel - Quick Actions",
+              "width": 260,
+              "height": "fill_container",
+              "fill": "$surface",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DBRwv",
+                  "name": "Quick Rx Header",
+                  "width": "fill_container",
+                  "fill": "$surface-variant",
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Pk61p",
+                      "name": "Quick Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "bookmark",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yZjUi",
+                      "name": "Quick Title",
+                      "fill": "$text-primary",
+                      "content": "常用验方",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M0P9X",
+                  "name": "Quick Rx List",
+                  "clip": true,
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zBeMs",
+                      "name": "Quick Rx 麻杏石甘汤",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "lF3aH",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "u4OJ6t",
+                              "name": "Name",
+                              "fill": "$text-primary",
+                              "content": "麻杏石甘汤",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "i9Jwk",
+                              "name": "Category Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "E8wYG",
+                                  "name": "Category",
+                                  "fill": "$primary",
+                                  "content": "宣肺清热",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "xHzvc",
+                          "name": "Desc",
+                          "fill": "$text-hint",
+                          "content": "用于风热犯肺",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Od80d",
+                      "name": "Quick Rx 二陈汤",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Tyskv",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QX18L",
+                              "name": "Name",
+                              "fill": "$text-primary",
+                              "content": "二陈汤",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ms6Cv",
+                              "name": "Category Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "bVGOf",
+                                  "name": "Category",
+                                  "fill": "$primary",
+                                  "content": "燥湿化痰",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "qYfHW",
+                          "name": "Desc",
+                          "fill": "$text-hint",
+                          "content": "用于痰湿停滞",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yAhIa",
+                      "name": "Quick Rx 六君子汤",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "EUjSX",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qvE64",
+                              "name": "Name",
+                              "fill": "$text-primary",
+                              "content": "六君子汤",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Lm9Ct",
+                              "name": "Category Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "e75cpq",
+                                  "name": "Category",
+                                  "fill": "$primary",
+                                  "content": "健脾益气",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "Rvd1j",
+                          "name": "Desc",
+                          "fill": "$text-hint",
+                          "content": "用于脾虚痰盛",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M20mw",
+                      "name": "Quick Rx 清气化痰丸",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "T2FOoQ",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qLRrN",
+                              "name": "Name",
+                              "fill": "$text-primary",
+                              "content": "清气化痰丸",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "sgmDL",
+                              "name": "Category Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ii7ij",
+                                  "name": "Category",
+                                  "fill": "$primary",
+                                  "content": "清热化痰",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "hhzVE",
+                          "name": "Desc",
+                          "fill": "$text-hint",
+                          "content": "用于痰热蕴肺",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bPQov",
+                      "name": "Quick Rx 参苓白术散",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "DdBnh",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "TgK8T",
+                              "name": "Name",
+                              "fill": "$text-primary",
+                              "content": "参苓白术散",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RHNPb",
+                              "name": "Category Badge",
+                              "fill": "$primary-surface",
+                              "cornerRadius": 4,
+                              "padding": [
+                                1,
+                                6
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KgPcf",
+                                  "name": "Category",
+                                  "fill": "$primary",
+                                  "content": "健脾渗湿",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "CqxEQ",
+                          "name": "Desc",
+                          "fill": "$text-hint",
+                          "content": "用于脾虚湿盛",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZmGdW",
+                  "name": "Divider",
+                  "width": "fill_container",
+                  "height": 1,
+                  "fill": "$border"
+                },
+                {
+                  "type": "frame",
+                  "id": "XC217",
+                  "name": "History Header",
+                  "width": "fill_container",
+                  "fill": "$surface-variant",
+                  "gap": 8,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ycebP",
+                      "name": "History Icon",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "history",
+                      "library": "Material Symbols Rounded",
+                      "fill": "$primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zBmbG",
+                      "name": "History Title",
+                      "fill": "$text-primary",
+                      "content": "历史医案",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bQ8hx",
+                  "name": "History List",
+                  "clip": true,
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "goSW7",
+                      "name": "History Case 2024-01-15",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "jEQko",
+                          "name": "Case Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "VUX6C",
+                              "name": "Diagnosis",
+                              "fill": "$text-primary",
+                              "content": "痰热蕴肺",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "N60MQv",
+                              "name": "Outcome",
+                              "fill": "$text-hint",
+                              "content": "疗效: 好转",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "IST8k",
+                          "name": "Chevron",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "chevron_right",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QTl8q",
+                          "name": "Date Box 1",
+                          "width": 44,
+                          "height": 44,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "noRzA",
+                              "name": "Month",
+                              "fill": "$primary",
+                              "content": "01",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "v2bce",
+                              "name": "Year",
+                              "fill": "$text-hint",
+                              "content": "2024",
+                              "fontFamily": "$font-body",
+                              "fontSize": 9,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EuR5s",
+                      "name": "History Case 2023-11-20",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uAv15",
+                          "name": "Case Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XaSdK",
+                              "name": "Diagnosis",
+                              "fill": "$text-primary",
+                              "content": "风寒感冒",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "z5feM",
+                              "name": "Outcome",
+                              "fill": "$text-hint",
+                              "content": "疗效: 痊愈",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "UBIUi",
+                          "name": "Chevron",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "chevron_right",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wepoi",
+                          "name": "Date Box 2",
+                          "width": 44,
+                          "height": 44,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "WNEn2",
+                              "name": "Month",
+                              "fill": "$primary",
+                              "content": "11",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dZ9tn",
+                              "name": "Year",
+                              "fill": "$text-hint",
+                              "content": "2023",
+                              "fontFamily": "$font-body",
+                              "fontSize": 9,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hcSfl",
+                      "name": "History Case 2023-08-05",
+                      "width": "fill_container",
+                      "fill": "$surface-variant",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "s8g5H",
+                          "name": "Case Info",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SdCBC",
+                              "name": "Diagnosis",
+                              "fill": "$text-primary",
+                              "content": "脾胃虚弱",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "J0trx",
+                              "name": "Outcome",
+                              "fill": "$text-hint",
+                              "content": "疗效: 好转",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "OVeTp",
+                          "name": "Chevron",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "chevron_right",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-hint"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "S20SfQ",
+                          "name": "Date Box 3",
+                          "width": 44,
+                          "height": 44,
+                          "fill": "$primary-surface",
+                          "cornerRadius": 6,
+                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Vdwql",
+                              "name": "Month",
+                              "fill": "$primary",
+                              "content": "08",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "M2pEd",
+                              "name": "Year",
+                              "fill": "$text-hint",
+                              "content": "2023",
+                              "fontFamily": "$font-body",
+                              "fontSize": 9,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-surface": {
+      "type": "color",
+      "value": "#EFEBE9"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#D84315"
+    },
+    "warning": {
+      "type": "color",
+      "value": "#C62828"
+    },
+    "success": {
+      "type": "color",
+      "value": "#2E7D32"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FAFAFA"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-variant": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#212121"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#757575"
+    },
+    "text-hint": {
+      "type": "color",
+      "value": "#9E9E9E"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E0E0E0"
+    },
+    "selected-bg": {
+      "type": "color",
+      "value": "#D7CCC8"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Noto Serif SC"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    }
+  },
+  "fileToken": "d1dbf2ac-c281-4db5-8dfa-23fb9dcbce7c"
+}

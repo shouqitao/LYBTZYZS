@@ -1,0 +1,3374 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "aeboD",
+      "x": 0,
+      "y": 0,
+      "name": "前台工作台首页",
+      "clip": true,
+      "width": 1440,
+      "height": 920,
+      "fill": "$background",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "tHzq4",
+          "name": "Top Bar",
+          "width": "fill_container",
+          "height": 56,
+          "fill": "$primary",
+          "padding": [
+            0,
+            24
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "YcDrF",
+              "name": "Logo Area",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "I22IE",
+                  "name": "Logo Icon",
+                  "width": 32,
+                  "height": 32,
+                  "fill": "$text-on-primary",
+                  "cornerRadius": 6,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h1kIP",
+                      "x": 4,
+                      "y": 3,
+                      "name": "Logo Text",
+                      "fill": "$primary",
+                      "content": "凌",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "L3o5m",
+                  "name": "System Title",
+                  "fill": "$text-on-primary",
+                  "content": "凌隐宝堂 · 前台工作台",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 16,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "opkhd",
+              "name": "Right Actions",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "FKOps",
+                  "name": "Date",
+                  "fill": "#ffffffcc",
+                  "content": "2026年8月20日 星期三",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "o4AFt5",
+                  "name": "User Avatar",
+                  "width": 32,
+                  "height": 32,
+                  "fill": "$primary-light",
+                  "cornerRadius": 16,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "f6DcI",
+                      "x": 7,
+                      "y": 5,
+                      "name": "Avatar Text",
+                      "fill": "$text-on-primary",
+                      "content": "李",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "NgiA9",
+                  "name": "User Name",
+                  "fill": "$text-on-primary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PEn5Z",
+          "name": "Stats Row",
+          "width": "fill_container",
+          "gap": 16,
+          "padding": [
+            20,
+            24
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Ejwmb",
+              "name": "Stat Card 今日挂号",
+              "width": "fill_container",
+              "height": 80,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "gap": 16,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cUcsI",
+                  "name": "Icon BG",
+                  "width": 48,
+                  "height": 48,
+                  "fill": "#EFEBE9",
+                  "cornerRadius": 12,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vjXSg",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Reg Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "path",
+                          "id": "k7Nl6j",
+                          "x": 4.088,
+                          "y": 2.6693,
+                          "geometry": "M18.46133 23.52l-17.15466 0c-0.65333-0.03733-1.288-0.52267-1.30667-1.232l0-20.96267c0.03733-0.672 0.63467-1.288 1.344-1.30666l17.15467-0.01867c0.57867 0 1.344 0.52267 1.344 1.26933l0 21.03734c0 0.70934-0.616 1.21333-1.38134 1.21333z",
+                          "fill": "#6E4E32",
+                          "width": 19.8427,
+                          "height": 23.52
+                        },
+                        {
+                          "type": "path",
+                          "id": "AVMrW",
+                          "x": 5.936,
+                          "y": 4.0507,
+                          "geometry": "M0 0l16.10933 0 0 19.80533-16.10933 0 0-19.80533z",
+                          "fill": "#F9F7EA",
+                          "width": 16.1093,
+                          "height": 19.8053
+                        },
+                        {
+                          "type": "path",
+                          "id": "s1G07",
+                          "x": 9.5013,
+                          "y": 1.792,
+                          "geometry": "M7.85867 0l-6.664 0c-0.46667 0.07467-0.97067 0.46667-1.19467 1.008l0 1.19467c0 0.65333 0.56 1.21333 1.232 1.26933l6.62667 0c0.56-0.01867 1.15733-0.504 1.232-1.176l-0.01867-1.176c-0.18667-0.69067-0.80267-1.10133-1.21333-1.12z",
+                          "fill": "#9C6D45",
+                          "width": 9.0907,
+                          "height": 3.472
+                        },
+                        {
+                          "type": "path",
+                          "id": "BcY9t",
+                          "x": 9.464,
+                          "y": 1.792,
+                          "geometry": "M9.072 1.232c0-0.616-0.52267-1.176-1.21333-1.232l-6.664 0.01867c-0.48533 0.07467-1.13867 0.52267-1.19467 1.15733l0.01867 1.02667 8.99733 0.056 0.056-1.02667z",
+                          "fill": "#9C6D45",
+                          "width": 9.072,
+                          "height": 2.2587
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Yxizr",
+                  "name": "Text Col",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "r9x8v",
+                      "name": "Stat Label",
+                      "fill": "$text-secondary",
+                      "content": "今日挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Zbzre",
+                      "name": "Stat Value",
+                      "fill": "$text-primary",
+                      "content": "48",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 26,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fxWVf",
+              "name": "Stat Card 待接诊",
+              "width": "fill_container",
+              "height": 80,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "gap": 16,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dPnNd",
+                  "name": "Icon BG",
+                  "width": 48,
+                  "height": 48,
+                  "fill": "#FFF3E0",
+                  "cornerRadius": 12,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rbyeJ",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Wait Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "path",
+                          "id": "w4ceOU",
+                          "x": 5.292,
+                          "y": 2.044,
+                          "geometry": "M15.512 0l-13.552 0c-1.036 0-1.96 0.812-1.96 1.876 0 1.092 0.812 3.248 2.016 5.012 1.204 1.764 2.548 2.94 4.004 4.06 0.28 0.224 0.476 0.532 0.476 1.008 0 0.392-0.196 0.728-0.476 0.98-1.456 1.148-3.192 2.856-4.312 4.648-1.064 1.708-1.708 3.416-1.708 4.424 0 1.036 0.812 1.82 1.904 1.82l13.58 0c1.036 0.056 1.904-0.784 1.904-1.792 0-0.98-0.812-2.968-1.848-4.564-1.036-1.596-2.548-3.164-4.004-4.34-0.336-0.28-0.588-0.616-0.588-1.176 0.028-0.588 0.392-0.84 0.784-1.148 2.38-1.932 4.34-4.256 5.264-6.888 0.224-0.644 0.392-1.288 0.392-2.044-0.028-1.064-0.868-1.876-1.876-1.876z",
+                          "fill": "#E64F23",
+                          "width": 17.388,
+                          "height": 23.8306
+                        },
+                        {
+                          "type": "path",
+                          "id": "R9uhab",
+                          "x": 6.9343,
+                          "y": 3.64,
+                          "geometry": "M13.75767 0l-13.384 0c-0.168 0-0.392 0.168-0.364 0.42 0.252 1.512 1.484 4.032 3.892 6.328 1.372 1.316 2.52 1.68 2.52 3.612 0 0.924-0.476 1.708-1.092 2.212-1.68 1.372-2.912 2.604-4.004 4.396-0.7 1.204-1.176 2.436-1.316 3.192-0.056 0.308 0.14 0.532 0.364 0.532l13.412 0c0.252 0 0.42-0.14 0.392-0.504-0.056-0.56-0.952-3.248-2.968-5.404-0.756-0.812-1.596-1.512-2.408-2.184-0.588-0.504-1.148-1.26-1.148-2.268 0.056-1.764 1.344-2.24 2.296-3.08 2.436-2.156 3.948-4.76 4.228-6.72 0.028-0.308-0.196-0.532-0.42-0.532z",
+                          "fill": "#FFFFFF",
+                          "width": 14.1807,
+                          "height": 20.692
+                        },
+                        {
+                          "type": "path",
+                          "id": "uXEWy",
+                          "x": 8.26,
+                          "y": 7.256,
+                          "geometry": "M0 0.05196c0.7-0.028 0.896-0.084 1.652-0.028 1.96 0.168 3.304 1.008 6.02 1.12 1.792 0 2.912-0.42 3.64-0.924l0.084-0.056c-0.588 0.98-1.736 2.324-3.22 3.64-0.7 0.56-1.792 1.316-1.848 2.744l0 0.504c-0.084 0.504-0.42 0.924-0.588 0.924-0.14 0-0.476-0.364-0.616-0.924l0-0.42c-0.084-1.484-0.896-1.932-1.68-2.576-1.316-1.064-2.772-2.8-3.444-4.004z",
+                          "fill": "#EE876A",
+                          "width": 11.396,
+                          "height": 7.976
+                        },
+                        {
+                          "type": "path",
+                          "id": "kmTO5",
+                          "x": 13.972,
+                          "y": 8.12,
+                          "opacity": 0.5,
+                          "geometry": "M0 4.396c0.784-1.176 2.296-1.988 3.584-3.472l0.728-0.924c-1.12 0.308-1.764 0.28-2.324 0.28-0.56 0-1.568-0.112-1.96-0.196l0 4.312-0.028 0z",
+                          "fill": "#EFBAAF",
+                          "width": 4.312,
+                          "height": 4.396
+                        },
+                        {
+                          "type": "path",
+                          "id": "VTQiu",
+                          "x": 8.26,
+                          "y": 7.252,
+                          "opacity": 0.5,
+                          "geometry": "M0.896 0c0.364 0.588 1.316 1.904 2.912 3.276 0.532 0.476 1.372 1.064 1.904 1.988-0.364 0.588-0.56 1.344-0.532 1.848l-0.084-0.532-0.728-1.372-1.4-1.372-1.708-1.82-1.26-1.988c0.392 0 0.7-0.028 0.896-0.028z",
+                          "fill": "#EFBAAF",
+                          "width": 5.712,
+                          "height": 7.112
+                        },
+                        {
+                          "type": "path",
+                          "id": "y8YSf",
+                          "x": 13.384,
+                          "y": 12.516,
+                          "opacity": 0.5,
+                          "geometry": "M1.204 1.176c-0.112-0.364-0.308-0.756-0.588-1.176-0.28 0.448-0.532 1.036-0.616 1.792 0.084 0.476 0.448 0.924 0.616 0.924 0.196 0 0.532-0.448 0.588-0.924l0-0.616z",
+                          "fill": "#EFBAAF",
+                          "width": 1.204,
+                          "height": 2.716
+                        },
+                        {
+                          "type": "path",
+                          "id": "AVwDg",
+                          "x": 6.9155,
+                          "y": 19.852,
+                          "geometry": "M0.05646 3.78c0.196-0.252 1.456-1.736 2.38-2.24 0.784-0.56 2.1-1.54 4.284-1.54 2.184 0 4.396 1.036 6.384 2.828l1.092 1.092 0 0.56-13.804 0c-0.168 0-0.532-0.14-0.336-0.7z",
+                          "fill": "#EE876A",
+                          "width": 14.1965,
+                          "height": 4.48
+                        },
+                        {
+                          "type": "path",
+                          "id": "WtiL5",
+                          "x": 8.876,
+                          "y": 19.824,
+                          "opacity": 0.5,
+                          "geometry": "M0 1.848c0.924-0.336 1.96-0.56 3.108-0.392 2.24 0.364 3.5 1.708 6.048 2.52 0.672 0.196 1.96 0.532 2.688 0.532l0.112 0c0.252 0 0.308-0.224 0.28-0.532-0.98-1.008-3.808-3.948-7.476-3.976-2.38 0-3.78 1.036-4.76 1.848z",
+                          "fill": "#EFBAAF",
+                          "width": 12.2426,
+                          "height": 4.508
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wJLYY",
+                  "name": "Text Col",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hbOGo",
+                      "name": "Stat Label",
+                      "fill": "$text-secondary",
+                      "content": "待接诊",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "O7ZTN",
+                      "name": "Stat Value",
+                      "fill": "$text-primary",
+                      "content": "12",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 26,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Vuyf2",
+              "name": "Stat Card 已完成",
+              "width": "fill_container",
+              "height": 80,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "gap": 16,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "x0bJY",
+                  "name": "Icon BG",
+                  "width": 48,
+                  "height": 48,
+                  "fill": "#E8F5E9",
+                  "cornerRadius": 12,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "pwM8L",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Done Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "path",
+                          "id": "GGmWS",
+                          "x": -0.0426,
+                          "y": 0.0289,
+                          "geometry": "M14.3515 0.0036c-7.47968-0.1626-13.98374 5.20325-14.34146 12.68292-0.26016 6.73171 4.55284 14.47155 12.68292 15.28456 7.57724 0.74797 14.27642-4.22764 15.31707-12.1626 0.81301-7.47967-5.82114-15.60976-13.65853-15.80488z m-0.3252 25.78861c-6.4065 0.06504-11.86992-4.97561-11.90244-11.80487-0.03252-6.82927 5.36585-11.77236 11.86992-11.8374 5.46341-0.06504 11.86992 4.35772 11.96747 11.70731 0.03252 5.59349-4.22764 11.86992-11.93495 11.93496l0 0z",
+                          "fill": "#0C7E36",
+                          "width": 28.0777,
+                          "height": 28.0452
+                        },
+                        {
+                          "type": "path",
+                          "id": "lwDdM",
+                          "x": 6.508,
+                          "y": 7.6578,
+                          "geometry": "M15.24815 1.09019l-0.87805-0.87805c-0.26016-0.26016-0.71545-0.29268-1.00813-0.03252l-8.03252 7.86992-3.05691-3.02439c-0.26016-0.22764-0.74797-0.26016-1.00813 0.03252l-1.04065 1.00813c-0.3252 0.29268-0.26016 0.94309-0.03252 1.10569l4.61788 4.52033c0.26016 0.26016 0.78049 0.29268 1.07317 0l9.36586-9.39838c0.29268-0.22764 0.29268-0.94309 0-1.07317l0-0.13008z",
+                          "fill": "#0C7E36",
+                          "width": 15.4677,
+                          "height": 11.8993
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xcimT",
+                  "name": "Text Col",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LSiUn",
+                      "name": "Stat Label",
+                      "fill": "$text-secondary",
+                      "content": "已完成",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "r3zmN",
+                      "name": "Stat Value",
+                      "fill": "$text-primary",
+                      "content": "36",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 26,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CoAa8",
+              "name": "Stat Card 今日收入",
+              "width": "fill_container",
+              "height": 80,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "gap": 16,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sHMSC",
+                  "name": "Icon BG",
+                  "width": 48,
+                  "height": 48,
+                  "fill": "#E3F2FD",
+                  "cornerRadius": 12,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "kPSa0",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Money Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "ZDOn6",
+                          "x": 0,
+                          "y": 5.6071,
+                          "fill": "#FFFFFF",
+                          "width": 28,
+                          "height": 16.7857
+                        },
+                        {
+                          "type": "path",
+                          "id": "FltOv",
+                          "x": 7.8571,
+                          "y": 6.3214,
+                          "opacity": 0.3,
+                          "geometry": "M6.55357 0c-3.625 0-6.55357 3.05357-6.55357 6.60714l0 0.35715c0 3.64286 2.92857 6.96429 6.55357 6.96428 3.625 0 7.73214-3.32143 7.73215-6.96428 0-3.64286-4.10714-6.96429-7.73215-6.96429z m2.375 10.17857l-5 0 0-5 5 0 0 5z",
+                          "fill": "#3E91EA",
+                          "width": 14.2857,
+                          "height": 13.9286
+                        },
+                        {
+                          "type": "path",
+                          "id": "n0u4lg",
+                          "x": 6.2143,
+                          "y": 6.2143,
+                          "geometry": "M7.78572 0c-3.625 0-7.78572 3.07143-7.78572 7.78571 0 3.73214 2.82143 7.85714 7.83928 7.85715 3.625 0 7.76786-2.78572 7.76786-7.85715 0-3.625-3.03571-7.78571-7.82142-7.78571z",
+                          "fill": "#00377C",
+                          "width": 15.6071,
+                          "height": 15.6429
+                        },
+                        {
+                          "type": "path",
+                          "id": "uYWKN",
+                          "x": 6.75,
+                          "y": 6.6964,
+                          "geometry": "M7.21429 0c-3.60714 0-7.21429 3.25-7.21429 7.375 0 3.30357 2.67857 7.33929 7.25 7.33929 3.83929 0 7.35714-2.75 7.35714-7.41072 0-3.19643-2.64286-7.30357-7.39285-7.30357z m0.03571 13.92857c-3.625 0-6.57143-2.76786-6.57143-6.625 0-3.03571 2.55357-6.60714 6.57143-6.60714 3.28571 0 6.60714 2.625 6.60714 6.60714 0 2.85714-2.08929 6.625-6.60714 6.625z",
+                          "fill": "#348DEB",
+                          "width": 14.6071,
+                          "height": 14.7143
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "VUiHx",
+                          "x": 11.375,
+                          "y": 11.3571,
+                          "width": 5.3214,
+                          "height": 5.2857,
+                          "stroke": "#348DEA",
+                          "strokeWidth": 0.3380714285714285
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xHJpi",
+                  "name": "Text Col",
+                  "layout": "vertical",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "IzU6F",
+                      "name": "Stat Label",
+                      "fill": "$text-secondary",
+                      "content": "今日收入",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "li5zX",
+                      "name": "Stat Value",
+                      "fill": "$text-primary",
+                      "content": "¥6,820",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 26,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rMXc5",
+          "name": "Middle Row",
+          "width": "fill_container",
+          "height": 460,
+          "gap": 16,
+          "padding": [
+            0,
+            24
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "I92I2",
+              "name": "Quick Actions Panel",
+              "width": 380,
+              "height": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Z4kwP",
+                  "name": "Panel Title",
+                  "fill": "$text-primary",
+                  "content": "快捷操作",
+                  "fontFamily": "$font-heading",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "GiUfP",
+                  "name": "New Registration Button",
+                  "width": "fill_container",
+                  "height": 64,
+                  "fill": "$primary",
+                  "cornerRadius": 12,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bIMLH",
+                      "name": "Btn Label",
+                      "fill": "$text-on-primary",
+                      "content": "新建挂号",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T2bJg",
+                      "name": "Plus Icon Frame",
+                      "clip": true,
+                      "width": 24,
+                      "height": 24,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "fzvOu",
+                          "x": 0,
+                          "y": 0.016,
+                          "fill": "#FFFFFF",
+                          "width": 24,
+                          "height": 23.952
+                        },
+                        {
+                          "type": "path",
+                          "id": "brxRD",
+                          "x": 19.04,
+                          "y": 9.696,
+                          "geometry": "",
+                          "fill": "#EBEBEC",
+                          "width": 0,
+                          "height": 0
+                        },
+                        {
+                          "type": "path",
+                          "id": "E5aa0j",
+                          "x": 4.896,
+                          "y": 4.976,
+                          "geometry": "M12.48 5.264l-3.648 0 0-3.824c0-0.8-0.784-1.44-1.584-1.44-0.8 0-1.552 0.496-1.552 1.28l0 3.984-3.68 0c-0.96 0-2.016 0.656-2.016 1.776 0 1.12 0.688 1.776 1.664 1.776l3.824 0.032-0.112 0.016 0 4.176c0.032 0.768 0.704 1.312 1.728 1.312 0.896 0 1.728-0.464 1.728-1.28l0-4.256 3.68 0c1.024 0 1.728-0.72 1.728-1.776 0-1.056-0.704-1.776-1.76-1.776z",
+                          "fill": "#FFFFFF",
+                          "width": 14.24,
+                          "height": 14.352
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "a19ne",
+                  "name": "Quick Btn 患者登记",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#FAFAFA",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RQEzC",
+                      "name": "QText",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "athTE",
+                          "name": "QLabel",
+                          "fill": "$text-primary",
+                          "content": "患者登记",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cxl00",
+                          "name": "QDesc",
+                          "fill": "$text-secondary",
+                          "content": "新建或查找患者",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WiM6i",
+                      "name": "Patient Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "path",
+                          "id": "Cpjgw",
+                          "x": 3.304,
+                          "y": 1.5673,
+                          "geometry": "M20.916 18.28466l0 0c0 0 0 0 0 0m-0.952 4.564c-2.464 0.336-5.068 0.644-9.268 0.644-3.024 0-4.76-0.112-7.868-0.42l-1.12-0.112-0.532-0.056 0.196-0.056 0.42-4.256c0.252-2.1 1.204-3.332 3.724-4.452 0.7-0.308 1.512-0.616 2.884-1.092 0.672-0.196 0.868-1.316 0.42-2.016l-0.14-0.168c-1.232-0.896-2.408-2.492-2.408-4.788 0.028-2.576 1.988-4.704 4.34-4.704l0.084 0c1.064 0 1.876 0.308 2.688 0.98 0.868 0.728 1.68 1.932 1.68 3.752-0.028 2.268-1.12 3.808-2.352 4.732-0.196 0.14-0.392 0.56-0.42 0.896-0.028 0.448 0.224 1.036 0.644 1.204l1.512 0.532c2.828 1.036 4.536 2.1 5.012 4.312 0.084 0.364 0.112 0.672 0.14 1.092l0.364 3.976z m0.952-3.36l0 0c-0.112-1.092-0.056-1.484-0.308-2.464-0.756-2.38-2.66-3.556-5.236-4.536l-1.624-0.644c1.316-1.036 2.352-2.66 2.66-4.928 0.168-1.96-0.42-3.668-1.596-4.984-1.036-1.092-2.352-1.96-4.116-1.932-2.632-0.028-5.404 2.072-5.796 5.376-0.224 2.744 0.896 4.928 2.716 6.44l-0.952 0.336c-2.912 1.036-5.544 2.492-6.132 5.46-0.112 0.588-0.14 1.232-0.224 1.96-0.224 2.632-0.308 3.528-0.308 3.696 0.056 0.42 0.336 0.84 0.896 0.868 3.332 0.392 5.656 0.644 9.828 0.644 2.968 0 5.32-0.112 9.744-0.644 0.476-0.084 0.84-0.476 0.952-0.924 0.028-0.28-0.112-1.288-0.504-3.724",
+                          "fill": "#644527",
+                          "width": 21.4235,
+                          "height": 24.7807
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Apqeg",
+                  "name": "Quick Btn 收费确认",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#FAFAFA",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "q02Sap",
+                      "name": "QText",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L60hWj",
+                          "name": "QLabel",
+                          "fill": "$text-primary",
+                          "content": "收费确认",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fQ0Qc",
+                          "name": "QDesc",
+                          "fill": "$text-secondary",
+                          "content": "确认收费并打印票据",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RAaTu",
+                      "name": "Payment Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "oyzKI",
+                          "x": 0,
+                          "y": 3.63,
+                          "fill": "#E2C5B0",
+                          "width": 28,
+                          "height": 20.72
+                        },
+                        {
+                          "type": "path",
+                          "id": "GoK0V",
+                          "x": 1.86,
+                          "y": 5.53,
+                          "geometry": "M22.6 0l-20.98 0c-0.82 0.04-1.48 0.68-1.62 1.5l0 14c0.06 0.84 0.74 1.5 1.58 1.54l21.06 0c0.88-0.02 1.58-0.7 1.62-1.54l0-13.88c-0.04-0.8-0.78-1.62-1.66-1.62z",
+                          "fill": "#FFFFFF",
+                          "width": 24.26,
+                          "height": 17.04,
+                          "stroke": "#51381A",
+                          "strokeWidth": 0.56798,
+                          "strokeLinecap": "round"
+                        },
+                        {
+                          "type": "path",
+                          "id": "rixFP",
+                          "x": 4.86,
+                          "y": 10.0689,
+                          "geometry": "M3.64 0.00108l-3.18 0c-0.22 0.02-0.44 0.22-0.46 0.48l0 2.12c0.02 0.26 0.26 0.48 0.52 0.48l3.16 0c0.26 0.02 0.46-0.2 0.48-0.5l0-2.08c0.02-0.26-0.2-0.52-0.52-0.5z",
+                          "width": 4.1613,
+                          "height": 3.0823,
+                          "stroke": "#51381A",
+                          "strokeWidth": 0.56798,
+                          "strokeLinecap": "round"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "kGO8v",
+                          "x": 4.56,
+                          "y": 15.09,
+                          "fill": "#51381A",
+                          "width": 18.86,
+                          "height": 2.14
+                        },
+                        {
+                          "type": "path",
+                          "id": "g6rfS",
+                          "x": 4.56,
+                          "y": 15.11,
+                          "geometry": "",
+                          "width": 0,
+                          "height": 0,
+                          "stroke": "#51381A",
+                          "strokeWidth": 0.56798
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hd5FA",
+                  "name": "Quick Btn 预约管理",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#FAFAFA",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "k4lHj",
+                      "name": "QText",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "k25HX",
+                          "name": "QLabel",
+                          "fill": "$text-primary",
+                          "content": "预约管理",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rLhhT",
+                          "name": "QDesc",
+                          "fill": "$text-secondary",
+                          "content": "查看和管理预约",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gxU2l",
+                      "name": "Calendar Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "tCHpn",
+                          "x": 0.0927,
+                          "y": 0,
+                          "fill": "#FFFFFF",
+                          "width": 27.796,
+                          "height": 27.9815
+                        },
+                        {
+                          "type": "path",
+                          "id": "Q1FOBn",
+                          "x": 0.0927,
+                          "y": 0,
+                          "geometry": "M0 0l0 0",
+                          "fill": "#F4F4F4",
+                          "width": 0,
+                          "height": 0
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "uVAyR",
+                          "x": 0.0927,
+                          "y": 0,
+                          "fill": "#FFFFFF",
+                          "width": 27.8146,
+                          "height": 28
+                        },
+                        {
+                          "type": "path",
+                          "id": "m6jt0",
+                          "x": 2.5404,
+                          "y": 2.5219,
+                          "geometry": "M17.24503 0l-15.52053 0c-0.83444 0-1.7245 0.70464-1.7245 1.70596l0 19.52583c0 0.83444 0.70464 1.68742 1.7245 1.68742l19.4702 0c0.9457 0.01854 1.7245-0.68609 1.72451-1.68742l0-15.70596-5.67418-5.52583z",
+                          "width": 22.9192,
+                          "height": 22.9196,
+                          "stroke": "#482E16",
+                          "strokeWidth": 0.6118649006622516,
+                          "strokeLinejoin": "round",
+                          "strokeLinecap": "round"
+                        },
+                        {
+                          "type": "path",
+                          "id": "S7MG6",
+                          "x": 19.7298,
+                          "y": 2.5219,
+                          "geometry": "M0 5.52583l0.05563 0 5.67417 0-5.67417-5.52583-0.05563 5.52583z",
+                          "width": 5.7298,
+                          "height": 5.5258,
+                          "stroke": "#482E16",
+                          "strokeWidth": 0.6118649006622516,
+                          "strokeLinejoin": "round",
+                          "strokeLinecap": "round"
+                        },
+                        {
+                          "type": "path",
+                          "id": "pmzyY",
+                          "x": 2.596,
+                          "y": 6.6013,
+                          "geometry": "M0 0l17.13377 0",
+                          "width": 17.1338,
+                          "height": 0,
+                          "stroke": "#482E16",
+                          "strokeWidth": 0.6118649006622516,
+                          "strokeLinejoin": "round",
+                          "strokeLinecap": "round"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ooaYg",
+                  "name": "Quick Btn 退号处理",
+                  "width": "fill_container",
+                  "height": 56,
+                  "fill": "#FAFAFA",
+                  "cornerRadius": 8,
+                  "gap": 12,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vkcCr",
+                      "name": "QText",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K9dLB4",
+                          "name": "QLabel",
+                          "fill": "$text-primary",
+                          "content": "退号处理",
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RE2xq",
+                          "name": "QDesc",
+                          "fill": "$text-secondary",
+                          "content": "处理退号退费申请",
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q1QGy",
+                      "name": "Return Icon",
+                      "clip": true,
+                      "width": 28,
+                      "height": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "path",
+                          "id": "lTzvm",
+                          "x": 11.3363,
+                          "y": 7.2606,
+                          "geometry": "M7.14373 0.0007c-2.632-0.03733-5.24533 1.41867-7.09333 4.49867-0.112 0.224-0.03733 0.54133 0.224 0.65333 0.26133 0.112 0.54133 0.09333 0.69067-0.224 0.91467-1.848 2.98667-3.93867 5.992-3.95733l0.18666 0c3.37867-0.01867 6.92533 2.78133 6.92534 6.98133l0 5.00267c-0.01867 0.24267 0.18667 0.56 0.52266 0.54133 0.26134 0.01867 0.46667-0.20533 0.46667-0.48533l0-5.02134c-0.01866-3.93867-3.248-7.98933-7.91467-7.98933z",
+                          "fill": "#4E371C",
+                          "width": 15.0584,
+                          "height": 13.4978
+                        },
+                        {
+                          "type": "path",
+                          "id": "HHw0g",
+                          "x": 1.61,
+                          "y": 9.9853,
+                          "geometry": "M17.50467 3.49207l-15.69867 0 2.744-2.61334c0.24267-0.20533 0.224-0.52267 0.056-0.70933-0.168-0.20533-0.52267-0.224-0.69067-0.056-0.03733 0.03733-3.65867 3.45333-3.78933 3.584-0.168 0.18667-0.168 0.48533 0 0.69067 0.504 0.56 3.864 3.528 3.864 3.528 0.18667 0.14933 0.48533 0.07467 0.63467-0.07467 0.168-0.168 0.18667-0.504-0.056-0.70933l-2.81867-2.632 15.13867 0 0 5.78666c0 0.26133 0.20533 0.504 0.504 0.504 0.26133 0.01867 0.448-0.168 0.48533-0.37333l0-6.42133c0.03733-0.24267-0.18667-0.504-0.37333-0.504z",
+                          "fill": "#4E371C",
+                          "width": 17.8821,
+                          "height": 10.792
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PSoGn",
+              "name": "Registration Table Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000000f",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 8
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "z5lcRn",
+                  "name": "Table Header Row",
+                  "width": "fill_container",
+                  "fill": "#F5F0EB",
+                  "padding": [
+                    0,
+                    0,
+                    8,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "q3sl6",
+                      "name": "Hdr Queue",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 70,
+                      "content": "排队号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ktWyN",
+                      "name": "Hdr Patient",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "患者姓名",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "p9uWJ",
+                      "name": "Hdr Gender",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 50,
+                      "content": "性别",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "U2bum",
+                      "name": "Hdr Phone",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 120,
+                      "content": "联系电话",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eevqt",
+                      "name": "Hdr Doctor",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "接诊医生",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UFULR",
+                      "name": "Hdr Dept",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "科室",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TSMKA",
+                      "name": "Hdr Status",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "状态",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "i6Q9Dk",
+                      "name": "Hdr Time",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "挂号时间",
+                      "fontFamily": "$font-body",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "qUNuE",
+                  "name": "Divider",
+                  "fill": "$divider",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "Ey7WM",
+                  "name": "Row A001",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L3MZ1A",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vtbxo",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A001",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XIhDq",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YtcBE",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "王明华",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yHAOh",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "PBL6f",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "男",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KS9Fi",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dJhgg",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "138****5621",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "cw2w4",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jTKci",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "张仲景",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kse4E",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "UM1YZ",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "中医内科",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vj7K3",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "LqUO7",
+                          "name": "Tag",
+                          "fill": "#FFF3E0",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SQ9xi",
+                              "name": "V",
+                              "fill": "#E65100",
+                              "content": "候诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "f2I1x5",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wLfWt",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "08:32",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ibpuL",
+                  "name": "Row A002",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FAF7F5",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v4Alw7",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "usa01",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A002",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oeV2U",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VWZUo",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "李秀英",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yCsMb",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "E1wDa",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "女",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PVOJj",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Gqarx",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "139****8832",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FKCgI",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hkB9P",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "李时珍",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "rBQbf",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "P2ssO",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "针灸推拿",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Atgpf",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Q3Heg",
+                          "name": "Tag",
+                          "fill": "#E3F2FD",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "R158J",
+                              "name": "V",
+                              "fill": "#1565C0",
+                              "content": "接诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UCqvw",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WelxP",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "08:45",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n8aJGY",
+                  "name": "Row A003",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vQqgQ",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j2x3X",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A003",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w90N4",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DURHU",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "张伟强",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pced4",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Oaiy4",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "男",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vbzKk",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BaYjY",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "136****2243",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kiOqq",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dj03y",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "华佗",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d3flVJ",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zeFNV",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "骨伤科",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lRiou",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "POFb4",
+                          "name": "Tag",
+                          "fill": "#FFF3E0",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "s02JJL",
+                              "name": "V",
+                              "fill": "#E65100",
+                              "content": "候诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Dtg7M",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "uXFgr",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "09:01",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "trvdX",
+                  "name": "Row A004",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FAF7F5",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zAU1o",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "btMS1",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A004",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U1Uiq",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u5nxbu",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "陈淑芬",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S1tUe",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kloPn",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "女",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zBFTF",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "yCp7V",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "137****6654",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bdeKu",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZxsPF",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "孙思邈",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n5zxK",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "W3RdQ",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "中医妇科",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s60Cx",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Pf13b",
+                          "name": "Tag",
+                          "fill": "#E8F5E9",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "l0MOD",
+                              "name": "V",
+                              "fill": "#2E7D32",
+                              "content": "已完成",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gFaRT",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Fydsd",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "09:15",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e4fEXg",
+                  "name": "Row A005",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "qBpZN",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "a9uWQB",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A005",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "h8G8E",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "bEdNN",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "刘德荣",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fIeWS",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hlrCS",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "男",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wnHG9",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xoWfN",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "135****9965",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u3Axq",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "epDJN",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "张仲景",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dAAYd",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KDaua",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "中医内科",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sQEic",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J8tpw",
+                          "name": "Tag",
+                          "fill": "#FFF3E0",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xb7yu",
+                              "name": "V",
+                              "fill": "#E65100",
+                              "content": "候诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "X4ybM",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lKJxU",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "09:28",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "H3HkG",
+                  "name": "Row A006",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FAF7F5",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YZ1ZD",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "bewrd",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A006",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bsbTF",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "UuaHP",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "赵雅琴",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "arqqo",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FuZkU",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "女",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W7onxJ",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "N2W5at",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "158****1276",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "v0nb16",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TXpKf",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "扁鹊",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qauhq",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "qwTts",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "中医儿科",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q4Psd",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eyvGT",
+                          "name": "Tag",
+                          "fill": "#E3F2FD",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "y5H5Q",
+                              "name": "V",
+                              "fill": "#1565C0",
+                              "content": "接诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Dgnbe",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "e5wS3T",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "09:35",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "VFVGa",
+                  "name": "Row A007",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "x3A7Bl",
+                      "name": "Cell Queue",
+                      "width": 70,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "EeWcv",
+                          "name": "V",
+                          "fill": "$primary",
+                          "content": "A007",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iDzM5",
+                      "name": "Cell Patient",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "tUwCl",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "孙建国",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Y3V6Ek",
+                      "name": "Cell Gender",
+                      "width": 50,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Z9os2N",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "男",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aoUEp",
+                      "name": "Cell Phone",
+                      "width": 120,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "O7UzH0",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "159****3387",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HLIKU",
+                      "name": "Cell Doctor",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pJoQv",
+                          "name": "V",
+                          "fill": "$text-primary",
+                          "content": "李时珍",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Q1AFT",
+                      "name": "Cell Dept",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ft1Op",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "针灸推拿",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "R28Gma",
+                      "name": "Cell Status",
+                      "width": 80,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XKqKp",
+                          "name": "Tag",
+                          "fill": "#FFF3E0",
+                          "cornerRadius": 10,
+                          "padding": [
+                            3,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nUAEM",
+                              "name": "V",
+                              "fill": "#E65100",
+                              "content": "候诊中",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oRgwQ",
+                      "name": "Cell Time",
+                      "width": 100,
+                      "height": 44,
+                      "padding": [
+                        0,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "R11sGk",
+                          "name": "V",
+                          "fill": "$text-secondary",
+                          "content": "09:42",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gxl2g",
+          "name": "Bottom Recent Activity",
+          "width": "fill_container",
+          "height": 280,
+          "fill": "$surface",
+          "cornerRadius": 12,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000000f",
+            "offset": {
+              "x": 0,
+              "y": 2
+            },
+            "blur": 8
+          },
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            16,
+            24
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "S9Mh1",
+              "name": "Section Title",
+              "fill": "$text-primary",
+              "content": "最近操作记录",
+              "fontFamily": "$font-heading",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "huCk9",
+              "name": "Activity 0",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "egvk0",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "09:42",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Ma9zT",
+                  "name": "Action Tag",
+                  "fill": "#6D4C4115",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OaJ8E",
+                      "name": "AAction",
+                      "fill": "#6D4C41",
+                      "content": "新建挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "FIFu9",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "A007 孙建国 → 李时珍（针灸推拿）",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "mKCh0",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "a3pzC",
+              "name": "Activity 1",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UPPou",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "09:35",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "SbSdH",
+                  "name": "Action Tag",
+                  "fill": "#6D4C4115",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZgAHW",
+                      "name": "AAction",
+                      "fill": "#6D4C41",
+                      "content": "新建挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "TSabp",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "A006 赵雅琴 → 扁鹊（中医儿科）",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "hWbsl",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "owYP8",
+              "name": "Activity 2",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "HJxLN",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "09:28",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "lWX35",
+                  "name": "Action Tag",
+                  "fill": "#6D4C4115",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "asXKG",
+                      "name": "AAction",
+                      "fill": "#6D4C41",
+                      "content": "新建挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "re9je",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "A005 刘德荣 → 张仲景（中医内科）",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "lqBSk",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bLQIg",
+              "name": "Activity 3",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "L2Wcw",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "09:15",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "R6lNO",
+                  "name": "Action Tag",
+                  "fill": "#2E7D3215",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ulp5a",
+                      "name": "AAction",
+                      "fill": "#2E7D32",
+                      "content": "收费确认",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "lICEB",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "A004 陈淑芬 收费 ¥120 已完成",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "CfRmb",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "王收费员",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "q5ZRD",
+              "name": "Activity 4",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "l8SWpM",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "09:01",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "tBejZ",
+                  "name": "Action Tag",
+                  "fill": "#6D4C4115",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AqrNS",
+                      "name": "AAction",
+                      "fill": "#6D4C41",
+                      "content": "新建挂号",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "xIHMw",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "A003 张伟强 → 华佗（骨伤科）",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "k5UUrF",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QahBW",
+              "name": "Activity 5",
+              "width": "fill_container",
+              "height": 28,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "j5dS9r",
+                  "name": "ATime",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 44,
+                  "content": "08:45",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "V84NHn",
+                  "name": "Action Tag",
+                  "fill": "#1565C015",
+                  "cornerRadius": 4,
+                  "padding": [
+                    2,
+                    8
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wW6oU",
+                      "name": "AAction",
+                      "fill": "#1565C0",
+                      "content": "患者登记",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "UDwzx",
+                  "name": "ADetail",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": 460,
+                  "content": "新患者 李秀英 信息已录入系统",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "aZC3W",
+                  "name": "AOperator",
+                  "fill": "$text-secondary",
+                  "content": "李护士",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#6D4C41"
+    },
+    "primary-light": {
+      "type": "color",
+      "value": "#9C786C"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "background": {
+      "type": "color",
+      "value": "#F5F0EB"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#1A1A1A"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#6E6E6E"
+    },
+    "text-on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "divider": {
+      "type": "color",
+      "value": "#E8E0DA"
+    },
+    "accent-green": {
+      "type": "color",
+      "value": "#4CAF50"
+    },
+    "accent-amber": {
+      "type": "color",
+      "value": "#FFA726"
+    },
+    "accent-blue": {
+      "type": "color",
+      "value": "#42A5F5"
+    },
+    "tag-waiting": {
+      "type": "color",
+      "value": "#FFF3E0"
+    },
+    "tag-done": {
+      "type": "color",
+      "value": "#E8F5E9"
+    },
+    "tag-pending": {
+      "type": "color",
+      "value": "#E3F2FD"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "gap-sm": {
+      "type": "number",
+      "value": 8
+    },
+    "gap-md": {
+      "type": "number",
+      "value": 16
+    },
+    "gap-lg": {
+      "type": "number",
+      "value": 24
+    }
+  },
+  "fileToken": "778d9a9a-7b4e-481d-8dcf-88eec1b0f6c5"
+}
