@@ -24,7 +24,8 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
+    <!-- 视觉基线 v1：按 medical-case-management.pen + layout-framework 对齐 -->
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
         <!--
             ========================================
             Master区域: 医案列表
@@ -39,18 +40,19 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--  工具栏 - 仅刷新和批量删除  -->
+                <!--  工具栏 56h white 12r 描边 -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
+                    MinHeight="56" Padding="0,0,16,0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
                     RefreshCommand="{Binding RefreshCommand}" />
 
-                <!--  搜索框  -->
+                <!--  搜索框 描边可见 40h -->
                 <controls:SearchBox
                     Grid.Row="1"
-                    Margin="12,8"
+                    Margin="16,12" Height="40"
                     Placeholder="搜索患者姓名/诊断..."
                     SearchCommand="{Binding SearchCommand}"
                     SearchText="{Binding SearchText, Mode=TwoWay}" />
@@ -58,7 +60,7 @@
                 <!--  医案列表  -->
                 <DataGrid
                     Grid.Row="2"
-                    Margin="0,0,0,8"
+                    Margin="16,0,16,8"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
@@ -74,6 +76,11 @@
                     ItemsSource="{Binding Items}"
                     RowHeaderWidth="0"
                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        </Style>
+                    </DataGrid.Resources>
                     <DataGrid.Columns>
                         <!--  患者姓名  -->
                         <DataGridTextColumn
