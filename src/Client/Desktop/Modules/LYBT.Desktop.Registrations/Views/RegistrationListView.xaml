@@ -12,126 +12,56 @@
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <!--  标题栏  -->
-            <RowDefinition Height="Auto" />
-            <!--  工具栏  -->
-            <RowDefinition Height="Auto" />
-            <!--  队列列表  -->
-            <RowDefinition Height="*" />
-            <!--  状态栏  -->
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <!-- 视觉基线 v1：按 registration.pen + layout-framework：主内容 $bg-warm gap16 padding16，工具栏56h white 12r，文字居中，铺满 -->
+    <Grid Background="#FBF7F3">
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!--  标题  -->
-        <TextBlock
-            Grid.Row="0"
-            Margin="0,0,0,16"
-            FontSize="24"
-            FontWeight="Bold"
-            Text="{Binding PageTitle}" />
+            <TextBlock Grid.Row="0" Margin="0,0,0,16" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" Foreground="#3E2723" Text="{Binding PageTitle}" />
 
-        <!--  工具栏  -->
-        <controls:DataGridToolbar
-            Grid.Row="1"
-            CreateCommand="{Binding CreateRegistrationCommand}"
-            RefreshCommand="{Binding RefreshCommand}">
-            <controls:DataGridToolbar.AdditionalContent>
-                <StackPanel Orientation="Horizontal">
-                    <!--  接诊（医生专属）  -->
-                    <Button
-                        Margin="8,0,0,0"
-                        Padding="12,6"
-                        Command="{Binding StartVisitCommand}"
-                        Content="接诊"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                        Visibility="{Binding IsDoctor, Converter={x:Static converters:Cvt.BoolToVis}}" />
+            <Border Grid.Row="1" Background="White" CornerRadius="12" BorderBrush="#E9DFD7" BorderThickness="1" Margin="0,0,0,16" Padding="16,8">
+                <controls:DataGridToolbar CreateCommand="{Binding CreateRegistrationCommand}" RefreshCommand="{Binding RefreshCommand}">
+                    <controls:DataGridToolbar.AdditionalContent>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Margin="8,0,0,0" Padding="12,6" Command="{Binding StartVisitCommand}" Content="接诊" Style="{StaticResource MaterialDesignOutlinedButton}" Visibility="{Binding IsDoctor, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                            <Button Margin="8,0,0,0" Padding="12,6" Command="{Binding CancelRegistrationCommand}" Content="取消挂号" Style="{StaticResource MaterialDesignOutlinedButton}" Visibility="{Binding IsReceptionist, Converter={x:Static converters:Cvt.BoolToVis}}" />
+                        </StackPanel>
+                    </controls:DataGridToolbar.AdditionalContent>
+                </controls:DataGridToolbar>
+            </Border>
 
-                    <!--  取消挂号（前台专属）  -->
-                    <Button
-                        Margin="8,0,0,0"
-                        Padding="12,6"
-                        Command="{Binding CancelRegistrationCommand}"
-                        Content="取消挂号"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                        Visibility="{Binding IsReceptionist, Converter={x:Static converters:Cvt.BoolToVis}}" />
-                </StackPanel>
-            </controls:DataGridToolbar.AdditionalContent>
-        </controls:DataGridToolbar>
+            <Border Grid.Row="2" Background="White" CornerRadius="12" BorderBrush="#E9DFD7" BorderThickness="1" Padding="0,8,0,8">
+                <DataGrid AutoGenerateColumns="False" BorderThickness="0" Background="Transparent" HeadersVisibility="Column" CanUserAddRows="False" CanUserDeleteRows="False" GridLinesVisibility="Horizontal" IsReadOnly="True" ItemsSource="{Binding WaitingQueue}" SelectedItem="{Binding SelectedRegistration, Mode=TwoWay}" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="60" Binding="{Binding QueueNumber}" Header="排队号" />
+                        <DataGridTextColumn Width="120" Binding="{Binding PatientName}" Header="患者姓名" />
+                        <DataGridTextColumn Width="120" Binding="{Binding DoctorName}" Header="指派医生" />
+                        <DataGridTextColumn Width="80" Binding="{Binding RegistrationFee, StringFormat='{}{0:C}'}" Header="挂号费" />
+                        <DataGridTextColumn Width="100" Binding="{Binding Source}" Header="挂号来源" />
+                        <DataGridTextColumn Width="100" Binding="{Binding Status}" Header="挂号状态" />
+                        <DataGridTextColumn Width="160" Binding="{Binding CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Header="挂号时间" />
+                    </DataGrid.Columns>
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        </Style>
+                    </DataGrid.Resources>
+                </DataGrid>
+            </Border>
 
-        <!--  队列列表  -->
-        <DataGrid
-            Grid.Row="2"
-            AutoGenerateColumns="False"
-            BorderBrush="{DynamicResource MaterialDesign.Brush.Outline}"
-            BorderThickness="1"
-            CanUserAddRows="False"
-            CanUserDeleteRows="False"
-            GridLinesVisibility="Horizontal"
-            HeadersVisibility="Column"
-            IsReadOnly="True"
-            ItemsSource="{Binding WaitingQueue}"
-            SelectedItem="{Binding SelectedRegistration, Mode=TwoWay}"
-            SelectionMode="Single">
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Width="60"
-                    Binding="{Binding QueueNumber}"
-                    Header="排队号" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding PatientName}"
-                    Header="患者姓名" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding DoctorName}"
-                    Header="指派医生" />
-                <DataGridTextColumn
-                    Width="80"
-                    Binding="{Binding RegistrationFee, StringFormat='{}{0:C}'}"
-                    Header="挂号费" />
-                <DataGridTextColumn
-                    Width="100"
-                    Binding="{Binding Source}"
-                    Header="挂号来源" />
-                <DataGridTextColumn
-                    Width="100"
-                    Binding="{Binding Status}"
-                    Header="挂号状态" />
-                <DataGridTextColumn
-                    Width="160"
-                    Binding="{Binding CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
-                    Header="挂号时间" />
-            </DataGrid.Columns>
-        </DataGrid>
+            <controls:EmptyState Grid.Row="2" Title="暂无等待中的挂号记录" Subtitle="新建挂号开始工作" Visibility="{Binding IsQueueEmpty, Converter={x:Static converters:Cvt.BoolToVis}}" />
 
-        <!--  空状态提示  -->
-        <controls:EmptyState
-            Grid.Row="2"
-            Title="暂无等待中的挂号记录"
-            Subtitle="新建挂号开始工作"
-            Visibility="{Binding IsQueueEmpty, Converter={x:Static converters:Cvt.BoolToVis}}" />
+            <controls:LoadingOverlay Grid.RowSpan="4" IsLoading="{Binding IsBusy}" LoadingText="{Binding StatusMessage}" />
 
-        <!--  加载遮罩  -->
-        <controls:LoadingOverlay
-            Grid.Row="0"
-            Grid.RowSpan="4"
-            IsLoading="{Binding IsBusy}"
-            LoadingText="{Binding StatusMessage}" />
-
-        <!--  状态栏  -->
-        <StackPanel
-            Grid.Row="3"
-            Margin="0,8,0,0"
-            Orientation="Horizontal">
-            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}" Text="{Binding QueueCount, StringFormat='共 {0} 条等待记录'}" />
-
-            <TextBlock
-                Margin="20,0,0,0"
-                Foreground="{DynamicResource MaterialDesign.Brush.Error}"
-                Text="{Binding ErrorMessage}"
-                Visibility="{Binding HasError, Converter={x:Static converters:Cvt.BoolToVis}}" />
-        </StackPanel>
+            <StackPanel Grid.Row="3" Margin="0,8,0,0" Orientation="Horizontal">
+                <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}" Text="{Binding QueueCount, StringFormat='共 {0} 条等待记录'}" />
+                <TextBlock Margin="20,0,0,0" Foreground="{DynamicResource MaterialDesign.Brush.Error}" Text="{Binding ErrorMessage}" Visibility="{Binding HasError, Converter={x:Static converters:Cvt.BoolToVis}}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
