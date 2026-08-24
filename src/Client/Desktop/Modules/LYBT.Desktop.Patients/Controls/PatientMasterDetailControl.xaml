@@ -23,7 +23,8 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
+    <!-- 视觉基线 v1：按 desktop-layout-framework + patient-list.pen 对齐：主内容 $bg-warm gap16 padding16，工具栏 56h white 12圆角 描边#E9DFD7，文字居中，输入描边可见，铺满 -->
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
         <!--
             ========================================
             面包屑导航 - Phase 2.1: Navigation Improvements
@@ -56,9 +57,10 @@
                     <!--  分页  -->
                 </Grid.RowDefinitions>
 
-                <!--  工具栏  -->
+                <!--  工具栏：56h white 12圆角 描边（对齐 pen 工具栏） -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
+                    MinHeight="56" Padding="0,0,16,0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
@@ -133,10 +135,10 @@
                     </controls:DataGridToolbar.AdditionalContent>
                 </controls:DataGridToolbar>
 
-                <!--  搜索框  -->
+                <!--  搜索框：描边可见，铺满工具栏区 -->
                 <controls:SearchBox
                     Grid.Row="1"
-                    Margin="12,8"
+                    Margin="16,12" Height="40"
                     Placeholder="搜索患者姓名/手机号..."
                     SearchCommand="{Binding SearchCommand}"
                     SearchText="{Binding SearchText, Mode=TwoWay}" />
@@ -144,7 +146,7 @@
                 <!--  患者列表  -->
                 <DataGrid
                     Grid.Row="2"
-                    Margin="0,0,0,8"
+                    Margin="16,0,16,8"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
@@ -160,6 +162,12 @@
                     ItemsSource="{Binding Items}"
                     RowHeaderWidth="0"
                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="FontSize" Value="12" />
+                        </Style>
+                    </DataGrid.Resources>
                     <DataGrid.Columns>
                         <!--  姓名  -->
                         <DataGridTextColumn
