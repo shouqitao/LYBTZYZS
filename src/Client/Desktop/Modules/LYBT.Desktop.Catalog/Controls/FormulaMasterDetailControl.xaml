@@ -31,7 +31,8 @@
             ========================================
         -->
         <controls:MasterDetailLayout.MasterContent>
-            <Grid>
+            <!-- 视觉基线 v1 -->
+    <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />  
                     <!--  工具栏  -->
@@ -46,6 +47,7 @@
                 <!--  工具栏  -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
+                    MinHeight="56" Padding="0,0,16,0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
@@ -105,7 +107,7 @@
                 <!--  搜索框  -->
                 <controls:SearchBox
                     Grid.Row="1"
-                    Margin="12,8"
+                    Margin="16,12" Height="40"
                     Placeholder="搜索验方名称..."
                     SearchCommand="{Binding SearchCommand}"
                     SearchText="{Binding SearchText, Mode=TwoWay}" />
@@ -113,7 +115,7 @@
                 <!--  验方列表  -->
                 <DataGrid
                     Grid.Row="2"
-                    Margin="0,0,0,8"
+                    Margin="16,0,16,8"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"

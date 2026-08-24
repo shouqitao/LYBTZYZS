@@ -16,9 +16,10 @@
     d:DesignHeight="800"
     d:DesignWidth="1200"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="{DynamicResource MaterialDesign.Brush.Background}"
+    Background="#FBF7F3"
     mc:Ignorable="d">
 
+    <!-- 视觉基线 v1 -->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260" />
