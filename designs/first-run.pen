@@ -60,7 +60,7 @@
                   "id": "kUvfg",
                   "name": "系统名称",
                   "fill": "#FFFFFF",
-                  "content": "中医诊所管理系统",
+                  "content": "凌隐宝堂中医诊所",
                   "fontFamily": "$font",
                   "fontSize": 14,
                   "fontWeight": "600"
@@ -780,7 +780,7 @@
   "variables": {
     "primary": {
       "type": "color",
-      "value": "#5D4037"
+      "value": "#6D4C41"
     },
     "primary-dark": {
       "type": "color",
@@ -800,7 +800,7 @@
     },
     "bg": {
       "type": "color",
-      "value": "#F6F1EB"
+      "value": "#FBF7F3"
     },
     "surface": {
       "type": "color",
@@ -812,7 +812,7 @@
     },
     "text-secondary": {
       "type": "color",
-      "value": "#795548"
+      "value": "#8D6E63"
     },
     "text-disabled": {
       "type": "color",
@@ -820,11 +820,35 @@
     },
     "border": {
       "type": "color",
-      "value": "#D9CCC0"
+      "value": "#E9DFD7"
     },
     "font": {
       "type": "string",
       "value": "Noto Sans SC"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "success": {
+      "type": "color",
+      "value": "#2E7D32"
     }
   },
   "fileToken": "9df6d4e0-61ef-4db2-9639-b5c7f5bac063"

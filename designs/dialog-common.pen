@@ -1019,6 +1019,50 @@
     "font": {
       "type": "string",
       "value": "Noto Sans SC"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#3E2723"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#8D6E63"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E9DFD7"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
     }
   },
   "fileToken": "b3640db3-790d-445a-95ae-06f9be279bf5"

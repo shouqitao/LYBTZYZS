@@ -33,5 +33,13 @@ namespace LYBT.Desktop.Auth.Views
                 vm.Password = PasswordBox.Password;
             }
         }
+
+        private void OnClearUsernameClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LoginViewModel vm)
+            {
+                vm.Username = string.Empty;
+            }
+        }
     }
 }

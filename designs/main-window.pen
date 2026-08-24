@@ -269,8 +269,8 @@
                       "type": "text",
                       "id": "p3WWZ",
                       "name": "诊所名",
-                      "fill": "$sidebar-bright",
-                      "content": "中医诊所管理系统",
+                      "fill": "$on-primary",
+                      "content": "凌隐宝堂中医诊所",
                       "fontFamily": "$font-serif",
                       "fontSize": 17,
                       "fontWeight": "600"
@@ -280,7 +280,7 @@
                       "id": "JmWUg",
                       "name": "系统名",
                       "fill": "#9C8372",
-                      "content": "中医诊所管理系统",
+                      "content": "凌隐宝堂中医诊所",
                       "fontFamily": "$font-ui",
                       "fontSize": 11,
                       "fontWeight": "normal"
@@ -4948,7 +4948,7 @@
   "variables": {
     "bg": {
       "type": "color",
-      "value": "#FAF6F1"
+      "value": "#FBF7F3"
     },
     "surface": {
       "type": "color",
@@ -4960,7 +4960,7 @@
     },
     "primary": {
       "type": "color",
-      "value": "#A9614A"
+      "value": "#6D4C41"
     },
     "primary-strong": {
       "type": "color",
@@ -4968,7 +4968,7 @@
     },
     "primary-soft": {
       "type": "color",
-      "value": "#F6E9E2"
+      "value": "#F1E9E4"
     },
     "sidebar": {
       "type": "color",
@@ -4992,19 +4992,19 @@
     },
     "text-primary": {
       "type": "color",
-      "value": "#33241C"
+      "value": "#3E2723"
     },
     "text-secondary": {
       "type": "color",
-      "value": "#8A7468"
+      "value": "#8D6E63"
     },
     "border": {
       "type": "color",
-      "value": "#E8DED5"
+      "value": "#E9DFD7"
     },
     "success": {
       "type": "color",
-      "value": "#5F8B4C"
+      "value": "#2E7D32"
     },
     "success-soft": {
       "type": "color",
@@ -5025,6 +5025,26 @@
     "font-serif": {
       "type": "string",
       "value": "Noto Serif SC"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
     }
   },
   "fileToken": "94fbacc1-4b01-4dbd-97b4-f5a350ebd9f4"

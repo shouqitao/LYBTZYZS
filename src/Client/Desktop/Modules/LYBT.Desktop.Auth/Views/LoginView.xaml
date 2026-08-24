@@ -4,144 +4,376 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <UserControl.Resources>
+        <!-- pen 变量映射 -->
+        <SolidColorBrush x:Key="PenPrimaryBrush" Color="#6D4C41" />
+        <SolidColorBrush x:Key="PenPrimaryDarkBrush" Color="#4E342E" />
+        <SolidColorBrush x:Key="PenPrimaryDeepBrush" Color="#3E2723" />
+        <SolidColorBrush x:Key="PenAccentBrush" Color="#FFB300" />
+        <SolidColorBrush x:Key="PenBgWarmBrush" Color="#FBF7F3" />
+        <SolidColorBrush x:Key="PenTextPrimaryBrush" Color="#3E2723" />
+        <SolidColorBrush x:Key="PenTextSecondaryBrush" Color="#8D6E63" />
+        <SolidColorBrush x:Key="PenBorderSoftBrush" Color="#C9C1B9" />
+        <SolidColorBrush x:Key="PenSuccessBrush" Color="#2E7D32" />
+        <SolidColorBrush x:Key="PenMutedIconBrush" Color="#A0938A" />
+        <SolidColorBrush x:Key="PenSegmentBgBrush" Color="#F1EBE3" />
+
+        <!-- 48 高 8 圆角输入容器样式 -->
+        <Style x:Key="PenInputBorder" TargetType="Border">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource PenBorderSoftBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,0" />
+        </Style>
+
+        <!-- 无边框输入框 -->
+        <Style x:Key="PenTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="{StaticResource PenTextPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{StaticResource PenPrimaryBrush}" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style x:Key="PenPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="{StaticResource PenTextPrimaryBrush}" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <!-- 20x20 5圆角复选框模板（匹配 pen 记住密码/自动登录） -->
+        <Style x:Key="PenCheckBox" TargetType="CheckBox">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource PenTextSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="20" Height="20">
+                                <Border x:Name="Box" Width="20" Height="20" CornerRadius="5"
+                                        Background="White" BorderBrush="#B8AFA6" BorderThickness="1.6" />
+                                <materialDesign:PackIcon x:Name="Tick" Kind="Check" Width="14" Height="14"
+                                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                         Foreground="White" Visibility="Collapsed" />
+                            </Grid>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource PenPrimaryBrush}" />
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource PenPrimaryBrush}" />
+                                <Setter TargetName="Tick" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Box" Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
-        <Grid.Background>
-            <ImageBrush ImageSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Images/Backgrounds/img-login-background.jpg"
-                        Stretch="UniformToFill" />
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="48" />
-            <!--  底部状态栏高度统一 48  -->
         </Grid.RowDefinitions>
-        <Border Grid.RowSpan="2" Background="#40000000" />
 
-        <!-- 主内容区：品牌 + 登录卡片 -->
-        <Grid Grid.Row="0" Margin="60,40,60,40">
+        <!-- 主体区域 -->
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="780" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧品牌区 -->
-            <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding ClinicName, FallbackValue=凌隐宝堂中医诊所}" FontSize="36" FontWeight="Bold" Foreground="#FFFFFF"
-                           TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,0,0,16">
-                    <TextBlock.Effect><DropShadowEffect BlurRadius="10" Opacity="0.3" ShadowDepth="2" Color="Black" /></TextBlock.Effect>
-                </TextBlock>
-                <TextBlock Text="中医诊所管理系统" FontSize="22" FontWeight="SemiBold" Foreground="#F5E6C8" Margin="0,0,0,12">
-                    <TextBlock.Effect><DropShadowEffect BlurRadius="6" Opacity="0.3" ShadowDepth="2" Color="Black" /></TextBlock.Effect>
-                </TextBlock>
-                <TextBlock Text="传承国医精髓 · 守护万家健康" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary.Light}">
-                    <TextBlock.Effect><DropShadowEffect BlurRadius="6" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
-                </TextBlock>
-            </StackPanel>
-
-            <!-- 右侧登录卡片 -->
-            <Border Grid.Column="1" Width="440" Padding="40,36" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="{DynamicResource SurfaceLevel1Brush}" CornerRadius="12">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="40" Opacity="0.2" ShadowDepth="0" Color="Black" />
-                </Border.Effect>
-
+            <!-- 左侧品牌区：780 渐变 + 116 托盘 + 琥珀分隔线 -->
+            <Border Grid.Column="0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4E342E" Offset="0" />
+                        <GradientStop Color="#3E2723" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
                 <Grid>
-                    <StackPanel>
-                        <!-- 标语 -->
-                        <TextBlock Text="传承经典 · 守正创新" FontSize="16" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource MaterialDesign.Brush.Primary}" HorizontalAlignment="Center" Margin="0,0,0,16" />
+                    <!-- 装饰光环 -->
+                    <Canvas IsHitTestVisible="False">
+                        <Ellipse Canvas.Left="-140" Canvas.Top="-160" Width="380" Height="380" Fill="#14FFB300" />
+                        <Ellipse Canvas.Left="580" Canvas.Top="680" Width="200" Height="200" Fill="#0AFFFFFF" />
+                        <Ellipse Canvas.Left="600" Canvas.Top="90" Width="170" Height="170" Stroke="#2EFFB300" StrokeThickness="1.5" Fill="Transparent" />
+                    </Canvas>
 
-                        <!-- 模式徽章 -->
-                        <Border Padding="12,4" HorizontalAlignment="Center" CornerRadius="10" Margin="0,0,0,24"
-                                Background="{DynamicResource TcmGoldBrush}">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                            <Setter Property="Background" Value="#2E8B57" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <TextBlock Text="{Binding CurrentModeDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="White" />
+                    <!-- 居中品牌 -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <!-- 116 品牌托盘 -->
+                        <Border Width="116" Height="116" CornerRadius="30" Background="#14FFFFFF"
+                                HorizontalAlignment="Center" Margin="0,0,0,22">
+                            <Grid>
+                                <Border Width="56" Height="56" CornerRadius="28" Background="{StaticResource PenAccentBrush}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Grid>
+                                        <materialDesign:PackIcon Kind="Leaf" Width="26" Height="26"
+                                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                 Foreground="#4E342E" />
+                                        <!-- 医疗十字角标 -->
+                                        <Border Width="16" Height="16" CornerRadius="8" Background="White"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-8,0">
+                                            <TextBlock Text="+" FontSize="12" FontWeight="Bold" Foreground="#4E342E"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </Grid>
                         </Border>
 
+                        <TextBlock Text="{Binding ClinicName, FallbackValue=凌隐宝堂中医诊所}"
+                                   FontFamily="Noto Serif SC, Microsoft YaHei UI" FontSize="36" FontWeight="SemiBold"
+                                   Foreground="White" HorizontalAlignment="Center" TextAlignment="Center">
+                            <TextBlock.Effect><DropShadowEffect BlurRadius="8" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
+                        </TextBlock>
+                        <!-- 副标题穿透点（pen 无内容，保持空位不占高） -->
+                        <TextBlock Text="中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="18"
+                                   FontWeight="Normal" Foreground="#F0DFC8"
+                                   HorizontalAlignment="Center" Margin="0,6,0,0" />
+
+                        <!-- 琥珀分隔线 56x3 -->
+                        <Border Width="56" Height="3" CornerRadius="1.5" Background="{StaticResource PenAccentBrush}"
+                                HorizontalAlignment="Center" Margin="0,18,0,18" />
+
+                        <TextBlock Text="传承国医精髓 · 守护万家健康" FontFamily="Noto Sans SC, Microsoft YaHei UI"
+                                   FontSize="13" Foreground="#C9B8A6"
+                                   HorizontalAlignment="Center" Opacity="0.95" />
+                    </StackPanel>
+
+                    <!-- 底部版权 -->
+                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,22">
+                        <TextBlock Text="© 2026 中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                                   Foreground="#8D6E63" HorizontalAlignment="Center" Opacity="0.9" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 右侧登录区：暖底 + 420 表单 -->
+            <Border Grid.Column="1" Background="{StaticResource PenBgWarmBrush}">
+                <Grid>
+                    <!-- 关闭 X 保持绑定 -->
+                    <Button Command="{Binding CloseApplicationCommand}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,16,0"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="退出程序"
+                            Foreground="{StaticResource PenTextSecondaryBrush}" Opacity="0.55" Padding="8,4"
+                            Content="✕" FontSize="14" />
+
+                    <StackPanel Width="420" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="欢迎登录" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="24" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,6" />
+                        <TextBlock Text="请使用您的账号登录中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="14"
+                                   Foreground="{StaticResource PenTextSecondaryBrush}" Margin="0,0,0,24" />
+
                         <!-- 用户名 -->
-                        <TextBlock Text="用户名" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" Margin="0,0,0,6" />
-                        <TextBox Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 Height="50" Padding="14,0" FontSize="15" BorderThickness="1.5"
-                                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,0,0,16" AutomationProperties.Name="用户名" />
+                        <TextBlock Text="用户名" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
+                        <Border Style="{StaticResource PenInputBorder}" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="Account" Width="19" Height="19"
+                                                         VerticalAlignment="Center" Foreground="{StaticResource PenMutedIconBrush}" Margin="0,0,12,0" />
+                                <TextBox Grid.Column="1" Style="{StaticResource PenTextBox}"
+                                         Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="用户名">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <!-- 清除图标（视觉对齐 pen，带一键清空） -->
+                                <Button Grid.Column="2" Width="22" Height="22" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                        VerticalAlignment="Center" Margin="8,0,0,0" Focusable="False"
+                                        Click="OnClearUsernameClick" ToolTip="清除">
+                                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="#B9AFA7" />
+                                </Button>
+                            </Grid>
+                        </Border>
 
                         <!-- 密码 -->
-                        <TextBlock Text="密码" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" Margin="0,0,0,6" />
-                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
-                                     Height="50" Padding="14,0" FontSize="15" BorderThickness="1.5"
-                                     behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,16">
-                            <PasswordBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
-                            </PasswordBox.InputBindings>
-                        </PasswordBox>
+                        <TextBlock Text="密码" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
+                        <Border Style="{StaticResource PenInputBorder}" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="Lock" Width="18" Height="18"
+                                                         VerticalAlignment="Center" Foreground="{StaticResource PenMutedIconBrush}" Margin="0,0,12,0" />
+                                <PasswordBox x:Name="PasswordBox" Grid.Column="1" Style="{StaticResource PenPasswordBox}"
+                                             behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <PasswordBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
+                                    </PasswordBox.InputBindings>
+                                </PasswordBox>
+                                <materialDesign:PackIcon Grid.Column="2" Kind="EyeOutline" Width="18" Height="18"
+                                                         VerticalAlignment="Center" Foreground="{StaticResource PenMutedIconBrush}" Margin="10,0,0,0" />
+                            </Grid>
+                        </Border>
 
-                        <!-- 记住选项：记住密码 / 自动登录 两端对齐 -->
-                        <Grid Margin="0,0,0,16">
+                        <!-- 选项行：记住密码 / 自动登录 两端对齐 -->
+                        <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <CheckBox Grid.Column="0" Content="记住密码" FontSize="13" HorizontalAlignment="Left"
-                                      VerticalAlignment="Center" IsChecked="{Binding RememberPassword}" />
-                            <CheckBox Grid.Column="1" Content="自动登录" FontSize="13" HorizontalAlignment="Right"
-                                      VerticalAlignment="Center" IsChecked="{Binding IsAutoLogin}" />
+                            <CheckBox Grid.Column="0" Content="记住密码" Style="{StaticResource PenCheckBox}"
+                                      IsChecked="{Binding RememberPassword}" HorizontalAlignment="Left" />
+                            <CheckBox Grid.Column="1" Content="自动登录" Style="{StaticResource PenCheckBox}"
+                                      IsChecked="{Binding IsAutoLogin}" HorizontalAlignment="Right" />
                         </Grid>
 
-                        <!-- 登录按钮 -->
-                        <Button Height="52" Command="{Binding LoginCommand}" Content="登 录"
-                                FontSize="16" FontWeight="SemiBold" Foreground="White" Cursor="Hand" Margin="0,0,0,12"
-                                Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="{DynamicResource MaterialDesign.Brush.Primary.Dark}" BorderThickness="0" />
+                        <!-- 登录按钮：48 高 24 圆角 渐变 + 阴影 -->
+                        <Border Height="48" CornerRadius="24" Margin="0,0,0,12">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#6D4C41" Offset="0" />
+                                    <GradientStop Color="#4E342E" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="14" ShadowDepth="4" Direction="270" Opacity="0.25" Color="#6D4C41" />
+                            </Border.Effect>
+                            <Button Command="{Binding LoginCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Login" Width="18" Height="18" Foreground="White" VerticalAlignment="Center" />
+                                    <TextBlock Text="登 录" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="14" FontWeight="Medium"
+                                               Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
 
                         <!-- 错误消息 -->
                         <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="{DynamicResource ValidationErrorBrush}"
-                                   HorizontalAlignment="Center" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,2,0,0"
                                    Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
-
+                        <TextBlock Text="中医诊所管理系统 v1.0" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                                   Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0.85" />
                     </StackPanel>
-
-                    <!-- 关闭按钮（退出程序） -->
-                    <Button Command="{Binding CloseApplicationCommand}"
-                            HorizontalAlignment="Right" VerticalAlignment="Top"
-                            Margin="0" Background="Transparent" BorderThickness="0" Cursor="Hand"
-                            ToolTip="退出程序"
-                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.4" FontSize="12" Padding="8,4"
-                            Content="X" />
                 </Grid>
-            </Border>   
+            </Border>
         </Grid>
 
-        <!-- 底部状态栏（高度 48） -->
-        <Border
-            Grid.Row="1"
-            Padding="28,0"
-            Background="{DynamicResource SurfaceLevel1Brush}"
-            BorderBrush="#E7DFD7"
-            BorderThickness="0,1,0,0">
+        <!-- 底部状态栏 48 -->
+        <Border Grid.Row="1" Background="{StaticResource PenBgWarmBrush}" BorderBrush="#E7DFD7" BorderThickness="0,1,0,0" Padding="28,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- 左：连接模式切换 -->
+                <!-- 左：连接模式 + 分段切换 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="连接模式" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.7" Margin="0,0,14,0" />
-
-                    <!-- 切换到本地 -->
-                    <Button Command="{Binding SwitchToLocalCommand}" Content="切换到本地" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" VerticalAlignment="Center">
+                    <TextBlock Text="连接模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                               Foreground="{StaticResource PenTextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0" />
+                    <Border Background="{StaticResource PenSegmentBgBrush}" CornerRadius="20" Padding="4">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- 远程模式段：选中时深棕底白字 -->
+                            <Border x:Name="RemoteSegment" CornerRadius="16" Padding="16,6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource PenPrimaryBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Cloud">
+                                        <materialDesign:PackIcon.Style>
+                                            <Style TargetType="materialDesign:PackIcon">
+                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                                        <Setter Property="Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </materialDesign:PackIcon.Style>
+                                    </materialDesign:PackIcon>
+                                    <TextBlock Text="远程模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                                        <Setter Property="Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                            <!-- 本地模式段 -->
+                            <Border x:Name="LocalSegment" CornerRadius="16" Padding="16,6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                                <Setter Property="Background" Value="{StaticResource PenPrimaryBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Database">
+                                        <materialDesign:PackIcon.Style>
+                                            <Style TargetType="materialDesign:PackIcon">
+                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                                        <Setter Property="Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </materialDesign:PackIcon.Style>
+                                    </materialDesign:PackIcon>
+                                    <TextBlock Text="本地模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                                        <Setter Property="Foreground" Value="White" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    <!-- 切换按钮（保留原命令，覆盖在分段上透明点击） -->
+                    <Button Command="{Binding SwitchToLocalCommand}" Content="切换到本地" Margin="8,0,0,0" VerticalAlignment="Center"
+                            Foreground="{StaticResource PenPrimaryBrush}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -153,9 +385,7 @@
                             </Style>
                         </Button.Style>
                     </Button>
-
-                    <!-- 切换到远程 -->
-                    <Button Command="{Binding SwitchToRemoteCommand}" Content="切换到远程" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" VerticalAlignment="Center">
+                    <Button Command="{Binding SwitchToRemoteCommand}" Content="切换到远程" Margin="8,0,0,0" VerticalAlignment="Center">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -165,28 +395,33 @@
                                         <Setter Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsRemoteAvailable}" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                        <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
                     </Button>
-
-                    <TextBlock Text="{Binding CurrentModeDisplay}" FontSize="12" VerticalAlignment="Center" Margin="14,0,0,0"
-                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.7" />
+                    <TextBlock Text="{Binding CurrentModeDisplay}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"
+                               Foreground="{StaticResource PenTextSecondaryBrush}" Opacity="0.9" />
                 </StackPanel>
 
-                <!-- 右：API配置按钮（打开 ServerConfigView） -->
-                <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding OpenSettingsCommand}" Cursor="Hand"
-                        Background="Transparent" BorderThickness="0" Padding="0">
-                    <Border CornerRadius="16" Background="{DynamicResource MaterialDesign.Brush.Paper}"
-                            BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}" BorderThickness="1" Padding="16,5">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="⚙" FontSize="14" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
-                            <TextBlock Text="API配置" FontSize="13" FontWeight="Medium" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
-                        </StackPanel>
-                    </Border>
-                </Button>
+                <!-- 右：连接状态 + API配置 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="9" Height="9" VerticalAlignment="Center" Fill="{StaticResource PenSuccessBrush}" />
+                    <TextBlock Text="API 已连接" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                               Foreground="{StaticResource PenSuccessBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    <TextBlock Text="|" FontSize="12" Foreground="#C9C1B9" VerticalAlignment="Center" Margin="10,0,10,0" />
+                    <TextBlock Text="服务器 60.190.215.86:5000" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                               Foreground="{StaticResource PenTextSecondaryBrush}" VerticalAlignment="Center" />
+                    <Button Command="{Binding OpenSettingsCommand}" Margin="14,0,0,0" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand" VerticalAlignment="Center">
+                        <Border CornerRadius="16" BorderBrush="#D9CFC3" BorderThickness="1" Padding="16,6" Background="Transparent">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="⚙" FontSize="13" Foreground="{StaticResource PenPrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="API配置" FontSize="13" FontWeight="Medium" Foreground="{StaticResource PenPrimaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 

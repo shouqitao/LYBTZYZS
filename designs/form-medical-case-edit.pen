@@ -3211,7 +3211,7 @@
     },
     "bg": {
       "type": "color",
-      "value": "#F5F5F5"
+      "value": "#FBF7F3"
     },
     "surface": {
       "type": "color",
@@ -3219,11 +3219,11 @@
     },
     "text-primary": {
       "type": "color",
-      "value": "#212121"
+      "value": "#3E2723"
     },
     "text-secondary": {
       "type": "color",
-      "value": "#757575"
+      "value": "#8D6E63"
     },
     "text-hint": {
       "type": "color",
@@ -3268,6 +3268,34 @@
     "gap-lg": {
       "type": "number",
       "value": 24
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E9DFD7"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
     }
   },
   "fileToken": "89e0890a-62b3-4216-8a97-5ceca257dc72"

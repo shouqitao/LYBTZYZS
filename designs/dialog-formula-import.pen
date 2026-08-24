@@ -11,7 +11,7 @@
       "width": 1200,
       "height": 800,
       "fill": "#9E9E9E",
-      "layout": "none",
+      "layout": "vertical",
       "children": [
         {
           "type": "rectangle",
@@ -1136,11 +1136,11 @@
     },
     "text-primary": {
       "type": "color",
-      "value": "#212121"
+      "value": "#3E2723"
     },
     "text-secondary": {
       "type": "color",
-      "value": "#757575"
+      "value": "#8D6E63"
     },
     "text-on-primary": {
       "type": "color",
@@ -1153,6 +1153,46 @@
     "font-body": {
       "type": "string",
       "value": "Noto Sans SC"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "primary-dark": {
+      "type": "color",
+      "value": "#4E342E"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FFB300"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E9DFD7"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "bg-warm": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "success": {
+      "type": "color",
+      "value": "#2E7D32"
     }
   },
   "fileToken": "65cc8c16-df9c-42a8-8512-d8aa6a3e184c"

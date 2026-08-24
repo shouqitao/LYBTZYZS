@@ -64,27 +64,9 @@
                       "type": "frame",
                       "id": "R8M0c",
                       "name": "品牌标识",
-                      "width": 96,
-                      "height": 96,
-                      "fill": {
-                        "type": "gradient",
-                        "gradientType": "linear",
-                        "enabled": true,
-                        "rotation": 135,
-                        "size": {
-                          "height": 1
-                        },
-                        "colors": [
-                          {
-                            "color": "#FFC14D",
-                            "position": 0
-                          },
-                          {
-                            "color": "#F59E0B",
-                            "position": 1
-                          }
-                        ]
-                      },
+                      "width": 36,
+                      "height": 36,
+                      "fill": "$accent",
                       "cornerRadius": 48,
                       "layout": "none",
                       "children": [
@@ -121,7 +103,7 @@
                   "id": "s7ZCUm",
                   "name": "系统名称",
                   "fill": "#FFFFFF",
-                  "content": "中医诊所管理系统",
+                  "content": "凌隐宝堂中医诊所",
                   "fontFamily": "$font-brand",
                   "fontSize": 36,
                   "fontWeight": "600",
@@ -810,11 +792,11 @@
     },
     "text-primary": {
       "type": "color",
-      "value": "#2F2A26"
+      "value": "#3E2723"
     },
     "text-secondary": {
       "type": "color",
-      "value": "#8D8078"
+      "value": "#8D6E63"
     },
     "border-soft": {
       "type": "color",
@@ -829,6 +811,34 @@
       "value": "Noto Serif SC"
     },
     "font-body": {
+      "type": "string",
+      "value": "Noto Sans SC"
+    },
+    "bg": {
+      "type": "color",
+      "value": "#FBF7F3"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "primary-soft": {
+      "type": "color",
+      "value": "#F1E9E4"
+    },
+    "accent-dark": {
+      "type": "color",
+      "value": "#8A5A00"
+    },
+    "border": {
+      "type": "color",
+      "value": "#E9DFD7"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "font-ui": {
       "type": "string",
       "value": "Noto Sans SC"
     }
