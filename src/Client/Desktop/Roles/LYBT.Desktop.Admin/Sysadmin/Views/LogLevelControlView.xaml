@@ -7,7 +7,7 @@
 
     <materialDesign:DialogHost>
         <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      Background="{DynamicResource MaterialDesign.Brush.Background}">
+                      Background="#FBF7F3">
             <StackPanel Margin="32" MaxWidth="800">
 
                 <!-- 页面标题 -->

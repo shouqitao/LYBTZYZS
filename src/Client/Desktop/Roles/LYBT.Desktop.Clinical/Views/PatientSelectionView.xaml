@@ -16,7 +16,8 @@
          位于Clinical模块，使用Patients模块的PatientSelectionControl
          医案工作台专用 -->
 
-    <Grid Background="{DynamicResource MaterialDesignPaper}">
+    <!-- 视觉基线 v1：bg-warm 铺满 文字居中 输入描边可见 保留绑定 -->
+    <Grid Background="#FBF7F3">
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>   <!-- 顶部标题栏 -->
             <RowDefinition Height="*"/>    <!-- 患者选择控件 -->
@@ -57,7 +58,7 @@
                             <materialDesign:PackIcon Kind="NfcVariant" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="读卡器" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                        <Border Background="#FBF7F3" CornerRadius="6" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="{Binding CardReader.StatusMessage}" Margin="0,0,0,8"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -89,7 +90,7 @@
                             <materialDesign:PackIcon Kind="ClipboardText" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="待诊队列" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border Background="{DynamicResource MaterialDesignPaper}" CornerRadius="6" Padding="12">
+                        <Border Background="#FBF7F3" CornerRadius="6" Padding="12">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                     <TextBlock Text="{Binding PendingQueue.Queue.Count, StringFormat=共 {0} 位患者}"

@@ -9,7 +9,8 @@
              xmlns:controls="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid>
+    <!-- 视觉基线 v1 -->
+    <Grid Background="#FBF7F3">
         <controls:MedicalCaseMasterDetailControl DataContext="{Binding}" />
     </Grid>
 </UserControl>

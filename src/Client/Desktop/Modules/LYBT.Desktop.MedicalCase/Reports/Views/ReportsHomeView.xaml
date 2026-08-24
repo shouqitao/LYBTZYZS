@@ -6,7 +6,8 @@
     xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+    <!-- 视觉基线 v1：bg-warm 铺满 文字居中 输入描边可见 保留绑定 -->
+    <Grid Background="#FBF7F3">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

@@ -17,7 +17,8 @@
              xmlns:vm="clr-namespace:LYBT.Desktop.Catalog.ViewModels;assembly=LYBT.Desktop.Catalog"
              d:DataContext="{d:DesignInstance vm:FormulaMasterDetailViewModel}"
              mc:Ignorable="d">
-    <Grid>
+    <!-- 视觉基线 v1 -->
+    <Grid Background="#FBF7F3">
         <formulaControls:FormulaMasterDetailControl />
     </Grid>
 </UserControl>

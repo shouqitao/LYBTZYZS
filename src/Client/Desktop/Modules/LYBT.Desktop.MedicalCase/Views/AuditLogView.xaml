@@ -7,7 +7,8 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <Border Margin="16">
-        <Grid>
+        <!-- 视觉基线 v1 -->
+    <Grid Background="#FBF7F3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>

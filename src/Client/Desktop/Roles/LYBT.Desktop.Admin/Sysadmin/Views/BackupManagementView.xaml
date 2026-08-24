@@ -7,7 +7,7 @@
 
     <materialDesign:DialogHost>
         <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      Background="{DynamicResource MaterialDesign.Brush.Background}">
+                      Background="#FBF7F3">
             <StackPanel Margin="32" MaxWidth="900">
 
                 <!-- 页面标题 -->
@@ -21,7 +21,8 @@
                 <materialDesign:Card Margin="0,0,0,16" Padding="24"
                                      UniformCornerRadius="12"
                                      materialDesign:ElevationAssist.Elevation="Dp1">
-                    <Grid>
+                    <!-- 视觉基线 v1 -->
+    <Grid Background="#FBF7F3">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
