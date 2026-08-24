@@ -13,7 +13,8 @@
              xmlns:vm="clr-namespace:LYBT.Desktop.Users.ViewModels;assembly=LYBT.Desktop.Users"
              d:DataContext="{d:DesignInstance vm:UserMasterDetailViewModel}"
              mc:Ignorable="d">
-    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+    <!-- 视觉基线 v1：bg-warm 铺满 文字居中 -->
+    <Grid Background="#FBF7F3">
         <userControls:UserMasterDetailControl x:Name="UserMasterDetailControl" />
     </Grid>
 </UserControl>

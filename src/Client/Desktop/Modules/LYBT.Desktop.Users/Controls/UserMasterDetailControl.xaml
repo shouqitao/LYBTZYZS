@@ -24,7 +24,7 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}">
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
         <!--
             ========================================
             Master区域: 用户列表
@@ -42,6 +42,7 @@
                 <!--  工具栏  -->
                 <controls:DataGridToolbar
                     Grid.Row="0"
+                    MinHeight="56" Padding="0,0,16,0"
                     BatchDeleteCommand="{Binding DeleteCommand}"
                     BatchEnableCommand="{Binding BatchEnableCommand}"
                     BatchDisableCommand="{Binding BatchDisableCommand}"
@@ -140,7 +141,7 @@
                 <!--  用户列表  -->
                 <DataGrid
                     Grid.Row="2"
-                    Margin="0,0,0,8"
+                    Margin="16,0,16,8"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
