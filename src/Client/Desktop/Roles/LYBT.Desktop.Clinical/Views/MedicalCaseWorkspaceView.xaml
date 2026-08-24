@@ -16,12 +16,12 @@
     xmlns:views="clr-namespace:LYBT.Desktop.Controls.Controls;assembly=LYBT.Desktop.Controls"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <!--  单列布局: 100%宽度  -->
-    <Grid>
+    <!-- 视觉基线 v1：按 medical-case.pen 对齐：$bg-warm 铺满，标题含患者信息，底部按钮右置，输入描边可见 -->
+    <Grid Background="#FBF7F3">
         <!--  BaseDetailContainer (查看/编辑)  -->
         <views:BaseDetailContainer
             Title="{Binding State.HeaderTitle}"
-            Margin="12,0,0,0"
+            Margin="16"
             GoBackCommand="{Binding BackCommand}"
             IsEditMode="{Binding State.IsEditing, Mode=OneWay}"
             ShowEditButton="{Binding State.CanEdit}"
