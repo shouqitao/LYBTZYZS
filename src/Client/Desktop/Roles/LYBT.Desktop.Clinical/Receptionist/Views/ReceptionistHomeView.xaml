@@ -77,7 +77,8 @@
         </Style>
     </UserControl.Resources>
     <!-- UI Redesign 2026-06-21: emoji → 矢量图标, 本地样式 → 全局 TransparentCardButton -->
-    <Grid Background="{DynamicResource MaterialDesignPaper}">
+    <!-- 视觉基线 v1：按 admin-home/receptionist-home.pen：导航网格 P-D，文字居中，bg-warm 铺满 -->
+    <Grid Background="#FBF7F3">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             
             <!-- 标题区域 -->
