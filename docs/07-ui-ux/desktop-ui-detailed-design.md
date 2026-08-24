@@ -124,25 +124,27 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
 │  ┌─────────────┐  ┌─────────────────────┐   │
 │  │  左侧品牌    │  │  右侧表单           │   │
 │  │  🌿 LOGO    │  │  用户名 [____]      │   │
-│  │  中医诊所   │  │  密码   [____]      │   │
-│  │  管理系统   │  │  ☑记住 ○自动登录    │   │
-│  │  v1.0+commit│  │  [      登录      ] │   │
-│  └─────────────┘  │  ●在线/离线 [远程|本地]│   │
-│  底部: API https://... | commit/env/pid      │
+│  │  诊所名(可绑)│  │  密码   [____]      │   │
+│  │  中医诊所    │  │  ☑记住密码   ○自动登录│   │
+│  │  管理系统   │  │  [      登录      ] │   │
+│  └─────────────┘  │   ●在线/离线 [远程|本地] │   │
+│  底部: 连接模式/API配置 | ⚙API配置(开 ServerConfigView)
 └─────────────────────────────────────────────┘
 ```
 | # | 控件 | 类型 | 位置 | 大小 | 说明 |
 |---|------|------|------|------|------|
 |1|Logo|Image|左侧居中|120|中医图标|
-|2|系统名|TextBlock|Logo下|Auto|16pt 粗体|
-|3|版本|TextBlock|品牌底|Auto|12pt 灰 `v1.0+commit`|
+|2|系统名|TextBlock|Logo下|Auto|16pt 粗体 大标题 `ClinicName`（绑定配置，空回退默认）|
+|3|副标题|TextBlock|系统名下|Auto|`中医诊所管理系统`|
 |4|用户名|TextBox|右侧|320×40|必填 3-32，`TabIndex0`|
 |5|密码|PasswordBox|用户名下|320×40|6-128，`TabIndex1`|
-|6|记住|CheckBox|密码下左|Auto|`IsRememberMe`|
-|7|自动登录|CheckBox|记住右|Auto|`IsAutoLogin`|
+|6|记住密码|CheckBox|密码下左|Auto|`IsRememberMe`|
+|7|自动登录|CheckBox|记住右|Auto|`IsAutoLogin`（两端对齐，Grid 两列）|
 |8|登录|Button|表单底|320×48|主色 `IsDefault`，`Loading`禁用|
-|9|连接切换|ToggleButton|底部左|120×32|`Remote/Local`|
-|10|API状态|StatusBadge|底部右|Auto|绿/红/黄|
+|9|连接切换|ToggleButton|状态栏左|Auto|`Remote/Local`|
+|10|API状态|StatusBadge|状态栏|Auto|绿/红/黄|
+|11|API配置|Button|状态栏右|Auto|⚙+API配置 文字，点击开 `ServerConfigView`（复用 `OpenSettingsCommand`）|
+|12|状态栏|Border|底部|高度 48|统一 48，含切换/状态/API配置|
 | 按钮 | 前置 | 逻辑 | 后置 |
 |------|------|------|------|
 |登录|用户名非空+密码非空|1.Loading 2.`POST /api/v1/auth/login` 3.成功→`ITokenStorage.Save`→导航主界面 4.失败→Toast|成功关登录开MainWindow；失败恢复按钮|

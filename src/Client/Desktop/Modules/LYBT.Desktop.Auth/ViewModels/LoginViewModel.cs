@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
@@ -87,6 +88,17 @@ namespace LYBT.Desktop.Auth.ViewModels
             set => Credentials.RememberPassword = value;
         }
 
+        /// <summary>
+        /// 自动登录开关（designs/login.pen：记住密码 / 自动登录 两端对齐）
+        /// 当前仅保存 UI 状态，自动登录执行链路未接入（预留）
+        /// </summary>
+        public bool IsAutoLogin { get; set; }
+
+        /// <summary>
+        /// 品牌区大标题 - 诊所名可绑定配置（clinic-settings.json，IClinicSettingsService）
+        /// </summary>
+        public string ClinicName { get; }
+
         public bool HasSavedPassword
         {
             get => Credentials.HasSavedPassword;
@@ -153,11 +165,17 @@ namespace LYBT.Desktop.Auth.ViewModels
             IConnectionModeService? connectionModeService = null,
             IConnectionSettingsService? connectionSettingsService = null,
             LoginCredentialsViewModel? credentials = null,
-            ConnectionStatusViewModel? connectionStatus = null)
+            ConnectionStatusViewModel? connectionStatus = null,
+            IClinicSettingsService? clinicSettingsService = null)
             : base(services)
         {
             _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _dialogService = dialogService;
+
+            // 品牌区大标题：诊所名可绑定配置，空值回退默认
+            ClinicName = clinicSettingsService is null
+                ? "凌隐宝堂中医诊所"
+                : string.IsNullOrWhiteSpace(clinicSettingsService.ClinicName) ? "凌隐宝堂中医诊所" : clinicSettingsService.ClinicName;
 
             // 创建子 VM（D3: DI 注入优先，手动 new 为测试/可选依赖回退）
             Credentials = credentials ?? new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
