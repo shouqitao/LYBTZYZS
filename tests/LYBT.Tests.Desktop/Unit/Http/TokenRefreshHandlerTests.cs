@@ -176,6 +176,7 @@ public class TokenRefreshHandlerTests : IAsyncLifetime
         var handler = new TokenRefreshHandler(
             _tokenStorage,
             _credentialVault,
+            httpClientFactory: null,
             Options.Create(new ApiClientOptions { BaseUrl = _server.BaseUrl, IgnoreSslErrors = true }),
             _logger,
             _userActivity,
@@ -272,6 +273,7 @@ public class TokenRefreshHandlerTests : IAsyncLifetime
 
         var handler = new TokenRefreshHandler(
             _tokenStorage, _credentialVault,
+            httpClientFactory: null,
             Options.Create(new ApiClientOptions { BaseUrl = _server.BaseUrl, IgnoreSslErrors = true }),
             _logger, _userActivity, _eventAggregator)
         {

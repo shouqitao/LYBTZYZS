@@ -60,7 +60,7 @@ public class L4IntegrationTests
 
         // 与 DI 注册一致：TokenRefresh →(InnerHandler)→ HttpClientHandler
         var tokenRefreshHandler = new TokenRefreshHandler(
-            tokenStorage, credentialVault, apiOptions,
+            tokenStorage, credentialVault, httpClientFactory: null, apiOptions,
             Substitute.For<ILogger<TokenRefreshHandler>>());
         tokenRefreshHandler.InnerHandler = terminal;
 

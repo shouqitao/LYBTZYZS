@@ -35,9 +35,18 @@ public abstract class BaseStatusHandler<TListDto> where TListDto : class
     protected virtual CommonStatus GetEntityStatus(TListDto entity)
         => throw new NotSupportedException($"{GetType().Name} 不支持状态切换");
 
-    /// <summary>执行状态切换操作 (调用 repository)</summary>
+    /// <summary>执行状态切换操作 (调用 repository) — 已废弃，请重写 ExecuteSetStatusAsync</summary>
+    [Obsolete("Use ExecuteSetStatusAsync")]
     protected virtual Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
         => throw new NotSupportedException($"{GetType().Name} 不支持状态切换");
+
+    /// <summary>执行显式状态设置（新契约，优先）</summary>
+    protected virtual Task<CommonStatus?> ExecuteSetStatusAsync(Guid id, CommonStatus targetStatus)
+    {
+#pragma warning disable CS0618
+        return ExecuteToggleStatusAsync(id);
+#pragma warning restore CS0618
+    }
 
     /// <summary>
     /// 恢复已删除的实体 (统一实现)
@@ -79,7 +88,8 @@ public abstract class BaseStatusHandler<TListDto> where TListDto : class
     {
         var displayName = GetEntityDisplayName(entity);
         var currentStatus = GetEntityStatus(entity);
-        var newStatusText = currentStatus == CommonStatus.Enabled ? "禁用" : "启用";
+        var targetStatus = currentStatus == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
+        var newStatusText = targetStatus == CommonStatus.Disabled ? "禁用" : "启用";
 
         try
         {
@@ -87,7 +97,7 @@ public abstract class BaseStatusHandler<TListDto> where TListDto : class
                 $"确认{newStatusText}{EntityTypeName} [{displayName}] 吗？", "状态切换确认");
             if (!confirmed) return false;
 
-            var newStatus = await ExecuteToggleStatusAsync(GetEntityId(entity));
+            var newStatus = await ExecuteSetStatusAsync(GetEntityId(entity), targetStatus);
             if (newStatus != null)
             {
                 Logger.LogInformation("{EntityType}状态已切换: {DisplayName} -> {NewStatus}",

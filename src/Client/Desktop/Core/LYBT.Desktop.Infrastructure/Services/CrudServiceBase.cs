@@ -95,8 +95,27 @@ public abstract class CrudServiceBase<TListDto, TDetailDto, TInputDto>
         });
     }
 
-    public virtual Task<CommandResult<TDetailDto>> SetStatusAsync(Guid id, CommonStatus status, CancellationToken ct = default)
-        => ToggleStatusAsync(id, ct);
+    public virtual async Task<CommandResult<TDetailDto>> SetStatusAsync(Guid id, CommonStatus status, CancellationToken ct = default)
+    {
+        return await ExecuteAsync<TDetailDto>($"{EntityName}.SetStatus", async () =>
+        {
+            try
+            {
+                var entity = await SetStatusCoreAsync(id, status, ct);
+                if (entity == null)
+                    return CommandResult<TDetailDto>.NotFound($"{EntityName}不存在");
+                return CommandResult<TDetailDto>.Succeeded(entity);
+            }
+            catch (NotSupportedException)
+            {
+                // 回退：仅重写 ToggleStatusCore 的旧服务仍可通过显式状态模拟切换
+                var entity = await ToggleStatusCoreAsync(id, ct);
+                if (entity == null)
+                    return CommandResult<TDetailDto>.NotFound($"{EntityName}不存在");
+                return CommandResult<TDetailDto>.Succeeded(entity);
+            }
+        });
+    }
 
     [Obsolete("Use BatchSetStatusAsync")]
     public virtual Task<CommandResult<BatchOperationResultDto>> BatchEnableAsync(List<Guid> ids, CancellationToken ct = default)
@@ -134,6 +153,8 @@ public abstract class CrudServiceBase<TListDto, TDetailDto, TInputDto>
         => throw new NotSupportedException($"Search not supported for {EntityName}");
     protected virtual Task<TDetailDto?> ToggleStatusCoreAsync(Guid id, CancellationToken ct)
         => throw new NotSupportedException($"ToggleStatus not supported for {EntityName}");
+    protected virtual Task<TDetailDto?> SetStatusCoreAsync(Guid id, CommonStatus status, CancellationToken ct)
+        => throw new NotSupportedException($"SetStatus not supported for {EntityName}");
 
     #endregion
 

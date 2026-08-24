@@ -37,9 +37,9 @@ public class UserStatusHandler : BaseStatusHandler<UserListDto>, IUserStatusHand
     protected override async Task<object?> ExecuteRestoreAsync(Guid id)
         => await _userRepository.RestoreAsync(id);
 
-    protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
+    protected override async Task<CommonStatus?> ExecuteSetStatusAsync(Guid id, CommonStatus targetStatus)
     {
-        var result = await _userService.ToggleStatusAsync(id);
+        var result = await _userService.SetStatusAsync(id, targetStatus);
         return result.Success ? result.Data?.Status : null;
     }
 

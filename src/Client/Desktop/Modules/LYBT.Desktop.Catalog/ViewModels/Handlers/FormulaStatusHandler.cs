@@ -32,8 +32,9 @@ public class FormulaStatusHandler : BaseStatusHandler<FormulaListDto>, IFormulaS
     protected override async Task<object?> ExecuteRestoreAsync(Guid id)
         => await _formulaRepository.RestoreAsync(id);
 
-    protected override async Task<CommonStatus?> ExecuteToggleStatusAsync(Guid id)
+    protected override async Task<CommonStatus?> ExecuteSetStatusAsync(Guid id, CommonStatus targetStatus)
     {
+        // Repository 暂仅提供 Toggle，显式状态由上层保证 toggle 语义，忽略 targetStatus
         var result = await _formulaRepository.ToggleStatusAsync(id);
         return result?.Status;
     }
