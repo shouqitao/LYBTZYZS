@@ -21,14 +21,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!--  临床工作台一体化布局
-          Column 0: 患者选择列表（嵌入 PatientSelectionControl）
-          Column 1: GridSplitter
-          Column 2: 看诊工作区（患者信息条 + 空状态提示 + 操作按钮）  -->
-
-    <Grid Background="{DynamicResource MaterialDesignPaper}">
+    <!-- 视觉基线 v1：按 clinical-workspace.pen + desktop-layout-framework 对齐：主内容 $bg-warm gap16，工具栏48/56，内容区三栏 260/fill/240，文字居中，描边可见 -->
+    <Grid Background="#FBF7F3">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320" MinWidth="240" MaxWidth="600"/>
+            <ColumnDefinition Width="260" MinWidth="240" MaxWidth="340"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -51,13 +47,13 @@
                       VerticalAlignment="Stretch"
                       Background="{DynamicResource MaterialDesign.Brush.Outline}"/>
 
-        <!--  Column 2: 看诊工作区  -->
-        <Grid Grid.Column="2">
+        <!--  Column 2: 看诊工作区（铺满，gap16）  -->
+        <Grid Grid.Column="2" Margin="16,0,0,0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 患者信息条 -->
+                <RowDefinition Height="Auto"/>  <!-- 患者信息条 56h -->
                 <RowDefinition Height="Auto"/>  <!-- 空状态提示 -->
-                <RowDefinition Height="*"/>     <!-- 预留（历史面板，Task 3） -->
-                <RowDefinition Height="Auto"/>  <!-- 操作按钮 -->
+                <RowDefinition Height="*"/>     <!-- 历史面板 -->
+                <RowDefinition Height="Auto"/>  <!-- 操作按钮 右置 -->
             </Grid.RowDefinitions>
 
             <!--  Row 0: 患者信息条（仅患者已选时显示）  -->
