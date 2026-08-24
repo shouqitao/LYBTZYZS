@@ -13,6 +13,7 @@
     prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
     mc:Ignorable="d">
 
+    <!-- 视觉基线 v1：bg-warm 铺满 文字居中 -->
     <Grid Width="440">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -31,7 +32,7 @@
             <TextBlock
                 FontSize="16"
                 FontWeight="Bold"
-                Foreground="{DynamicResource MaterialDesign.Brush.Background}"
+                Foreground="#FBF7F3"
                 Text="服务器配置" />
         </Border>
 
@@ -170,7 +171,7 @@
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
-                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Background}" />
+                            <Setter Property="Foreground" Value="#FBF7F3" />
                             <Setter Property="BorderThickness" Value="0" />
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
