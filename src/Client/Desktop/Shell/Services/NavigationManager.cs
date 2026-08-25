@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Controls.Models;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -46,10 +47,8 @@ public partial class NavigationManager : ObservableObject, INavigationManager
     }
 
     /// <summary>
-    /// 构建侧边栏导航项。
-    /// 设计决策（2026-08-17）：侧边栏仅保留「主页」入口，
-    /// 功能导航由各角色 Home View 的卡片网格承载。
-    /// 账户/主题/退出由 MainWindow.xaml 底部按钮单独处理。
+    /// 构建侧边栏导航项 — C+ 角色矩阵（SSOT desktop-layout-framework §角色×菜单矩阵）
+    /// 各角色 3 项：主页 + 2 业务入口；图标对齐 MaterialDesign PackIcon Kind
     /// </summary>
     public ObservableCollection<NavigationItem> BuildNavigationItems(UserRole role)
     {
@@ -62,7 +61,7 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             return items;
         }
 
-        // 侧边栏仅保留主页入口，功能导航由 Home View 卡片承载
+        // 主页（各角色 HomeViewName 已在 RoleDefinition 定义）
         items.Add(new NavigationItem
         {
             Title = "主页",
@@ -72,7 +71,28 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             Group = "导航"
         });
 
-        _logger.LogInformation("已为角色 {Role} 构建 {Count} 个侧边栏导航项（主页入口）", role, items.Count);
+        // C+ 角色矩阵 2 业务入口
+        switch (role)
+        {
+            case UserRole.Doctor:
+                items.Add(new NavigationItem { Title = "患者选择", ViewName = ViewNames.PatientSelection, IconKind = "AccountSearch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "医案工作台", ViewName = ViewNames.MedicalCaseWorkspace, IconKind = "NoteEdit", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace)), Group = "导航" });
+                break;
+            case UserRole.Receptionist:
+                items.Add(new NavigationItem { Title = "新建挂号", ViewName = ViewNames.RegistrationList, IconKind = "PlusCircle", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "患者管理", ViewName = ViewNames.PatientManagement, IconKind = "AccountGroup", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement)), Group = "导航" });
+                break;
+            case UserRole.Admin:
+                items.Add(new NavigationItem { Title = "用户管理", ViewName = ViewNames.UserManagement, IconKind = "AccountCog", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.UserManagement)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "药材/验方", ViewName = ViewNames.HerbManagement, IconKind = "Leaf", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.HerbManagement)), Group = "导航" });
+                break;
+            case UserRole.SuperAdmin:
+                items.Add(new NavigationItem { Title = "备份管理", ViewName = ViewNames.BackupManagement, IconKind = "BackupRestore", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.BackupManagement)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "部署管理", ViewName = ViewNames.Deployment, IconKind = "RocketLaunch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.Deployment)), Group = "导航" });
+                break;
+        }
+
+        _logger.LogInformation("已为角色 {Role} 构建 {Count} 个侧边栏导航项（C+矩阵）", role, items.Count);
         return items;
     }
 }
