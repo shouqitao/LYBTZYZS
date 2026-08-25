@@ -30,8 +30,7 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     #region 常量
 
     private const int SplashRenderDelayMs = 500;
-    private const int SidebarCollapsedWidth = 60;
-    private const int SidebarExpandedWidth = 140;
+    // 侧栏宽度常量已抽至 ShellConstants (240/64)，此处保留仅为 AppShell 绑定兼容，值引用 ShellConstants
 
     #endregion
 
@@ -58,7 +57,7 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     #region 可观察属性
 
     [ObservableProperty]
-    private double _sidebarWidth = 60;
+    private double _sidebarWidth = ShellConstants.SidebarCollapsedWidth;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNavTextVisible))]
@@ -66,11 +65,6 @@ public partial class MainWindowViewModel : NavigableViewModelBase
 
     public bool IsNavTextVisible =>
         IsSidebarExpanded;
-
-    [ObservableProperty]
-    private bool _isDarkMode;
-
-    partial void OnIsDarkModeChanged(bool value) => _shell.Theme.ApplyTheme(value);
 
     #endregion
 
@@ -84,14 +78,8 @@ public partial class MainWindowViewModel : NavigableViewModelBase
         set => _navigationManager.SelectedNavItem = value;
     }
 
+    // 状态栏属性已迁至 FooterViewModel (StatusBarManager)，此处保留 Navigation 委托
     public ApiHealthStatus ApiStatus => _shell.StatusBar.ApiStatus;
-    public string ConnectionUrl => _shell.StatusBar.ConnectionUrl;
-    public bool IsLocal => _shell.StatusBar.IsLocal;
-    public string ConnectionModeDisplay => _shell.StatusBar.ConnectionModeDisplay;
-    public bool IsRemoteMode => _shell.StatusBar.IsRemoteMode;
-    public string CurrentTimeDisplay => _shell.StatusBar.CurrentTimeDisplay;
-    public PackIconKind ApiStatusIcon => _shell.StatusBar.ApiStatusIcon;
-    public Brush ApiStatusColor => _shell.StatusBar.ApiStatusColor;
 
     #endregion
 
@@ -107,9 +95,6 @@ public partial class MainWindowViewModel : NavigableViewModelBase
         _shell = shell ?? throw new ArgumentNullException(nameof(shell));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
-
-        _shell.Tick.Tick += OnTick;
-        _shell.Tick.Start();
 
         _shell.LoginState.LoginStateChanged += OnLoginStateChanged;
         _shell.Events.LoginSuccessHandled += OnLoginSuccessHandled;
@@ -179,7 +164,7 @@ public partial class MainWindowViewModel : NavigableViewModelBase
 
     partial void OnIsSidebarExpandedChanged(bool value)
     {
-        SidebarWidth = value ? SidebarExpandedWidth : SidebarCollapsedWidth;
+        SidebarWidth = value ? ShellConstants.SidebarExpandedWidth : ShellConstants.SidebarCollapsedWidth;
     }
 
     [RelayCommand]
@@ -191,11 +176,6 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     #endregion
 
     #region 事件处理
-
-    private void OnTick(object? sender, ApplicationTickEventArgs e)
-    {
-        _shell.StatusBar.UpdateTime();
-    }
 
     private void OnLoginStateChanged(object? sender, EventArgs e)
     {
@@ -262,7 +242,6 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     {
         try
         {
-            _shell.Tick.Tick -= OnTick;
             _shell.LoginState.LoginStateChanged -= OnLoginStateChanged;
             _shell.Events.LoginSuccessHandled -= OnLoginSuccessHandled;
             _shell.Events.Dispose();
