@@ -19,6 +19,12 @@ Shell/
 ├── Assets/                              # 字体、图标、背景图
 ├── Controls/
 │   └── AccountSettingsControl.xaml(.cs) # 账户设置控件
+├── ShellConstants.cs                    # 侧栏宽度常量 64/240 (SSOT desktop-layout-framework)
+├── Views/
+│   ├── HeaderControl.xaml(.cs)          # 顶部应用栏 48 (品牌36+标题17+用户区)
+│   ├── SideNavControl.xaml(.cs)         # 左侧导航 240/64 (汉堡40+分组标题11+菜单38+底部)
+│   ├── FooterControl.xaml(.cs)          # 底部状态栏 32 (API状态+连接模式+时间)
+│   └── AppShell.xaml(.cs)               # 壳组合 (Header+SideNav+ContentRegion+Footer) 唯一 ContentRegion
 ├── Dialogs/
 │   ├── ViewModels/
 │   │   ├── ConfirmationDialogViewModel.cs
@@ -69,7 +75,10 @@ Shell/
 │           └── WarmupStartupStep.cs
 ├── ViewModels/
 │   ├── AccountSettingsViewModel.cs
-│   └── MainWindowViewModel.cs
+│   ├── HeaderViewModel.cs               # 顶部栏 VM (CurrentUser*) + EditProfileCommand
+│   ├── SideNavViewModel.cs              # 侧栏 VM (NavigationItems/IsSidebarExpanded/IsDarkMode)
+│   ├── FooterViewModel.cs               # 底部栏 VM (ApiStatus/ConnectionMode/CurrentTime + Tick)
+│   └── MainWindowViewModel.cs           # 主窗 VM (薄委托，侧栏宽度引用 ShellConstants)
 └── Views/
     ├── AccountSettingsView.xaml(.cs)
     └── MainWindow.xaml(.cs)
@@ -80,7 +89,12 @@ Shell/
 | 类 | 设计依据 | 职责 |
 |----|---------|------|
 | **App** | PrismApplication 单实例模式 | 单实例 Mutex 防重复启动；Serilog 日志初始化；`ConfigureModuleCatalog` 加载 Core 模块 WhenAvailable + 业务模块 OnDemand；`RegisterTypes` 注册全部服务/对话框/主题；`OnInitialized` 显示主窗口并执行 `RunStartupAsync` |
-| **MainWindowViewModel** | CoreViewModelBase，组合优于继承 | 委托 LoginStateManager/MenuManager/NavigationManager/StatusBarManager 四大管理器；`LogoutAsync` 含活跃医案检查防误退出；`ToggleSidebar` 侧边栏折叠；17 个 ICommand 均为委托转发 |
+| **HeaderControl/HeaderViewModel** | 顶部应用栏 48 | 按 framework 7 子元素 (品牌块36+标题17+弹性+分隔1×20+用户icon26+姓名13+角色12)，用户区点击打开个人资料 |
+| **SideNavControl/SideNavViewModel** | 左侧导航 240/64 | 汉堡40+分组标题11+菜单38 r10 选中primary，收拢仅图标居中；C+矩阵 4角色×3项；深色模式+退出在底部 |
+| **FooterControl/FooterViewModel** | 底部状态栏 32 | 暖灰顶部描边，左组 API状态+连接模式 gap16，右时间；Tick 订阅已从 MainWindow 迁移 |
+| **AppShell** | 纯 UserControl 组合 | Header(48)+SideNav(240/64)+ContentRegion唯一+Footer(32)，DialogHost 包裹 AppShell (R13 T-03) |
+| **ShellConstants** | 常量 SSOT | `SidebarCollapsedWidth=64` `SidebarExpandedWidth=240`，XAML/VM 均引用 |
+| **MainWindowViewModel** | CoreViewModelBase，组合优于继承 | 委托 LoginStateManager/MenuManager/NavigationManager/StatusBarManager 四大管理器；`LogoutAsync` 含活跃医案检查防误退出；`ToggleSidebar` 侧边栏折叠 (引用 ShellConstants)；17 个 ICommand 均为委托转发 |
 | **NavigationManager** | ObservableObject，基于角色动态构建 | `BuildNavigationItems` 按用户角色 + RoleRegistry 生成导航项，按「主页/业务/管理」分组 |
 | **MenuManager** | DelegateCommand 快捷键绑定 | QuickAdd(`Ctrl+N`)、QuickStartMedicalCase(`Ctrl+Shift+C`)、Help(`F1`)、Settings(`Ctrl+,`)、主题切换、面包屑导航 |
 | **StatusBarManager** | 响应式状态聚合 | 暴露 ApiStatus/ConnectionUrl/IsLocal/CurrentTime/ApiStatusIcon/ApiStatusColor；订阅 HealthMonitor + Connection 事件自动刷新 |

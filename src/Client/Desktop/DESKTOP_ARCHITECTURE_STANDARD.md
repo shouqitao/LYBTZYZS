@@ -1679,6 +1679,34 @@ private async Task ImportDataAsync()
 
 ---
 
+## 13. Shell 公共组件（2026-08-25 抽取，SSOT desktop-layout-framework）
+
+> 依据 `docs/07-ui-ux/desktop-layout-framework.md`（固化）与 `docs/compose/plans/shell-component-extraction-plan.md` 30 轮方案 A。业务 View 零改动，Shell 层仅通过纯 UserControl 组合实现三栏公共壳。
+
+### 13.1 组件清单
+
+| 组件 | 文件 | 尺寸/样式 | 职责 | 宽度常量 |
+|------|------|-----------|------|----------|
+| HeaderControl / HeaderViewModel | `Shell/Views/HeaderControl.xaml` `Shell/ViewModels/HeaderViewModel.cs` | h48 fill `$primary` padding `[0,24]` 7 子元素 | 品牌块36×36 `$accent` r10「医」20/700 + 标题17/600白 + 弹性 + 分隔1×20白30% + 用户icon 26 + 姓名13/600白 + 角色12 `#D9C7C1`；用户区可点击 `EditProfileCommand` | — |
+| SideNavControl / SideNavViewModel | `Shell/Views/SideNavControl.xaml` `Shell/ViewModels/SideNavViewModel.cs` | 展开240 收拢64 fill `$primary-dark` | 汉堡h40居中 + 分组标题11/600 `#C9B8A6`（仅展开） + 菜单h38 r10 选中`$primary` gap12 + 底部固定区（分割线+深色模式+退出）；C+矩阵 4角色×3项 | `ShellConstants.SidebarCollapsedWidth=64` `SidebarExpandedWidth=240` |
+| FooterControl / FooterViewModel | `Shell/Views/FooterControl.xaml` `Shell/ViewModels/FooterViewModel.cs` | h32 暖灰 顶部描边 `#E9DFD7`1 padding `[0,24]` | 左组 API状态 `● API已连接`12 `$success` + 连接模式12 `#8D6E63` gap16，右时间12；Tick 订阅已从 MainWindow 迁移 | — |
+| AppShell | `Shell/Views/AppShell.xaml` | 无 VM，纯组合 | Header(48) + Grid( SideNav(240/64 bind SidebarWidth) + 右列[ContentRegion唯一 + Footer32])；`DialogHost Identifier=RootDialog` 包裹 AppShell (R13 T-03) | 引用 ShellConstants |
+| ShellConstants | `Shell/ShellConstants.cs` | — | 侧栏宽度 SSOT | 64 / 240 |
+
+### 13.2 命名与职责
+
+- 命名：`HeaderControl/SideNavControl/FooterControl/AppShell` 位于 `Shell.Views`，对应 VM 位于 `Shell.ViewModels`，均以 `...ViewModel` 后缀继承 `ObservableObject`，通过 `prism:ViewModelLocator.AutoWireViewModel="True"` 注入 `IShellServices`。
+- 职责：Header 只读展示+个人资料入口；SideNav 负责导航列表与折叠/主题；Footer 负责健康+时间；AppShell 负责布局组合，不新增 Region。
+- 常量：所有 64/240 引用必须来自 `ShellConstants`，禁止内联。
+
+### 13.3 与框架文档的对齐
+
+- 顶部 48 七子元素、左侧 240/64、菜单 38 r10、底部 32 等均逐项对齐 `desktop-layout-framework.md`。
+- 角色×菜单矩阵已在 `NavigationManager.BuildNavigationItems` 落地 C+（Doctor 3 等）。
+- `MainWindow` 仅保留 LoginRegion + DialogHost(AppShell) + Snackbar，`ContentRegion` 保持唯一，业务 View 零改动。
+
+---
+
 ## 附录
 
 ### A. 参考文档
