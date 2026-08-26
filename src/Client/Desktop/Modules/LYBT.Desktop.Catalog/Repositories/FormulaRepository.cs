@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Catalog.Repositories;
@@ -103,6 +104,18 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
             () => _formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
             "BatchDelete",
             "批量删除失败",
+            ids.Count);
+    }
+
+    /// <summary>批量启用/禁用验方。</summary>
+    public async Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+    {
+        return await ExecuteBatchDeleteAsync(
+            () => status == CommonStatus.Enabled
+                ? _formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids })
+                : _formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }),
+            "BatchSetStatus",
+            status == CommonStatus.Enabled ? "批量启用失败" : "批量禁用失败",
             ids.Count);
     }
 

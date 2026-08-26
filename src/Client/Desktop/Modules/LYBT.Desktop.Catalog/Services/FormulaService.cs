@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
@@ -115,6 +116,21 @@ namespace LYBT.Desktop.Catalog.Services
                 var result = await _formulaRepository.BatchDeleteAsync(formulaIds);
                 if (result == null)
                     return CommandResult<BatchOperationResultDto>.Failed("批量删除验方返回空结果");
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            });
+        }
+
+        /// <summary>
+        /// 批量启用/禁用验方
+        /// </summary>
+        public override async Task<CommandResult<BatchOperationResultDto>> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<BatchOperationResultDto>("Formula.BatchSetStatus", async () =>
+            {
+                var result = await _formulaRepository.BatchSetStatusAsync(ids, status, ct);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed(
+                        status == CommonStatus.Enabled ? "批量启用验方失败" : "批量禁用验方失败");
                 return CommandResult<BatchOperationResultDto>.Succeeded(result);
             });
         }

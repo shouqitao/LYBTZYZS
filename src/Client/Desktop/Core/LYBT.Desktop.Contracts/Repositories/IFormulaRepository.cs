@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Repositories;
 
@@ -60,6 +61,11 @@ public interface IFormulaRepository
     /// 批量删除验方
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>
+    /// 批量启用/禁用验方
+    /// </summary>
+    Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default);
 
     #endregion
 

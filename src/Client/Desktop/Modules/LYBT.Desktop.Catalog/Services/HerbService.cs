@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
@@ -79,6 +80,21 @@ namespace LYBT.Desktop.Catalog.Services
                 var result = await _herbRepository.BatchDeleteAsync(herbIds);
                 if (result == null)
                     return CommandResult<BatchOperationResultDto>.Failed("批量删除操作失败");
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            });
+        }
+
+        /// <summary>
+        /// 批量启用/禁用药材
+        /// </summary>
+        public override async Task<CommandResult<BatchOperationResultDto>> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<BatchOperationResultDto>("Herb.BatchSetStatus", async () =>
+            {
+                var result = await _herbRepository.BatchSetStatusAsync(ids, status, ct);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed(
+                        status == CommonStatus.Enabled ? "批量启用药材失败" : "批量禁用药材失败");
                 return CommandResult<BatchOperationResultDto>.Succeeded(result);
             });
         }

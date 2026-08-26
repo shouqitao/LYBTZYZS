@@ -240,6 +240,45 @@ namespace LYBT.Desktop.Catalog.ViewModels
             await _statusHandler.RestoreAsync(item);
         }
 
+        /// <summary>批量删除（单次 batch-delete 调用，替代逐条删除）</summary>
+        protected override async Task DeleteBatchAsync(List<HerbListDto> items)
+        {
+            var result = await _herbService.BatchDeleteAsync(items.Select(h => h.Id).ToList());
+            if (result.Success && result.Data != null)
+            {
+                Logger.LogInformation("药材批量删除完成: 成功 {Success}, 失败 {Failure}",
+                    result.Data.SuccessCount, result.Data.FailureCount);
+                _cacheManager.InvalidateHerbCaches();
+            }
+            else
+            {
+                MasterDetailServices.ErrorHandler.SetError("BatchDelete", result.Error ?? "批量删除药材失败");
+            }
+        }
+
+        /// <summary>批量启用（单次 batch-enable 调用）</summary>
+        protected override async Task EnableBatchAsync(List<HerbListDto> items)
+            => await BatchSetStatusAsync(items, CommonStatus.Enabled, "批量启用");
+
+        /// <summary>批量禁用（单次 batch-disable 调用）</summary>
+        protected override async Task DisableBatchAsync(List<HerbListDto> items)
+            => await BatchSetStatusAsync(items, CommonStatus.Disabled, "批量禁用");
+
+        private async Task BatchSetStatusAsync(List<HerbListDto> items, CommonStatus status, string operationName)
+        {
+            var result = await _herbService.BatchSetStatusAsync(items.Select(h => h.Id).ToList(), status);
+            if (result.Success && result.Data != null)
+            {
+                Logger.LogInformation("{Operation}完成: 成功 {Success}, 失败 {Failure}",
+                    operationName, result.Data.SuccessCount, result.Data.FailureCount);
+                _cacheManager.InvalidateHerbCaches();
+            }
+            else
+            {
+                MasterDetailServices.ErrorHandler.SetError(operationName, result.Error ?? $"{operationName}药材失败");
+            }
+        }
+
         /// <summary>按分类搜索</summary>
         [RelayCommand]
         private async Task SearchByCategoryAsync(string? category)
