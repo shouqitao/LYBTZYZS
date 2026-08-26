@@ -22,9 +22,10 @@ namespace LYBT.Desktop.Clinical.ViewModels
     public partial class ClinicalHomeViewModel : NavigableViewModelBase
     {
         #region 依赖服务
-
         private readonly IAuthenticationService _authService;
         private readonly INavigationCoordinator _navigationCoordinator;
+        private readonly IReportService _reportService;
+        private readonly IRegistrationService _registrationService;
 
         #endregion 依赖服务
 
@@ -58,17 +59,21 @@ namespace LYBT.Desktop.Clinical.ViewModels
         public ClinicalHomeViewModel(
             IViewModelServices services,
             IAuthenticationService authService,
-            INavigationCoordinator navigationCoordinator)
+            INavigationCoordinator navigationCoordinator,
+            IReportService reportService,
+            IRegistrationService registrationService)
             : base(services)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+            _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+            _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
 
             // 加载当前用户信息
             LoadCurrentUserAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载当前用户信息失败"));
 
             // 加载今日统计数据
-            LoadTodayStatistics();
+            LoadTodayStatisticsAsync().SafeFireAndForget(ex => Logger.LogError(ex, "加载今日统计数据失败"));
         }
 
         #endregion 构造函数
@@ -206,15 +211,29 @@ namespace LYBT.Desktop.Clinical.ViewModels
                 CurrentUserName = "医生";
             }
         }
-
-        /// <summary>
-        /// 加载今日统计数据
-        /// </summary>
-        private void LoadTodayStatistics()
+        private async Task LoadTodayStatisticsAsync()
         {
-            // TODO 2026-08-21 xiao: US-SHELL-005 - 从服务获取今日统计数据（当前写死，待报表服务接入）
-            TodayConsultationCount = 0;
-            PendingCaseCount = 0;
+            try
+            {
+                // 今日接诊量：日问诊报表（服务端按登录医生角色过滤）
+                var consultationResult = await _reportService.GetDailyConsultationsAsync(DateTime.Today, DateTime.Today);
+                if (consultationResult.Success && consultationResult.Data != null)
+                {
+                    TodayConsultationCount = consultationResult.Data.TotalCount;
+                }
+
+                // 待看诊数：本人等待队列（Waiting 状态挂号）
+                var doctorId = SessionManager.CurrentUserId;
+                var queueResult = await _registrationService.GetQueueAsync(doctorId);
+                if (queueResult.Success && queueResult.Data != null)
+                {
+                    PendingCaseCount = queueResult.Data.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载今日统计数据失败");
+            }
         }
 
         #endregion 辅助方法
@@ -225,7 +244,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
         {
             base.OnNavigatedTo(navigationContext);
             // 每次导航到主页时刷新统计数据
-            LoadTodayStatistics();
+            LoadTodayStatisticsAsync().SafeFireAndForget(ex => Logger.LogError(ex, "刷新今日统计数据失败"));
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)
