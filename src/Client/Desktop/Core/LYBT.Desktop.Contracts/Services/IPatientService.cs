@@ -26,6 +26,11 @@ namespace LYBT.Desktop.Contracts.Services
         /// </summary>
         Task<CommandResult<byte[]>> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default);
 
+        /// <summary>
+        /// 批量删除患者（软删除）
+        /// </summary>
+        Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
         #endregion
     }
 }

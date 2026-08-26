@@ -344,6 +344,55 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         await _statusHandler.RestoreAsync(item);
     }
 
+    /// <summary>批量删除（单次 batch-delete 调用，替代逐条删除）</summary>
+    protected override async Task DeleteBatchAsync(List<UserListDto> items)
+    {
+        // 与单删一致：不允许删除当前登录用户
+        var currentUser = SessionManager?.CurrentUser;
+        var deletable = items.Where(u => currentUser == null || u.Id != currentUser.Id).ToList();
+        if (deletable.Count < items.Count)
+        {
+            await MasterDetailServices.Dialog.ShowWarningAsync("已跳过当前登录用户", "操作提示");
+        }
+
+        if (deletable.Count == 0) return;
+
+        var result = await _commandHandler.BatchDeleteAsync(deletable.Select(u => u.Id).ToList());
+        if (result.Success && result.Data != null)
+        {
+            Logger.LogInformation("用户批量删除完成: 成功 {Success}, 失败 {Failure}",
+                result.Data.SuccessCount, result.Data.FailureCount);
+            _cacheManager.InvalidateUserCaches();
+        }
+        else
+        {
+            MasterDetailServices.ErrorHandler.SetError("BatchDelete", result.Error ?? "批量删除用户失败");
+        }
+    }
+
+    /// <summary>批量启用（单次 batch-enable 调用）</summary>
+    protected override async Task EnableBatchAsync(List<UserListDto> items)
+        => await BatchSetStatusAsync(items, CommonStatus.Enabled, "批量启用");
+
+    /// <summary>批量禁用（单次 batch-disable 调用）</summary>
+    protected override async Task DisableBatchAsync(List<UserListDto> items)
+        => await BatchSetStatusAsync(items, CommonStatus.Disabled, "批量禁用");
+
+    private async Task BatchSetStatusAsync(List<UserListDto> items, CommonStatus status, string operationName)
+    {
+        var result = await _commandHandler.BatchSetStatusAsync(items.Select(u => u.Id).ToList(), status);
+        if (result.Success && result.Data != null)
+        {
+            Logger.LogInformation("{Operation}完成: 成功 {Success}, 失败 {Failure}",
+                operationName, result.Data.SuccessCount, result.Data.FailureCount);
+            _cacheManager.InvalidateUserCaches();
+        }
+        else
+        {
+            MasterDetailServices.ErrorHandler.SetError(operationName, result.Error ?? $"{operationName}用户失败");
+        }
+    }
+
     #endregion
 
     #region Disposal

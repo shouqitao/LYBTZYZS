@@ -30,6 +30,11 @@ namespace LYBT.Desktop.Contracts.Services
 
         #endregion
 
+        /// <summary>
+        /// 批量删除用户（软删除）
+        /// </summary>
+        Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
         #region 个人资料管理
 
         /// <summary>

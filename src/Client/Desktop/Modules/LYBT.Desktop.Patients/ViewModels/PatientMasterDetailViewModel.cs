@@ -238,6 +238,22 @@ namespace LYBT.Desktop.Patients.ViewModels
             await _statusHandler.RestoreAsync(item);
         }
 
+        /// <summary>批量删除（单次 batch-delete 调用，替代逐条删除）</summary>
+        protected override async Task DeleteBatchAsync(List<PatientListDto> items)
+        {
+            var result = await _patientService.BatchDeleteAsync(items.Select(p => p.Id).ToList());
+            if (result.Success && result.Data != null)
+            {
+                Logger.LogInformation("患者批量删除完成: 成功 {Success}, 失败 {Failure}",
+                    result.Data.SuccessCount, result.Data.FailureCount);
+                _cacheManager.InvalidatePatientCaches();
+            }
+            else
+            {
+                MasterDetailServices.ErrorHandler.SetError("BatchDelete", result.Error ?? "批量删除患者失败");
+            }
+        }
+
         /// <summary>查看医案</summary>
         [RelayCommand(CanExecute = nameof(CanViewMedicalRecords))]
         private void ViewMedicalRecords()

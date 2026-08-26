@@ -228,5 +228,18 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
             ids.Count);
     }
 
+    /// <summary>批量启用/禁用用户（远程与本地端点均支持）。</summary>
+    public async Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+    {
+        return await ExecuteBatchDeleteAsync(
+            () => status == CommonStatus.Enabled
+                ? _identity.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids })
+                : _identity.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }),
+            "BatchSetStatus",
+            status == CommonStatus.Enabled ? "批量启用失败" : "批量禁用失败",
+            ids.Count);
+    }
+
+
     #endregion
 }

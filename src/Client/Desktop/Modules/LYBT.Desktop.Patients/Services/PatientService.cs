@@ -96,6 +96,20 @@ namespace LYBT.Desktop.Patients.Services
             });
         }
 
+        /// <summary>
+        /// 批量删除患者（软删除）
+        /// </summary>
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<BatchOperationResultDto>("Patient.BatchDelete", async () =>
+            {
+                var result = await _patientRepository.BatchDeleteAsync(ids, ct);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed("批量删除患者失败");
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            });
+        }
+
         #endregion
     }
 }

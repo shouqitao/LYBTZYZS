@@ -5,6 +5,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
@@ -95,6 +96,39 @@ namespace LYBT.Desktop.Users.Services
             {
                 var doctors = await _userRepository.GetDoctorsAsync();
                 return CommandResult<List<UserListDto>>.Succeeded(doctors);
+            });
+        }
+
+        /// <summary>
+        /// 批量删除用户（软删除）
+        /// </summary>
+        public async Task<CommandResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<BatchOperationResultDto>("User.BatchDelete", async () =>
+            {
+                var result = await _userRepository.BatchDeleteAsync(ids, ct);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed("批量删除用户失败");
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
+            });
+        }
+
+        #endregion
+
+        #region 批量状态操作
+
+        /// <summary>
+        /// 批量启用/禁用用户
+        /// </summary>
+        public override async Task<CommandResult<BatchOperationResultDto>> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<BatchOperationResultDto>("User.BatchSetStatus", async () =>
+            {
+                var result = await _userRepository.BatchSetStatusAsync(ids, status, ct);
+                if (result == null)
+                    return CommandResult<BatchOperationResultDto>.Failed(
+                        status == CommonStatus.Enabled ? "批量启用用户失败" : "批量禁用用户失败");
+                return CommandResult<BatchOperationResultDto>.Succeeded(result);
             });
         }
 

@@ -2,6 +2,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Contracts.Repositories;
 
@@ -80,4 +81,9 @@ public interface IUserRepository
     /// 批量删除用户
     /// </summary>
     Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>
+    /// 批量启用/禁用用户
+    /// </summary>
+    Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default);
 }
