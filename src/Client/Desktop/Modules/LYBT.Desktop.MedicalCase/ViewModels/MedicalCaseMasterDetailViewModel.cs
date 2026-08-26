@@ -186,6 +186,15 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         return result.Success;
     }
 
+
+    /// <summary>医案无启用/禁用语义（状态机为 Active→Suspended→Completed），给出显式反馈</summary>
+    protected override async Task EnableBatchAsync(List<MedicalCaseListDto> items)
+        => await MasterDetailServices.Dialog.ShowWarningAsync("医案不支持启用/禁用操作，请使用「挂起」或「完成」管理看诊状态", "操作不支持");
+
+    /// <summary>医案无启用/禁用语义（状态机为 Active→Suspended→Completed），给出显式反馈</summary>
+    protected override async Task DisableBatchAsync(List<MedicalCaseListDto> items)
+        => await MasterDetailServices.Dialog.ShowWarningAsync("医案不支持启用/禁用操作，请使用「挂起」或「完成」管理看诊状态", "操作不支持");
+
     #endregion
 
     #region 辅助方法
