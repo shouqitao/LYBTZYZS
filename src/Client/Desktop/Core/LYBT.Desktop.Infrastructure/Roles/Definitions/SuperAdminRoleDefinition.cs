@@ -15,7 +15,11 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         private static readonly string[] Modules = new[]
         {
             "UsersModule",
-            "SysadminModule"
+            "SysadminModule",
+            // DI 修复：SysadminHomeViewModel → CardReaderDiagnosticsViewModel → ICardReaderDiagnostics
+            // 注册于 OnDemand 的 CardReaderModule；不含此模块则超管登录后解析 SysadminHomeView 失败
+            // （An unexpected error occurred while resolving 'System.Object' ... 'SysadminHomeView'）
+            "CardReaderModule"
         };
 
         public override UserRole Role => UserRole.SuperAdmin;
