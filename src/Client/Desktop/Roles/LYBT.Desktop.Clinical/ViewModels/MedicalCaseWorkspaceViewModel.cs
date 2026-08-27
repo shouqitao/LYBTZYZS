@@ -196,6 +196,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private string _editReason = string.Empty;
     public string EditReason { get => _editReason; set => SetProperty(ref _editReason, value); }
 
+    private string _remark = string.Empty;
+    public string Remark { get => _remark; set => SetProperty(ref _remark, value); }
+
     private bool _isPrescriptionEnabled;
     public bool IsPrescriptionEnabled
     {
@@ -550,7 +553,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     IEnumerable<HerbListDto>? IMedicalCaseDataProvider.GetAllHerbs()
         => AllHerbs;
 
-    string IMedicalCaseDataProvider.GetRemark() => string.Empty;
+    string IMedicalCaseDataProvider.GetRemark() => Remark;
 
     string IMedicalCaseDataProvider.GetEditReason() => EditReason;
 
