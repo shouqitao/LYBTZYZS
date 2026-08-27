@@ -232,16 +232,24 @@
                             </Grid>
                         </Border>
 
-                        <!-- 选项行：记住密码 / 自动登录 两端对齐 -->
+                        <!-- 选项行：记住密码 / 自动登录 / 忘记密码（设计稿对齐） -->
                         <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <CheckBox Grid.Column="0" Content="记住密码" Style="{StaticResource PenCheckBox}"
                                       IsChecked="{Binding RememberPassword}" HorizontalAlignment="Left" />
                             <CheckBox Grid.Column="1" Content="自动登录" Style="{StaticResource PenCheckBox}"
-                                      IsChecked="{Binding IsAutoLogin}" HorizontalAlignment="Right" />
+                                      IsChecked="{Binding IsAutoLogin}" HorizontalAlignment="Center" />
+                            <Button Grid.Column="2" Command="{Binding ForgotPasswordCommand}" Cursor="Hand"
+                                    Background="Transparent" BorderThickness="0" Padding="0"
+                                    HorizontalAlignment="Right" ToolTip="忘记密码">
+                                <TextBlock Text="忘记密码?" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13"
+                                           Foreground="{StaticResource PenPrimaryBrush}" TextDecorations="Underline"
+                                           VerticalAlignment="Center" />
+                            </Button>
                         </Grid>
 
                         <!-- 登录按钮：48 高 24 圆角 渐变 + 阴影 -->

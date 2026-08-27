@@ -26,17 +26,36 @@
             <!-- 右列 -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="28"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
 
+                <!-- 面包屑：首页 › 当前页（设计稿对齐，13px 灰 左对齐） -->
+                <Border Grid.Row="0" Background="#FBF7F3" BorderBrush="#E7DFD7" BorderThickness="0,0,0,1" Padding="16,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="首页" FontFamily="Noto Sans SC" FontSize="13"
+                                   Foreground="#8D6E63" VerticalAlignment="Center"/>
+                        <TextBlock Text=" › " FontFamily="Noto Sans SC" FontSize="13"
+                                   Foreground="#8D6E63" VerticalAlignment="Center" Margin="4,0"/>
+                        <TextBlock FontFamily="Noto Sans SC" FontSize="13" FontWeight="Medium"
+                                   Foreground="#3E2723" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <Binding Path="SelectedNavItem.Title" FallbackValue="主页">
+                                    <Binding.TargetNullValue>主页</Binding.TargetNullValue>
+                                </Binding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
                 <!-- ContentRegion 唯一 -->
-                <Border Grid.Row="0" Margin="4" Background="Transparent" CornerRadius="4">
+                <Border Grid.Row="1" Margin="4" Background="Transparent" CornerRadius="4">
                     <ContentControl prism:RegionManager.RegionName="ContentRegion"/>
                 </Border>
 
                 <!-- Footer -->
-                <shell:FooterControl Grid.Row="1"/>
+                <shell:FooterControl Grid.Row="2"/>
             </Grid>
         </Grid>
     </Grid>

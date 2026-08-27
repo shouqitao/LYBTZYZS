@@ -150,6 +150,9 @@ namespace LYBT.Desktop.Auth.ViewModels
         public ICommand SwitchToLocalCommand { get; }
         public ICommand SwitchToRemoteCommand { get; }
 
+        /// <summary>忘记密码链接（设计稿对齐；找回流程待业务确认，空实现占位）</summary>
+        public ICommand ForgotPasswordCommand { get; }
+
         #endregion
 
         /// <summary>
@@ -188,6 +191,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings);
             SwitchToLocalCommand = ConnectionStatus.SwitchToLocalCommand;
             SwitchToRemoteCommand = ConnectionStatus.SwitchToRemoteCommand;
+            ForgotPasswordCommand = new RelayCommand(() => { /* 设计稿对齐：忘记密码流程待业务确认 */ });
 
             // 订阅子 VM 属性变更以转发到本 VM
             Credentials.PropertyChanged += OnCredentialsPropertyChanged;

@@ -68,27 +68,27 @@ public partial class NavigationManager : ObservableObject, INavigationManager
             ViewName = definition.HomeViewName,
             IconKind = "Home",
             Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(definition.HomeViewName)),
-            Group = "导航"
+            Group = "临床"
         });
 
-        // C+ 角色矩阵 2 业务入口
+        // C+ 角色矩阵 2 业务入口（分组对齐设计稿：临床/目录/管理）
         switch (role)
         {
             case UserRole.Doctor:
-                items.Add(new NavigationItem { Title = "患者选择", ViewName = ViewNames.PatientSelection, IconKind = "AccountSearch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection)), Group = "导航" });
-                items.Add(new NavigationItem { Title = "医案工作台", ViewName = ViewNames.MedicalCaseWorkspace, IconKind = "NoteEdit", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "患者选择", ViewName = ViewNames.PatientSelection, IconKind = "AccountSearch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection)), Group = "临床" });
+                items.Add(new NavigationItem { Title = "医案工作台", ViewName = ViewNames.MedicalCaseWorkspace, IconKind = "NoteEdit", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace)), Group = "临床" });
                 break;
             case UserRole.Receptionist:
-                items.Add(new NavigationItem { Title = "新建挂号", ViewName = ViewNames.RegistrationList, IconKind = "PlusCircle", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList)), Group = "导航" });
-                items.Add(new NavigationItem { Title = "患者管理", ViewName = ViewNames.PatientManagement, IconKind = "AccountGroup", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "新建挂号", ViewName = ViewNames.RegistrationList, IconKind = "PlusCircle", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList)), Group = "临床" });
+                items.Add(new NavigationItem { Title = "患者管理", ViewName = ViewNames.PatientManagement, IconKind = "AccountGroup", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement)), Group = "临床" });
                 break;
             case UserRole.Admin:
-                items.Add(new NavigationItem { Title = "用户管理", ViewName = ViewNames.UserManagement, IconKind = "AccountCog", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.UserManagement)), Group = "导航" });
-                items.Add(new NavigationItem { Title = "药材/验方", ViewName = ViewNames.HerbManagement, IconKind = "Leaf", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.HerbManagement)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "用户管理", ViewName = ViewNames.UserManagement, IconKind = "AccountCog", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.UserManagement)), Group = "管理" });
+                items.Add(new NavigationItem { Title = "药材/验方", ViewName = ViewNames.HerbManagement, IconKind = "Leaf", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.HerbManagement)), Group = "目录" });
                 break;
             case UserRole.SuperAdmin:
-                items.Add(new NavigationItem { Title = "备份管理", ViewName = ViewNames.BackupManagement, IconKind = "BackupRestore", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.BackupManagement)), Group = "导航" });
-                items.Add(new NavigationItem { Title = "部署管理", ViewName = ViewNames.Deployment, IconKind = "RocketLaunch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.Deployment)), Group = "导航" });
+                items.Add(new NavigationItem { Title = "备份管理", ViewName = ViewNames.BackupManagement, IconKind = "BackupRestore", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.BackupManagement)), Group = "管理" });
+                items.Add(new NavigationItem { Title = "部署管理", ViewName = ViewNames.Deployment, IconKind = "RocketLaunch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.Deployment)), Group = "管理" });
                 break;
         }
 

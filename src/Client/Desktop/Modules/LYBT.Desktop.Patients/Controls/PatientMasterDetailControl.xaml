@@ -196,6 +196,16 @@
                             Binding="{Binding PhoneNumber}"
                             Header="手机号"
                             ElementStyle="{StaticResource DataGridMonoCellStyle}" />
+
+                        <!--  状态（设计稿对齐：StatusBadge 中文映射 启用/禁用；复诊中/新患者/已治愈 为
+                              3 态就诊标签，数据模型仅 CommonStatus 2 态，暂以启用/禁用呈现）  -->
+                        <DataGridTemplateColumn Width="Auto" Header="状态">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:StatusBadge Status="{Binding Status}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
 
                     <!--  右键菜单 - 分组优化：查看/编辑 | 医案 | 危险操作  -->

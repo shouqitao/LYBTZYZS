@@ -18,8 +18,8 @@
                 </ToggleButton.Style>
             </ToggleButton>
 
-            <!-- 导航分组标题 11/600 #C9B8A6 仅展开 -->
-            <TextBlock DockPanel.Dock="Top" Text="导航" FontFamily="Noto Sans SC" FontSize="11" FontWeight="SemiBold"
+            <!-- 导航分组标题 11/600 #C9B8A6 仅展开（设计稿：临床/目录/管理） -->
+            <TextBlock DockPanel.Dock="Top" Text="功能导航" FontFamily="Noto Sans SC" FontSize="11" FontWeight="SemiBold"
                        Foreground="#C9B8A6" Opacity="0.9" Margin="12,8,0,4"
                        Visibility="{Binding IsNavTextVisible, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 
@@ -45,9 +45,27 @@
             <!-- 弹性空间（占满） -->
             <Border DockPanel.Dock="Bottom" />
 
-            <!-- 导航列表 -->
-            <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
+            <!-- 导航列表（按 Group 分组：临床/目录/管理，设计稿对齐） -->
+            <ListBox SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
                      Background="Transparent" BorderThickness="0" Margin="0,4">
+                <ListBox.ItemsSource>
+                    <CollectionViewSource Source="{Binding NavigationItems}">
+                        <CollectionViewSource.GroupDescriptions>
+                            <PropertyGroupDescription PropertyName="Group"/>
+                        </CollectionViewSource.GroupDescriptions>
+                    </CollectionViewSource>
+                </ListBox.ItemsSource>
+                <ListBox.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" FontFamily="Noto Sans SC" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#C9B8A6" Opacity="0.9" Margin="12,8,0,4"
+                                           Visibility="{Binding DataContext.IsNavTextVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
