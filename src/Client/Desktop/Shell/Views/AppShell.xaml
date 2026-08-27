@@ -16,12 +16,12 @@
         <!-- 下部 -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding SidebarWidth}"/>
+                <ColumnDefinition Width="{Binding DataContext.SidebarWidth, ElementName=SideNav}"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- SideNav 贯通到底 -->
-            <shell:SideNavControl Grid.Column="0"/>
+            <shell:SideNavControl x:Name="SideNav" Grid.Column="0"/>
 
             <!-- 右列 -->
             <Grid Grid.Column="1">

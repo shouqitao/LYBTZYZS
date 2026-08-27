@@ -38,7 +38,7 @@
                  Height="32"
                  Padding="8,6"
                  VerticalContentAlignment="Center"
-                 Style="{DynamicResource TextBoxExtend}">
+                 Style="{DynamicResource MaterialDesignOutlinedTextBox}">
             <TextBox.ToolTip>
                 <ToolTip Content="{Binding Placeholder}"
                          Visibility="{Binding Placeholder, Converter={StaticResource StringToVisibilityConverter}}"/>
@@ -54,7 +54,7 @@
                     Width="80" Height="32"
                     Margin="0,0,10,0"
                     FontSize="14"
-                    Style="{DynamicResource ButtonPrimary}"/>
+                    Style="{DynamicResource MaterialDesignRaisedButton}"/>
             <Button Content="{Binding CancelButtonText}"
                     Command="{Binding CancelCommand}"
                     Width="80" Height="32"

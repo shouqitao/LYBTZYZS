@@ -10,11 +10,13 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base;
 /// InitializeFromDto/GetXData 为各模块字段映射，保留在子类（只提取高同构部分）。
 /// User 结构差异（[ObservableProperty] + 缓存联动）保留现状注明例外。
 /// </summary>
-public abstract partial class EditorViewModelBase<TContext> : ObservableObject
+public abstract partial class EditorViewModelBase<TContext> : ObservableObject, IDisposable
     where TContext : ValidatableModelBase
 {
     /// <summary>编辑上下文（子类以业务名公开，如 Patient/Herb/Formula）</summary>
     protected abstract TContext Context { get; set; }
+    /// <summary>释放上下文订阅（P1-8：订阅需对称退订）。</summary>
+    public void Dispose() => UnsubscribeContext();
 
     /// <summary>是否已修改（脏数据标记）</summary>
     public bool IsDirty { get; protected set; }

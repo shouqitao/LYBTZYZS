@@ -40,28 +40,6 @@
             </Setter>
         </Style>
 
-        <!-- 激活步骤样式 -->
-        <Style x:Key="ActiveStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
-            <Style.Triggers>
-                <EventTrigger RoutedEvent="Loaded">
-                    <BeginStoryboard Storyboard="{StaticResource StepActivateAnimation}"/>
-                </EventTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- 完成步骤样式 -->
-        <Style x:Key="CompletedStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="#2E8B57"/>
-        </Style>
-
-        <!-- 待完成步骤样式 -->
-        <Style x:Key="PendingStepStyle" TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
-            <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
         <!-- 步骤数字样式 -->
         <Style x:Key="StepNumberStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
@@ -82,9 +60,25 @@
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <Grid>
-                    <!-- 步骤容器 -->
-                    <Border Style="{StaticResource StepContainerStyle}"
-                            Width="{Binding ElementName=Root, Path=StepWidth}">
+                    <!-- 步骤容器（P1-13：按 IsCompleted/IsActive 应用完成/激活视觉） -->
+                    <Border Width="{Binding ElementName=Root, Path=StepWidth}">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource StepContainerStyle}">
+                                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                        <Setter Property="Background" Value="#2E8B57"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>

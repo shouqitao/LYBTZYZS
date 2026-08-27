@@ -232,6 +232,19 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         /// </summary>
         protected virtual void OnIsBusyChangedCore(bool value) { }
 
+        /// <summary>
+        /// IsLoading属性变更时调用（源生成器回调）
+        /// </summary>
+        partial void OnIsLoadingChanged(bool value)
+        {
+            OnIsLoadingChangedCore(value);
+        }
+
+        /// <summary>
+        /// 派生类可重写以响应IsLoading变更
+        /// </summary>
+        protected virtual void OnIsLoadingChangedCore(bool value) { }
+
         #endregion
 
         #region 状态管理

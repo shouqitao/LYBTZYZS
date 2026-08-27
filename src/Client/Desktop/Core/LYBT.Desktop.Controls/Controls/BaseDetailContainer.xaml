@@ -227,11 +227,6 @@
 
         <!-- Row 0: Header - 标题栏 -->
         <Grid Grid.Row="0" Margin="40,28,40,0">
-            <!-- Breadcrumb navigation (Phase 2.1) -->
-            <controls:BreadcrumbBar NavigationPath="{Binding NavigationPath, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      NavigateCommand="{Binding GoBackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      Margin="0,0,0,12"
-                                      VerticalAlignment="Center"/>
 
             <Border Background="{DynamicResource MaterialDesignPaper}"
                     CornerRadius="16"

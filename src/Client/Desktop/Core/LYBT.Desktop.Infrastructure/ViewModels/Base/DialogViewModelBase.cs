@@ -25,12 +25,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         [ObservableProperty]
         private string _title = string.Empty;
 
-        /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsNotLoading))]
-        private bool _isLoading;
+        // IsLoading/IsNotLoading 复用基类 NavigableViewModelBase（P1-7：移除遮蔽基类的重复声明）
 
         #endregion
 
@@ -186,21 +181,13 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
 
         #endregion
 
-        #region 属性变更回调
-
         /// <summary>
-        /// IsLoading属性变更时调用（源生成器回调）
+        /// IsLoading变更时通知Confirm命令（基类钩子重写，P1-7 复用基类 IsLoading）
         /// </summary>
-        partial void OnIsLoadingChanged(bool value)
+        protected override void OnIsLoadingChangedCore(bool value)
         {
-            OnIsLoadingChangedCore(value);
             ConfirmCommand.NotifyCanExecuteChanged();
         }
-
-        /// <summary>
-        /// 派生类可重写以响应IsLoading变更
-        /// </summary>
-        protected virtual void OnIsLoadingChangedCore(bool value) { }
 
         /// <summary>
         /// IsBusy变更时通知Confirm命令
@@ -210,7 +197,5 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
             base.OnIsBusyChangedCore(value);
             ConfirmCommand.NotifyCanExecuteChanged();
         }
-
-        #endregion
     }
 }

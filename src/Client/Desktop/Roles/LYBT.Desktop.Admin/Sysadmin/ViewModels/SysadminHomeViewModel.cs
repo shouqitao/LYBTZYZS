@@ -115,6 +115,15 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
         base.OnNavigatedFrom(navigationContext);
         StopPolling();
     }
+    /// <summary>释放：退订 ModeChanged + 取消轮询 CTS（P1-12 事件泄漏修复）。</summary>
+    protected override void OnDisposing()
+    {
+        _connectionMode.ModeChanged -= OnModeChanged;
+        StopPolling();
+        _pollCts?.Dispose();
+        _pollCts = null;
+        base.OnDisposing();
+    }
 
     private void StartPolling()
     {

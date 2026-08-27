@@ -30,8 +30,8 @@ public partial class AuditLogViewModel : NavigableViewModelBase
     public AuditLogViewModel(IViewModelServices services, IAuditLogService auditLogService, INavigationCoordinator navigationCoordinator)
         : base(services)
     {
-        _auditLogService = auditLogService;
-        _navigationCoordinator = navigationCoordinator;
+        _auditLogService = auditLogService ?? throw new ArgumentNullException(nameof(auditLogService));
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         PageTitle = "审计日志";
     }
 

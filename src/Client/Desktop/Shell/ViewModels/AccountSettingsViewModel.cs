@@ -71,9 +71,9 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
         INavigationCoordinator navigationCoordinator)
         : base(services)
     {
-        _authService = authService;
-        _userService = userService;
-        _navigationCoordinator = navigationCoordinator;
+        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
     }
 
     #region 保存个人资料

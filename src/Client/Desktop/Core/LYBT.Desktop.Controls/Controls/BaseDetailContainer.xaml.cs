@@ -102,6 +102,9 @@ namespace LYBT.Desktop.Controls.Controls
 
         #region Commands - 命令
 
+        /// <summary>已包装的返回命令实例——用于拦截 DP 回调重入（SetValue 触发 OnGoBackCommandChanged 再包装 → 无限递归）。</summary>
+        private ICommand? _goBackWrapped;
+
         public ICommand GoBackCommand
         {
             get => (ICommand)GetValue(GoBackCommandProperty);
@@ -114,9 +117,13 @@ namespace LYBT.Desktop.Controls.Controls
 
         private static void OnGoBackCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is BaseDetailContainer container && e.NewValue is ICommand command)
+            if (d is not BaseDetailContainer container) return;
+
+            // 重入保护：回调内 SetValue 写入的即包装命令本身（ReferenceEquals 命中）→ 不再二次包装
+            if (ReferenceEquals(e.NewValue, container._goBackWrapped)) return;
+
+            if (e.NewValue is ICommand command)
             {
-                // Wrap the command with dirty check logic
                 container.UpdateGoBackCommandWithDirtyCheck(command);
             }
         }
@@ -125,6 +132,7 @@ namespace LYBT.Desktop.Controls.Controls
         {
             if (originalCommand == null)
             {
+                _goBackWrapped = null;
                 SetValue(GoBackCommandProperty, null);
                 return;
             }
@@ -153,6 +161,8 @@ namespace LYBT.Desktop.Controls.Controls
                 }
             });
 
+            // 先登记哨兵再写 DP：写 DP 会重入 OnGoBackCommandChanged，由 ReferenceEquals 哨兵拦截
+            _goBackWrapped = wrappedCommand;
             SetValue(GoBackCommandProperty, wrappedCommand);
         }
 

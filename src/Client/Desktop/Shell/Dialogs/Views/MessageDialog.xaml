@@ -83,7 +83,7 @@
                     Command="{Binding ConfirmCommand}"
                     Width="80" Height="32"
                     FontSize="14"
-                    Style="{DynamicResource ButtonPrimary}"/>
+                    Style="{DynamicResource MaterialDesignRaisedButton}"/>
         </StackPanel>
     </Grid>
 </UserControl>

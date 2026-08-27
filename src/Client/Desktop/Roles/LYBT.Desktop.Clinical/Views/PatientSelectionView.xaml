@@ -165,9 +165,9 @@
                     <ColumnDefinition Width="Auto"/> <!-- 操作按钮 -->
                 </Grid.ColumnDefinitions>
 
-                <!-- 状态信息 -->
+                <!-- 状态信息（P1-11：VM 写入 PageStatusMessage） -->
                 <TextBlock Grid.Column="0"
-                           Text="{Binding StatusMessage}"
+                           Text="{Binding PageStatusMessage}"
                            VerticalAlignment="Center"
                            FontSize="13"
                            Margin="0,0,20,0">

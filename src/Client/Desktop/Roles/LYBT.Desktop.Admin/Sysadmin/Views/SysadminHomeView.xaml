@@ -5,6 +5,7 @@
              xmlns:sysadmin="clr-namespace:LYBT.Desktop.Admin.Sysadmin.ViewModels"
              xmlns:views="clr-namespace:LYBT.Desktop.Admin.Sysadmin.Views"
              xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
+             xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True"
              xmlns:prism="http://prismlibrary.com/">
 
@@ -159,12 +160,13 @@
                                       VerticalAlignment="Center" Margin="0,0,12,8" />
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="新用户默认密码（留空不改）" FontSize="12" Opacity="0.7" />
-                                <PasswordBox x:Name="NewUserPasswordBox" Padding="8,6" />
+                                <PasswordBox x:Name="NewUserPasswordBox" Padding="8,6"
+                                             behaviors:PasswordBoxHelper.BoundPassword="{Binding ConfigCenter.NewUserPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
                         </Grid>
                         <Button Content="保存安全策略"
                                 Command="{Binding ConfigCenter.SaveSecurityCommand}"
-                                CommandParameter="{Binding Password, ElementName=NewUserPasswordBox}"
+                                CommandParameter="{Binding ConfigCenter.NewUserPassword}"
                                 HorizontalAlignment="Right" Padding="16,6" Margin="0,0,0,12" />
 
                         <!-- 组 5：功能开关（热更新） -->

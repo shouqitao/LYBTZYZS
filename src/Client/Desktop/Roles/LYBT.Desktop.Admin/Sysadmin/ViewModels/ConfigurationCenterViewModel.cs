@@ -45,6 +45,8 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
 
     // ── 组 4：安全策略（重启生效） ──
     [ObservableProperty] private bool _forceChangeOnFirstLogin = true;
+    /// <summary>新用户默认密码（PasswordBox 经 BoundPassword 双向绑定，P1-10 修复非 INPC 参数）。</summary>
+    [ObservableProperty] private string _newUserPassword = string.Empty;
 
     // ── 组 5：功能开关（热更新即时生效） ──
     [ObservableProperty] private bool _overwriteConflicts = true;

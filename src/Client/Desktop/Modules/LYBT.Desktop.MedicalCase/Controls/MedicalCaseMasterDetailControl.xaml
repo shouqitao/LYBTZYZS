@@ -188,14 +188,14 @@
                         <local:MedicalCaseEditControl
                             Margin="16"
                             AllHerbs="{Binding AllHerbs}"
-                            Consultation="{Binding Consultation}"
+                            Consultation="{Binding ConsultationEditor.Consultation}"
                             ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
                             CreatedAt="{Binding CurrentDetail.CreatedAt}"
                             DoctorName="{Binding CurrentDetail.DoctorName}"
                             ErrorsSource="{Binding CurrentDetail.Errors}"
                             FormulaSource="{Binding CurrentDetail.FormulaSource}"
                             PatientName="{Binding CurrentDetail.PatientName}"
-                            Prescription="{Binding Prescription}"
+                            Prescription="{Binding PrescriptionEditor.Prescription}"
                             Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
                             Status="{Binding CurrentDetail.Status}"
                             UpdatedAt="{Binding CurrentDetail.UpdatedAt}" />

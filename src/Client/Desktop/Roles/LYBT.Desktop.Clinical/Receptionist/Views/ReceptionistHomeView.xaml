@@ -265,15 +265,6 @@
                     </Button>
                 </Border>
                 
-                <!-- 辅助卡片4：刷新数据 -->
-                <Border Margin="12" Style="{StaticResource FunctionCardStyle}">
-                    <Button Command="{Binding RefreshDataCommand}" Style="{StaticResource MaterialDesignFlatButton}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Style="{StaticResource CardIconStyle}" Data="{DynamicResource IconRefresh}" />
-                            <TextBlock Style="{StaticResource CardTitleStyle}" Text="刷新数据" />
-                        </StackPanel>
-                    </Button>
-                </Border>
             </StackPanel>
         </StackPanel>
     </Grid>

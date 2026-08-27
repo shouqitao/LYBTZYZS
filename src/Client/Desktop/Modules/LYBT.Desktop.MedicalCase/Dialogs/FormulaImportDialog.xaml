@@ -169,7 +169,7 @@
 
                                         <!-- 第二行: 适应症摘要 -->
                                         <TextBlock Grid.Row="1"
-                                                   Text="{Binding Indications, TargetNullValue=暂无适应症}"
+                                                   Text="{Binding Indication, TargetNullValue=暂无适应症}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
                                                    TextTrimming="CharacterEllipsis"
