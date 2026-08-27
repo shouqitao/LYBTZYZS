@@ -6,8 +6,9 @@
     <DisableParallelization>false</DisableParallelization>
     <DisableAppDomain>false</DisableAppDomain>
 
-    <!-- Test session timeout (5 minutes) -->
-    <TestSessionTimeout>300000</TestSessionTimeout>
+    <!-- Test session timeout (20 minutes): E2E 套件每测试类独立 LocalDB 建/删库，
+         实测每类约 30s（LocalDB 实例串行化），17 类 ≈ 9 分钟；5 分钟上限不足 -->
+    <TestSessionTimeout>1200000</TestSessionTimeout>
 
     <!-- Collectors -->
     <CollectSourceInformation>true</CollectSourceInformation>
