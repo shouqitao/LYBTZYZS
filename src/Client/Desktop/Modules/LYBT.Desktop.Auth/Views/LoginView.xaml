@@ -297,10 +297,12 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="连接模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
                                Foreground="{StaticResource PenTextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0" />
+
+                    <!-- 连接模式分段切换（设计稿单一 Toggle：点击分段即切换，消除重复的「切换到X」按钮） -->
                     <Border Background="{StaticResource PenSegmentBgBrush}" CornerRadius="20" Padding="4">
                         <StackPanel Orientation="Horizontal">
-                            <!-- 远程模式段：选中时深棕底白字 -->
-                            <Border x:Name="RemoteSegment" CornerRadius="16" Padding="16,6">
+                            <!-- 远程模式段：点击切换远程 -->
+                            <Border CornerRadius="16">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent" />
@@ -311,35 +313,38 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Cloud">
-                                        <materialDesign:PackIcon.Style>
-                                            <Style TargetType="materialDesign:PackIcon">
-                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                                        <Setter Property="Foreground" Value="White" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </materialDesign:PackIcon.Style>
-                                    </materialDesign:PackIcon>
-                                    <TextBlock Text="远程模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                                        <Setter Property="Foreground" Value="White" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
+                                <Button Command="{Binding SwitchToRemoteCommand}" Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Padding="16,6">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Cloud">
+                                            <materialDesign:PackIcon.Style>
+                                                <Style TargetType="materialDesign:PackIcon">
+                                                    <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </materialDesign:PackIcon.Style>
+                                        </materialDesign:PackIcon>
+                                        <TextBlock Text="远程模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
                             </Border>
-                            <!-- 本地模式段 -->
-                            <Border x:Name="LocalSegment" CornerRadius="16" Padding="16,6">
+                            <!-- 本地模式段：点击切换本地 -->
+                            <Border CornerRadius="16">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent" />
@@ -350,65 +355,39 @@
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Database">
-                                        <materialDesign:PackIcon.Style>
-                                            <Style TargetType="materialDesign:PackIcon">
-                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
-                                                        <Setter Property="Foreground" Value="White" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </materialDesign:PackIcon.Style>
-                                    </materialDesign:PackIcon>
-                                    <TextBlock Text="本地模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
-                                                        <Setter Property="Foreground" Value="White" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
+                                <Button Command="{Binding SwitchToLocalCommand}" Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Padding="16,6">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Width="14" Height="14" VerticalAlignment="Center" Kind="Database">
+                                            <materialDesign:PackIcon.Style>
+                                                <Style TargetType="materialDesign:PackIcon">
+                                                    <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </materialDesign:PackIcon.Style>
+                                        </materialDesign:PackIcon>
+                                        <TextBlock Text="本地模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
+                                                            <Setter Property="Foreground" Value="White" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
                             </Border>
                         </StackPanel>
                     </Border>
-                    <!-- 切换按钮（保留原命令，覆盖在分段上透明点击） -->
-                    <Button Command="{Binding SwitchToLocalCommand}" Content="切换到本地" Margin="8,0,0,0" VerticalAlignment="Center"
-                            Foreground="{StaticResource PenPrimaryBrush}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Command="{Binding SwitchToRemoteCommand}" Content="切换到远程" Margin="8,0,0,0" VerticalAlignment="Center">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsRemoteMode}" Value="False">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsRemoteAvailable}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+
                     <TextBlock Text="{Binding CurrentModeDisplay}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"
                                Foreground="{StaticResource PenTextSecondaryBrush}" Opacity="0.9" />
                 </StackPanel>
