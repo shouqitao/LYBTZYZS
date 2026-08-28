@@ -27,7 +27,7 @@
                     <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
                     <Setter Property="Effect">
                         <Setter.Value>
-                            <DropShadowEffect BlurRadius="16" Opacity="0.2" ShadowDepth="4" Color="{DynamicResource MaterialDesign.Brush.Primary.Dark}" />
+                            <DropShadowEffect BlurRadius="16" Opacity="0.2" ShadowDepth="4" Color="{DynamicResource MaterialDesignColor.PrimaryDark}" />
                         </Setter.Value>
                     </Setter>
                 </Trigger>

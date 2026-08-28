@@ -125,8 +125,9 @@ public class NavigationCoordinator : INavigationCoordinator
                 }
                 else
                 {
-                    var errorMessage = result.Error?.Message ?? "未知错误";
-                    _logger.LogError("导航失败：{ViewName}，错误：{Error}", viewName, errorMessage);
+                    var ex = result.Error;
+                    _logger.LogError(ex, "导航失败：{ViewName}，异常完整信息：{ExFull}", viewName, ex?.ToString() ?? "未知错误");
+                    var errorMessage = ex?.Message ?? "未知错误";
                     _services.UserNotificationService?.ShowErrorAsync($"无法打开页面：{errorMessage}");
                 }
             }, navParams);
