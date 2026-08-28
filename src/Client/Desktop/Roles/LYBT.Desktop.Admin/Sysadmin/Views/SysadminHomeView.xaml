@@ -57,7 +57,7 @@
                                            Text="修改配置后自动保存至本机 JSON 文件；功能开关与诊所信息即时生效，其余重启后生效。"
                                            Opacity="0.6" Margin="0,0,0,16" />
 
-                        <!-- 组 1：诊所信息 -->'''
+                        <!-- 组 1：诊所信息 -->
                         <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="诊所信息" Margin="0,8,0,8" />
                         <!-- 视觉基线 v1 -->
     <Grid Background="#FBF7F3">
