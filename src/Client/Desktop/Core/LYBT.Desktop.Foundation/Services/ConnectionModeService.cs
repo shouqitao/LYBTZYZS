@@ -129,8 +129,8 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         switch (mode)
         {
             case ConnectionMode.Local:
-                _ = _connectionSettings.SavePreferredModeAsync("Local");
-                ApplyMode(ConnectionMode.Local);
+                    await _connectionSettings.SavePreferredModeAsync("Local").ConfigureAwait(false);
+                    ApplyMode(ConnectionMode.Local);
                 return ModeSwitchResult.Success();
 
             case ConnectionMode.Remote:
@@ -159,7 +159,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
                     return ModeSwitchResult.PendingCasesBlocked(pendingCount);
                 }
 
-                _ = _connectionSettings.SavePreferredModeAsync("Remote");
+                await _connectionSettings.SavePreferredModeAsync("Remote").ConfigureAwait(false);
                 ApplyMode(ConnectionMode.Remote);
                 return ModeSwitchResult.Success();
 

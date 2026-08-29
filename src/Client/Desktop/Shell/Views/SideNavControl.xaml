@@ -47,14 +47,8 @@
 
             <!-- 导航列表（按 Group 分组：临床/目录/管理，设计稿对齐） -->
             <ListBox SelectedItem="{Binding SelectedNavItem, Mode=TwoWay}"
+                     ItemsSource="{Binding GroupedNavigationItems}"
                      Background="Transparent" BorderThickness="0" Margin="0,4">
-                <ListBox.ItemsSource>
-                    <CollectionViewSource Source="{Binding NavigationItems}">
-                        <CollectionViewSource.GroupDescriptions>
-                            <PropertyGroupDescription PropertyName="Group"/>
-                        </CollectionViewSource.GroupDescriptions>
-                    </CollectionViewSource>
-                </ListBox.ItemsSource>
                 <ListBox.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>

@@ -294,11 +294,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- 左：连接模式 + 分段切换 -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="连接模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
-                               Foreground="{StaticResource PenTextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0" />
-
-                    <!-- 连接模式分段切换（设计稿单一 Toggle：点击分段即切换，消除重复的「切换到X」按钮） -->
+                <!-- 连接模式分段切换（设计稿单一 Toggle：点击分段即切换，消除重复的「切换到X」按钮） -->
                     <Border Background="{StaticResource PenSegmentBgBrush}" CornerRadius="20" Padding="4">
                         <StackPanel Orientation="Horizontal">
                             <!-- 远程模式段：点击切换远程 -->
@@ -387,10 +383,6 @@
                             </Border>
                         </StackPanel>
                     </Border>
-
-                    <TextBlock Text="{Binding CurrentModeDisplay}" FontSize="12" VerticalAlignment="Center" Margin="12,0,0,0"
-                               Foreground="{StaticResource PenTextSecondaryBrush}" Opacity="0.9" />
-                </StackPanel>
 
                 <!-- 右：连接状态 + API配置 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

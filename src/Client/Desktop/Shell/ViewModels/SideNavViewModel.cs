@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Shell.Services;
+using System.ComponentModel;
+using System.Windows.Data;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -35,6 +37,21 @@ public partial class SideNavViewModel : ObservableObject, IDisposable
     }
 
     public ObservableCollection<NavigationItem> NavigationItems => _navigationManager.NavigationItems;
+
+    /// <summary>
+    /// 按 Group 分组的导航项视图，供 SideNavControl ListBox 绑定。
+    /// 避免 XAML 中 CollectionViewSource.Source 在 DataContext 为 null 时崩溃。
+    /// </summary>
+    public ICollectionView GroupedNavigationItems
+    {
+        get
+        {
+            var view = CollectionViewSource.GetDefaultView(NavigationItems);
+            if (view.GroupDescriptions.Count == 0)
+                view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(NavigationItem.Group)));
+            return view;
+        }
+    }
     public NavigationItem? SelectedNavItem
     {
         get => _navigationManager.SelectedNavItem;
@@ -72,6 +89,7 @@ public partial class SideNavViewModel : ObservableObject, IDisposable
     private void OnLoginStateChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(NavigationItems));
+        OnPropertyChanged(nameof(GroupedNavigationItems));
         OnPropertyChanged(nameof(SelectedNavItem));
     }
 

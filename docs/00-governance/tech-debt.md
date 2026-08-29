@@ -12,7 +12,8 @@
 | TD-003 | Desktop 162 失败 — `LocalWebApiControllerTestBase` 手工单模块缺 5 业务模块致 500（主因，`td003-architecture-review.md`）+ Local/Server 双轨漂移 — 方案 D `SharedHost` 统一宿主（业务模块 3→1、基类 2→1、Local 230→~120 行）| 测试 | P1 | ✅ 完成 (`SharedHost` + 基类合并) | 2026-08-21 |
 | TD-004 | 部署仅 HTTP 明文（公网需 HTTPS，ADR-0014） | 安全 | P2 | ⬜ 待办 | 运维 |
 | TD-005 | 项目数 29（含 Legacy 兼容）— 待方案 A 收敛后评估合并 | 结构 | P2 | ⬜ 待办 | 后续 |
-| TD-006 | `AesGcmValueConverter.Encrypt` 写容错（异常返回原文）为历史明文迁移期软着陆，下版本收紧为抛异常（与 `Decrypt` 读严格 `CryptographicException→422` 对齐） | 安全 | P3 | ⬜ 待办 | 下版本 |
+|| TD-006 | `AesGcmValueConverter.Encrypt` 写容错（异常返回原文）为历史明文迁移期软着陆，下版本收紧为抛异常（与 `Decrypt` 读严格 `CryptographicException→422` 对齐） | 安全 | P3 | ⬜ 待办 | 下版本 ||
+| TD-007 | `ReceptionistHomeViewModel`（ClinicalModule）依赖 `ICardReaderService`（CardReaderModule）和 `IPatientCardReaderIntegration`（PatientsModule），但 `ReceptionistRoleDefinition` 未直接声明这两个 OnDemand 模块。当前安全（ClinicalModule 的 `[ModuleDependency("CardReaderModule")]` 隐式触发加载），但隐式依赖链易在重构时断裂 | DI | P3 | ⬜ 待办 | 后续 |
 
 ## 依赖升级策略
 
