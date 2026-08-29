@@ -87,7 +87,7 @@ public partial class ServerConfigViewModel : ConnectionTestViewModelBase
             SetBusy(true, "正在保存并启用...");
             await _connectionSettingsService.SetUrlAsync(RemoteUrl);
             await _connectionModeService.CheckRemoteAvailableAsync();
-            _ = _connectionModeService.SetModeAsync(ConnectionMode.Remote);
+            await _connectionModeService.SetModeAsync(ConnectionMode.Remote);
             Logger.LogInformation("[SERVER-CONFIG] 已保存并启用远程模式: {Url}", RemoteUrl);
             CloseDialog(ButtonResult.OK);
         }

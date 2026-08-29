@@ -1,6 +1,5 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
-using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Services.Toast;
@@ -75,10 +74,8 @@ public class LoginStateManager : ILoginStateManager
         IsLoggedIn = true;
         CurrentUser = user;
 
-        bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true
-                       || user.Role == UserRole.Admin;
         var userDisplayName = string.IsNullOrEmpty(user.RealName) ? user.UserName : user.RealName;
-        Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({(isAdmin ? "管理员" : "医生")})";
+        Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({CurrentUserRoleDisplay})";
 
         LoginStateChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -102,7 +99,14 @@ public class LoginStateManager : ILoginStateManager
     public async Task PerformLogoutAsync()
     {
         _userActivityTracker.StopTracking();
-        _tokenLifecycleService.Reset();
+        try
+        {
+            _tokenLifecycleService.Reset();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "重置 Token 生命周期失败，继续登出流程");
+        }
         IsLoggedIn = false;
         CurrentUser = null;
         Title = DefaultTitle;

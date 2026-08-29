@@ -1,3 +1,4 @@
+using System;
 using LYBT.Tests.Desktop.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,8 +20,9 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-public class HerbMasterDetailViewModelTests : DesktopTestBase
+public class HerbMasterDetailViewModelTests : DesktopTestBase, IDisposable
 {
+    public void Dispose() => _herbEditor.Dispose();
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<HerbListDto, HerbDetailModel> _masterDetailServices;
     private readonly IHerbService _herbService;

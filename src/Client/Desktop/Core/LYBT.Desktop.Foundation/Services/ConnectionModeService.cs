@@ -137,33 +137,33 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         try
         {
             switch (mode)
-        {
-            case ConnectionMode.Local:
+            {
+                case ConnectionMode.Local:
                     // 先切 URL，立即生效，不等网络探测
                     await _connectionSettings.SavePreferredModeAsync("Local").ConfigureAwait(false);
                     ApplyMode(ConnectionMode.Local);
-                return ModeSwitchResult.Success();
+                    return ModeSwitchResult.Success();
 
-            case ConnectionMode.Remote:
-                // 守卫 1：URL 配置检查（纯本地，无网络）
-                if (string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
-                {
-                    _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured");
-                    return ModeSwitchResult.Blocked("NO_REMOTE_URL", "未配置远程服务器地址，无法切换到远程模式");
-                }
+                case ConnectionMode.Remote:
+                    // 守卫 1：URL 配置检查（纯本地，无网络）
+                    if (string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
+                    {
+                        _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured");
+                        return ModeSwitchResult.Blocked("NO_REMOTE_URL", "未配置远程服务器地址，无法切换到远程模式");
+                    }
 
-                // 先切 URL，立即生效
-                await _connectionSettings.SavePreferredModeAsync("Remote").ConfigureAwait(false);
-                ApplyMode(ConnectionMode.Remote);
+                    // 先切 URL，立即生效
+                    await _connectionSettings.SavePreferredModeAsync("Remote").ConfigureAwait(false);
+                    ApplyMode(ConnectionMode.Remote);
 
-                // 后台探测远程可达性（不阻塞切换）
-                _ = FireAndForgetRemoteProbeAsync();
+                    // 后台探测远程可达性（不阻塞切换）
+                    _ = FireAndForgetRemoteProbeAsync();
 
-                return ModeSwitchResult.Success();
+                    return ModeSwitchResult.Success();
 
-            default:
-                throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported connection mode");
-        }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported connection mode");
+            }
         }
         finally
         {
@@ -171,7 +171,6 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
         }
     }
 
-    /// <summary>
     /// <summary>
     /// 后台探测远程可达性 + 未完成医案守卫，不阻塞 UI。
     /// </summary>
@@ -200,7 +199,12 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
                 _logger.LogWarning("[CONNECTION-MODE] {Count} pending medical cases detected after switch (ERR-70506)", pendingCount.Data.Count);
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
+        {
+            // 未完成医案守卫 3s 超时取消——预期路径，不视为错误
+            _logger.LogDebug("[CONNECTION-MODE] Background remote probe cancelled (guard timeout)");
+        }
+        catch (Exception ex)
         {
             _logger.LogDebug(ex, "[CONNECTION-MODE] Background remote probe failed");
         }

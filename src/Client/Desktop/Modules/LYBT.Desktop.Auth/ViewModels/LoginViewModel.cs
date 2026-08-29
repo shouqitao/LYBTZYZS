@@ -272,7 +272,6 @@ namespace LYBT.Desktop.Auth.ViewModels
                 IsLoading = true; ErrorMessage = string.Empty; StatusMessage = "正在登录...";
                 LoginCommand.NotifyCanExecuteChanged(); // 立即禁用登录按钮
 
-                var passwordToSave = RememberPassword ? Password : null;
                 var result = await _loginCoordinator.LoginAsync(Username, Password);
 
                 if (result.Success)
@@ -281,7 +280,6 @@ namespace LYBT.Desktop.Auth.ViewModels
                 }
                 else
                 {
-                    IsLoading = false;
                     ErrorMessage = result.Error ?? "登录失败，请检查用户名和密码";
                     Password = string.Empty;
                 }
@@ -289,12 +287,13 @@ namespace LYBT.Desktop.Auth.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "[VM] Login.Execute failed - Username={Username}", Username);
-                IsLoading = false;
                 ErrorMessage = ClientErrorMessageMapper.GetSafeOperationFailureMessage("登录", ex);
                 Password = string.Empty;
             }
             finally
             {
+                // 所有路径统一复位加载状态（成功路径此前遗漏，登录后返回登录页会残留遮罩并禁用按钮）
+                IsLoading = false;
                 StatusMessage = string.Empty;
                 LoginCommand.NotifyCanExecuteChanged(); // IsLoading 恢复后重新评估
             }

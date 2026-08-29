@@ -1,3 +1,4 @@
+using System;
 using LYBT.Tests.Desktop.Infrastructure;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Results;
@@ -22,8 +23,9 @@ namespace LYBT.Tests.Desktop;
 /// 验证患者管理模块的Master-Detail视图模型行为
 /// OpenSpec: frontend-architecture-unification — 移除 IPatientRepository，添加 PatientEditorViewModel
 /// </summary>
-public class PatientMasterDetailViewModelTests : DesktopTestBase
+public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
 {
+    public void Dispose() => _patientEditor.Dispose();
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<
         PatientListDto,

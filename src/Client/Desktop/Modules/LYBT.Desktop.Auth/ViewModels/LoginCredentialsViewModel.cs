@@ -109,7 +109,7 @@ public partial class LoginCredentialsViewModel : NavigableViewModelBase
             }
             if (_credentialVault != null)
             {
-                if (!string.IsNullOrEmpty(rememberPassword ? Password : null))
+                if (rememberPassword && !string.IsNullOrEmpty(Password))
                 {
                     await _credentialVault.SavePasswordAsync(Username, Password);
                 }

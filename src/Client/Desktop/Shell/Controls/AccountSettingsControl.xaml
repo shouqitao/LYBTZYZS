@@ -104,7 +104,7 @@
                                Text="个人资料" Margin="0,0,0,24" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="姓名" Margin="0,0,0,6" />
+                               Text="姓名" Margin="0,0,0,8" />
                     <TextBox
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,16"
@@ -112,7 +112,7 @@
                         Text="{Binding EditRealName, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="手机号" Margin="0,0,0,6" />
+                               Text="手机号" Margin="0,0,0,8" />
                     <TextBox
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,16"
@@ -120,7 +120,7 @@
                         Text="{Binding EditPhoneNumber, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="邮箱" Margin="0,0,0,6" />
+                               Text="邮箱" Margin="0,0,0,8" />
                     <TextBox
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         Margin="0,0,0,24"
@@ -169,7 +169,7 @@
                                Text="安全设置" Margin="0,0,0,24" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="当前密码" Margin="0,0,0,6" />
+                               Text="当前密码" Margin="0,0,0,8" />
                     <PasswordBox
                         x:Name="OldPasswordBox"
                         Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
@@ -177,7 +177,7 @@
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding OldPassword, Mode=TwoWay}" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="新密码 (至少8位)" Margin="0,0,0,6" />
+                               Text="新密码 (至少8位)" Margin="0,0,0,8" />
                     <PasswordBox
                         x:Name="NewPasswordBox"
                         Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
@@ -185,7 +185,7 @@
                         behaviors:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
 
                     <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Text="确认新密码" Margin="0,0,0,6" />
+                               Text="确认新密码" Margin="0,0,0,8" />
                     <PasswordBox
                         x:Name="ConfirmPasswordBox"
                         Style="{StaticResource MaterialDesignOutlinedPasswordBox}"

@@ -54,6 +54,7 @@
         <!-- 20x20 5圆角复选框模板（匹配 pen 记住密码/自动登录） -->
         <Style x:Key="PenCheckBox" TargetType="CheckBox">
             <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextElement.FontFamily" Value="Noto Sans SC, Microsoft YaHei UI" />
             <Setter Property="Foreground" Value="{StaticResource PenTextSecondaryBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Template">
@@ -160,7 +161,7 @@
                     <!-- 底部版权 -->
                     <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,22">
                         <TextBlock Text="© 2026 中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
-                                   Foreground="#8D6E63" HorizontalAlignment="Center" Opacity="0.9" />
+                                   Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Opacity="0.9" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -176,13 +177,13 @@
                             Content="✕" FontSize="14" />
 
                     <StackPanel Width="420" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="欢迎登录" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="24" FontWeight="SemiBold"
-                                   Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,6" />
+                        <TextBlock Text="欢迎登录" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="24" FontWeight="Bold"
+                                   Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
                         <TextBlock Text="请使用您的账号登录中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="14"
                                    Foreground="{StaticResource PenTextSecondaryBrush}" Margin="0,0,0,24" />
 
                         <!-- 用户名 -->
-                        <TextBlock Text="用户名" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                        <TextBlock Text="用户名" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13"
                                    Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
                         <Border Style="{StaticResource PenInputBorder}" Margin="0,0,0,16">
                             <Grid>
@@ -204,13 +205,13 @@
                                 <Button Grid.Column="2" Width="22" Height="22" Background="Transparent" BorderThickness="0" Cursor="Hand"
                                         VerticalAlignment="Center" Margin="8,0,0,0" Focusable="False"
                                         Click="OnClearUsernameClick" ToolTip="清除">
-                                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="#B9AFA7" />
+                                    <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Foreground="{StaticResource PenMutedIconBrush}" />
                                 </Button>
                             </Grid>
                         </Border>
 
                         <!-- 密码 -->
-                        <TextBlock Text="密码" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                        <TextBlock Text="密码" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13"
                                    Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
                         <Border Style="{StaticResource PenInputBorder}" Margin="0,0,0,16">
                             <Grid>
@@ -228,7 +229,7 @@
                                     </PasswordBox.InputBindings>
                                 </PasswordBox>
                                 <materialDesign:PackIcon Grid.Column="2" Kind="EyeOutline" Width="18" Height="18"
-                                                         VerticalAlignment="Center" Foreground="{StaticResource PenMutedIconBrush}" Margin="10,0,0,0" />
+                                                         VerticalAlignment="Center" Foreground="{StaticResource PenMutedIconBrush}" Margin="12,0,0,0" />
                             </Grid>
                         </Border>
 
@@ -274,12 +275,13 @@
                         </Border>
 
                         <!-- 错误消息 -->
-                        <TextBlock Text="{Binding ErrorMessage}" FontSize="12" Foreground="{DynamicResource ValidationErrorBrush}"
-                                   HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,2,0,0"
+                        <TextBlock Text="{Binding ErrorMessage}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                                   Foreground="{DynamicResource ValidationErrorBrush}"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0"
                                    Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
                         <TextBlock Text="中医诊所管理系统 v1.0" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
-                                   Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0.85" />
+                                   Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,12,0,0" Opacity="0.85" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -324,7 +326,7 @@
                                                 </Style>
                                             </materialDesign:PackIcon.Style>
                                         </materialDesign:PackIcon>
-                                        <TextBlock Text="远程模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="远程模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="8,0,0,0" VerticalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
@@ -366,7 +368,7 @@
                                                 </Style>
                                             </materialDesign:PackIcon.Style>
                                         </materialDesign:PackIcon>
-                                        <TextBlock Text="本地模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="6,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="本地模式" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" Margin="8,0,0,0" VerticalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="{StaticResource PenPrimaryBrush}" />
@@ -386,17 +388,45 @@
 
                 <!-- 右：连接状态 + API配置 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="9" Height="9" VerticalAlignment="Center" Fill="{StaticResource PenSuccessBrush}" />
-                    <TextBlock Text="API 已连接" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
-                               Foreground="{StaticResource PenSuccessBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
-                    <TextBlock Text="|" FontSize="12" Foreground="#C9C1B9" VerticalAlignment="Center" Margin="10,0,10,0" />
+                    <Ellipse Width="9" Height="9" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource PenSuccessBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                        <Setter Property="Fill" Value="#C62828" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Checking">
+                                        <Setter Property="Fill" Value="#9E9E9E" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ApiStatusMessage}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="13" FontWeight="Medium"
+                               VerticalAlignment="Center" Margin="8,0,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource PenSuccessBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                        <Setter Property="Foreground" Value="#C62828" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Checking">
+                                        <Setter Property="Foreground" Value="{StaticResource PenTextSecondaryBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="|" FontSize="12" Foreground="{StaticResource PenBorderSoftBrush}" VerticalAlignment="Center" Margin="12,0,12,0" />
                     <TextBlock Text="{Binding ConnectionStatus.CurrentServerUrl}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
                                Foreground="{StaticResource PenTextSecondaryBrush}" VerticalAlignment="Center" />
-                    <Button Command="{Binding OpenSettingsCommand}" Margin="14,0,0,0" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand" VerticalAlignment="Center">
-                        <Border CornerRadius="16" BorderBrush="#D9CFC3" BorderThickness="1" Padding="16,6" Background="Transparent">
+                    <Button Command="{Binding OpenSettingsCommand}" Margin="16,0,0,0" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand" VerticalAlignment="Center">
+                        <Border CornerRadius="16" BorderBrush="#D9CFC3" BorderThickness="1" Padding="16,8" Background="Transparent">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="⚙" FontSize="13" Foreground="{StaticResource PenPrimaryBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="API配置" FontSize="13" FontWeight="Medium" Foreground="{StaticResource PenPrimaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="API配置" FontSize="13" FontWeight="Medium" Foreground="{StaticResource PenPrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
                     </Button>
@@ -410,7 +440,7 @@
                     HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
                     <ProgressBar Width="180" Height="4" IsIndeterminate="True" />
-                    <TextBlock Text="正在登录..." Margin="0,12,0,0" FontSize="13"
+                    <TextBlock Text="正在登录..." FontFamily="Noto Sans SC, Microsoft YaHei UI" Margin="0,12,0,0" FontSize="13"
                                HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Opacity="0.6" />
                 </StackPanel>
             </Border>

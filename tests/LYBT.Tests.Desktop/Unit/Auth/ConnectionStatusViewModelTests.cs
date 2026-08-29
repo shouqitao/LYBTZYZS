@@ -14,6 +14,7 @@ public class ConnectionStatusViewModelTests : DesktopTestBase
 {
     private readonly IApplicationStateService _appState;
     private readonly IConnectionModeService _connectionMode;
+    private readonly IConnectionSettingsService _connectionSettings;
 
     public ConnectionStatusViewModelTests()
     {
@@ -30,10 +31,13 @@ public class ConnectionStatusViewModelTests : DesktopTestBase
         _connectionMode.ApiStatusDisplay.Returns("远程 WebAPI 已连接");
         _connectionMode.CheckRemoteAvailableAsync().Returns(Task.FromResult(true));
         _connectionMode.SetModeAsync(Arg.Any<ConnectionMode>()).Returns(Task.FromResult(ModeSwitchResult.Success()));
+
+        _connectionSettings = Substitute.For<IConnectionSettingsService>();
+        _connectionSettings.CurrentUrl.Returns("http://localhost:5300");
     }
 
     private ConnectionStatusViewModel CreateSut(IConnectionModeService? modeService = null)
-        => new(Services, _appState, modeService ?? _connectionMode);
+        => new(Services, _appState, modeService ?? _connectionMode, _connectionSettings);
 
     [Fact]
     public void Constructor_InitializesDefaultState_Should_When_CreatedWithRemoteMode()

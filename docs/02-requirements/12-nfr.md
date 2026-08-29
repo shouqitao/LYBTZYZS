@@ -278,7 +278,7 @@ Server 端（ASP.NET Core）理论上跨平台，但当前部署目标为 Window
 | API 路由 | Refit 远程调用 | `SwitchingApiClient` 路由到内嵌 LocalWebAPI |
 | Service 层 | 完全复用 | 完全复用（同一 Service 实现） |
 | 认证 | 完整 JWT + Refresh | 简化 JWT（1 年） |
-| 切换方式 | URL 配置 | URL 指向 localhost 即自动切换本地 |
+| 切换方式 | URL 配置 | URL 指向 localhost:5300 即自动切换本地（其他 localhost 端口如 5000 视为远程） |
 
 两种模式共用同一套 Service 层实现，业务行为一致；差异仅限认证复杂度与数据存储位置。
 

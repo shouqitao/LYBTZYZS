@@ -1,3 +1,4 @@
+using System;
 using LYBT.Tests.Desktop.Infrastructure;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Services;
@@ -18,8 +19,9 @@ namespace LYBT.Tests.Desktop;
 /// UserMasterDetailViewModel 简化单元测试
 /// 验证用户管理模块的Master-Detail视图模型基本行为
 /// </summary>
-public class UserMasterDetailViewModelTests : DesktopTestBase
+public class UserMasterDetailViewModelTests : DesktopTestBase, IDisposable
 {
+    public void Dispose() => _userEditor.Dispose();
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<UserListDto, UserDetailModel> _masterDetailServices;
     private readonly IUserService _commandHandler;

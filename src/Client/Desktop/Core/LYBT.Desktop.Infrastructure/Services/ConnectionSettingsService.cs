@@ -94,7 +94,7 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
             : _currentUrl;
 
     /// <inheritdoc />
-    public bool IsLocal => CurrentUrl.Contains("127.0.0.1") || CurrentUrl.Contains("localhost");
+    public bool IsLocal => IsLocalUrl(_currentUrl);
 
     /// <inheritdoc />
     public event EventHandler<string>? UrlChanged;

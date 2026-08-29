@@ -41,6 +41,7 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
     #region 可编辑字段
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveProfileCommand))]
     private string _editRealName = string.Empty;
 
     [ObservableProperty]
@@ -54,12 +55,15 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
     #region 密码字段
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ChangePasswordCommand))]
     private string _oldPassword = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ChangePasswordCommand))]
     private string _newPassword = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ChangePasswordCommand))]
     private string _confirmPassword = string.Empty;
 
     #endregion
@@ -74,6 +78,16 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+    }
+
+    /// <summary>
+    /// IsBusy 变更时同步刷新保存/改密命令的 CanExecute
+    /// </summary>
+    protected override void OnIsBusyChangedCore(bool value)
+    {
+        base.OnIsBusyChangedCore(value);
+        SaveProfileCommand.NotifyCanExecuteChanged();
+        ChangePasswordCommand.NotifyCanExecuteChanged();
     }
 
     #region 保存个人资料
@@ -237,6 +251,7 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载用户资料失败");
+            Services.ToastService.ShowError("加载用户资料失败，请稍后重试");
         }
     }
 
@@ -251,22 +266,31 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
 
     #region INavigationAware
 
-    public override async void OnNavigatedTo(NavigationContext navigationContext)
+    public override void OnNavigatedTo(NavigationContext navigationContext)
     {
-        if (navigationContext.Parameters.ContainsKey("Tab"))
+        try
         {
-            var tab = navigationContext.Parameters.GetValue<string>("Tab");
-            IsPasswordSelected = tab == "Password";
-            IsProfileSelected = !IsPasswordSelected;
+            if (navigationContext.Parameters.ContainsKey("Tab"))
+            {
+                var tab = navigationContext.Parameters.GetValue<string>("Tab");
+                IsPasswordSelected = tab == "Password";
+                IsProfileSelected = !IsPasswordSelected;
+            }
+            else
+            {
+                IsProfileSelected = true;
+                IsPasswordSelected = false;
+            }
         }
-        else
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "解析导航参数失败，回退到个人资料页");
             IsProfileSelected = true;
             IsPasswordSelected = false;
         }
 
         ClearPasswordFields();
-        await LoadUserProfileAsync();
+        _ = LoadUserProfileAsync(); // 内部已捕获异常
     }
 
     public override bool IsNavigationTarget(NavigationContext navigationContext) => true;

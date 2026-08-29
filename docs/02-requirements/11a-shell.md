@@ -9,7 +9,7 @@
 
 **US 清单**：原 7 US（US-SHELL-001~007），合并去除 2 个冗余后 5 US + SHELL-010~019 补充。**v1.0 有效 = 13 US**（原 5 + 补充 8）；另有 US-SHELL-012 = v2.0（不计入 Platform 43），US-SHELL-015 = 撤销（并入 013）。完整列表：001, 003, 004, 005, 007, 010(v1.0), 011(v1.0), 012(v2.0), 013(v1.0, 含原 015), 014(v1.0), ~~015~~(撤销), 016(v1.0), 017(v1.0), 018(v1.0), 019(v1.0)。
 
-**双模式总则**：`SwitchingApiClient` 将 localhost 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程；`LocalWebAPI` 复用全部服务端模块的 Service 层；`LocalDbBackupService` 仅本地模式运行。
+**双模式总则**：`SwitchingApiClient` 将 localhost:5300 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程（本机部署的远程 WebAPI 如 localhost:5000 仍走远程路由，仅 5300 端口视为本地）；`LocalWebAPI` 复用全部服务端模块的 Service 层；`LocalDbBackupService` 仅本地模式运行。
 
 **依赖**：
 

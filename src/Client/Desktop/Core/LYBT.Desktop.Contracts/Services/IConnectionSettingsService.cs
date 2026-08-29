@@ -19,7 +19,8 @@ public interface IConnectionSettingsService
 
     /// <summary>
     /// 当前 URL 是否指向本地服务
-    /// （包含 "127.0.0.1" 或 "localhost"）。
+    /// （仅 http://localhost:5300 / http://127.0.0.1:5300 视为本地；
+    /// 本机部署的远程 WebAPI 如 http://localhost:5000 不在此列）。
     /// </summary>
     bool IsLocal { get; }
 

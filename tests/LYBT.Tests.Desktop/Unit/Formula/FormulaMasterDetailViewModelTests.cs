@@ -1,3 +1,4 @@
+using System;
 using LYBT.Tests.Desktop.Infrastructure;
 using System.Collections.ObjectModel;
 using FluentAssertions;
@@ -19,8 +20,9 @@ using Xunit;
 
 namespace LYBT.Tests.Desktop;
 
-public class FormulaMasterDetailViewModelTests : DesktopTestBase
+public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
 {
+    public void Dispose() => _formulaEditor.Dispose();
     private readonly IViewModelServices _viewModelServices;
     private readonly IMasterDetailServices<FormulaListDto, FormulaDetailModel> _masterDetailServices;
     private readonly IFormulaService _formulaService;

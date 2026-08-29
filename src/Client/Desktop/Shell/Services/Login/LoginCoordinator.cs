@@ -232,7 +232,21 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
             _lastStateChangeTime = e.Timestamp;
         }
 
-        StateChanged?.Invoke(this, e);
+        // 逐订阅者触发：单个订阅者异常不中断其他订阅者（与 RaiseLoginSucceeded 一致）
+        var subscribers = StateChanged?.GetInvocationList();
+        if (subscribers == null) return;
+
+        foreach (var subscriber in subscribers)
+        {
+            try
+            {
+                ((EventHandler<AuthStateChangedEventArgs>)subscriber).Invoke(this, e);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "认证状态变更事件订阅者处理异常");
+            }
+        }
     }
 
     private async Task StartSessionAsync(UserDetailDto user, DateTime tokenExpiresAt)
@@ -292,6 +306,7 @@ public class LoginCoordinator : ILoginCoordinator, IDisposable
 
     public void Dispose()
     {
+        _stateMachine.StateChanged -= OnStateMachineStateChanged;
         _loginLock.Dispose();
     }
 }
