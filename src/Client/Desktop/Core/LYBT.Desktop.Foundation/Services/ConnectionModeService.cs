@@ -139,51 +139,26 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
             switch (mode)
         {
             case ConnectionMode.Local:
+                    // 先切 URL，立即生效，不等网络探测
                     await _connectionSettings.SavePreferredModeAsync("Local").ConfigureAwait(false);
                     ApplyMode(ConnectionMode.Local);
                 return ModeSwitchResult.Success();
 
             case ConnectionMode.Remote:
-                // B2 (US-SHELL-007): 守卫 1/2/3 —— URL 配置、远程可达、未完成医案
+                // 守卫 1：URL 配置检查（纯本地，无网络）
                 if (string.IsNullOrEmpty(_connectionSettings.RemoteUrl))
                 {
                     _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: no remote URL configured");
                     return ModeSwitchResult.Blocked("NO_REMOTE_URL", "未配置远程服务器地址，无法切换到远程模式");
                 }
 
-                // 守卫 2：远程可达性——每次切换现场探测（不读缓存）。
-                // 保证 URL 变更驱动（ServerConfig/首启向导经 UrlChanged 回流）与按钮路径行为一致，
-                // 并同步 _isRemoteAvailable 缓存（单一事实来源收敛在服务层，激活后即最新值）。
-                var isRemoteAvailable = await CheckRemoteAvailableAsync().ConfigureAwait(false);
-                if (!isRemoteAvailable)
-                {
-                    _logger.LogWarning("[CONNECTION-MODE] Cannot switch to Remote: server unreachable");
-                    return ModeSwitchResult.Blocked("REMOTE_UNREACHABLE", "远程服务器不可达，无法切换到远程模式");
-                }
-
-                // 守卫 3：未完成医案——查询失败视为无未完成医案（守卫仅阻断，不做强制）——保持切换可用性优先。
-                // 使用短超时避免切换卡顿：3 秒内未响应视为无未完成医案。
-                try
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                    var pendingCount = await _apiClient.MedicalCases
-                        .GetPendingCasesAsync(null)
-                        .WaitAsync(cts.Token)
-                        .ConfigureAwait(false);
-                    if (pendingCount is { Success: true, Data: not null } && pendingCount.Data.Count > 0)
-                    {
-                        _logger.LogWarning(
-                            "[CONNECTION-MODE] Blocked switch to Remote: {Count} pending medical cases (ERR-70506)", pendingCount.Data.Count);
-                        return ModeSwitchResult.PendingCasesBlocked(pendingCount.Data.Count);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogDebug("[CONNECTION-MODE] Pending-case guard timed out (3s) — guard skipped");
-                }
-
+                // 先切 URL，立即生效
                 await _connectionSettings.SavePreferredModeAsync("Remote").ConfigureAwait(false);
                 ApplyMode(ConnectionMode.Remote);
+
+                // 后台探测远程可达性（不阻塞切换）
+                _ = FireAndForgetRemoteProbeAsync();
+
                 return ModeSwitchResult.Success();
 
             default:
@@ -197,6 +172,40 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     }
 
     /// <summary>
+    /// <summary>
+    /// 后台探测远程可达性 + 未完成医案守卫，不阻塞 UI。
+    /// </summary>
+    private async Task FireAndForgetRemoteProbeAsync()
+    {
+        try
+        {
+            var isRemoteAvailable = await CheckRemoteAvailableAsync().ConfigureAwait(false);
+            _isRemoteAvailable = isRemoteAvailable;
+
+            if (!isRemoteAvailable)
+            {
+                _logger.LogWarning("[CONNECTION-MODE] Remote probe failed after mode switch — server unreachable");
+                // 可在此处通过 IEventAggregator 通知 UI 显示警告
+                return;
+            }
+
+            // 守卫：未完成医案（3s 超时）
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            var pendingCount = await _apiClient.MedicalCases
+                .GetPendingCasesAsync(null)
+                .WaitAsync(cts.Token)
+                .ConfigureAwait(false);
+            if (pendingCount is { Success: true, Data: not null } && pendingCount.Data.Count > 0)
+            {
+                _logger.LogWarning("[CONNECTION-MODE] {Count} pending medical cases detected after switch (ERR-70506)", pendingCount.Data.Count);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogDebug(ex, "[CONNECTION-MODE] Background remote probe failed");
+        }
+    }
+
     /// <summary>
     /// 更新生效模式，变化时触发 <see cref="ModeChanged"/>。
     /// </summary>
