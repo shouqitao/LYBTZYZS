@@ -38,6 +38,7 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
 
     private ConnectionMode _currentMode;
     private bool _isRemoteAvailable;
+    private bool _isSwitching; // 重入守卫：防止 SetModeAsync → SavePreferredModeAsync → UrlChanged → SetModeAsync 循环
 
     /// <summary>
     /// 构建服务。初始 <see cref="CurrentMode"/> 由
@@ -126,7 +127,16 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
     /// <inheritdoc />
     public async Task<ModeSwitchResult> SetModeAsync(ConnectionMode mode)
     {
-        switch (mode)
+        if (_isSwitching)
+        {
+            _logger.LogDebug("[CONNECTION-MODE] SetModeAsync re-entrancy blocked");
+            return ModeSwitchResult.Success();
+        }
+
+        _isSwitching = true;
+        try
+        {
+            switch (mode)
         {
             case ConnectionMode.Local:
                     await _connectionSettings.SavePreferredModeAsync("Local").ConfigureAwait(false);
@@ -151,12 +161,25 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
                     return ModeSwitchResult.Blocked("REMOTE_UNREACHABLE", "远程服务器不可达，无法切换到远程模式");
                 }
 
-                var pendingCount = await GetPendingCaseCountAsync().ConfigureAwait(false);
-                if (pendingCount > 0)
+                // 守卫 3：未完成医案——查询失败视为无未完成医案（守卫仅阻断，不做强制）——保持切换可用性优先。
+                // 使用短超时避免切换卡顿：3 秒内未响应视为无未完成医案。
+                try
                 {
-                    _logger.LogWarning(
-                        "[CONNECTION-MODE] Blocked switch to Remote: {Count} pending medical cases (ERR-70506)", pendingCount);
-                    return ModeSwitchResult.PendingCasesBlocked(pendingCount);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    var pendingCount = await _apiClient.MedicalCases
+                        .GetPendingCasesAsync(null)
+                        .WaitAsync(cts.Token)
+                        .ConfigureAwait(false);
+                    if (pendingCount is { Success: true, Data: not null } && pendingCount.Data.Count > 0)
+                    {
+                        _logger.LogWarning(
+                            "[CONNECTION-MODE] Blocked switch to Remote: {Count} pending medical cases (ERR-70506)", pendingCount.Data.Count);
+                        return ModeSwitchResult.PendingCasesBlocked(pendingCount.Data.Count);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogDebug("[CONNECTION-MODE] Pending-case guard timed out (3s) — guard skipped");
                 }
 
                 await _connectionSettings.SavePreferredModeAsync("Remote").ConfigureAwait(false);
@@ -166,28 +189,14 @@ public sealed class ConnectionModeService : IConnectionModeService, IDisposable
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported connection mode");
         }
+        }
+        finally
+        {
+            _isSwitching = false;
+        }
     }
 
     /// <summary>
-    /// 查询当前数据源的未完成医案数（Active/Suspended）。查询失败视为无未完成医案
-    /// （守卫仅阻断，不做强制）——保持切换可用性优先。
-    /// </summary>
-    private async Task<int> GetPendingCaseCountAsync()
-    {
-        try
-        {
-            var response = await _apiClient.MedicalCases.GetPendingCasesAsync(null).ConfigureAwait(false);
-            if (!response.Success || response.Data == null)
-                return 0;
-            return response.Data.Count;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[CONNECTION-MODE] Pending-case guard query failed - guard skipped");
-            return 0;
-        }
-    }
-
     /// <summary>
     /// 更新生效模式，变化时触发 <see cref="ModeChanged"/>。
     /// </summary>
