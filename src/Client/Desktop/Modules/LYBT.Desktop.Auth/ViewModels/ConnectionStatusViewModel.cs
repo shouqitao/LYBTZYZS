@@ -172,7 +172,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     /// <summary>
     /// 切换到远程模式
     /// </summary>
-    [RelayCommand(CanExecute = nameof(IsRemoteAvailable))]
+    [RelayCommand]
     private async Task SwitchToRemote()
     {
         if (_connectionModeService is null)
