@@ -101,16 +101,21 @@ public class ConnectionModeServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SetMode_Remote_Unreachable_ReturnsBlocked()
+    public async Task SetMode_Remote_Unreachable_SwitchesThenProbesInBackground()
     {
-        // 127.0.0.1:9 无服务监听 → 连接拒绝（探测失败即视为不可达）
+        // 127.0.0.1:9 无服务监听 → 探测失败。
+        // D1 设计（ebf2434e5）：切换不阻塞——先切 URL 立即生效，远程可达性后台探测更新缓存。
         var svc = CreateSut(remoteUrl: "http://127.0.0.1:9", isLocal: true);
 
         var result = await svc.SetModeAsync(ConnectionMode.Remote);
 
-        result.Succeeded.Should().BeFalse();
-        result.ErrorCode.Should().Be("REMOTE_UNREACHABLE");
-        svc.IsLocal.Should().BeTrue();
+        result.Succeeded.Should().BeTrue();
+        svc.IsRemote.Should().BeTrue();
+        svc.CurrentMode.Should().Be(ConnectionMode.Remote);
+
+        // 后台探测完成 → 远程不可用缓存更新为 false
+        await Task.Delay(300);
+        svc.IsRemoteAvailable.Should().BeFalse();
     }
 
     [Fact]
@@ -130,7 +135,7 @@ public class ConnectionModeServiceTests : IAsyncLifetime
     public async Task OnUrlChanged_CallsSetModeAsync()
     {
         // 初始 Local（ctor 读 IsLocal→true）；URL 变更事件触发时 IsLocal=false（远程 URL）
-        // → OnUrlChanged 推导 Remote → 统一走 SetModeAsync → 守卫阻断（不可达），不直接 ApplyMode
+        // → OnUrlChanged 推导 Remote → 统一走 SetModeAsync（配置了 URL 即切换，不再绕过守卫）
         _settings.IsLocal.Returns(true, false);
         _settings.RemoteUrl.Returns("http://127.0.0.1:9");
         _settings.IsValidUrl(Arg.Any<string>()).Returns(true);
@@ -140,11 +145,12 @@ public class ConnectionModeServiceTests : IAsyncLifetime
         var svc = new ConnectionModeService(_settings, _appState, _apiClient, _logger);
 
         _settings.UrlChanged += Raise.Event<EventHandler<string>>(_settings, "http://127.0.0.1:9");
-        await Task.Delay(300); // 等 fire-and-forget SetModeAsync 完成
+        await Task.Delay(300); // 等 fire-and-forget SetModeAsync + 后台探测完成
 
-        // 用户配置不可达远程 → 守卫阻断 → 保持本地（不再直接 ApplyMode 绕过守卫）
-        svc.CurrentMode.Should().Be(ConnectionMode.Local);
-        // 未走到未完成医案守卫（远程不可达先阻断）
+        // D1 设计：URL 驱动切换立即生效（远程模式），不可达由后台探测反映
+        svc.CurrentMode.Should().Be(ConnectionMode.Remote);
+        svc.IsRemoteAvailable.Should().BeFalse();
+        // 未走到未完成医案守卫（远程不可达探测失败先返回）
         await medicalCases.DidNotReceive().GetPendingCasesAsync(Arg.Any<Guid?>());
     }
 

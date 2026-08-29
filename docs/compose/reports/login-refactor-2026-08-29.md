@@ -75,11 +75,25 @@
 | 相关单测（Login/Auth/AccountSettings/MasterDetail×4） | **129/129 通过** |
 | 双控制器树 | 本任务无权限/端点变更，无需双端检查 |
 
-## 五、文档同步
+---
 
-- `docs/02-requirements/11a-shell.md`：双模式总则精确化（仅 localhost:5300 路由本地）
-- `docs/02-requirements/12-nfr.md`：NFR-COMP-004 切换方式精确化
-- `docs/03-architecture/05-dual-mode.md`：URL 类型表第一列改 `127.0.0.1:5300 / localhost:5300`
-- `docs/03-architecture/13c-current-status.md`：变更记录追加 #131
-- `IConnectionSettingsService.cs` 接口注释同步 IsLocal 语义（代码-文档一致性红线）
-- ADR-0009 保留（历史决策记录，当前态语义由 05-dual-mode 承载）
+## 六、独立验收附录（验收必自己跑）
+
+主体重构由协作会话提交 `858dcd7b9` 后，独立复验全量构建 + 测试，另发现并修复 2 个**陈旧单元测试**（编码重构前阻塞式切换语义，与 D1「先切 URL 再后台探测」设计冲突，非本次回归——HEAD 74194465a 已可复现失败）：
+
+| 文件 | 陈旧断言（旧语义） | 同步为新设计语义 |
+|------|------|------|
+| `ConnectionModeServiceTests.SetMode_Remote_Unreachable_ReturnsBlocked` | 远程不可达 → `REMOTE_UNREACHABLE` 阻断、保持本地 | 切换立即成功（仅缺 URL 阻断）；后台探测更新 `IsRemoteAvailable=false` |
+| `ConnectionModeServiceTests.OnUrlChanged_CallsSetModeAsync` | URL 变更推导远程 → 守卫阻断 → 保持本地 | URL 驱动切换立即生效（远程模式）；不可达由后台探测反映 |
+
+连带同步：`IConnectionModeService.SetModeAsync` 接口文档修正（原「切换失败（守卫阻断/不可达）时保持切换前模式」与实现不符——现明确仅 `NO_REMOTE_URL` 阻断，不可达/未完成医案守卫在后台探测执行），代码-文档一致性红线。
+
+**独立验证结果**：
+
+| 项 | 结果 |
+|----|------|
+| `dotnet build LYBTZYZS.sln --no-incremental` | **0 错误 0 警告** |
+| `dotnet test tests/LYBT.Tests.Architecture/` | **97/97 通过** |
+| 相关单测（ConnectionModeService+Login/Auth 35/35；Unit 命名空间 55/55） | **全部通过** |
+| `WorkflowStepIndicatorTests` ×6 | 存量基线：`调用线程必须为 STA`（WPF 线程，重构未触及，13c 已登记） |
+| `Integration.RemoteApi.*` | 存量基线：localhost:5000 远程 E2E，本地未启动（技能文档已登记） |
