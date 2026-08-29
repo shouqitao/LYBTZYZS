@@ -249,6 +249,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 Logger.LogInformation("药材批量删除完成: 成功 {Success}, 失败 {Failure}",
                     result.Data.SuccessCount, result.Data.FailureCount);
                 _cacheManager.InvalidateHerbCaches();
+
+                // P1-C：部分失败需提示用户
+                if (result.Data.FailureCount > 0)
+                {
+                    await MasterDetailServices.Dialog.ShowWarningAsync(
+                        $"批量删除完成：成功 {result.Data.SuccessCount} 条，失败 {result.Data.FailureCount} 条", "部分失败");
+                }
             }
             else
             {
@@ -272,6 +279,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 Logger.LogInformation("{Operation}完成: 成功 {Success}, 失败 {Failure}",
                     operationName, result.Data.SuccessCount, result.Data.FailureCount);
                 _cacheManager.InvalidateHerbCaches();
+
+                // P1-C：部分失败需提示用户
+                if (result.Data.FailureCount > 0)
+                {
+                    await MasterDetailServices.Dialog.ShowWarningAsync(
+                        $"{operationName}完成：成功 {result.Data.SuccessCount} 条，失败 {result.Data.FailureCount} 条", "部分失败");
+                }
             }
             else
             {

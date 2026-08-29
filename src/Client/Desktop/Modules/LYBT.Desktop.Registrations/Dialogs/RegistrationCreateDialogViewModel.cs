@@ -62,9 +62,9 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
         IRegistrationService registrationService)
         : base(services)
     {
-        _patientService = patientService;
-        _userService = userService;
-        _registrationService = registrationService;
+        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         Title = "新建挂号";
     }
 

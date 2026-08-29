@@ -425,15 +425,23 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private async Task ResumeSuspendedIfNeededAsync()
     {
-        var medicalCase = _medicalCaseService.Current;
-        if (medicalCase == null) return;
-
-        if (State.Mode == WorkspaceMode.Clinical
-            && medicalCase.CaseStatus == MedicalCaseStatus.Suspended)
+        try
         {
-            Logger.LogInformation("[CMD] ResumeSuspended -> MedicalCaseId={MedicalCaseId}", MedicalCaseId);
-            var result = await _medicalCaseService.ResumeSuspendedAsync(MedicalCaseId);
-            if (result.Success) medicalCase.CaseStatus = MedicalCaseStatus.Active;
+            var medicalCase = _medicalCaseService.Current;
+            if (medicalCase == null) return;
+
+            if (State.Mode == WorkspaceMode.Clinical
+                && medicalCase.CaseStatus == MedicalCaseStatus.Suspended)
+            {
+                Logger.LogInformation("[CMD] ResumeSuspended -> MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                var result = await _medicalCaseService.ResumeSuspendedAsync(MedicalCaseId);
+                if (result.Success) medicalCase.CaseStatus = MedicalCaseStatus.Active;
+            }
+        }
+        catch (Exception ex)
+        {
+            // P2-A：恢复失败不阻断后续 InitializeChildViewModels / IActiveConsultationService.Register
+            Logger.LogError(ex, "[WS] ResumeSuspended 失败: MedicalCaseId={MedicalCaseId}", MedicalCaseId);
         }
     }
 

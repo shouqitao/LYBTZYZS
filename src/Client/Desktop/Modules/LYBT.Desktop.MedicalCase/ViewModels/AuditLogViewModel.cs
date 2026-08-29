@@ -20,9 +20,14 @@ public partial class AuditLogViewModel : NavigableViewModelBase
     private Guid _medicalCaseId;
 
     [ObservableProperty] private ObservableCollection<AuditLogDto> _logs = new();
-    [ObservableProperty] private bool _isLoading;
-    [ObservableProperty] private int _currentPage = 1;
-    [ObservableProperty] private int _totalPages;
+    // IsLoading 复用基类（P2-A：移除遮蔽基类的重复声明）
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PreviousPageCommand))]
+    [NotifyCanExecuteChangedFor(nameof(NextPageCommand))]
+    private int _currentPage = 1;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(NextPageCommand))]
+    private int _totalPages;
     [ObservableProperty] private int _totalCount;
 
     private const int PageSize = 20;
@@ -69,6 +74,9 @@ public partial class AuditLogViewModel : NavigableViewModelBase
         finally
         {
             IsLoading = false;
+            // P2-A：翻页后刷新命令可执行状态（末页禁用 Next、回首页禁用 Prev）
+            PreviousPageCommand.NotifyCanExecuteChanged();
+            NextPageCommand.NotifyCanExecuteChanged();
         }
     }
 

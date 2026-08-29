@@ -51,10 +51,11 @@ public partial class BackupManagementViewModel : NavigableViewModelBase
         PageTitle = "备份恢复";
     }
 
-    public override async void OnNavigatedTo(Prism.Regions.NavigationContext navigationContext)
+    public override void OnNavigatedTo(Prism.Regions.NavigationContext navigationContext)
     {
         base.OnNavigatedTo(navigationContext);
-        await RefreshAsync();
+        // P2-A：async void 有进程崩溃风险——改 fire-and-forget（RefreshAsync 内部已 try-catch）
+        _ = RefreshAsync();
     }
 
     /// <summary>手动备份</summary>

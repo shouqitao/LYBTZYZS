@@ -143,7 +143,14 @@ public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatab
     public decimal Discount
     {
         get => _discount;
-        set => SetProperty(ref _discount, value);
+        set
+        {
+            if (SetProperty(ref _discount, value))
+            {
+                // P1-D：折扣变化需刷新总价（TotalPrice = SingleDosePrice * DosageCount * Discount）
+                RaisePropertyChanged(nameof(TotalPrice));
+            }
+        }
     }
 
     #endregion

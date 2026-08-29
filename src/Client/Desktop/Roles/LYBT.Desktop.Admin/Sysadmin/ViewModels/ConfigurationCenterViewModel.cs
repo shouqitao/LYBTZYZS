@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Shared.Configuration.Options.Client;
+using LYBT.Shared.Configuration.Options.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,6 +26,7 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     private readonly IOptions<ApiClientOptions> _apiOptions;
     private readonly IOptions<CardReaderOptions> _cardReaderOptions;
     private readonly IOptions<OfflineModeOptions> _offlineOptions;
+    private readonly IOptions<DefaultPasswordOptions>? _defaultPasswordOptions;
 
     // ── 组 1：诊所信息（热更新） ──
     [ObservableProperty] private string _clinicName = string.Empty;
@@ -73,7 +75,8 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
         IOptions<ClientSessionOptions> sessionOptions,
         IOptions<ApiClientOptions> apiOptions,
         IOptions<CardReaderOptions> cardReaderOptions,
-        IOptions<OfflineModeOptions> offlineOptions)
+        IOptions<OfflineModeOptions> offlineOptions,
+        IOptions<DefaultPasswordOptions>? defaultPasswordOptions = null)
         : base(services)
     {
         _store = store;
@@ -84,6 +87,7 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
         _apiOptions = apiOptions;
         _cardReaderOptions = cardReaderOptions;
         _offlineOptions = offlineOptions;
+        _defaultPasswordOptions = defaultPasswordOptions;
         LoadFromOptions();
     }
 
@@ -106,7 +110,8 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
         ApiBaseUrl = string.IsNullOrEmpty(api.RemoteUrl) ? api.BaseUrl : api.RemoteUrl;
         ApiTimeoutSeconds = api.TimeoutSeconds;
 
-        ForceChangeOnFirstLogin = true;
+        // P1-A：从已注册配置读取，而非硬编码（用户保存 false 后重开页面不再回弹 true）
+        ForceChangeOnFirstLogin = _defaultPasswordOptions?.Value.ForceChangeOnFirstLogin ?? true;
         OverwriteConflicts = _featureToggles.IsEnabled("OverwriteConflicts");
         DuplicateHerbMergeStrategy = _featureToggles.GetValue("DuplicateHerbMergeStrategy") ?? "Max";
 
@@ -281,6 +286,12 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
                 : "保存失败，请检查配置文件权限";
             if (!string.IsNullOrEmpty(note) && ok)
                 StatusMessage = $"{StatusMessage}（{note}）";
+        }
+        catch (Exception ex)
+        {
+            // P1-A：保存异常不能逃逸（否则配置面板保存即崩溃）
+            Logger.LogError(ex, "[CFG-CENTER] 保存配置节失败: {Section}", section);
+            StatusMessage = "保存失败，请检查配置文件权限或磁盘状态";
         }
         finally
         {

@@ -154,6 +154,21 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 return false;
             }
 
+            // P1-B：逐行校验药材选择与剂量（Dosage 数据注解不自动执行——ObservableObject 非 ValidatableModelBase）
+            foreach (var herbItem in FormulaEditor.EditHerbItems)
+            {
+                if (herbItem.HerbId == Guid.Empty || string.IsNullOrWhiteSpace(herbItem.HerbName))
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync("存在未选择药材的行，请补全或删除", "验证失败");
+                    return false;
+                }
+                if (herbItem.Dosage is < 1 or > 500)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync($"药材「{herbItem.HerbName}」剂量需在 1-500 之间", "验证失败");
+                    return false;
+                }
+            }
+
             try
             {
                 var herbInputDtos = FormulaEditor.GetHerbInputDtos();
@@ -294,6 +309,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 Logger.LogInformation("验方批量删除完成: 成功 {Success}, 失败 {Failure}",
                     result.Data.SuccessCount, result.Data.FailureCount);
                 _cacheManager.InvalidateFormulaCaches();
+
+                // P1-C：部分失败需提示用户
+                if (result.Data.FailureCount > 0)
+                {
+                    await MasterDetailServices.Dialog.ShowWarningAsync(
+                        $"批量删除完成：成功 {result.Data.SuccessCount} 条，失败 {result.Data.FailureCount} 条", "部分失败");
+                }
             }
             else
             {
@@ -317,6 +339,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 Logger.LogInformation("{Operation}完成: 成功 {Success}, 失败 {Failure}",
                     operationName, result.Data.SuccessCount, result.Data.FailureCount);
                 _cacheManager.InvalidateFormulaCaches();
+
+                // P1-C：部分失败需提示用户
+                if (result.Data.FailureCount > 0)
+                {
+                    await MasterDetailServices.Dialog.ShowWarningAsync(
+                        $"{operationName}完成：成功 {result.Data.SuccessCount} 条，失败 {result.Data.FailureCount} 条", "部分失败");
+                }
             }
             else
             {

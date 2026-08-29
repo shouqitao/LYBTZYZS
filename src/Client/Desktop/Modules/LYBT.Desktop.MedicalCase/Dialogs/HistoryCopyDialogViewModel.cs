@@ -310,6 +310,8 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
             try
             {
+                // P2-A：与 LoadAllPatientsInternalAsync/LoadCaseDetailInternalAsync 一致的加载态
+                IsLoading = true;
                 StatusMessage = "正在加载历史医案...";
                 var query = new MedicalCaseQueryDto
                 {
@@ -358,6 +360,10 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
             {
                 StatusMessage = "加载历史医案失败";
                 Logger.LogError(ex, "加载患者历史医案失败，患者ID: {PatientId}", _patientId);
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 

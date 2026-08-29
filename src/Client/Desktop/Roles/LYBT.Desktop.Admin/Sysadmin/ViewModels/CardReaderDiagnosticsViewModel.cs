@@ -138,11 +138,20 @@ public partial class CardReaderDiagnosticsViewModel : NavigableViewModelBase
     [RelayCommand(CanExecute = nameof(CanSaveSettings))]
     private async Task SaveSettingsAsync()
     {
+        // P2-A：非法数字输入不再崩溃（TryParse 失败提示）
+        if (!int.TryParse(UsbPort, out var usbPort)
+            || !int.TryParse(ConnectTimeout, out var connectTimeout)
+            || !int.TryParse(ReadTimeout, out var readTimeout))
+        {
+            StatusMessage = "端口/超时需为有效数字";
+            return;
+        }
+
         var ok = await _store.SaveSectionAsync("CardReader", new Dictionary<string, object>
         {
-            ["UsbPort"] = int.Parse(UsbPort),
-            ["ConnectTimeout"] = int.Parse(ConnectTimeout),
-            ["ReadTimeout"] = int.Parse(ReadTimeout),
+            ["UsbPort"] = usbPort,
+            ["ConnectTimeout"] = connectTimeout,
+            ["ReadTimeout"] = readTimeout,
             ["ReaderType"] = SelectedReaderType.ToString()
         });
         StatusMessage = ok ? "读卡器配置已保存（医生端自动检测优先，此配置为默认参考）" : "保存失败，请检查文件权限";

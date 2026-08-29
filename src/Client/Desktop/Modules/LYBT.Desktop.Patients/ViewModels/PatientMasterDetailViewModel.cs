@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
                     var pagedResult = await _patientService.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                    if (pagedResult.Data != null)
+                    if (pagedResult.Success && pagedResult.Data != null)
                     {
                         MasterDetailServices.Pagination.TotalCount = pagedResult.Data.TotalCount;
 
@@ -124,6 +124,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                         {
                             Items.Add(item);
                         }
+                    }
+                    else
+                    {
+                        // P1-C：请求失败需显式反馈，而非静默空列表
+                        MasterDetailServices.ErrorHandler.SetError("LoadList", pagedResult.Error ?? "获取患者列表失败");
                     }
                 });
             }
@@ -247,6 +252,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("患者批量删除完成: 成功 {Success}, 失败 {Failure}",
                     result.Data.SuccessCount, result.Data.FailureCount);
                 _cacheManager.InvalidatePatientCaches();
+
+                // P1-C：部分失败需提示用户（成功数 < 请求数）
+                if (result.Data.FailureCount > 0)
+                {
+                    await MasterDetailServices.Dialog.ShowWarningAsync(
+                        $"批量删除完成：成功 {result.Data.SuccessCount} 条，失败 {result.Data.FailureCount} 条", "部分失败");
+                }
             }
             else
             {

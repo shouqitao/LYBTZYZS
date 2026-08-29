@@ -233,6 +233,13 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         if (AllHerbs.Count == 0)
             await LoadHerbsAsync();
     }
+    /// <summary>释放子 VM（P1-D：PrescriptionEditor 持有 Items.CollectionChanged 订阅，必须释放避免泄漏）。</summary>
+    protected override void OnDisposing()
+    {
+        ConsultationEditor.Dispose();
+        PrescriptionEditor.Dispose();
+        base.OnDisposing();
+    }
 
     #endregion
 

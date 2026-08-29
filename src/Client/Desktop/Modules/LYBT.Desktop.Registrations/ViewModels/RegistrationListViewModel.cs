@@ -36,8 +36,12 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private readonly IPatientService _patientService;
     private readonly ISignalRClient _signalRClient;
     private readonly IDialogService? _dialogService;
-    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(30));
+    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(QueueRefreshIntervalSeconds));
     private CancellationTokenSource? _timerCts;
+
+    /// <summary>队列自动刷新间隔（秒）——魔法数字提取（P1-F）。</summary>
+    private const int QueueRefreshIntervalSeconds = 30;
+
     // P2-14-7 SignalR 退订：保留 EventAggregator 订阅 token 以便 Destruct 时取消
     private SubscriptionToken? _registrationRefreshedToken;
 
@@ -88,7 +92,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         IDialogService? dialogService = null)
         : base(services)
     {
-        _registrationService = registrationService;
+        _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _signalRClient = signalRClient ?? throw new ArgumentNullException(nameof(signalRClient));
@@ -108,6 +112,14 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     }
 
     #region Lifecycle
+    /// <summary>busy 状态变化时刷新全部命令 CanExecute（P1-F：IsBusy 影响 CanCreate/CanStartVisit/CanCancel）。</summary>
+    protected override void OnIsBusyChangedCore(bool value)
+    {
+        base.OnIsBusyChangedCore(value);
+        CreateRegistrationCommand.NotifyCanExecuteChanged();
+        StartVisitCommand.NotifyCanExecuteChanged();
+        CancelRegistrationCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>首次导航初始化</summary>
     protected override async Task InitializeAsync(NavigationContext context)
@@ -150,6 +162,8 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         }
         _ = _signalRClient.StopAsync();
         StopAutoRefresh();
+        // P1-F：释放轮询计时器（PeriodicTimer 实现 IDisposable）
+        _refreshTimer.Dispose();
         base.OnDisposing();
     }
 
