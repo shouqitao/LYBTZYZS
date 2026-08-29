@@ -182,7 +182,7 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             // 创建子 VM（D3: DI 注入优先，手动 new 为测试/可选依赖回退）
             Credentials = credentials ?? new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
-            ConnectionStatus = connectionStatus ?? new ConnectionStatusViewModel(services, applicationStateService, connectionModeService);
+            ConnectionStatus = connectionStatus ?? new ConnectionStatusViewModel(services, applicationStateService, connectionModeService, connectionSettingsService);
 
             // 命令 - P2-14-1 防重入：CanExecute 含 !IsLoading，且 AsyncRelayCommand 默认拒绝并发（allowConcurrentExecutions:false），双击仅首次生效
             LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);

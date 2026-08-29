@@ -16,6 +16,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
 {
     private readonly IApplicationStateService _applicationStateService;
     private readonly IConnectionModeService? _connectionModeService;
+    private readonly IConnectionSettingsService? _connectionSettingsService;
 
     [ObservableProperty]
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
@@ -32,16 +33,21 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     [ObservableProperty]
     private bool _isRemoteAvailable;
 
+    [ObservableProperty]
+    private string _currentServerUrl = string.Empty;
+
     public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
     public ConnectionStatusViewModel(
         IViewModelServices services,
         IApplicationStateService applicationStateService,
-        IConnectionModeService? connectionModeService)
+        IConnectionModeService? connectionModeService,
+        IConnectionSettingsService? connectionSettingsService)
         : base(services)
     {
         _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
         _connectionModeService = connectionModeService;
+        _connectionSettingsService = connectionSettingsService;
 
         _applicationStateService.StatusChanged += OnApiStatusChanged;
 
@@ -51,6 +57,19 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
             CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
             IsRemoteMode = _connectionModeService.IsRemote;
             IsRemoteAvailable = _connectionModeService.IsRemoteAvailable;
+        }
+
+        UpdateServerUrl();
+    }
+
+    /// <summary>
+    /// 同步当前连接 URL 到 UI 属性。
+    /// </summary>
+    private void UpdateServerUrl()
+    {
+        if (_connectionSettingsService is not null)
+        {
+            CurrentServerUrl = _connectionSettingsService.CurrentUrl;
         }
     }
 
@@ -197,6 +216,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
         CurrentModeDisplay = _connectionModeService.CurrentModeDisplay;
         IsRemoteMode = _connectionModeService.IsRemote;
         ApiStatusMessage = _connectionModeService.ApiStatusDisplay;
+        UpdateServerUrl();
         SwitchToRemoteCommand.NotifyCanExecuteChanged();
 
         // 2. 异步探测远程可用性（按钮可用性依赖 IsRemoteAvailable，后台刷新）
