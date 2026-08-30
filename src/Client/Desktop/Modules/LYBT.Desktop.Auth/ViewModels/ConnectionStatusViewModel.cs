@@ -67,7 +67,14 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     /// </summary>
     private void UpdateServerUrl()
     {
-        if (_connectionSettingsService is not null)
+        if (_connectionSettingsService is not null && _connectionModeService is not null)
+        {
+            // 直接按当前模式读取 URL，避免 _preferredMode 与实际模式不同步
+            CurrentServerUrl = _connectionModeService.IsRemote
+                ? _connectionSettingsService.RemoteUrl
+                : _connectionSettingsService.LocalUrl;
+        }
+        else if (_connectionSettingsService is not null)
         {
             CurrentServerUrl = _connectionSettingsService.CurrentUrl;
         }
