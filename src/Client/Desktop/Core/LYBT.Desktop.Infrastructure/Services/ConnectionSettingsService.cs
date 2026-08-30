@@ -73,6 +73,16 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
 
         var preferred = FirstNonEmpty(userSettings.PreferredMode, options.PreferredMode);
         _preferredMode = string.IsNullOrWhiteSpace(preferred) ? "Local" : preferred;
+
+        // 根据最终模式同步 URL：Local 模式强制用 LocalUrl，Remote 模式用 RemoteUrl（若有）
+        if (_preferredMode == "Remote" && !string.IsNullOrEmpty(_remoteUrl))
+        {
+            _currentUrl = _remoteUrl;
+        }
+        else
+        {
+            _currentUrl = LocalUrlConstant;
+        }
     }
 
     private static string? FirstNonEmpty(string? a, string? b)
