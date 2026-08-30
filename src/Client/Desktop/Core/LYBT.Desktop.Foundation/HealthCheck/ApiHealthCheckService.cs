@@ -1,4 +1,5 @@
 using System.Net.Http;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Options;
 
@@ -11,13 +12,18 @@ public class ApiHealthCheckService : IApiHealthCheckService
 {
     private readonly HttpClient _httpClient;
     private readonly ApiClientOptions _apiOptions;
+    private readonly IConnectionSettingsService? _connectionSettings;
 
     public string? LastErrorMessage { get; private set; }
 
-    public ApiHealthCheckService(HttpClient httpClient, IOptions<ApiClientOptions> apiOptions)
+    public ApiHealthCheckService(
+        HttpClient httpClient,
+        IOptions<ApiClientOptions> apiOptions,
+        IConnectionSettingsService? connectionSettings = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _apiOptions = apiOptions?.Value ?? throw new ArgumentNullException(nameof(apiOptions));
+        _connectionSettings = connectionSettings;
     }
 
     /// <summary>
@@ -29,7 +35,13 @@ public class ApiHealthCheckService : IApiHealthCheckService
 
         try
         {
-            var healthUrl = $"{_apiOptions.BaseUrl.TrimEnd('/')}/health";
+            // 健康检查目标跟随当前连接模式（用户配置的 RemoteUrl/LocalUrl），
+            // 回退 appsettings 静态 BaseUrl。路径统一为 /api/v1/health：
+            // LocalWebAPI 仅暴露该路径（无 /health 中间件端点），Server 双路径均可用且匿名。
+            var baseUrl = !string.IsNullOrWhiteSpace(_connectionSettings?.CurrentUrl)
+                ? _connectionSettings!.CurrentUrl
+                : _apiOptions.BaseUrl;
+            var healthUrl = $"{baseUrl.TrimEnd('/')}/api/v1/health";
 
             using var cts = new CancellationTokenSource(timeout);
 

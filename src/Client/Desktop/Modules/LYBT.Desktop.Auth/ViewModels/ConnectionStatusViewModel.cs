@@ -81,12 +81,28 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     }
 
     /// <summary>
-    /// 加载 API 状态
+    /// 加载 API 状态。
+    /// 启动竞态保护：健康检查由启动管线后台异步执行，若尚未完成（LastHealthCheckTime 为空）
+    /// 直接读取 IsApiHealthy 会把"未检查"误报为"不可用"。此时保持"检查中"并主动触发一次
+    /// 健康检查，结果经 StatusChanged 事件驱动 UI 更新。
     /// </summary>
     public async Task LoadApiStatusAsync()
     {
         try
         {
+            if (_applicationStateService.LastHealthCheckTime is null)
+            {
+                await Services.UiThreadDispatcher.InvokeAsync(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Checking;
+                    ApiStatusMessage = "正在检查连接...";
+                });
+
+                // 触发健康检查并等待结果；StatusChanged 会同步 UI（OnApiStatusChanged）
+                await _applicationStateService.CheckApiHealthAsync();
+                return;
+            }
+
             await Services.UiThreadDispatcher.InvokeAsync(() =>
             {
                 if (_applicationStateService.IsApiHealthy)
