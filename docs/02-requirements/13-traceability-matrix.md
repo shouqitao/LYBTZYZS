@@ -115,9 +115,9 @@
 | US-FORM-004 | Must | ADR-0007 | — | PUT /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（更新替换药材+降级检查） | ✅ | ✅ |
 | US-FORM-005 | Must | ADR-0007 | — | DELETE /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现 | ✅ | ⚠️ |
 | US-FORM-006 | Must | ADR-0010 | — | POST /Formulas/batch-import | CatalogController.cs:363 | — | ✅ 已实现（10000 上限） | ✅ | ✅ |
-| US-FORM-007 | Must | ADR-0007 | — | GET /Formulas/pending-validation | IFormulaService.cs:11 | D11 | ✅ 已实现（待验证列表分页） | ✅ | ⚠️ |
-| US-FORM-008 | Must | ADR-0007 | — | POST /Formulas/{fid}/herbs/{hid}/validate | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ⚠️ |
-| US-FORM-009 | Must | ADR-0007 | — | IFormulaService.ValidateFormulaHerbAsync | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ⚠️ |
+| US-FORM-007 | Must | ADR-0007 | — | GET /Formulas/pending-validation | IFormulaService.cs:11 | D11 | ✅ 已实现（待验证列表分页） | ✅ | ✅ |
+| US-FORM-008 | Must | ADR-0007 | — | POST /Formulas/{fid}/herbs/{hid}/validate | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ✅ |
+| US-FORM-009 | Must | ADR-0007 | — | IFormulaService.ValidateFormulaHerbAsync | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ✅ |
 | US-FORM-010 | Must | ADR-0007 | — | IFormulaService.UpdateAsync | IFormulaService.cs:11 | — | ✅ 已实现（FLAW-F1 降级 Draft） | ✅ | ✅ |
 | US-FORM-011 | Must | ADR-0007 | — | POST /Formulas/{id}/toggle-status | CatalogController.cs:363 | — | ✅ 已实现（toggle-status + batch-enable/disable） | ✅ | ✅ |
 | US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | CatalogController.cs:363 | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |

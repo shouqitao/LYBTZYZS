@@ -189,7 +189,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
 `MasterDetail` `HerbView/Edit`，字段 名称/拼音/分类/性味/产地/规格/单位/单价/成本/功效/用法，`IsShared`；按钮 新建/编辑/删除/启用/禁用/批量启用/禁用/批量删除/导入/导出（写 `AdminOrSuperAdmin`，读 `DoctorOrAdmin`），`CheckReference` 引用检查。
 
 ### 4.8 验方管理 (`FormulaManagementView`)
-`MasterDetail` `FormulaView` 含药材组成表格 `HerbName/Dosage/Unit`；按钮 同药材 + `Clone` + `pending-validation` + `ValidateHerb`；导入 `FormulaImportDialog` JSON 模板 + `ValidationPreview` 行级标红 + `500/事务` 分片。
+`MasterDetail` `FormulaView` 含药材组成表格 `HerbName/Dosage/Unit`；工具栏 新建/编辑/复制/模板/导入/导出 + **`待校验`**（✅ 2026-09-09 B-13：切换 Draft 待办列表——`GET pending-validation` 分页 + 列表「校验」列 待校验/已验证）；待校验模式详情为**校验面板**——每行未绑定药材 ComboBox 选系统药材 + 校验绑定（`POST /formulas/{id}/herbs/{itemId}/validate`，全部绑定自动晋升 Validated）；导入走 JSON 模板 + `POST batch-import`（模板下载 2026-08-13 起为 JSON）。
 
 ### 4.9 医案管理 (`MedicalCaseMasterDetailView`)
 `MasterDetail` `MedicalCaseViewControl` 只读 + `StatusBadge` Draft/Active/Completed/Locked/Suspended；列表 患者/医生/状态/创建时间/是否打印；按钮 新建 `DoctorOnly` /查看/编辑/完成/关闭/挂起/取消/打印/审计。

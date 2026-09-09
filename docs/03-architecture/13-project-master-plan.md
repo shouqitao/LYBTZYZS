@@ -19,7 +19,7 @@
 | 代码库 | D:\source\repos\LYBTZYZS |
 | 分支 | master → Gitee (gitee.com/shouqitao/LYBTZYZS) |
 | 数据库 | Remote: SQL Server (LYBTDB_Dev) / Local: LocalDB (LYBTDesktop) |
-| Server 模块 | 8 个 (Auth/Users/Patients/Herbs/Formula/MedicalCase/Registration/Reports) |
+| Server 模块 | 6 个 (Catalog/Identity/MedicalCases/Patients/Registration/Reports) |
 | Desktop 模块 | 7 个 + 3 个 Core 层 |
 | 当前状态 | Build/测试/架构测试/已知问题见 [13c-current-status.md](13c-current-status.md)（唯一权威） |
 
@@ -93,7 +93,7 @@
 | B-10 | SignalR 实时通知 | Hub+客户端+协议设计 | A-03 | ✅ | 3d |
 | B-11 | 药材/验方模板 | 导入模板下载（**2026-09-09 结案：JSON 模板**——原「Excel 模板下载」为 B-03 Excel 时代表述，`#112` 用户决策后模板=JSON、ExcelService/NPOI 已全仓移除，见 §九 2026-09-09 行） | f5e0b4236/#129/#130 | ✅ | 0.5d |
 | B-12 | 患者导入导出 | Excel 模板+导出 | B-03 | ⬜ | 0.5d |
-| B-13 | 验方校验 UI | Desktop 对齐 API | 无 | ⬜ | 0.5d |
+| B-13 | 验方校验 UI | Desktop 对齐 API（**2026-09-09 结案**——待校验列表 + 药材绑定 UI 落地，见 §九） | 无 | ✅ | 0.5d |
 | B-14 | 挂号排班 | 医生排班+号源管理 | 无 | ⬜ | 3d |
 | B-15 | 离线同步 v2.0 | 重新设计架构 | 无 | ⬜ | 5d+ |
 | B-16 | Swagger | API 文档生成 | 无 | ⬜ | 0.5d |
@@ -205,7 +205,7 @@
 | 2 | B-09 自动更新 | 2d |
 | 3 | B-10 SignalR | 3d | ✅ |
 | 4 | B-11 模板下载（✅ JSON 形式结案 2026-09-09）/ B-12 患者导入导出 ⬜ | 1d |
-| 5 | B-13 验方校验 UI | 0.5d |
+| 5 | B-13 验方校验 UI（✅ 2026-09-09） | 0.5d |
 | **小计** | | **~8.5d** |
 
 ### Phase 5: 收尾
@@ -263,7 +263,7 @@
 | B-10 SignalR | ✅ | 2026-08-06 | `0d8aabb90` — US-REG-008 医生工作台待诊列表实时更新：服务端新增 `RegistrationHub`（`[Authorize(DoctorOrAdmin)]`，按 doctorId 分组）+ `RegistrationConnectionManager`（ConnectionId↔DoctorId）+ `INotificationService`/`NotificationService`（`IHubContext` 推送 `NewRegistration`/`RegistrationStatusChanged` 到 `doctor-{id}` 分组，空 doctorId 跳过）；Create/StartVisit/Cancel 三个 CommandHandler 在业务成功后触发推送（推送失败仅日志，不影响主流程）；`Program.cs` 注册 `AddSignalR` + `MapHub("/hubs/registration")`；Desktop 新增 `SignalRClient`（`Microsoft.AspNetCore.SignalR.Client` 8.0.26，JWT access_token 连接、自动重连 2/10/30s、断线降级 15s 轮询复用候诊队列接口）发布 `RegistrationRefreshedEvent`，`RegistrationListViewModel` 订阅实时刷新（Doctor 角色导航时启动/停止）；新增 9 单测（NotificationService 分组过滤 + ConnectionManager 映射，EF/手写 fake 零 mock）；build --no-incremental 0 错误 0 警告，架构测试 92/92 | |
 | B-11 药材/验方模板 | ✅ | 2026-09-09 | `f5e0b4236`（Desktop 模板/导入/导出 UI）+ `850c601a0`（后端 JSON 化 #112）+ `c26fe08ad`（双端路由对齐 #129）+ 本文档 commit —— 药材/验方页面「模板」按钮（Herb/FormulaMasterDetailControl）双端落地：Remote+Local `GET import-template` 返回 **JSON 模板**（字段说明+示例+必填标注，2026-08-13 #112 用户决策——后端不涉及 Excel）；Desktop SaveFileDialog 保存 `药材导入模板.json`/`验方导入模板.json`，模板字段与 `batch-import` DTO 对齐（HerbInputDto/FormulaImportItemDto）；导入复用 `POST batch-import`；守卫复验（2026-09-09）：ImportExportJsonTests 6/6 + ImportExportRouteParityTests/LocalImportExportJsonTests 7/7 + build --no-incremental 0 错误 0 警告 |
 | B-12 患者导入导出 | ⬜ | — | — |
-| B-13 验方校验 UI | ⬜ | — | — |
+| B-13 验方校验 UI | ✅ | 2026-09-09 | 本文档 commit（B-13 任务书 `.hermes-task-b13-formula-validation.md`）——验方管理页「待校验」工具栏切换（GET /formulas/pending-validation 分页）+ 列表「校验」状态列（Draft=待校验/Validated=已验证）+ 详情校验面板（未绑定药材行级 ComboBox 选系统药材 → POST /formulas/{id}/herbs/{itemId}/validate 绑定，全部绑定自动晋升 Validated）——Desktop 对齐 US-FORM-007/008/009 API；同时修复 Desktop 契约滞后：pending-validation 原 `List` 单类型 → `PagedResult<FormulaDetailDto>`+page/pageSize（服务端 P3 已分页）、validate 信封对齐 `ApiResponse`；守卫：FormulaMasterDetailViewModelTests 14/14 + build --no-incremental 0 错误 0 警告 |
 | B-14 挂号排班 | ⬜ | — | — |
 | B-15 离线同步 v2.0 | ⬜ | — | — |
 | B-16 Swagger | ⬜ | — | — |
@@ -355,6 +355,7 @@
 
 | 日期 | 决策 | 理由 | 决策人 |
 | ------ | ------ | ------ | -------- |
+| 2026-09-09 | **B-13 验方校验 UI 落地（Desktop 对齐 US-FORM-007/008/009）**：验方管理页（FormulaMasterDetailControl）工具栏新增「待校验」切换 → 列表仅显示 Draft（`GET /formulas/pending-validation` 分页），列表新增「校验」状态列（待校验/已验证），详情区在待校验模式下显示**校验面板**——每味未绑定药材行提供系统药材 ComboBox + 「校验绑定」按钮（`POST /formulas/{formulaId}/herbs/{herbItemId}/validate`），全部绑定后服务端自动晋升 `Validated`（面板提示+列表刷新）。**顺带修复契约滞后**（此前 Desktop 从未消费故潜藏）：① `pending-validation` Refit/Http 契约 `List<FormulaListDto>` → `PagedResult<FormulaDetailDto>` + page/pageSize（服务端 P3 已加分页而契约未跟，类型不匹配必解析失败）；② `validate` 返回信封对齐实际 `ApiResponse`（双端均 `Success("药材验证成功")` 无 data，原契约声明 `ApiResponse<FormulaHerbItemDto>` 反序列化必抛）；链路补齐：`IFormulaApi/IApiClientFormulas/两实现` → `IFormulaRepository/FormulaRepository` → `IFormulaService/FormulaService` → `FormulaMasterDetailViewModel` + 新 `FormulaValidationItemViewModel`。任务书 背景中“FormulaImportDialog 批量导入校验展示”表述过时——该对话框现为医案「从经验方导入」选择器（仅展示 Validated+Enabled，T5-P2-17/18 过滤已含校验语义），文件批量导入在 Catalog 工具栏（JSON + batch-import），故校验 UI 落在验方管理页而非导入对话框。验证：FormulaMasterDetailViewModelTests 14/14（新增 5）+ build --no-incremental 0 错误 0 警告；矩阵 US-FORM-007/008/009 Desktop ⚠️→✅ | 追溯矩阵 Desktop ⚠️=校验 UI 缺失属实；以需求 SSOT（US-FORM-007/008/009）+ 设计文档 §4.8（pending-validation/ValidateHerb）为依据；先文档后代码 | 技术总监 |
 | 2026-09-09 | **B-11 药材/验方模板结案（JSON 形式，非 Excel）**：任务书 `.hermes-task-b11-excel-template.md` 要求「Excel 模板下载，复用 Shared.Models/Utilities/ExcelService.GenerateTemplate」——验收核对发现该前提已不成立：B-03 Excel 实现先后被 `a55483f8a`（服务端移除 Excel 端点）、`850c601a0`（#112 IMPORTEXPORT-JSON 用户决策：后端不涉及 Excel，保持通用性）、`85b2d16c5`（NuGet 包清理）移除，代码库**无 ExcelService、全仓 NPOI 残留 0**；需求 SSOT（US-HERB-006/013、US-FORM-006/013）2026-08-13 起模板=JSON（字段说明+示例+必填标注）且状态 ✅。B-11 产品结果（页面有「下载模板」按钮 + 保存对话框 + 模板可直接用于批量导入）已由 `f5e0b4236`（Desktop UI）+ `850c601a0`/`c26fe08ad`（JSON 化 + 双端路由）交付：药材/验方 MasterDetail 工具栏「模板」→ 双端 `GET import-template` JSON 模板 → SaveFileDialog 保存 `药材导入模板.json`/`验方导入模板.json` → 导入走 `POST batch-import`。复验（2026-09-09）：build --no-incremental 0 错误 0 警告、ImportExportJsonTests 6/6、ImportExportRouteParityTests + LocalImportExportJsonTests 7/7。**故按现设计将 B-11 标 ✅ 结案**；任务书列定义（名称/拼音码/别名/性味/归经/用量/禁忌/备注 等）为老 DTO 不存在字段，模板列已按真实 DTO 对齐（见 #129）。若产品侧仍需面向用户的 .xlsx 模板/导入（诊所人员填 Excel 比 JSON 友好），需另行审批在 Desktop 引入 Excel 库——后端保持 JSON 不变 | 任务书沿用 B-03 Excel 时代前提（ExcelService 已删）；后端格式无关是 2026-08-13 用户决策，不擅自回引 NPOI；先文档后代码——以需求 SSOT 为准 | 技术总监 |
 | 2026-08-02 | MediatR 保留用于复杂业务，trivial CRUD 改直接注入 | 减少不必要的间接层 | 产品负责人 |
 | 2026-08-02 | 架构测试约束 P07/P08/P10 不可违反 | 强制分层边界 | 技术总监 |
