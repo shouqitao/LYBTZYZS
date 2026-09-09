@@ -64,6 +64,47 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
 
     #endregion
 
+    #region 验方校验（US-FORM-007/008）
+
+    /// <summary>获取待校验验方分页列表。</summary>
+    public async Task<PagedResult<FormulaDetailDto>> GetPendingValidationAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _formulas.GetPendingValidationAsync(page, pageSize);
+                if (!response.Success || response.Data == null)
+                    throw new InvalidOperationException(response.Message ?? "获取待校验验方失败");
+
+                Logger.LogInformation("[REPO] Formula.GetPendingValidation completed - Total={Total}", response.Data.TotalCount);
+                return response.Data;
+            },
+            "GetPendingValidation",
+            LogLevel.Information);
+    }
+
+    /// <summary>校验验方药材（绑定到系统药材库）。</summary>
+    public async Task<bool> ValidateHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId, CancellationToken ct = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await _formulas.ValidateHerbAsync(
+                    formulaId,
+                    herbItemId,
+                    new ValidateFormulaHerbInputDto { SelectedHerbId = selectedHerbId });
+                if (!response.Success)
+                    throw new InvalidOperationException(response.Message ?? "药材校验失败");
+
+                Logger.LogInformation("[REPO] Formula.ValidateHerb completed - FormulaId={FormulaId} HerbItemId={HerbItemId}", formulaId, herbItemId);
+                return true;
+            },
+            "ValidateHerb",
+            LogLevel.Information);
+    }
+
+    #endregion
+
     #region 状态切换、恢复和批量操作
 
     public async Task<FormulaDetailDto?> ToggleStatusAsync(Guid id, CancellationToken ct = default)

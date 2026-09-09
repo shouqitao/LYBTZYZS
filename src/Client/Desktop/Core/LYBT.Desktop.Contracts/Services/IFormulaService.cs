@@ -35,6 +35,16 @@ namespace LYBT.Desktop.Contracts.Services
         #region 批量导入/导出
 
         /// <summary>
+        /// 获取待校验验方分页列表（US-FORM-007——Desktop 验方校验待办）
+        /// </summary>
+        Task<CommandResult<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20, CancellationToken ct = default);
+
+        /// <summary>
+        /// 校验验方药材（绑定到系统药材库，US-FORM-008）
+        /// </summary>
+        Task<CommandResult<bool>> ValidateHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId, CancellationToken ct = default);
+
+        /// <summary>
         /// 批量导入验方数据
         /// </summary>
         Task<CommandResult<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default);

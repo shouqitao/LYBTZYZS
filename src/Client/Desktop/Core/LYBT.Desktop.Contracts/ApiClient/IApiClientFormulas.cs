@@ -113,9 +113,9 @@ public interface IApiClientFormulas : IEntityApiSegment<FormulaListDto, FormulaD
     Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
 
     /// <summary>
-    /// 获取待校验的验方。
+    /// 获取待校验的验方（分页——服务端返回带 Herbs 明细的 DetailDto）。
     /// </summary>
-    Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();
+    Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20);
 
     /// <summary>
     /// 校验验方中的药材条目（绑定到系统药材库）。
@@ -123,7 +123,7 @@ public interface IApiClientFormulas : IEntityApiSegment<FormulaListDto, FormulaD
     /// <param name="formulaId">Formula ID.</param>
     /// <param name="herbItemId">Herb item ID in the formula.</param>
     /// <param name="request">Validation request with selected herb ID.</param>
-    Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+    Task<ApiResponse> ValidateHerbAsync(
         Guid formulaId,
         Guid herbItemId,
         ValidateFormulaHerbInputDto request);

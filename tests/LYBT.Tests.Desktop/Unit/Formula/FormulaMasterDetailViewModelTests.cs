@@ -106,6 +106,18 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
         _search.SearchText.Returns(string.Empty);
         _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
         _herbSearchProvider.GetAllHerbsAsync().Returns(Task.FromResult<IReadOnlyList<HerbListDto>>(Array.Empty<HerbListDto>()));
+
+        // 验方校验（US-FORM-007/008）默认桩：待校验列表空页 + 详情不存在（各用例自行覆盖）
+        _formulaService.GetPendingValidationAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<PagedResult<FormulaDetailDto>>(
+                true,
+                new PagedResult<FormulaDetailDto> { Items = new List<FormulaDetailDto>(), TotalCount = 0 },
+                null));
+        _formulaService.GetPagedAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<PagedResult<FormulaListDto>>(
+                true,
+                new PagedResult<FormulaListDto> { Items = new List<FormulaListDto>(), TotalCount = 0 },
+                null));
     }
 
     private FormulaMasterDetailViewModel CreateSut()
@@ -322,5 +334,217 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
 
         sut.SearchText.Should().Be("分类:经典方");
         await _formulaService.Received(1).GetPagedAsync(1, 20, "分类:经典方", Arg.Any<CancellationToken>());
+    }
+
+    // ==================== 验方校验（US-FORM-007/008——Desktop 校验 UI） ====================
+
+    /// <summary>等待异步回调（ServiceEventBridge 的选择→详情为 fire-and-forget）完成</summary>
+    private static async Task PumpUntilAsync(Func<bool> condition, string failMessage, int timeoutMs = 3000)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (!condition())
+        {
+            if (sw.ElapsedMilliseconds > timeoutMs) break;
+            await Task.Delay(10);
+        }
+        condition().Should().BeTrue(failMessage);
+    }
+
+    /// <summary>在校验模式下模拟选中某验方（触发基类 选择→LoadDetailAsync）</summary>
+    private static void RaiseSelection(
+        IMasterDetailServices<FormulaListDto, FormulaDetailModel> services,
+        FormulaListDto item)
+    {
+        services.Selection.SelectionChanged += Raise.EventWith(
+            new SelectionChangedEventArgs<FormulaListDto>(item, null, new[] { item }));
+    }
+
+    [Fact]
+    public async Task ToggleValidationMode_LoadsPendingValidationList()
+    {
+        var sut = CreateSut();
+        var detailId = Guid.NewGuid();
+        var pending = new PagedResult<FormulaDetailDto>
+        {
+            Items = new List<FormulaDetailDto>
+            {
+                new() { Id = detailId, Name = "导入验方甲", ValidationStatus = FormulaValidationStatus.Draft, HerbCount = 2 }
+            },
+            TotalCount = 1
+        };
+        _formulaService.GetPendingValidationAsync(1, 20, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<PagedResult<FormulaDetailDto>>(true, pending, null));
+
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+
+        sut.IsValidationMode.Should().BeTrue();
+        sut.IsNormalMode.Should().BeFalse();
+        sut.Items.Should().ContainSingle(i => i.Id == detailId && i.Name == "导入验方甲" && i.ValidationStatus == FormulaValidationStatus.Draft);
+        sut.TotalCount.Should().Be(1);
+        await _formulaService.Received(1).GetPendingValidationAsync(1, 20, Arg.Any<CancellationToken>());
+
+        // 再次切换回普通模式 → 走全量分页查询
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+        sut.IsValidationMode.Should().BeFalse();
+        await _formulaService.Received(1).GetPagedAsync(1, 20, string.Empty, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SelectingPendingFormulaInValidationMode_LoadsValidationRows()
+    {
+        var sut = CreateSut();
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+
+        var formulaId = Guid.NewGuid();
+        var item = new FormulaListDto { Id = formulaId, Name = "导入验方乙" };
+        _selection.SelectedItem.Returns(item);
+        _selection.HasSelection.Returns(true);
+
+        var detail = new FormulaDetailDto
+        {
+            Id = formulaId,
+            Name = "导入验方乙",
+            ValidationStatus = FormulaValidationStatus.Draft,
+            Herbs = new List<FormulaHerbItemDto>
+            {
+                new() { Id = Guid.NewGuid(), IsValidated = true, HerbName = "人参", Dosage = 10, Unit = "g" },
+                new() { Id = Guid.NewGuid(), IsValidated = false, HerbName = string.Empty, OriginalHerbName = "参须", Dosage = 5, Unit = "g" }
+            }
+        };
+        _formulaService.GetByIdAsync(formulaId, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, detail, null));
+
+        RaiseSelection(_masterDetailServices, item);
+        await PumpUntilAsync(() => sut.IsValidationDetail, "校验详情面板未加载");
+
+        sut.ValidationFormulaName.Should().Be("导入验方乙");
+        sut.ValidationRows.Should().HaveCount(2);
+        sut.ValidationRows[0].IsValidated.Should().BeTrue();
+        sut.ValidationRows[1].IsValidated.Should().BeFalse();
+        sut.ValidationRows[1].DisplayName.Should().Be("参须");
+        sut.ValidationPendingCount.Should().Be(1);
+        sut.DetailTitle.Should().Be("待校验 · 导入验方乙");
+    }
+
+    [Fact]
+    public async Task ValidateHerb_BindsSelectedHerbToSystemHerb()
+    {
+        var sut = CreateSut();
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+
+        var formulaId = Guid.NewGuid();
+        var herbItemId = Guid.NewGuid();
+        var systemHerbId = Guid.NewGuid();
+        var item = new FormulaListDto { Id = formulaId, Name = "导入验方丙" };
+        _selection.SelectedItem.Returns(item);
+        _selection.HasSelection.Returns(true);
+
+        var draft = new FormulaDetailDto
+        {
+            Id = formulaId,
+            Name = "导入验方丙",
+            ValidationStatus = FormulaValidationStatus.Draft,
+            Herbs = new List<FormulaHerbItemDto>
+            {
+                new() { Id = herbItemId, IsValidated = false, OriginalHerbName = "参须", Dosage = 5, Unit = "g" }
+            }
+        };
+        var validated = new FormulaDetailDto
+        {
+            Id = formulaId,
+            Name = "导入验方丙",
+            ValidationStatus = FormulaValidationStatus.Validated,
+            Herbs = new List<FormulaHerbItemDto>
+            {
+                new() { Id = herbItemId, IsValidated = true, HerbName = "太子参", Dosage = 5, Unit = "g" }
+            }
+        };
+        _formulaService.GetByIdAsync(formulaId, Arg.Any<CancellationToken>())
+            .Returns(
+                new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, draft, null),
+                new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, validated, null));
+        _formulaService.ValidateHerbAsync(formulaId, herbItemId, systemHerbId, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<bool>(true, true, null));
+
+        RaiseSelection(_masterDetailServices, item);
+        await PumpUntilAsync(() => sut.ValidationRows.Count == 1, "校验详情面板未加载");
+
+        sut.ValidationRows.Single().SelectedHerb = new HerbListDto { Id = systemHerbId, Name = "太子参", PinYinCode = "taizishen" };
+        await sut.ValidateHerbCommand.ExecuteAsync(sut.ValidationRows.Single());
+
+        await _formulaService.Received(1).ValidateHerbAsync(formulaId, herbItemId, systemHerbId, Arg.Any<CancellationToken>());
+        _cacheManager.Received(1).InvalidateFormulaCaches();
+        await PumpUntilAsync(() => sut.ValidationPendingCount == 0, "绑定后未重新加载校验详情");
+        sut.ValidationRows.Single().IsValidated.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidateHerb_WithoutSelectedHerb_ShowsErrorAndSkipsCall()
+    {
+        var sut = CreateSut();
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+
+        var formulaId = Guid.NewGuid();
+        var item = new FormulaListDto { Id = formulaId, Name = "导入验方丁" };
+        _selection.SelectedItem.Returns(item);
+        _selection.HasSelection.Returns(true);
+
+        var draft = new FormulaDetailDto
+        {
+            Id = formulaId,
+            ValidationStatus = FormulaValidationStatus.Draft,
+            Herbs = new List<FormulaHerbItemDto>
+            {
+                new() { Id = Guid.NewGuid(), IsValidated = false, OriginalHerbName = "参须", Dosage = 5, Unit = "g" }
+            }
+        };
+        _formulaService.GetByIdAsync(formulaId, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, draft, null));
+
+        RaiseSelection(_masterDetailServices, item);
+        await PumpUntilAsync(() => sut.ValidationRows.Count == 1, "校验详情面板未加载");
+
+        await sut.ValidateHerbCommand.ExecuteAsync(sut.ValidationRows.Single());
+
+        await _dialogManager.Received(1).ShowErrorAsync(
+            Arg.Is<string>(m => m.Contains("请先从列表选择要绑定的系统药材")), Arg.Any<string>());
+        await _formulaService.DidNotReceive().ValidateHerbAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ValidateHerb_OnApiFailure_ShowsServerErrorMessage()
+    {
+        var sut = CreateSut();
+        await sut.ToggleValidationModeCommand.ExecuteAsync(null);
+
+        var formulaId = Guid.NewGuid();
+        var herbItemId = Guid.NewGuid();
+        var systemHerbId = Guid.NewGuid();
+        var item = new FormulaListDto { Id = formulaId, Name = "导入验方戊" };
+        _selection.SelectedItem.Returns(item);
+        _selection.HasSelection.Returns(true);
+
+        var draft = new FormulaDetailDto
+        {
+            Id = formulaId,
+            ValidationStatus = FormulaValidationStatus.Draft,
+            Herbs = new List<FormulaHerbItemDto>
+            {
+                new() { Id = herbItemId, IsValidated = false, OriginalHerbName = "参须", Dosage = 5, Unit = "g" }
+            }
+        };
+        _formulaService.GetByIdAsync(formulaId, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<FormulaDetailDto>(true, draft, null));
+        _formulaService.ValidateHerbAsync(formulaId, herbItemId, systemHerbId, Arg.Any<CancellationToken>())
+            .Returns(new LYBT.Desktop.Contracts.Results.CommandResult<bool>(false, false, "系统药材不存在或已停用"));
+
+        RaiseSelection(_masterDetailServices, item);
+        await PumpUntilAsync(() => sut.ValidationRows.Count == 1, "校验详情面板未加载");
+        sut.ValidationRows.Single().SelectedHerb = new HerbListDto { Id = systemHerbId, Name = "参须" };
+
+        await sut.ValidateHerbCommand.ExecuteAsync(sut.ValidationRows.Single());
+
+        await _dialogManager.Received(1).ShowErrorAsync(
+            Arg.Is<string>(m => m.Contains("系统药材不存在或已停用")), Arg.Any<string>());
     }
 }

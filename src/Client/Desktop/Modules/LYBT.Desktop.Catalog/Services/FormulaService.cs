@@ -137,6 +137,28 @@ namespace LYBT.Desktop.Catalog.Services
 
         #endregion
 
+        #region 验方校验（US-FORM-007/008）
+
+        public async Task<CommandResult<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<PagedResult<FormulaDetailDto>>("Formula.GetPendingValidation", async () =>
+            {
+                var result = await _formulaRepository.GetPendingValidationAsync(page, pageSize, ct);
+                return CommandResult<PagedResult<FormulaDetailDto>>.Succeeded(result);
+            });
+        }
+
+        public async Task<CommandResult<bool>> ValidateHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId, CancellationToken ct = default)
+        {
+            return await ExecuteAsync<bool>("Formula.ValidateHerb", async () =>
+            {
+                var ok = await _formulaRepository.ValidateHerbAsync(formulaId, herbItemId, selectedHerbId, ct);
+                return CommandResult<bool>.Succeeded(ok);
+            });
+        }
+
+        #endregion
+
         #region 批量导入/导出
 
         public async Task<CommandResult<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)

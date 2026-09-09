@@ -41,6 +41,16 @@ public interface IFormulaRepository
     Task<List<FormulaListDto>> SearchAsync(string keyword, CancellationToken ct = default);
 
     /// <summary>
+    /// 获取待校验验方（Draft）分页列表（US-FORM-007）
+    /// </summary>
+    Task<PagedResult<FormulaDetailDto>> GetPendingValidationAsync(int page = 1, int pageSize = 20, CancellationToken ct = default);
+
+    /// <summary>
+    /// 校验验方中的药材（绑定到系统药材库，US-FORM-008）
+    /// </summary>
+    Task<bool> ValidateHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId, CancellationToken ct = default);
+
+    /// <summary>
     /// 克隆验方
     /// </summary>
     Task<FormulaDetailDto> CloneFormulaAsync(Guid formulaId, CancellationToken ct = default);

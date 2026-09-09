@@ -69,10 +69,10 @@ internal sealed class FormulasHttpApiClient : HttpApiClientBase, IApiClientFormu
     public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
         => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/formulas/batch-disable", request);
 
-    public Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync()
-        => GetAndWrapAsync<List<FormulaListDto>>("/api/v1/formulas/pending-validation");
+    public Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20)
+        => GetPagedAndWrapAsync<FormulaDetailDto>(BuildPagedUrl("/api/v1/formulas/pending-validation", page, pageSize));
 
-    public Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+    public Task<ApiResponse> ValidateHerbAsync(
         Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
-        => PostAndWrapAsync<FormulaHerbItemDto>($"/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate", request);
+        => PostVoidAsync($"/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate", request);
 }

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
@@ -54,6 +55,45 @@ namespace LYBT.Desktop.Catalog.ViewModels
         /// <summary>所有药材列表（用于拼音码快速匹配）</summary>
         public IEnumerable<HerbListDto> AllHerbs => _allHerbs;
 
+        /// <summary>是否为验方校验模式（列表仅显示 Draft 待校验验方——US-FORM-007）</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsNormalMode))]
+        [NotifyPropertyChangedFor(nameof(DetailTitle))]
+        private bool _isValidationMode;
+
+        /// <summary>非校验模式（用于隐藏校验模式下不适用的搜索框等）</summary>
+        public bool IsNormalMode => !IsValidationMode;
+
+        /// <summary>当前选中详情是否已按校验视图加载（决定校验面板可见性）</summary>
+        [ObservableProperty]
+        private bool _isValidationDetail;
+
+        /// <summary>校验面板当前验方名</summary>
+        [ObservableProperty]
+        private string _validationFormulaName = string.Empty;
+
+        /// <summary>待绑定药材数（校验面板标题）</summary>
+        [ObservableProperty]
+        private int _validationPendingCount;
+
+        /// <summary>校验面板药材行（含已绑定/待绑定）</summary>
+        public ObservableCollection<FormulaValidationItemViewModel> ValidationRows { get; } = new();
+
+        #endregion
+
+        #region 详情标题（校验模式覆盖）
+
+        /// <inheritdoc/>
+        public override string DetailTitle
+        {
+            get
+            {
+                if (IsValidationDetail && SelectedItem != null)
+                    return $"待校验 · {SelectedItem.Name}";
+                return base.DetailTitle;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -83,13 +123,33 @@ namespace LYBT.Desktop.Catalog.ViewModels
         /// <summary>加载列表数据</summary>
         protected override async Task LoadListAsync()
         {
-            Logger.LogInformation("验方搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'",
-                CurrentPage, PageSize, SearchText);
+            Logger.LogInformation("验方搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}', 校验模式: {IsValidationMode}",
+                CurrentPage, PageSize, SearchText, IsValidationMode);
 
             try
             {
                 await MasterDetailServices.Loading.ExecuteWithLoadingAsync(async () =>
                 {
+                    // US-FORM-007：校验模式走待校验端点（Draft），普通模式走全量分页
+                    if (IsValidationMode)
+                    {
+                        var pending = await _formulaService.GetPendingValidationAsync(CurrentPage, PageSize);
+                        if (!pending.Success || pending.Data == null)
+                        {
+                            MasterDetailServices.ErrorHandler.SetError("Load", pending.Error ?? "加载待校验验方失败");
+                            return;
+                        }
+
+                        var pendingData = pending.Data;
+                        MasterDetailServices.Pagination.TotalCount = pendingData.TotalCount;
+                        Items.Clear();
+                        foreach (var detail in pendingData.Items ?? Enumerable.Empty<FormulaDetailDto>())
+                        {
+                            Items.Add(ToListDto(detail));
+                        }
+                        return;
+                    }
+
                     var result = await _formulaService.GetPagedAsync(CurrentPage, PageSize, SearchText);
                     if (!result)
                     {
@@ -114,11 +174,37 @@ namespace LYBT.Desktop.Catalog.ViewModels
             }
         }
 
+        /// <summary>待校验详情 DTO → 列表 DTO（校验模式下待校验端点返回 DetailDto，转轻量列表项）</summary>
+        private static FormulaListDto ToListDto(FormulaDetailDto d)
+        {
+            return new FormulaListDto
+            {
+                Id = d.Id,
+                Name = d.Name,
+                Effect = d.Effect,
+                Indication = d.Indication,
+                Category = d.Category,
+                IsShared = d.IsShared,
+                Status = d.Status,
+                ValidationStatus = d.ValidationStatus,
+                HerbCount = d.HerbCount,
+                TotalPrice = d.TotalPrice,
+                CreatedAt = d.CreatedAt
+            };
+        }
+
         /// <summary>加载详情数据</summary>
         protected override async Task LoadDetailAsync(FormulaListDto item)
         {
             try
             {
+                // 校验模式：详情区切换为校验面板（US-FORM-008 绑定流程）
+                if (IsValidationMode)
+                {
+                    await LoadValidationDetailAsync(item.Id);
+                    return;
+                }
+
                 var result = await _formulaService.GetByIdAsync(item.Id);
                 if (!result)
                 {
@@ -136,6 +222,108 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 MasterDetailServices.ErrorHandler.HandleException(ex, "加载验方详情");
             }
         }
+
+        /// <summary>加载校验详情（含每味药材的绑定状态）</summary>
+        private async Task LoadValidationDetailAsync(Guid formulaId)
+        {
+            ValidationRows.Clear();
+            var result = await _formulaService.GetByIdAsync(formulaId);
+            if (!result || result.Data == null)
+            {
+                IsValidationDetail = false;
+                await MasterDetailServices.Dialog.ShowErrorAsync(
+                    result.Error ?? "加载验方详情失败", "加载失败");
+                return;
+            }
+
+            var dto = result.Data;
+            ValidationFormulaName = dto.Name;
+
+            var pendingCount = 0;
+            foreach (var herb in dto.Herbs ?? Enumerable.Empty<FormulaHerbItemDto>())
+            {
+                if (!herb.IsValidated) pendingCount++;
+                ValidationRows.Add(new FormulaValidationItemViewModel
+                {
+                    HerbItemId = herb.Id,
+                    OriginalHerbName = herb.OriginalHerbName,
+                    BoundHerbName = herb.HerbName,
+                    Dosage = herb.Dosage,
+                    Unit = herb.Unit ?? string.Empty,
+                    IsValidated = herb.IsValidated
+                });
+            }
+
+            ValidationPendingCount = pendingCount;
+            IsValidationDetail = true;
+            OnPropertyChanged(nameof(DetailTitle));
+            OnPropertyChanged(nameof(IsValidationDetail));
+        }
+
+        #region 验方校验命令（US-FORM-007/008——Desktop 校验 UI）
+
+        /// <summary>切换「待校验」模式</summary>
+        [RelayCommand]
+        private async Task ToggleValidationModeAsync()
+        {
+            IsValidationMode = !IsValidationMode;
+            ValidationRows.Clear();
+            IsValidationDetail = false;
+            SearchText = string.Empty;
+            MasterDetailServices.Pagination.CurrentPage = 1;
+            Logger.LogInformation("切换验方校验模式: {IsValidationMode}", IsValidationMode);
+            await RefreshAsync();
+        }
+
+        /// <summary>校验绑定某味药材到系统药材库</summary>
+        [RelayCommand]
+        private async Task ValidateHerbAsync(FormulaValidationItemViewModel? row)
+        {
+            if (row == null || row.IsBinding) return;
+            if (row.SelectedHerb == null)
+            {
+                await MasterDetailServices.Dialog.ShowErrorAsync("请先从列表选择要绑定的系统药材", "校验失败");
+                return;
+            }
+
+            var formulaId = SelectedItem?.Id ?? Guid.Empty;
+            if (formulaId == Guid.Empty) return;
+
+            row.IsBinding = true;
+            try
+            {
+                var display = row.SelectedHerb.Name;
+                var result = await _formulaService.ValidateHerbAsync(formulaId, row.HerbItemId, row.SelectedHerb.Id);
+                if (!result.Success)
+                {
+                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "药材校验失败", "校验失败");
+                    return;
+                }
+
+                _cacheManager.InvalidateFormulaCaches();
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"「{row.DisplayName}」已绑定为系统药材「{display}」", "校验成功");
+
+                // 重载详情刷新绑定状态；若最后一味绑定完成服务端已自动晋升 Validated，列表将不再出现该验方
+                await LoadValidationDetailAsync(formulaId);
+                if (ValidationPendingCount == 0)
+                {
+                    await MasterDetailServices.Dialog.ShowSuccessAsync($"验方「{ValidationFormulaName}」已全部校验完成", "校验完成");
+                }
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "校验验方药材失败: FormulaId={FormulaId}, HerbItemId={HerbItemId}", formulaId, row.HerbItemId);
+                await MasterDetailServices.Dialog.ShowErrorAsync(
+                    ClientErrorMessageMapper.GetSafeOperationFailureMessage("校验药材", ex), "校验失败");
+            }
+            finally
+            {
+                row.IsBinding = false;
+            }
+        }
+
+        #endregion
 
         /// <summary>创建新详情实例</summary>
         protected override FormulaDetailModel CreateNewDetail()

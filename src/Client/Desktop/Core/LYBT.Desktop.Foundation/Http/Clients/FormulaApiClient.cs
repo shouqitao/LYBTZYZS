@@ -87,11 +87,11 @@ internal sealed class FormulaApiClient : IApiClientFormulas
         => _api.BatchDisableAsync(request);
 
     /// <inheritdoc />
-    public Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync()
-        => _api.GetPendingValidationAsync();
+    public Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20)
+        => _api.GetPendingValidationAsync(page, pageSize);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+    public Task<ApiResponse> ValidateHerbAsync(
         Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
         => _api.ValidateHerbAsync(formulaId, herbItemId, request);
 }

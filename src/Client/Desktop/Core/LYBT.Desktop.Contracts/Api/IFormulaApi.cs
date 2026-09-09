@@ -83,16 +83,18 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
 
         /// <summary>
-        /// 获取待校验验方列表
+        /// 获取待校验验方列表（分页——US-FORM-007，服务端返回 PagedResult&lt;FormulaDetailDto&gt;）
         /// </summary>
         [Refit.Get("/api/v1/formulas/pending-validation")]
-        Task<ApiResponse<List<FormulaListDto>>> GetPendingValidationAsync();
+        Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20);
 
         /// <summary>
         /// 校验验方中的药材（绑定到系统药材库）
         /// </summary>
         [Refit.Post("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
-        Task<ApiResponse<FormulaHerbItemDto>> ValidateHerbAsync(
+        Task<ApiResponse> ValidateHerbAsync(
             Guid formulaId,
             Guid herbItemId,
             [Refit.Body] ValidateFormulaHerbInputDto request);
