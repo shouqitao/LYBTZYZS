@@ -469,7 +469,7 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
         RaiseSelection(_masterDetailServices, item);
         await PumpUntilAsync(() => sut.ValidationRows.Count == 1, "校验详情面板未加载");
 
-        sut.ValidationRows.Single().SelectedHerb = new HerbListDto { Id = systemHerbId, Name = "太子参", PinYinCode = "taizishen" };
+        sut.ValidationRows.Single().SelectedHerbId = systemHerbId;
         await sut.ValidateHerbCommand.ExecuteAsync(sut.ValidationRows.Single());
 
         await _formulaService.Received(1).ValidateHerbAsync(formulaId, herbItemId, systemHerbId, Arg.Any<CancellationToken>());
@@ -540,7 +540,7 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
 
         RaiseSelection(_masterDetailServices, item);
         await PumpUntilAsync(() => sut.ValidationRows.Count == 1, "校验详情面板未加载");
-        sut.ValidationRows.Single().SelectedHerb = new HerbListDto { Id = systemHerbId, Name = "参须" };
+        sut.ValidationRows.Single().SelectedHerbId = systemHerbId;
 
         await sut.ValidateHerbCommand.ExecuteAsync(sut.ValidationRows.Single());
 

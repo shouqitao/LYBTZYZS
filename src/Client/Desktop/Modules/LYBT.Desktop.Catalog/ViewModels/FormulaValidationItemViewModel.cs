@@ -1,5 +1,4 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Catalog.ViewModels
 {
@@ -8,7 +7,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
     ///
     /// 每行对应验方中的一味药材：
     /// - 已绑定（IsValidated=true）：只读展示系统药材名
-    /// - 未绑定：显示原名（OriginalHerbName），用户从 AllHerbs 选择系统药材后点击「校验绑定」
+    /// - 未绑定：显示原名（OriginalHerbName），用户从系统药材列表选择（SelectedValuePath=Id）后点击「校验绑定」
     /// </summary>
     public partial class FormulaValidationItemViewModel : ObservableObject
     {
@@ -38,8 +37,8 @@ namespace LYBT.Desktop.Catalog.ViewModels
         [ObservableProperty]
         private bool _isBinding;
 
-        /// <summary>用户选择的系统药材（ComboBox 选中项）</summary>
+        /// <summary>用户选择的系统药材 ID（ComboBox SelectedValue）——不直接持有 DTO（DP-M1）</summary>
         [ObservableProperty]
-        private HerbListDto? _selectedHerb;
+        private Guid? _selectedHerbId;
     }
 }

@@ -382,7 +382,8 @@
                                                 MinHeight="32"
                                                 VerticalContentAlignment="Center"
                                                 ItemsSource="{Binding DataContext.AllHerbs, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                                                SelectedItem="{Binding SelectedHerb, Mode=TwoWay}"
+                                                SelectedValue="{Binding SelectedHerbId, Mode=TwoWay}"
+                                                SelectedValuePath="Id"
                                                 TextSearch.TextPath="Name"
                                                 ToolTip="选择要绑定的系统药材（可按名称/拼音过滤）">
                                                 <ComboBox.ItemTemplate>

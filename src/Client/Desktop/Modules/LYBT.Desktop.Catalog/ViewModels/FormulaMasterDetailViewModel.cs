@@ -280,7 +280,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private async Task ValidateHerbAsync(FormulaValidationItemViewModel? row)
         {
             if (row == null || row.IsBinding) return;
-            if (row.SelectedHerb == null)
+            if (row.SelectedHerbId == null || row.SelectedHerbId == Guid.Empty)
             {
                 await MasterDetailServices.Dialog.ShowErrorAsync("请先从列表选择要绑定的系统药材", "校验失败");
                 return;
@@ -292,8 +292,8 @@ namespace LYBT.Desktop.Catalog.ViewModels
             row.IsBinding = true;
             try
             {
-                var display = row.SelectedHerb.Name;
-                var result = await _formulaService.ValidateHerbAsync(formulaId, row.HerbItemId, row.SelectedHerb.Id);
+                var selectedHerbId = row.SelectedHerbId.Value;
+                var result = await _formulaService.ValidateHerbAsync(formulaId, row.HerbItemId, selectedHerbId);
                 if (!result.Success)
                 {
                     await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "药材校验失败", "校验失败");
@@ -301,7 +301,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
                 }
 
                 _cacheManager.InvalidateFormulaCaches();
-                await MasterDetailServices.Dialog.ShowSuccessAsync($"「{row.DisplayName}」已绑定为系统药材「{display}」", "校验成功");
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"「{row.DisplayName}」已绑定为系统药材", "校验成功");
 
                 // 重载详情刷新绑定状态；若最后一味绑定完成服务端已自动晋升 Validated，列表将不再出现该验方
                 await LoadValidationDetailAsync(formulaId);
