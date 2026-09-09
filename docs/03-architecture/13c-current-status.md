@@ -15,54 +15,62 @@
 
 ## 四、Desktop 视图（代码实际定义）
 
-### 4.1 Shell
+> **审计依据（2026-08-29）**：docs/compose/reports/desktop-view-design-audit-2026-08-29.md。判定：XAML 存在 + VM + 导航/对话框注册 + 运行时入口。角色 Home 以 *RoleDefinition.HomeViewName 为准。
+
+### 4.1 Shell / Auth
 
 | 视图 | 文件 | 功能 | 问题 |
 | ------ | ------ | ------ | ------ |
+| MainWindow | Shell/Views/ | 主窗口（ContentRegion） | — |
 | LoginView | Modules/LYBT.Desktop.Auth/Views/ | 登录界面 | — |
-| FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导 | 功能有限 |
-| ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置 | — |
+| FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导（RegisterDialog） | 功能有限；全屏 5 步强制向导（inventory W-01）未另建 |
+| ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置（RegisterDialog） | — |
 | AccountSettingsView | Shell/Views/ | **个人资料**（姓名/密码/头像/会话超时），所有角色可用 | — |
+| SessionTimeoutWarningDialog | — | 会话超时倒计时提醒 | 🔴 设计清单有（US-AUTH-005），代码缺失 |
 
-### 4.2 管理员角色
+### 4.2 管理员 / Sysadmin 角色
 
 | 视图 | 文件 | 功能 | 问题 |
 | ------ | ------ | ------ | ------ |
-| AdminHomeView | Roles/LYBT.Desktop.Admin/Views/ | 管理员首页 | — |
+| AdminHomeView | Roles/LYBT.Desktop.Admin/Views/ | 管理员首页（Admin Home） | — |
 | UserManagementView | Roles/LYBT.Desktop.Admin/Views/ | 用户管理 | — |
 | SystemSettingsView | Roles/LYBT.Desktop.Admin/Views/ | **诊所设置**（诊所名称/地址/电话等业务信息） | 仅读取，无编辑 |
-| SysadminHomeView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | **运维设置**（系统运行配置主页） | — |
+| SysadminHomeView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | **运维设置**（系统运行配置主页，SuperAdmin Home） | — |
 | LogLevelControlView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 日志级别控制 | — |
 | DeploymentView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 部署视图 | 仅上传+重启 |
+| BackupManagementView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 备份恢复（US-SHELL-013） | — |
+| SecurityAuditLogView | — | 安全审计日志查看（US-SHELL-014） | 🔴 代码缺失（写入侧有、查看页/查询 API 无）；**勿与医案 AuditLogView 混淆** |
+| ConfigExportImportView | — | 配置包导出/导入（US-SHELL-016） | 🔴 代码缺失；业务数据 JSON 导入导出已在各 MasterDetail |
 
-### 4.3 临床角色
+### 4.3 临床 / 前台角色
 
 | 视图 | 文件 | 功能 | 问题 |
 | ------ | ------ | ------ | ------ |
-| ClinicalHomeView | Roles/LYBT.Desktop.Clinical/Views/ | 临床首页 | TODO: 今日统计 |
-| ClinicalWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 临床工作台 | — |
+| ClinicalWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | **医生真实 Home**（DoctorRoleDefinition.HomeViewName） | — |
+| ClinicalHomeView | Roles/LYBT.Desktop.Clinical/Views/ | 临床首页 | ⚠️ 半死：仅 RoleRegistry.DefaultHomeView fallback，无角色绑定 |
 | PatientManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 患者管理 | — |
-| PatientSelectionView | Roles/LYBT.Desktop.Clinical/Views/ | 患者选择（身份证读卡） | — |
+| PatientSelectionView | Roles/LYBT.Desktop.Clinical/Views/ | 患者选择（身份证读卡）+ **内嵌待诊队列** | 队列功能在此，无独立 PendingQueue 页 |
 | HerbManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 药材管理 | — |
 | FormulaManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 验方管理 | — |
 | MedicalCaseManagementView | Roles/LYBT.Desktop.Clinical/Views/ | 医案管理 | — |
-| MedicalCaseWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 医案工作台（核心） | 超大类型 558 行 |
-| PendingQueueView | Roles/LYBT.Desktop.Clinical/Views/ | 待诊队列 | — |
-| ReceptionistHomeView | Roles/LYBT.Desktop.Clinical/Receptionist/Views/ | 前台首页 | — |
+| MedicalCaseWorkspaceView | Roles/LYBT.Desktop.Clinical/Views/ | 医案工作台（核心） | — |
+| ReceptionistHomeView | Roles/LYBT.Desktop.Clinical/Receptionist/Views/ | 前台首页（Receptionist Home） | — |
+
+> **已删除（2026-08-29 审计清理）**：PendingQueueView.xaml(.cs) — 未导航注册的死页；队列 UI 由 PatientSelectionView 内嵌 PendingQueueViewModel 实现。PendingQueueViewModel 保留。
 
 ### 4.4 医疗模块
 
 | 视图 | 文件 | 功能 | 问题 |
 | ------ | ------ | ------ | ------ |
 | MedicalCaseMasterDetailView | Modules/LYBT.Desktop.MedicalCase/Views/ | 医案主从详情 | — |
-| AuditLogView | Modules/LYBT.Desktop.MedicalCase/Views/ | 审计日志 | — |
+| AuditLogView | Modules/LYBT.Desktop.MedicalCase/Views/ | **医案**审计日志（US-MC-017，非安全审计） | — |
 | ReportsHomeView | Modules/LYBT.Desktop.MedicalCase/Reports/Views/ | 报表首页 | TODO: 待完善 |
 
-### 4.5 其他
+### 4.5 挂号
 
 | 视图 | 文件 | 功能 | 问题 |
-|------|------|------|------|
-| RegistrationListView | Modules/LYBT.Desktop.Registration/Views/ | 挂号列表 | — |
+| ------ | ------ | ------ | ------ |
+| RegistrationListView | Modules/LYBT.Desktop.**Registrations**/Views/ | 挂号列表 | 项目名复数（A-25） |
 
 ---
 

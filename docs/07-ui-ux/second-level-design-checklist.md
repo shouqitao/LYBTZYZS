@@ -10,10 +10,12 @@
 | # | 页面 | 代码状态 | 需求来源 | 设计稿 |
 |---|------|---------|---------|--------|
 | A1 | 患者选择 PatientSelectionView | ✅ 已注册使用 | US-REG-001/002 | ❌ 待生成 |
-| A2 | 待诊队列 PendingQueueView | ⚠️ 疑似死代码（等审计确认） | US-REG-004/005 | ❌ 待定 |
-| A3 | 临床首页 ClinicalHomeView | ⚠️ 半死状态（DefaultHomeView fallback） | US-SHELL-003 | ❌ 待定 |
+| A2 | 待诊队列 PendingQueueView | ❌ **死代码已确认并删除（2026-08-29）**——队列 UI 内嵌 PatientSelectionView，`PendingQueueViewModel` 保留 | US-REG-004/005 | 不需要独立设计稿 |
+| A3 | 临床首页 ClinicalHomeView | ⚠️ **半死已确认（2026-08-29）**——仅 `RoleRegistry.DefaultHomeView` fallback；Doctor 真实 Home=`ClinicalWorkspaceView` | US-SHELL-003 | 低优先级（fallback） |
 | A4 | 前台首页 ReceptionistHomeView | ✅ 存在 | US-SHELL-003 | ❌ 待生成 |
-| A5 | 审计日志 AuditLogView | ✅ 存在 | US-MC-017 | ❌ 待生成 |
+| A5 | 审计日志 AuditLogView | ✅ 存在（医案域，非安全审计） | US-MC-017 | ❌ 待生成 |
+
+> 审计报告：`docs/compose/reports/desktop-view-design-audit-2026-08-29.md`
 
 ## B. 对话框二级界面（代码已存在，必须设计）
 

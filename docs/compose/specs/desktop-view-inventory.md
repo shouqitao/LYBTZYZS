@@ -129,7 +129,7 @@ Doctor 登录 → 加载临床模块 → 进入 **ClinicalHomeView**。
 
 | # | View 名 | 位置 | 说明 | 需求依据 |
 |---|---------|------|------|----------|
-| DOC-02 | **PendingQueueView** | Clinical/Views/ | 待诊队列（今日 Waiting 挂号列表，实时推送） | US-REG-004 / US-REG-008 |
+| DOC-02 | ~~PendingQueueView~~ | Clinical/Views/ | ~~独立待诊队列页~~ → **已吸收**：UI 内嵌 `PatientSelectionView`，`PendingQueueViewModel` 保留（XAML 2026-08-29 删除） | US-REG-004 / US-REG-008 |
 | DOC-03 | **PatientSelectionView** | Clinical/Views/ | 患者选择/搜索（新建医案前选患者） | US-MC-001 / US-MC-006 |
 | DOC-04 | **ClinicalWorkspaceView** | Clinical/Views/ | ⭐ 临床工作台（主编辑界面：诊断+处方+医案状态管理） | US-MC-001~004 / BR-000~003 |
 | DOC-05 | **MedicalCaseWorkspaceView** | Clinical/Views/ | 医案详情工作台（含 EditModeStateMachine） | US-MC-002/004 |

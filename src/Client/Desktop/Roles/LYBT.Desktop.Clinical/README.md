@@ -28,9 +28,10 @@ LYBT.Desktop.Clinical/
     ├── HerbManagementView.xaml(.cs)           # 薄包装
     ├── FormulaManagementView.xaml(.cs)        # 薄包装
     ├── PatientManagementView.xaml(.cs)        # 薄包装
-    ├── MedicalCaseManagementView.xaml(.cs)    # 薄包装
-    └── PendingQueueView.xaml(.cs)
+    └── MedicalCaseManagementView.xaml(.cs)    # 薄包装
 ```
+
+> `PendingQueueView.xaml` 已于 2026-08-29 删除（未导航注册的死页）。待诊队列 UI 内嵌在 `PatientSelectionView`，由 `PendingQueueViewModel` 驱动。
 
 ## 核心组件
 
