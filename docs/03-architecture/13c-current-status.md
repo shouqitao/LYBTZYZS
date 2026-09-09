@@ -8,9 +8,9 @@
 | 项 | 值 |
 | ---- | ----- |
 | Build | 0 错误 **0 警告** |
-| 架构测试 | 87/87 pass（P07/P08/P10 约束不可违反） |
-| Server 测试 | 736/736 pass |
-| Desktop 测试 | 481 pass / **162 fail**（存量环境失败：STA/WPF 线程 + SysAdmin 登录——stash 基线复现一致） |
+| 架构测试 | 96/97 pass（1失败: DP_M1_ViewModels_Must_Not_Hold_Dto_As_Editable_Property——存量 SecurityAuditLogViewModel） |
+| Server 测试 | **823/823 pass**（C-01 修复后全绿） |
+| Desktop 测试 | 超时未完成（至少3个 WorkflowStepIndicator 失败） |
 | 最新迁移 | `RecreateDroppedAuditTables` |
 
 ## 四、Desktop 视图（代码实际定义）
@@ -23,7 +23,7 @@
 | ------ | ------ | ------ | ------ |
 | MainWindow | Shell/Views/ | 主窗口（ContentRegion） | — |
 | LoginView | Modules/LYBT.Desktop.Auth/Views/ | 登录界面 | — |
-| FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行向导（RegisterDialog） | 功能有限；全屏 5 步强制向导（inventory W-01）未另建 |
+| FirstRunSetupView | Modules/LYBT.Desktop.Auth/Views/ | 首次运行配置（单屏对话框） | ✅ 已实现 |
 | ServerConfigView | Modules/LYBT.Desktop.Auth/Views/ | 服务器地址配置（RegisterDialog） | — |
 | AccountSettingsView | Shell/Views/ | **个人资料**（姓名/密码/头像/会话超时），所有角色可用 | — |
 | SessionTimeoutWarningDialog | — | 会话超时倒计时提醒 | 🔴 设计清单有（US-AUTH-005），代码缺失 |

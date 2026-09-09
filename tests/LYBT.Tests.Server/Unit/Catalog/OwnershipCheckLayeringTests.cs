@@ -45,8 +45,9 @@ public class OwnershipCheckLayeringTests
     [Fact]
     public void FormulasController_UpdateDeleteToggle_StillExposeEndpoints()
     {
-        // P1-24 拆分后 FormulasController 用独立方法名（UpdateFormula/DeleteFormula/ToggleFormulaStatus）
-        foreach (var name in new[] { "UpdateFormula", "DeleteFormula", "ToggleFormulaStatus" })
+        // FormulasController 继承 BaseCrudController 并 override 标准端点（Delete/ToggleStatus）
+        // + 保留独立 UpdateFormula 方法（无基类 Create/Update virtual 冲突——见 BaseCrudController）
+        foreach (var name in new[] { "UpdateFormula", "Delete", "ToggleStatus" })
         {
             var m = typeof(LYBT.WebAPI.Controllers.FormulasController).GetMethod(name);
             m.Should().NotBeNull($"FormulasController.{name} 应存在（P1-7/8/9 仅移所有权检查）");

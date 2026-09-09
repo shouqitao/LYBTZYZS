@@ -49,11 +49,14 @@ public class DeploymentConfigTests
     private static LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator CreateValidator(
         params (string Key, string Value)[] overrides)
     {
-        // ADR-0019: appsettings 在 config/ 子目录
+        // ADR-0019: appsettings 在 config/ 子目录。真实部署链 = JSON + 环境变量
+        // （appsettings.Production.json 的 ${DefaultPasswords__...} 等占位符由环境变量展开——
+        // 与 Program 配置链一致，见 ConfigurationPostProcessor / EnvironmentVariablesExtensions）
         var configDir = Path.Combine(AppContext.BaseDirectory, "config");
         var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
             .AddJsonFile(Path.Combine(configDir, "appsettings.json"), optional: true)
-            .AddJsonFile(Path.Combine(configDir, "appsettings.Production.json"), optional: true);
+            .AddJsonFile(Path.Combine(configDir, "appsettings.Production.json"), optional: true)
+            .AddEnvironmentVariables();
         var dict = new Dictionary<string, string?>();
         foreach (var (key, value) in overrides)
             dict[key] = value;
@@ -96,15 +99,22 @@ public class DeploymentConfigTests
     public void Production_ValidConfig_PassesValidator()
     {
         // #4 #7 通过路径：合规配置 → 校验通过（无异常）
-        var validator = CreateValidator(
-            ("Jwt:SecretKey", ValidJwt),
-            ("Jwt:Issuer", "Test"),
-            ("Jwt:Audience", "Test"),
-            ("SystemAdmin:AllowAutoCreateInProduction", "false"),
-            ("SystemAdmin:InitialSetupToken", "test-setup-token-2026-abcdefghijklmnopqrstuvwxyz"));
+        // 真实部署语义：appsettings.Production.json 占位符由进程环境变量展开——
+        // 显式注入全套 ValidEnv（还原原值）后校验（JSON 中的 ${...} 不再泄漏）
+        var original = SetEnv(ValidEnv);
+        try
+        {
+            var validator = CreateValidator(
+                ("Jwt:Issuer", "Test"),
+                ("Jwt:Audience", "Test"));
 
-        var act = () => validator.ValidateOrThrow();
+            var act = () => validator.ValidateOrThrow();
 
-        act.Should().NotThrow();
+            act.Should().NotThrow();
+        }
+        finally
+        {
+            RestoreEnv(original);
+        }
     }
 }

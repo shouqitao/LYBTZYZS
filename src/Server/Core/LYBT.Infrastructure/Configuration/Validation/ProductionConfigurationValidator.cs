@@ -212,6 +212,15 @@ public class ProductionConfigurationValidator
             return;
         }
 
+        // Optional 项仅在“相关”时校验：SystemAdmin:InitialSetupToken 仅当
+        // AllowAutoCreateInProduction=true 才要求（占位符/长度校验见 ValidateCrossFieldRules）。
+        // 否则 Optional 项的占位符/长度检查会误报——例如生产 JSON 中的
+        // ${SystemAdmin__InitialSetupToken} 在 AllowAutoCreate=false 时根本无关（空值等同）。
+        if (item.Severity == Severity.Optional)
+        {
+            return;
+        }
+
         // P2-6-1 Jwt 校验提升 Fatal：未展开占位符 ${...} 视为缺失（Critical 必须 Fatal，未走 IValidateOptions 时由本校验器拦截）
         if (value.StartsWith("${", StringComparison.Ordinal) && value.EndsWith("}", StringComparison.Ordinal))
         {

@@ -44,10 +44,12 @@ public class FormulasController : BaseCrudController
         /// </summary>
         [HttpGet("/api/v{version:apiVersion}/formulas")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaListDto>>), 200)]
-        public async Task<IActionResult> GetFormulaList(
+        public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null,
+            [FromQuery] UserRole? role = null,
+            [FromQuery] CommonStatus? status = null,
             CancellationToken ct = default
         )
         {
@@ -168,7 +170,7 @@ public class FormulasController : BaseCrudController
         /// </summary>
         [HttpGet("/api/v{version:apiVersion}/formulas/{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
-        public async Task<IActionResult> GetFormulaById(Guid id, CancellationToken ct)
+        public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
@@ -211,7 +213,7 @@ public class FormulasController : BaseCrudController
 
             LogOperation("新增验方成功", result.Value, null);
             return CreatedAtAction(
-                nameof(GetFormulaById),
+                nameof(GetById),
                 new { id = result.Value.Id, version = ApiVersionConstants.V1 },
                 ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功")
             );
@@ -251,7 +253,7 @@ public class FormulasController : BaseCrudController
         [HttpDelete("/api/v{version:apiVersion}/formulas/{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
-        public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
+        public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
@@ -275,7 +277,7 @@ public class FormulasController : BaseCrudController
         [HttpPost("/api/v{version:apiVersion}/formulas/{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
+        public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
@@ -303,7 +305,7 @@ public class FormulasController : BaseCrudController
         [HttpPost("/api/v{version:apiVersion}/formulas/{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
+        public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
             if (ValidateGuid(id, "验方ID") is { } error)
                 return error;
@@ -332,7 +334,7 @@ public class FormulasController : BaseCrudController
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
-        public async Task<IActionResult> BatchDeleteFormulas(
+        public override async Task<IActionResult> BatchDelete(
             [FromBody] BatchDeleteInputDto dto,
             CancellationToken ct
         ) =>
