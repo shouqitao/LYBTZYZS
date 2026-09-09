@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using LYBT.Infrastructure.Serialization;
 
 namespace LYBT.Tests.Server.Unit.Infrastructure;
@@ -23,13 +24,26 @@ public class PatientEncryptionTests
     }
 
     [Fact]
-    public void AesGcm_PlaintextFallback_OnInvalidBase64()
+    public void AesGcm_InvalidBase64_ThrowsFailClosed()
     {
+        // T1.4（4d58c5464）：解密失败不再静默回退明文——密钥不匹配/密文损坏必须
+        // 抛 CryptographicException（fail-closed），防止敏感数据以明文形式泄漏。
         var converter = new AesGcmValueConverter();
         var convertFrom = converter.ConvertFromProviderExpression.Compile();
-        var plain = "not-base64-明文";
-        var result = convertFrom(plain) as string;
-        Assert.Equal(plain, result);
+        var invalidCipher = "not-base64-明文";
+        var ex = Assert.Throws<CryptographicException>(() => convertFrom(invalidCipher));
+        Assert.Contains("敏感数据解密失败", ex.Message);
+    }
+
+    [Fact]
+    public void AesGcm_TooShortCipher_ThrowsFailClosed()
+    {
+        // Base64 解码成功但长度不足 nonce(12)+tag(16)+1 —— 非加密载荷，同样 fail-closed
+        var converter = new AesGcmValueConverter();
+        var convertFrom = converter.ConvertFromProviderExpression.Compile();
+        var shortCipher = Convert.ToBase64String(new byte[] { 1, 2, 3 });
+        var ex = Assert.Throws<CryptographicException>(() => convertFrom(shortCipher));
+        Assert.Contains("敏感数据解密失败", ex.Message);
     }
 
     [Fact]

@@ -467,7 +467,7 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 - IdNumber (身份证号, `SensitiveData(IdentityInfo, Partial)` + `AesGcmValueConverter`)
 - PhoneNumber (手机号, `SensitiveData(ContactInfo, Partial)` + `AesGcmValueConverter`)
 
-> **P1-9（2026-08-21）**：`PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())`，密钥 `SecurityOptions.AesKey`（Base64 32B），历史明文回退兼容。
+> **P1-9（2026-08-21）**：`PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())`，密钥 `SecurityOptions.AesKey`（Base64 32B）。**T1.4（4d58c5464）解密 fail-closed**：非 Base64/密文损坏/密钥不匹配抛 `CryptographicException`（ERR-00013→422），不再静默回退明文（防敏感数据泄漏）。`AddPatientEncryption` 为空迁移（无历史明文存量需转换）。
 > **v1.0 注**：文档原 Address/AllergyHistory/MedicalHistory/EmergencyContactPhone 等敏感字段随 Patient 裁剪延期至 v2.0，代码 `PatientModel.cs:47,55` 仅保留上述两字段。
 
 ### 软删除

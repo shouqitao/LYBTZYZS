@@ -8,7 +8,7 @@ namespace LYBT.Tests.Server;
 
 /// <summary>
 /// LoginRequestValidator 单元测试
-/// 验证规则：UserName(必填,最长32) + Password(必填,最短6)
+/// 验证规则：UserName(必填,最长32) + Password(必填,最短8)
 /// </summary>
 public class LoginRequestValidatorTests
 {
@@ -34,7 +34,7 @@ public class LoginRequestValidatorTests
     }
 
     [Theory]
-    [InlineData("a", "123456")]
+    [InlineData("a", "12345678")]
     [InlineData("user123", "password")]
     [InlineData("admin", "P@ssw0rd!")]
     public void Validate_WithVariousValidInputs_ShouldPass(string username, string password)
@@ -141,6 +141,7 @@ public class LoginRequestValidatorTests
     [Theory]
     [InlineData("1")]
     [InlineData("12345")]
+    [InlineData("1234567")]
     public void Validate_WithPasswordTooShort_ShouldFail(string password)
     {
         // Arrange
@@ -155,7 +156,7 @@ public class LoginRequestValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Password)
-            .WithErrorMessage("密码长度不能少于6个字符");
+            .WithErrorMessage("密码长度不能少于8个字符");
     }
 
     [Fact]
@@ -165,7 +166,7 @@ public class LoginRequestValidatorTests
         var request = new LoginRequest
         {
             UserName = "testuser",
-            Password = "123456" // exactly 6
+            Password = "12345678" // exactly 8
         };
 
         // Act
@@ -186,7 +187,7 @@ public class LoginRequestValidatorTests
         var request = new LoginRequest
         {
             UserName = "",
-            Password = "123"
+            Password = "1234567" // 1 below the 8-char minimum
         };
 
         // Act
@@ -195,7 +196,7 @@ public class LoginRequestValidatorTests
         // Assert
         result.Errors.Should().HaveCount(2);
         result.Errors.Should().Contain(e => e.ErrorMessage == "用户名不能为空");
-        result.Errors.Should().Contain(e => e.ErrorMessage == "密码长度不能少于6个字符");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "密码长度不能少于8个字符");
     }
 
     #endregion

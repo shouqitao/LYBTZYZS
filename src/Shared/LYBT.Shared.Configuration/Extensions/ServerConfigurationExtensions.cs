@@ -24,8 +24,10 @@ public static class ServerConfigurationExtensions
         services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
         services.AddSingleton<IValidateOptions<DatabaseOptions>, DatabaseOptionsValidator>();
         services.AddSingleton<IValidateOptions<SecurityOptions>, SecurityOptionsValidator>();
+        // ADR-0024 双密钥隔离强校验需要 IConfiguration（生产环境）；测试/宿主容器未注册
+        // IConfiguration 时退化为默认构造（_configuration=null，仅保留 Base64/长度校验）。
         services.AddSingleton<IValidateOptions<LocalJwtOptions>>(sp =>
-            new LocalJwtOptionsValidator(sp.GetRequiredService<IConfiguration>()));
+            new LocalJwtOptionsValidator(sp.GetService<IConfiguration>()!));
 
         // JWT 配置
         services.AddOptions<JwtOptions>()

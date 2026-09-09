@@ -381,10 +381,10 @@ stateDiagram-v2
 | 项 | 说明 |
 |----|------|
 | 字段 | `Patient.IdNumber` / `PhoneNumber`（`[SensitiveData]` 日志脱敏 + ValueConverter 落库 AES-GCM 双层） |
-| 转换器 | `LYBT.Infrastructure.Serialization.AesGcmValueConverter`（nonce12+tag16+密文，Base64，随机 nonce，回退明文兼容） |
+| 转换器 | `LYBT.Infrastructure.Serialization.AesGcmValueConverter`（nonce12+tag16+密文，Base64，随机 nonce，**T1.4 fail-closed**：解密失败抛 `CryptographicException`，不静默回退明文） |
 | 密钥 | `SecurityOptions.AesKey`（Base64 32B，环境变量 `Security__AesKey`，`SecurityOptionsValidator` 强校验） |
 | 配置 | `PatientConfiguration` 对两字段 `HasConversion(new AesGcmValueConverter())` |
-| 迁移 | `AddPatientEncryption`（空结构变更，历史明文回退解密） |
+| 迁移 | `AddPatientEncryption`（空迁移——无历史明文存量；存量数据解密失败由 ERR-00013 显式暴露，不静默降级） |
 | 日志 | 双路径：`SensitiveDataDestructuringPolicy`（Serilog 结构化）+ `SensitiveDataLoggerProvider`（P1-12 Batch D 2026-08-21：Microsoft ILogger 文本路径 `SanitizeText` 正则脱敏 `password=/token=/Bearer` 等）均脱敏为 `***`/`[REDACTED]` |
 | 验证 | `PatientEncryptionTests` 存取往返 |
 

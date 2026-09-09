@@ -6,7 +6,9 @@ namespace LYBT.Infrastructure.Serialization;
 /// <summary>
 /// AES-GCM 透明加解密 ValueConverter（P1-9）
 /// 透明加密：明文 → Base64(nonce(12) + tag(16) + ciphertext)
-/// 透明解密：若非 Base64 或解密失败则回退原文（兼容历史明文迁移）
+/// 透明解密：非 Base64 / 密文长度不足 / 认证失败 → 抛 CryptographicException（T1.4 fail-closed，
+/// 4d58c5464：禁止静默回退明文——密钥不匹配时防敏感数据以明文泄漏；EF 读取抛错由
+/// BusinessExceptionHandler 映射 ERR-00013 422）
 /// 密钥来源：SecurityOptions.AesKey (Base64 32B) 或环境变量 Security__AesKey，否则回退测试固定密钥（仅开发/测试）
 /// </summary>
 public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
