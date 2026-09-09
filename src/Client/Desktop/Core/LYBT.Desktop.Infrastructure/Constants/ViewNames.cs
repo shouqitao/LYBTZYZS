@@ -102,6 +102,9 @@ public static class ViewNames
     /// <summary>备份恢复管理（T7-2: US-SHELL-013）</summary>
     public const string BackupManagement = "BackupManagementView";
 
+    /// <summary>安全审计日志查看（US-SHELL-014；非医案 AuditLog）</summary>
+    public const string SecurityAuditLog = "SecurityAuditLogView";
+
     #endregion
 
 }

@@ -37,6 +37,17 @@ public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
     /// <returns>Health check response.</returns>
     Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
 
+    /// <summary>
+    /// 分页查询安全审计日志（US-SHELL-014）。
+    /// </summary>
+    Task<ApiResponse<PagedResult<SecurityAuditLogDto>>> GetSecurityAuditLogsAsync(
+        int page = 1,
+        int pageSize = 20,
+        string? eventType = null,
+        string? userName = null,
+        DateTime? from = null,
+        DateTime? to = null);
+
     // ========== 用户管理扩展端点（IUserManagementApiClient 含 CRUD/Profile/ToggleStatus） ==========
 
     /// <summary>

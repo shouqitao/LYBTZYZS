@@ -87,7 +87,7 @@ sysadmin 登录 → 若首次走 W-01 向导 → 否则进入 **SysadminHomeView
 | SY-03 | **DeploymentView** | Admin/Sysadmin/Views/ | 远程部署上传 + 服务重启 | US-SHELL-020 |
 | SY-04 | **LogLevelControlView** | Admin/Sysadmin/Views/ | 运行时日志级别调整 | US-LOG-005 / US-SYS-006 |
 | SY-05 | **CardReaderDiagnosticsView** | Sysadmin/Views/ | 读卡器诊断测试面板 | US-SHELL-019 |
-| SY-06 | **SecurityAuditLogView** | Sysadmin/Views/ | 安全审计日志查看（登录/权限变更/操作） | US-SHELL-014 / US-LOG-004 |
+| SY-06 | **SecurityAuditLogView** | Admin/Sysadmin/Views/ | 安全审计日志查看（2026-08-29 已实现；仅远程） | US-SHELL-014 / US-LOG-004 |
 | SY-07 | **ConfigExportImportView** | Sysadmin/Views/ | 配置导出/导入 | US-SHELL-016 |
 | SY-08 | **ServerConfigPanelView** | Sysadmin/Views/ | 服务端配置面板（仅远程模式） | US-SHELL-018 双模式面板 / ADR-0014 |
 
@@ -401,7 +401,7 @@ LoginView（A-01）
 | MessageDialog | Shell/Dialogs | ✅ 已有 | — |
 | **InitializationWizardView** | Auth/Shell | 🔴 **待新建** | US-SHELL-011 5 步向导 |
 | **CardReaderDiagnosticsView** | Sysadmin | 🔴 **待新建** | US-SHELL-019 |
-| **SecurityAuditLogView** | Sysadmin | 🔴 **待新建** | US-SHELL-014 |
+| **SecurityAuditLogView** | Sysadmin | ✅ 2026-08-29 | US-SHELL-014 |
 | **ConfigExportImportView** | Sysadmin | 🔴 **待新建** | US-SHELL-016 |
 | **ServerConfigPanelView** | Sysadmin | 🔴 **待新建** | US-SHELL-018 双模式面板 |
 

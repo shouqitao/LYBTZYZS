@@ -96,6 +96,12 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     private void NavigateToDeployment() => NavigateTo(ViewNames.Deployment);
 
     /// <summary>
+    /// 导航到安全审计日志（US-SHELL-014）
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToSecurityAuditLog() => NavigateTo(ViewNames.SecurityAuditLog);
+
+    /// <summary>
     /// 导航到指定视图
     /// </summary>
     private void NavigateTo(string viewName)

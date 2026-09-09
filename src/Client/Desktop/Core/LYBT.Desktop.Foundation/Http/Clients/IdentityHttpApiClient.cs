@@ -90,4 +90,20 @@ internal sealed class IdentityHttpApiClient : HttpApiClientBase, IApiClientIdent
 
     public Task<UserDetailDto> GetCurrentUserAsync()
         => GetRawAsync<UserDetailDto>("/api/v1/users/current");
+
+    public async Task<ApiResponse<PagedResult<SecurityAuditLogDto>>> GetSecurityAuditLogsAsync(
+        int page = 1,
+        int pageSize = 20,
+        string? eventType = null,
+        string? userName = null,
+        DateTime? from = null,
+        DateTime? to = null)
+    {
+        var url = BuildPagedUrl("/api/v1/security-audit", page, pageSize,
+            ("eventType", eventType),
+            ("userName", userName),
+            ("from", from?.ToString("O")),
+            ("to", to?.ToString("O")));
+        return await GetPagedAndWrapAsync<SecurityAuditLogDto>(url);
+    }
 }

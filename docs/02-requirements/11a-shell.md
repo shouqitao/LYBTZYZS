@@ -284,26 +284,48 @@
 
 **角色**: sysadmin
 **优先级**: Should
-**状态**: 🧲 v1.0 待实现（D3）
+**状态**: ✅ 已实现（2026-08-29：查询 API + SecurityAuditLogView；写入侧此前已就绪）
 
-**作为** sysadmin，**我想要** 查看登录/登出/密码变更/权限变更等安全事件日志，**以便** 追溯安全事件、满足医疗合规要求。
+**作为** sysadmin，**我想要** 在独立页面查看已写入的安全事件日志，**以便** 追溯安全事件、满足医疗合规要求。
+
+**产品决策（2026-08-29 确认）**:
+
+1. **UI 形态**：独立 `SecurityAuditLogView`（非 SysadminHome 内嵌面板；导航目标 ≠ 医案 `AuditLogView`）
+2. **本地模式**：仅远程可查；本地隐藏入口或显示「本地模式无安全审计」空态（对齐 `05-dual-mode`）
+3. **事件范围**：展示服务端**已写入的全部** EventType（不做子集裁剪）
 
 **验收标准**:
 
-- [ ] 提供安全事件列表（分页，按时间倒序）
-- [ ] 事件类型：登录成功/失败、登出、密码修改、用户创建/删除/禁用
-- [ ] 每条记录含：时间、用户、操作类型、IP 地址、结果（成功/失败）
-- [ ] 支持按事件类型/用户/时间范围筛选
-- [ ] 保留 365 天（`SecurityOptions.AuditRetentionDays`）
-- [ ] 审计日志仅追加，不可修改/删除
+- [ ] 查询 API：分页（默认 20，上限 100）、按 `CreatedAt` 倒序
+- [ ] 筛选：EventType、UserName（模糊）、时间范围（From/To，UTC）
+- [ ] 列表字段：时间、用户、事件类型、IP、结果（成功/失败徽章）、失败原因（有则显示）
+- [ ] 行详情：展开或侧栏展示 `Details` / `UserAgent` / `FailureReason`（纯文本，不做 JSON 树）
+- [ ] 空态：无数据 / 本地模式 / 无权限 三种可区分文案
+- [ ] 权限：仅 SuperAdmin（`SysAdminOnly`）；Doctor/Admin/Receptionist 拒绝
+- [ ] Dual-mode：Remote 双端控制器树同步；Local 查询返回空结果或接口不可用且 UI 可解释
+- [ ] 只读：无修改/删除/导出操作（导出不在本 US）
 
 **业务规则**:
 
-1. `SecurityAuditService` + `SecurityAuditLog` 表（v2.0 迁移已删除，需恢复）。
-2. 覆盖：认证事件（US-LOG-004）、权限变更、操作审计。
-3. 仅 sysadmin 可查看全局审计日志。
+1. **数据源**：`SecurityAuditLogs`（`LYBT.Entities.Auth.SecurityAuditLog`：UserId/UserName/EventType/IpAddress/UserAgent/Details/IsSuccess/FailureReason + BaseEntity）
+2. **已写入 EventType 示例**（非穷举，以代码写入点为准）：Login / LoginFailed / Logout / RefreshToken / TokenRevoked / PasswordChange / PasswordReset / UserDeleted / UserDisabled / UserStatusChanged / AccountLockout / ConfigGet / ConfigUpdate / ConfigRestart / AllTokensRevoked
+3. **审计红线**：列表仅查询；禁止任何写操作；禁止 `ExecuteUpdate/ExecuteDelete` 对审计表（P1-6）
+4. **保留期**：`SecurityOptions.AuditRetentionDays`（默认 365）——清理任务独立，本 US 不实现清理
+5. **与医案审计隔离**：`ViewNames.SecurityAuditLog` ≠ `ViewNames.AuditLog`（MedicalCase 域）
 
-**实现参考**: 恢复 `SecurityAuditLog` 实体 + `SecurityAuditService` + SysadminHomeView 面板
+**Out of Scope**:
+
+- 导出/下载日志
+- 审计清理策略 UI（`SecurityAuditCleanupService` 另项）
+- 本地审计落库与同步（ADR-0024 / v2.0）
+- 实时推送新审计事件
+
+**实现参考**:
+
+- 写入：`ISecurityAuditService.RecordEventAsync`、`SecurityAuditRepository.AddAsync`
+- 查询：新增 Repository 查询 + Identity 模块 Query + `BaseApiController` 双端点
+- Desktop：`SecurityAuditLogView` + Sysadmin 导航卡（替换规划占位）；分页对齐 `UnifiedPaginationBar`
+- 勿复用医案 `AuditLogView` / `AuditLogDto`
 
 ---
 

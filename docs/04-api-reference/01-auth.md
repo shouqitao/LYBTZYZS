@@ -300,9 +300,25 @@ curl -X GET http://localhost:5000/api/v1/auth
 
 ---
 
-## 响应格式说明
+## GET /security-audit
 
-> 响应信封格式与字段见 [README](README.md#通用响应格式)。
+分页查询安全审计日志（US-SHELL-014）。**独立控制器** `SecurityAuditController`，路由前缀 `/api/v1/security-audit`。
+
+- **权限**: `[Authorize(Policy = SysAdminOnly)]`（仅 SuperAdmin）
+- **双端**: Remote 返回 `SecurityAuditLogs` 表数据；Local 返回空分页（本地模式不记安全审计）
+- **只读**: 无写/删/导出端点
+
+**Query 参数**:
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `page` | int | 页码，默认 1 |
+| `pageSize` | int | 每页条数，默认 20，上限 100 |
+| `eventType` | string? | 事件类型精确匹配 |
+| `userName` | string? | 用户名模糊匹配 |
+| `from` / `to` | DateTime? | `CreatedAt` 时间范围（UTC） |
+
+**响应** `PagedResult<SecurityAuditLogDto>`：`createdAt/userName/eventType/ipAddress/isSuccess/failureReason/details/userAgent` 等。
 
 ---
 
@@ -314,3 +330,4 @@ curl -X GET http://localhost:5000/api/v1/auth
 | 2026-06-25 | v2.0 | 补充全部端点的请求/响应 JSON 示例、curl 命令、错误码表；修正响应字段与源码一致 |
 | 2026-06-28 | v2.1 | 文档对齐基线：删除 refresh/auto-login「尚未实现」声明（两端点已在 AuthController 实现，:116/:128）；AccessToken 有效期标注为配置驱动（base 480/Dev·Test 60/Prod 30 分钟）；错误码表已在 README 精简 |
 | 2026-06-28 | v2.2 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
+| 2026-08-29 | v2.3 | 补充 GET /security-audit（US-SHELL-014 独立控制器） |

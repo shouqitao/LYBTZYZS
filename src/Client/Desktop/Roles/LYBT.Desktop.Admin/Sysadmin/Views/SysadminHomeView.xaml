@@ -362,6 +362,20 @@
                             </StackPanel>
                         </Button>
                     </Border>
+
+                    <!-- 卡片4: 安全审计（US-SHELL-014） -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToSecurityAuditLogCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ShieldSearch"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="安全审计" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
                 </StackPanel>
 
                 <!-- 状态卡片 -->

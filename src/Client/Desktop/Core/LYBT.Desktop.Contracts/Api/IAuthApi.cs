@@ -98,5 +98,18 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Get("/api/v1/health")]
         Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
+
+        /// <summary>
+        /// 分页查询安全审计日志（US-SHELL-014，仅 SuperAdmin）
+        /// </summary>
+        [Refit.Get("/api/v1/security-audit")]
+        [Refit.Headers("Authorization: Bearer")]
+        Task<ApiResponse<PagedResult<SecurityAuditLogDto>>> GetSecurityAuditLogsAsync(
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20,
+            [Refit.Query] string? eventType = null,
+            [Refit.Query] string? userName = null,
+            [Refit.Query] string? from = null,
+            [Refit.Query] string? to = null);
     }
 }

@@ -60,6 +60,22 @@ internal sealed class IdentityApiClient : IApiClientIdentity
         => _authApi.HealthCheckAsync();
 
     /// <inheritdoc />
+    public Task<ApiResponse<PagedResult<SecurityAuditLogDto>>> GetSecurityAuditLogsAsync(
+        int page = 1,
+        int pageSize = 20,
+        string? eventType = null,
+        string? userName = null,
+        DateTime? from = null,
+        DateTime? to = null)
+        => _authApi.GetSecurityAuditLogsAsync(
+            page,
+            pageSize,
+            eventType,
+            userName,
+            from?.ToString("O"),
+            to?.ToString("O"));
+
+    /// <inheritdoc />
     public Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(
         int page = 1, int pageSize = 20, string? keyword = null)
         => _userApi.GetUsersAsync(page, pageSize, keyword);

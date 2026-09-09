@@ -26,6 +26,7 @@ public class SysadminModule : IModule
         containerRegistry.Register<ViewModels.LogLevelControlViewModel>();
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
         containerRegistry.Register<ViewModels.BackupManagementViewModel>();
+        containerRegistry.Register<ViewModels.SecurityAuditLogViewModel>();
 
         // 注册服务
         containerRegistry.Register<IAuthHealthService, Services.AuthHealthService>();
@@ -34,11 +35,13 @@ public class SysadminModule : IModule
         containerRegistry.Register<IDiagnosticsService, DiagnosticsService>();
         // ServerConfigSectionViewModel 依赖 IServerConfigurationService（原仅注册于 AdminModule）
         containerRegistry.Register<IServerConfigurationService, ServerConfigurationService>();
+        containerRegistry.Register<ISecurityAuditQueryService, Services.SecurityAuditQueryService>();
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();
         containerRegistry.RegisterForNavigation<Views.LogLevelControlView>();
         containerRegistry.RegisterForNavigation<Views.DeploymentView>();
         containerRegistry.RegisterForNavigation<Views.BackupManagementView>();
+        containerRegistry.RegisterForNavigation<Views.SecurityAuditLogView>();
     }
 }

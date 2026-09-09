@@ -39,7 +39,7 @@
 | LogLevelControlView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 日志级别控制 | — |
 | DeploymentView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 部署视图 | 仅上传+重启 |
 | BackupManagementView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 备份恢复（US-SHELL-013） | — |
-| SecurityAuditLogView | — | 安全审计日志查看（US-SHELL-014） | 🔴 代码缺失（写入侧有、查看页/查询 API 无）；**勿与医案 AuditLogView 混淆** |
+| SecurityAuditLogView | Roles/LYBT.Desktop.Admin/Sysadmin/Views/ | 安全审计日志查看（US-SHELL-014） | ✅ 2026-08-29 实现；仅远程可查，本地空态 |
 | ConfigExportImportView | — | 配置包导出/导入（US-SHELL-016） | 🔴 代码缺失；业务数据 JSON 导入导出已在各 MasterDetail |
 
 ### 4.3 临床 / 前台角色

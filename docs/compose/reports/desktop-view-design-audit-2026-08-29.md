@@ -166,7 +166,7 @@
 | P1 | 回写 13c 视图表 + 二级清单 A2/A3 状态 | ✅ 2026-08-29 已执行 |
 | P1 | 删除或收编 `PendingQueueView` 死 XAML | ✅ 2026-08-29 已删除 |
 | P2 | 产品确认 SessionTimeout 提醒是否要做 | 需求 |
-| P2 | US-SHELL-014/016 进需求深化（查询 API + View） | 需求→设计→代码 |
+| P2 | US-SHELL-014/016 进需求深化（查询 API + View） | ✅ 014 已实现 2026-08-29；016 待做 |
 | P3 | ClinicalWorkspaceView / PatientSelection 等补设计稿 | UI 设计 |
 
 ---

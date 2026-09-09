@@ -34,6 +34,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
         { ViewNames.LogLevelControl, "SysadminModule" },
         { ViewNames.Deployment, "SysadminModule" },
         { ViewNames.BackupManagement, "SysadminModule" },
+        { ViewNames.SecurityAuditLog, "SysadminModule" },
     };
 
     public ModuleLazyLoader(

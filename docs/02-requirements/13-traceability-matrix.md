@@ -184,7 +184,7 @@
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
 | US-SHELL-013 | Should | — | — | ILocalDbBackupService + 恢复 UI | ILocalDbBackupService | S4/X3.2 | ✅ 已实现（T7: ILocalDbBackupService + 备份管理 UI + 登录自动备份） | N/A | ✅ |
-| US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditLog + Service | SysadminHomeView | A12 | 🧲 v1.0 待实现（D3） | ✅ | 🧲 |
+| US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditController + SecurityAuditLogView | SysadminHome 安全审计卡 | A12 | ✅ 2026-08-29 查询 API + Desktop 页（仅远程） | ✅ | ✅ |
 | US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 | N/A | 🧲 |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + IdentitySeedData.ResolveSysAdminPassword（K4 环境变量读取） | IdentitySeedData.cs | — | ✅ 已实现 | ✅ | N/A |
 | US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ✅ 10/10 AC（Phase 1-3 + 读卡器组经 US-SHELL-019 完成） | ✅ | ✅ |
