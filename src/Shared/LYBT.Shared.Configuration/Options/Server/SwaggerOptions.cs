@@ -61,19 +61,4 @@ public sealed class SwaggerOptions
     /// 是否启用 XML 注释
     /// </summary>
     public bool EnableXmlComments { get; set; } = true;
-
-    /// <summary>
-    /// 路由前缀
-    /// </summary>
-    public string RoutePrefix { get; set; } = "swagger";
-
-    /// <summary>
-    /// 文档页标题
-    /// </summary>
-    public string DocumentTitle { get; set; } = "凌隐宝堂中医诊所 API 文档";
-
-    /// <summary>
-    /// 是否在生产环境启用
-    /// </summary>
-    public bool EnableInProduction { get; set; } = false;
 }

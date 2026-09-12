@@ -182,11 +182,13 @@ public static class UnifiedMiddlewareConfiguration
         // 对无端点的 /swagger 请求返回 401；此端点使 swagger 路径有 AllowAnonymous 端点（授权豁免）。
         // SwaggerUI 中间件正常时短路 200；异常时 404（不暴露存在性）。
         // 注：必须在 UseRouting 之后注册（MapGet 是终端路由）；仅 Swagger 启用时注册。
-        var swaggerEnabledForAnon = app.Configuration.GetValue<bool>("Swagger:Enabled");
-        if (!app.Environment.IsProduction() || swaggerEnabledForAnon)
+        var swaggerEnabledForAnon = LYBT.WebAPI.Configuration.SwaggerAvailability.IsEnabled(app.Configuration, app.Environment);
+        if (swaggerEnabledForAnon)
         {
             app.MapGet("/swagger/{**path}", () => Results.NotFound())
-                .WithMetadata(new Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute());
+                .WithMetadata(new Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute())
+                // B-16: 匿名兜底端点非业务 API——排除出 OpenAPI 文档（否则 swagger.json 出现 /swagger/{path} 伪端点）
+                .ExcludeFromDescription();
         }
 
         return app;
@@ -198,8 +200,7 @@ public static class UnifiedMiddlewareConfiguration
     private static WebApplication ConfigureSwaggerMiddleware(this WebApplication app)
     {
         // SWAGGER-TOGGLE: 非生产默认启用；生产默认关闭（Swagger:Enabled=true 可在线启用——测试发布调试用）
-        var swaggerEnabled = app.Configuration.GetValue<bool>("Swagger:Enabled");
-        if (!app.Environment.IsProduction() || swaggerEnabled)
+        if (LYBT.WebAPI.Configuration.SwaggerAvailability.IsEnabled(app.Configuration, app.Environment))
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>

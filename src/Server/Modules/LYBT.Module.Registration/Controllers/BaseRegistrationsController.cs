@@ -68,14 +68,23 @@ public abstract class BaseRegistrationsController : BaseCrudController
 
     #region Override 不支持的操作（挂号不支持 Update/Delete/BatchDelete）
 
+    /// <summary>
+    /// 更新挂号——挂号不支持更新（始终返回 404）
+    /// </summary>
     [HttpPut("{id:guid}")]
     public Task<IActionResult> Update(Guid id, [FromBody] RegistrationInputDto dto, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持更新操作"));
 
+    /// <summary>
+    /// 删除挂号——挂号不支持删除（始终返回 404）
+    /// </summary>
     [HttpDelete("{id:guid}")]
     public override Task<IActionResult> Delete(Guid id, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持删除操作"));
 
+    /// <summary>
+    /// 批量删除挂号——挂号不支持批量删除（始终返回 404）
+    /// </summary>
     [HttpPost("batch-delete")]
     public override Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
         => Task.FromResult<IActionResult>(NotFound("挂号不支持批量删除操作"));

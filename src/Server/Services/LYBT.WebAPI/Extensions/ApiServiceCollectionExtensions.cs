@@ -97,25 +97,30 @@ public static class ApiServiceCollectionExtensions
             });
 
             // JWT Bearer security definition
+            // B-16: http/bearer（非 apiKey）——SwaggerUI 自动为输入值加 "Bearer " 前缀，
+            // 避免用户直接粘贴裸 Token 时静默 401（apiKey 类型原样发送输入值）
             c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
                 Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
                 Name = "Authorization",
                 In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
             });
 
-            // 不添加全局安全要求，让每个控制器方法通过[Authorize]特性自己决定是否需要认证
-            // 这样Swagger UI本身就不需要认证，只有标记了[Authorize]的API才需要Token
-            // c.AddSecurityRequirement(...) -- 已移除全局安全要求
+            // 不添加全局安全要求（匿名端点 login/health/download 会被误标）；改为按操作声明——
+            // B-16: [Authorize] 端点由 BearerSecurityRequirementOperationFilter 标注 security，
+            // SwaggerUI 才会在 Try it out 时附加 Authorization 头（无 security 声明时仅按钮可用、请求不带 Token）
+            c.OperationFilter<BearerSecurityRequirementOperationFilter>();
 
             // XML 注释 - 使用统一配置控制
             if (swaggerConfig.EnableXmlComments)
             {
                 var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
                 foreach (var xmlFile in xmlFiles)
-                    c.IncludeXmlComments(xmlFile);
+                    // B-16: includeControllerXmlComments → 控制器类摘要作为 SwaggerUI 分组（tag）说明
+                    c.IncludeXmlComments(xmlFile, includeControllerXmlComments: true);
             }
 
             // 避免 Schema ID 冲突
@@ -237,6 +242,43 @@ public static class ApiServiceCollectionExtensions
         return services;
     }
 
+}
+
+/// <summary>
+/// B-16: 按操作声明 Bearer 安全要求——[Authorize] 端点标注 <c>security</c>，[AllowAnonymous] 端点跳过。
+/// 缺失该声明时 SwaggerUI 的 Authorize 按钮虽可用，但 Try it out 请求不会附加 Authorization 头。
+/// </summary>
+internal sealed class BearerSecurityRequirementOperationFilter
+    : Swashbuckle.AspNetCore.SwaggerGen.IOperationFilter
+{
+    public void Apply(
+        Microsoft.OpenApi.Models.OpenApiOperation operation,
+        Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext context)
+    {
+        var metadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
+        var requiresAuth =
+            metadata.OfType<Microsoft.AspNetCore.Authorization.IAuthorizeData>().Any()
+            && !metadata.OfType<Microsoft.AspNetCore.Authorization.IAllowAnonymous>().Any();
+
+        if (!requiresAuth)
+            return;
+
+        operation.Security.Add(
+            new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            {
+                {
+                    new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                    {
+                        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                        {
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+    }
 }
 
 

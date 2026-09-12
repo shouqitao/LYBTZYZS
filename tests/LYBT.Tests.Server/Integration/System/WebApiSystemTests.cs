@@ -111,4 +111,63 @@ public class WebApiSystemTests : IClassFixture<WebApiTestFactory>
         var html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("桌面客户端下载");
     }
+
+    /// <summary>
+    /// B-16: OpenAPI 文档契约——全量端点有摘要（XML 注释覆盖）、Bearer 为 http/bearer（SwaggerUI 自动加前缀）、
+    /// [Authorize] 端点声明 security（Try it out 才带 Token）、匿名端点不声明、匿名兜底端点不进文档。
+    /// </summary>
+    [Fact]
+    public async Task Swagger_Document_CoversEndpointsWithSummariesAndBearerSecurity()
+    {
+        // 匿名端点白名单 = 文档中 security 为空集的全部端点（新增匿名端点须显式登记——安全评审触发点）
+        var anonymousEndpoints = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "GET /",
+            "GET /api/v1/health",
+            "GET /api/v1/health/ping",
+            "POST /api/v1/auth/login",
+            "POST /api/v1/auth/logout",
+            "POST /api/v1/auth/refresh",
+            "POST /api/v1/auth/auto-login",
+        };
+
+        using var client = CreateClient();
+        var response = await client.GetAsync("/swagger/v1/swagger.json");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var doc = global::System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = doc.RootElement;
+        var methods = new[] { "get", "post", "put", "delete", "patch" };
+
+        var scheme = root.GetProperty("components").GetProperty("securitySchemes").GetProperty("Bearer");
+        scheme.GetProperty("type").GetString().Should().Be("http", "SwaggerUI 仅在 http/bearer 下自动附加 \"Bearer \" 前缀");
+        scheme.GetProperty("scheme").GetString().Should().Be("bearer");
+
+        var missingSummary = new List<string>();
+        var securityMismatch = new List<string>();
+        foreach (var path in root.GetProperty("paths").EnumerateObject())
+        {
+            foreach (var operation in path.Value.EnumerateObject())
+            {
+                if (!methods.Contains(operation.Name))
+                    continue;
+
+                var id = $"{operation.Name.ToUpperInvariant()} {path.Name}";
+                var summary = operation.Value.TryGetProperty("summary", out var s) ? s.GetString() : null;
+                if (string.IsNullOrWhiteSpace(summary))
+                    missingSummary.Add(id);
+
+                var hasSecurity =
+                    operation.Value.TryGetProperty("security", out var security)
+                    && security.GetArrayLength() > 0;
+                if (hasSecurity == anonymousEndpoints.Contains(id))
+                    securityMismatch.Add($"{id} (security={hasSecurity})");
+            }
+        }
+
+        missingSummary.Should().BeEmpty("每个 API 端点都应有 XML 摘要（B-16 T2）");
+        securityMismatch.Should().BeEmpty("security 声明应与 [Authorize]/[AllowAnonymous] 一致（B-16 T3）");
+        root.GetProperty("paths").TryGetProperty("/swagger/{path}", out _)
+            .Should().BeFalse("匿名兜底端点不是业务 API——应 ExcludeFromDescription");
+    }
 }

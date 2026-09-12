@@ -32,6 +32,11 @@ public class DeployController : BaseApiController
         _deployService = deployService;
     }
 
+    /// <summary>
+    /// 上传桌面客户端更新包（US-SHELL-020——发布包落盘 ReleasesPath，供自动升级分发）
+    /// </summary>
+    /// <param name="file">更新包文件（Setup-*.exe，扩展名白名单校验）</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPost("upload")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Upload(IFormFile file, CancellationToken ct)
@@ -47,6 +52,10 @@ public class DeployController : BaseApiController
             "更新包上传成功");
     }
 
+    /// <summary>
+    /// 重启 WebAPI 服务（需 body 显式确认——confirm 字段必须为 "RESTART"）
+    /// </summary>
+    /// <param name="request">重启确认请求体（confirm=RESTART）</param>
     [HttpPost("restart")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public IActionResult Restart([FromBody] RestartConfirmDto? request)

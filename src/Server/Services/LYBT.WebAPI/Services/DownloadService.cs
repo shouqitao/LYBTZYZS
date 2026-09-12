@@ -9,10 +9,12 @@ namespace LYBT.WebAPI.Services;
 public class DownloadService : IDownloadService
 {
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public DownloadService(IConfiguration configuration)
+    public DownloadService(IConfiguration configuration, IWebHostEnvironment environment)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
     }
 
     public string BuildDownloadPageHtml()
@@ -20,9 +22,8 @@ public class DownloadService : IDownloadService
         var enabled = _configuration.GetValue<bool>("DesktopUpdate:Enabled");
         var baseUrl = _configuration["DesktopUpdate:DownloadBaseUrl"] ?? "/releases";
         var releasesPath = _configuration["DesktopUpdate:ReleasesPath"];
-        // SWAGGER-TOGGLE: 主页提供 API 文档入口（Swagger:Enabled=true 时显示）
-        var swaggerEnabled = _configuration.GetValue<bool>("Swagger:Enabled")
-                             || !"Production".Equals(_configuration["App:Environment"], StringComparison.OrdinalIgnoreCase);
+        // SWAGGER-TOGGLE: 主页提供 API 文档入口——与中间件同一开关判定（SwaggerAvailability SSOT，防死链）
+        var swaggerEnabled = LYBT.WebAPI.Configuration.SwaggerAvailability.IsEnabled(_configuration, _environment);
 
         var files = new List<(string Name, long Size, DateTime Modified)>();
         string? version = null;

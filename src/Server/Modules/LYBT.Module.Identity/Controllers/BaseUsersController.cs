@@ -36,6 +36,15 @@ public abstract class BaseUsersController : BaseCrudController
 
     #region 重写 CRUD 方法（添加授权策略）
 
+    /// <summary>
+    /// 获取用户分页列表（Admin/SuperAdmin——支持关键字/角色/状态筛选）
+    /// </summary>
+    /// <param name="page">页码（从 1 开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="keyword">关键字（用户名/姓名/拼音码）</param>
+    /// <param name="role">角色筛选</param>
+    /// <param name="status">状态筛选</param>
+    /// <param name="ct">取消令牌</param>
     [HttpGet]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> GetList(
@@ -57,6 +66,11 @@ public abstract class BaseUsersController : BaseCrudController
         return SuccessPaged(result.Value, "查询成功");
     }
 
+    /// <summary>
+    /// 获取用户详情
+    /// </summary>
+    /// <param name="id">用户 ID</param>
+    /// <param name="ct">取消令牌</param>
     [HttpGet("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
@@ -70,6 +84,11 @@ public abstract class BaseUsersController : BaseCrudController
         return Success(result.Value, "查询成功");
     }
 
+    /// <summary>
+    /// 创建用户（Admin/SuperAdmin——初始密码按密码策略生成）
+    /// </summary>
+    /// <param name="input">用户创建请求</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPost]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> Create([FromBody] UserInputDto input, CancellationToken ct)
@@ -82,6 +101,12 @@ public abstract class BaseUsersController : BaseCrudController
         return Success(result.Value, "用户创建成功");
     }
 
+    /// <summary>
+    /// 更新用户资料（Admin/SuperAdmin——层级校验见 ChangeProfile）
+    /// </summary>
+    /// <param name="id">用户 ID</param>
+    /// <param name="input">用户更新请求</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPut("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public async Task<IActionResult> Update(
@@ -104,6 +129,11 @@ public abstract class BaseUsersController : BaseCrudController
         return Success(result.Value, "用户更新成功");
     }
 
+    /// <summary>
+    /// 删除用户（软删除——Admin/SuperAdmin；恢复见 restore）
+    /// </summary>
+    /// <param name="id">用户 ID</param>
+    /// <param name="ct">取消令牌</param>
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -119,6 +149,11 @@ public abstract class BaseUsersController : BaseCrudController
         return Success("删除成功");
     }
 
+    /// <summary>
+    /// 切换用户状态（启用/禁用——Admin/SuperAdmin）
+    /// </summary>
+    /// <param name="id">用户 ID</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPost("{id:guid}/toggle-status")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
@@ -138,6 +173,11 @@ public abstract class BaseUsersController : BaseCrudController
         return Success(result.Value, "状态已切换");
     }
 
+    /// <summary>
+    /// 恢复已删除用户（Admin/SuperAdmin）
+    /// </summary>
+    /// <param name="id">用户 ID</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPost("{id:guid}/restore")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
@@ -154,6 +194,11 @@ public abstract class BaseUsersController : BaseCrudController
         return Success(result.Value, "用户恢复成功");
     }
 
+    /// <summary>
+    /// 批量删除用户（软删除——Admin/SuperAdmin）
+    /// </summary>
+    /// <param name="dto">待删除用户 ID 列表</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPost("batch-delete")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     public override async Task<IActionResult> BatchDelete(

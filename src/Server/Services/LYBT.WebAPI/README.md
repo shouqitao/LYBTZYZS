@@ -215,7 +215,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 4. UseHttpsRedirection + UseHsts (仅生产环境)        -- 强制 HTTPS
 5. UseSecurityHeaders                                -- 安全响应头
 6. UseResponseCompression                            -- 响应压缩
-7. Swagger (仅非生产环境)                             -- API 文档
+7. Swagger (非生产默认启用 / 生产 Swagger:Enabled=true)  -- API 文档
 8. UseRouting                                        -- 路由
 9. UseRateLimiter                                    -- 速率限制
 10. UseAuthentication                                -- JWT 认证
@@ -237,6 +237,13 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 // 6. Swagger (OpenAPI + JWT SecurityDefinition)
 // 7. HealthChecks (database + custom)
 ```
+
+## Swagger / OpenAPI 文档（B-16）
+
+- **开关 SSOT**：`Configuration/SwaggerAvailability.IsEnabled`——非生产默认启用；生产默认关闭，`Swagger:Enabled=true`（或环境变量 `Swagger__Enabled=true`）显式开启。中间件装配 / 匿名兜底端点 / CSP 豁免 / 下载主页入口四处共用同一判定。
+- **文档内容**：全量端点 XML 摘要（`GenerateDocumentationFile`：WebAPI + Infrastructure + Identity/Registration/MedicalCases 模块 + Shared.Models）、控制器摘要作为分组（tag）说明、DTO DataAnnotation → `required`/`maxLength`/`range`/`enum`。
+- **认证**：`Bearer`（`http`/`bearer`）——SwaggerUI「Authorize」填入裸 Token 即可（UI 自动加 `Bearer ` 前缀）；`[Authorize]` 端点声明 `security`（Try it out 才带 Token），`[AllowAnonymous]` 端点不声明。
+- **访问**：`http://<host>:5000/swagger`（UI）/ `/swagger/v1/swagger.json`（OpenAPI 3.0.1）。生产启用步骤见 `docs/06-operations/01-deployment.md`。
 
 ## API 统一响应格式
 
@@ -312,7 +319,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 
 | 问题 | 原因 | 解决方案 |
 |------|------|----------|
-| Swagger 仅开发环境启用 | 生产环境不应暴露 API 文档 | IsDevelopment() 条件判断 |
+| Swagger 非生产默认启用、生产默认关 | 生产环境不应暴露 API 文档 | `SwaggerAvailability.IsEnabled`（非生产 OR `Swagger:Enabled=true`）；测试发布注入 `Swagger__Enabled=true` |
 | JSON 序列化使用 PascalCase | 默认是 camelCase，但 WPF DTO 是 PascalCase | PropertyNamingPolicy = null |
 | FindAsync 与全局查询过滤器 | EF Core 8 的 FindAsync 在实体不在 ChangeTracker 中时会应用 IsDeleted 过滤器 | 用 IgnoreQueryFilters() 查询软删除记录 |
 | 配置文件中不应包含真实密钥 | appsettings.json 会被提交到版本控制 | 使用 .env 文件或 User Secrets |

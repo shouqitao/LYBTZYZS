@@ -38,6 +38,10 @@ namespace LYBT.WebAPI.Controllers
 
         #region 认证端点（原 AuthController，路由 /api/v1/auth/*）
 
+        /// <summary>
+        /// 用户登录（匿名——返回访问令牌 + 刷新令牌；Login 限流策略）
+        /// </summary>
+        /// <param name="request">登录请求（用户名 + 密码）</param>
         [HttpPost("/api/v{version:apiVersion}/auth/login")]
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
@@ -126,6 +130,9 @@ namespace LYBT.WebAPI.Controllers
             return HandleResult(result, "自动登录成功", useAuthMapping: true);
         }
 
+        /// <summary>
+        /// 校验 Authorization 头中的访问令牌（有效时返回用户标识与角色）
+        /// </summary>
         [HttpGet("/api/v{version:apiVersion}/auth/validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]

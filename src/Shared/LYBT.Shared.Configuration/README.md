@@ -167,7 +167,7 @@ public class JwtOptions
 **MemoryCacheOptions** | 内存缓存: Enabled/SizeLimit(100MB)/CompactionPercentage(0.05)/ExpirationScanFrequencySeconds(60)/DefaultExpirationMinutes(5)
 
 ### Options/Server/SwaggerOptions.cs
-**SwaggerOptions** | Swagger API 文档配置: Title/Description/Contact 信息/License/EnableXmlComments/RoutePrefix/DocumentTitle/EnableInProduction(false)
+**SwaggerOptions** | Swagger API 文档配置: Title/Description/Contact 信息/License/EnableXmlComments/Enabled(默认 false——生产默认关闭，`Swagger:Enabled=true` 显式启用)
 
 ### Options/Server/JsonOptions.cs
 **JsonOptions** | JSON 序列化配置: UnsafeRelaxedEscaping/PropertyNamingPolicy/IgnoreReadOnlyProperties/AllowTrailingCommas

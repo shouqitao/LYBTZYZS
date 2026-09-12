@@ -28,9 +28,6 @@ public class RegistrationsController : BaseRegistrationsController
     }
 
     /// <summary>
-    /// 医生快速看诊
-    /// </summary>
-    /// <summary>
     /// 创建挂号（QuickVisit 两步第 1 步——2026-08-13 恢复：a99619f47 误删，真机 405 证实）
     /// </summary>
     [Authorize(Policy = PolicyConstants.DoctorOrReceptionist)]
@@ -49,6 +46,11 @@ public class RegistrationsController : BaseRegistrationsController
             ApiResponse<RegistrationDetailDto>.CreateSuccess(result.Value, "挂号创建成功"));
     }
 
+    /// <summary>
+    /// 接诊：从等待队列选中患者（开始看诊——步骤 2）
+    /// </summary>
+    /// <param name="id">挂号 ID</param>
+    /// <param name="ct">取消令牌</param>
     [HttpPut("{id}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
     [Authorize(Policy = PolicyConstants.DoctorOnly)]

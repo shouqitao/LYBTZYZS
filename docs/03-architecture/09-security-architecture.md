@@ -149,7 +149,7 @@ options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, RequireRole("Supe
 
 - **FallbackPolicy**: 要求所有端点默认认证（`RequireAuthenticatedUser`）
 - **显式豁免**: `AllowAnonymous` 标注的端点（login、logout、refresh、health）
-- **Swagger 不受影响**: Swagger 中间件在 UseRouting 之前，不经过授权管道
+- **Swagger 不受影响**: Swagger 中间件在 UseRouting 之前，不经过授权管道（Swagger 启用时另注册 `MapGet("/swagger/{**path}")` 匿名兜底端点，避免 FallbackPolicy 误判 401）。生产默认关闭（`Swagger:Enabled=false`）——关闭时 `/swagger` 既不暴露文档、也不豁免 CSP，见 `06-operations/01-deployment.md`
 
 ## 5. 桌面端认证状态机
 

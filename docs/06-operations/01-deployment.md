@@ -169,13 +169,32 @@ ss -tlnp | grep 5000                        # 端口
 | 5 | 路由模板重复 version | 动作级和类级都写前缀 | 动作级写绝对路径 |
 | 6 | 模块 DbContext 漏映射 | ApplyConfiguration 遗漏 | 新增模块必须注册实体配置 |
 | 7 | 健康检查连接串 fallback | 只读一个配置键 | DatabaseConnectionResolver fallback 链 |
-| 8 | Swagger 空白页 | 生产 CSP 阻止渲染 | `/swagger` 路径 CSP 豁免 |
-| 9 | Swagger 生产默认关 | 测试环境名是 Production | `Swagger:Enabled=true` 开关 |
+| 8 | Swagger 空白页 | 生产 CSP 阻止渲染 | `/swagger` 路径 CSP 豁免（仅在 Swagger 启用时生效） |
+| 9 | Swagger 生产默认关 | 测试发布与正式发布同用 Production 环境名 | 配置文件默认 `Swagger:Enabled=false`；测试发布注入环境变量 `Swagger__Enabled=true`（免改文件） |
 | 10 | SSH 密码认证失败 | PasswordAuthentication no | 开启 PasswordAuthentication yes |
 | 11 | 全局 SplitQuery + 远程 SQL | 多连接超时 | 移除全局 SplitQuery，改查询级 |
 | 12 | 多进程/端口占用 | 脚本层无防护 | start.sh 四层防护 + Program.cs Mutex |
 
 > **代码-文档一致性约定**：每次部署相关变更必须同步本清单与对应文档。
+
+### Swagger 在线启用（测试发布）
+
+生产默认关闭（`config/appsettings.Production.json` → `Swagger:Enabled=false`，安全默认，发布前无需手工改回）。
+测试服务器需在线查看 API 文档时，在启动环境注入环境变量（配置源优先级：环境变量 > JSON 文件）：
+
+```bash
+# /home/player/lybt-api/.env（Program.cs 自动加载）或 systemd Environment=
+Swagger__Enabled=true
+```
+
+| 状态 | `/swagger`（UI） | `/swagger/v1/swagger.json` | 下载主页「API 文档」入口 | `/swagger` CSP |
+|------|------------------|---------------------------|------------------------|----------------|
+| 生产默认（Enabled=false） | 401（FallbackPolicy） | 401 | 不显示（防死链） | 严格（不豁免） |
+| 生产 + `Swagger__Enabled=true` | 200 | 200 | 显示 | 豁免 `script-src 'unsafe-eval'`（SwaggerUI 渲染所需） |
+| 非生产（Development/Test） | 200 | 200 | 显示 | 同上 |
+
+> 实测（2026-09-12 B-16）：生产默认与注入 env 两态均按上表验证；开关判定 SSOT =
+> `Configuration/SwaggerAvailability.IsEnabled`（中间件装配 / 匿名兜底端点 / CSP 豁免 / 下载主页入口四处共用）。
 
 ---
 

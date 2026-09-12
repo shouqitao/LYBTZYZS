@@ -7,15 +7,18 @@ namespace LYBT.WebAPI.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<SecurityHeadersMiddleware> _logger;
 
         public SecurityHeadersMiddleware(
             RequestDelegate next,
             IWebHostEnvironment environment,
+            IConfiguration configuration,
             ILogger<SecurityHeadersMiddleware> logger)
         {
             _next = next;
             _environment = environment;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -55,7 +58,11 @@ namespace LYBT.WebAPI.Middleware
             // 严格 CSP（require-trusted-types-for 'script'）会阻止其渲染（空白页）。
             // 豁免策略：保留核心防护（nosniff/frame/XSS），去掉 script-src 限制（允许 SwaggerUI 的 bundle 执行）。
             // 业务 API 路径保持严格 CSP 不变。
-            if (context.Request.Path.StartsWithSegments("/swagger"))
+            // B-16: 豁免与 SWAGGER-TOGGLE 同判定——Swagger 关闭时（生产默认）该路径不豁免，保持严格 CSP。
+            if (
+                LYBT.WebAPI.Configuration.SwaggerAvailability.IsEnabled(_configuration, _environment)
+                && context.Request.Path.StartsWithSegments("/swagger")
+            )
             {
                 headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
             }

@@ -43,7 +43,8 @@ public class WebApiTestFactory : WebApplicationFactory<Program>
         {
             var settings = new Dictionary<string, string?>
             {
-                ["Swagger:Enabled"] = "true",
+                // B-16: 不再覆盖 Swagger:Enabled——非生产环境由环境判定自动启用；生产环境（L4 工厂）
+                // 必须保持 appsettings.Production.json 的默认关闭语义，否则生产暴露面契约不可测。
                 ["Jwt:SecretKey"] = "VGVzdFNlY3JldEtleV9NaW5MZW5ndGgzMkNoYXJzX0ZvckpXVFRva2VuR2VuX0xZQlRfMTIzNDU2",
                 ["DefaultPasswords:SysAdminPassword"] = "Admin@Lybt2026",
                 ["DefaultPasswords:NewUserPassword"] = "User@Lybt2026",
