@@ -28,7 +28,8 @@ public static class TestDatabase
 
 /// <summary>
 /// WebAPI 系统级测试工厂（L3: WebApplicationFactory 真实启动 Remote WebAPI）
-/// 注入测试配置：测试库连接串（env 驱动）+ JWT 测试密钥 + Swagger 启用 + 测试密码
+/// 注入测试配置：测试库连接串（env 驱动）+ JWT 测试密钥 + 测试密码
+/// （Swagger 开关不覆盖——非生产由环境判定自动启用，生产保持配置文件默认关闭语义）
 /// </summary>
 public class WebApiTestFactory : WebApplicationFactory<Program>
 {
