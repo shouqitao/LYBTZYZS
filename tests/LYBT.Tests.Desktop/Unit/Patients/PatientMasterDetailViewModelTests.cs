@@ -35,6 +35,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
     private readonly IPatientStatusHandler _statusHandler;
     private readonly IDesktopCacheManager _cacheManager;
     private readonly PatientMapper _patientMapper;
+    private readonly PatientExcelService _patientExcelService;
     private readonly PatientCardReaderViewModel _cardReaderViewModel;
     private readonly PatientEditorViewModel _patientEditor;
     private readonly ILoggerFactory _loggerFactory;
@@ -92,6 +93,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
 
         // PatientEditorViewModel (真实实例，纯逻辑)
         _patientMapper = new PatientMapper();
+        _patientExcelService = new PatientExcelService();
         _patientEditor = new PatientEditorViewModel(_patientMapper);
     }
 
@@ -104,6 +106,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _statusHandler,
             _cacheManager,
             _patientMapper,
+            _patientExcelService,
             _cardReaderViewModel,
             _patientEditor
         );
@@ -133,6 +136,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _statusHandler,
                 _cacheManager,
                 _patientMapper,
+                _patientExcelService,
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -152,6 +156,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 null!,
                 _cacheManager,
                 _patientMapper,
+                _patientExcelService,
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -171,6 +176,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _statusHandler,
                 null!,
                 _patientMapper,
+                _patientExcelService,
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -190,11 +196,32 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _statusHandler,
                 _cacheManager,
                 _patientMapper,
+                _patientExcelService,
                 null!,
                 _patientEditor
             );
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("cardReaderViewModel");
+    }
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenPatientExcelServiceIsNull()
+    {
+        // Arrange & Act & Assert
+        Action act = () =>
+            new PatientMasterDetailViewModel(
+                _viewModelServices,
+                _masterDetailServices,
+                _patientService,
+                _statusHandler,
+                _cacheManager,
+                _patientMapper,
+                null!,
+                _cardReaderViewModel,
+                _patientEditor
+            );
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("patientExcelService");
     }
 
     [Fact]
@@ -209,6 +236,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _statusHandler,
                 _cacheManager,
                 _patientMapper,
+                _patientExcelService,
                 _cardReaderViewModel,
                 null!
             );

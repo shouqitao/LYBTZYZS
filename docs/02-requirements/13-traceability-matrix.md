@@ -81,8 +81,8 @@
 | US-PAT-008 | Should | ADR-0001 | — | POST /patients/batch-delete | PatientsController.cs:223 | — | ✅ 已实现 | ✅ | ⚠️ |
 | US-PAT-009 | Must | ADR-0001 | — | GET /patients/{id}/check-reference | PatientsController.cs:248 | — | ✅ 已实现 | ✅ | ⚠️ |
 | US-PAT-010 | Should | ADR-0001 | — | POST /patients/batch-check-reference | PatientsController.cs:267 | — | ✅ 已实现（批量计数一次查询） | ✅ | ⚠️ |
-| US-PAT-011 | Should | ADR-0010 | — | GET /patients/import-template | PatientsController.cs:296 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 模板） | ✅ | ✅ |
-| US-PAT-012 | Should | ADR-0010 | — | GET /patients/export | PatientsController.cs:313 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 数组） | ✅ | ✅ |
+| US-PAT-011 | Should | ADR-0010 | — | GET /patients/import-template | PatientsController.cs:296 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 模板；2026-09-13 B-12 Desktop 模板 Excel 化——ClosedXML 渲染 .xlsx，字段说明仍取服务端 JSON） | ✅ | ✅ |
+| US-PAT-012 | Should | ADR-0010 | — | GET /patients/export | PatientsController.cs:313 | — | ✅ 已实现（T4 端点 + 2026-08-13 Excel→JSON 数组；2026-09-13 B-12 Desktop 导出 Excel 化——JSON 数组转 .xlsx，脱敏值原样） | ✅ | ✅ |
 | US-PAT-013 | Must | ADR-0008 | — | [SensitiveData] 序列化管道 | PatientsController.cs | X3.1 | ✅ 已实现（DTO 加 [SensitiveData]，序列化管道掩码） | ✅ | ✅ |
 
 ## 四、药材管理（US-HERB × 13）

@@ -96,11 +96,11 @@ CREATE DATABASE LYBTDB_Dev;
 | Asp.Versioning.Mvc | 8.1.1 | API 版本控制 |
 | Serilog | 4.3.1 | 结构化日志 |
 | Riok.Mapperly | 4.3.1 | 编译时对象映射 (非 AutoMapper) |
-| BCrypt.Net-Next | 4.1.0 | 密码哈希 |
 | FluentValidation | 12.1.1 | 输入验证 |
-| EPPlus | 7.7.3 | Excel 导入导出 |
-| NPOI | 2.8.0 | Excel 兼容格式处理 |
+| ClosedXML | 0.102.3 | Excel 导入导出（Desktop 前端，B-12——服务端不涉及 Excel） |
 | Refit | 8.0.0 | HTTP 客户端 (Desktop) |
+
+> 历史：EPPlus 7.7.3 / NPOI 2.8.0（Excel，2026-08-04 C-04 + 2026-08-13 #112 移除——后端改 JSON 契约）、BCrypt.Net-Next 4.1.0（密码哈希，A-27 移除——哈希统一走 Identity PBKDF2）均不再引用。
 
 Desktop-only 依赖:
 

@@ -33,6 +33,16 @@ Patients 管理患者信息，支持拼音搜索、身份证读卡器集成、�
 硬件读取(HuaDa HD100 P/Invoke) → IdNumber 精确匹配 → 未找到则快速创建 → 加密存储照片
 ```
 
+### 导入导出（Excel 前端 / JSON 后端，B-12）
+
+后端只提供 JSON 契约：`GET /import-template`（字段说明+示例+必填）、`GET /export`（JSON 数组，敏感字段脱敏）、`POST /batch-import`（DTO）。Desktop 以 `.xlsx` 与用户交互（`PatientExcelService`，ClosedXML）：
+
+| 用户操作 | Desktop 处理 | 后端端点（不变） |
+|----------|--------------|------------------|
+| 模板 | 服务端 JSON 字段说明 → .xlsx（患者数据表头 + 填写说明表） | `GET /api/v1/patients/import-template` |
+| 导入 | .xlsx → `PatientBatchImportInputDto`（行级校验，格式错误抛含行号的异常） | `POST /api/v1/patients/batch-import` |
+| 导出 | 服务端 JSON 数组 → .xlsx（性别/状态转中文标签） | `GET /api/v1/patients/export` |
+
 ## 业务规则
 
 | 规则 | 描述 |

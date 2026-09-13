@@ -304,24 +304,25 @@
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ✅ 已实现（2026-08-13 起 JSON 格式；2026-08-19 Desktop 模板下载/导入 UI 接线完成）
+**状态**: ✅ 已实现（2026-08-13 起服务端 JSON；2026-08-19 Desktop 模板/导入 UI 接线；2026-09-13 B-12 Desktop 模板 Excel 化）
 
-**作为** 管理员，**我想要** 获取患者导入 JSON 模板说明，**以便** 按规范格式批量准备患者数据。
+**作为** 管理员，**我想要** 获取患者导入模板，**以便** 按规范格式批量准备患者数据。
 
 **验收标准**:
 
-- [ ] 返回 JSON 模板（字段说明 + 示例 + 必填标注）——`application/json`
+- [ ] 服务端返回 JSON 模板（字段说明 + 示例 + 必填标注）——`application/json`
 - [ ] 模板包含所有可导入字段
 - [ ] 标注必填字段
+- [ ] Desktop 下载到本地的模板为 `.xlsx`（含「患者数据」表头 + 「填写说明」表——字段/必填/说明取自服务端模板）
 
 **业务规则**:
 
 1. 模板由 Service 层生成（JSON 结构，非 Excel）
 2. 模板字段与导入端点期望的 DTO 一致（`batch-import` 收 JSON 数组）
-3. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 处理由前端负责，如需）
+3. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性）；**Excel 由 Desktop 前端处理**——2026-09-13 B-12 落地：ClosedXML 将服务端模板 JSON 渲染为 `.xlsx`，字段说明仍以服务端为 SSOT（前端不复制字段定义）
 
 
-**实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet `import-template`), `IPatientService`, `PatientExcelService.GenerateTemplate`
 
 ---
 
@@ -329,26 +330,27 @@
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ✅ 已实现（2026-08-13 起 JSON 格式；2026-08-19 Desktop 导出 UI 接线完成）
+**状态**: ✅ 已实现（2026-08-13 起服务端 JSON；2026-08-19 Desktop 导出 UI 接线；2026-09-13 B-12 Desktop 导出 Excel 化）
 
-**作为** 管理员，**我想要** 将患者数据导出为 JSON，**以便** 数据备份、外部审计或迁移。
+**作为** 管理员，**我想要** 将患者数据导出，**以便** 数据备份、外部审计或迁移。
 
 **验收标准**:
 
 - [ ] 支持按筛选条件导出（非全量）
-- [ ] 返回 JSON 数组（`application/json`）
+- [ ] 服务端返回 JSON 数组（`application/json`）
 - [ ] 敏感字段按脱敏规则导出
 - [ ] 大数据量导出不影响主业务性能
+- [ ] Desktop 导出文件为 `.xlsx`（列：患者ID/姓名/性别/年龄/手机号/拼音码/状态/创建时间；脱敏值原样保留）
 
 **业务规则**:
 
 1. 导出由 Service 层执行（返回 JSON 数据，非 Excel）
 2. 敏感字段即使导出也按脱敏规则处理
 3. 端点受管理员权限保护
-4. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性——Excel 转换由前端负责，如需）
+4. **后端不涉及 Excel 格式**（2026-08-13 决策：保持通用性）；**Excel 由 Desktop 前端处理**（2026-09-13 B-12：`PatientExcelService.GenerateExportFile` 消费服务端 JSON 数组生成 `.xlsx`）
 
 
-**实现参考**: `PatientsController.cs` (HttpGet `export`), `IPatientService`
+**实现参考**: `PatientsController.cs` (HttpGet `export`), `IPatientService`, `PatientExcelService.GenerateExportFile`
 
 ---
 

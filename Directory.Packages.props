@@ -112,6 +112,9 @@
   <ItemGroup Label="Office and File Processing">
     <!-- D1: PDF 处方导出 -->
     <PackageVersion Include="QuestPDF" Version="2025.12.4" />
+    <!-- B-12: Desktop 患者导入导出 Excel 化（MIT 许可；后端保持 JSON 契约不变——Excel 仅表现层） -->
+    <!-- 注：0.102.4 在 NuGet 不存在（0.102 线止于 0.102.3；后续为 0.103.0-beta/0.104.x/0.105.1） -->
+    <PackageVersion Include="ClosedXML" Version="0.102.3" />
     <!-- Security: Upgrade Fonts and ImageSharp to fix vulnerabilities (CVE-2025-27598, CVE-2025-54575) -->
     <!-- SixLabors.Fonts 2.1.3 is latest stable version -->
     <PackageVersion Include="SixLabors.Fonts" Version="2.1.3" />

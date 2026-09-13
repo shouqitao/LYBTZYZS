@@ -1,13 +1,12 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models;
+using LYBT.Desktop.Patients.Services;
 using LYBT.Desktop.Patients.ViewModels;
 using LYBT.Desktop.Patients.ViewModels.Handlers;
 using LYBT.Desktop.Foundation.ExceptionHandling;
@@ -32,6 +31,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
         private readonly PatientMapper _patientMapper;
+        private readonly PatientExcelService _patientExcelService;
 
         // Child ViewModels
         private readonly PatientCardReaderViewModel _cardReaderViewModel;
@@ -85,6 +85,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             IPatientStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
             PatientMapper patientMapper,
+            // B-12: 患者导入导出 Excel 化（后端 JSON 契约不变——前端负责 .xlsx 转换）
+            PatientExcelService patientExcelService,
             // Child ViewModels
             PatientCardReaderViewModel cardReaderViewModel,
             PatientEditorViewModel patientEditor)
@@ -94,6 +96,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _patientMapper = patientMapper ?? throw new ArgumentNullException(nameof(patientMapper));
+            _patientExcelService = patientExcelService ?? throw new ArgumentNullException(nameof(patientExcelService));
 
             // Child ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
@@ -294,14 +297,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 批量导入/导出命令
 
-        /// <summary>导入 JSON 文件反序列化选项（camelCase + 枚举字符串，ADR-0022 对齐）</summary>
-        private static readonly JsonSerializerOptions ImportJsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        /// <summary>下载导入模板（US-PAT-011）</summary>
+        /// <summary>下载导入模板（US-PAT-011——服务端 JSON 字段定义 → 本地生成 .xlsx 模板）</summary>
         [RelayCommand]
         private async Task DownloadImportTemplateAsync()
         {
@@ -316,13 +312,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 var dialog = new SaveFileDialog
                 {
-                    Filter = "JSON 文件|*.json",
-                    FileName = "患者导入模板.json",
+                    Filter = "Excel 文件|*.xlsx",
+                    FileName = "患者导入模板.xlsx",
                     Title = "保存导入模板"
                 };
                 if (dialog.ShowDialog() != true) return;
 
-                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                // B-12: 服务端字段定义（JSON）→ Excel 模板（仅表现层转换，后端契约不变）
+                var workbook = _patientExcelService.GenerateTemplate(result.Data);
+                await File.WriteAllBytesAsync(dialog.FileName, workbook);
                 await MasterDetailServices.Dialog.ShowSuccessAsync($"模板已保存到：{dialog.FileName}", "下载成功");
             }
             catch (Exception ex)
@@ -332,22 +330,26 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>批量导入患者（US-PAT-011/003）</summary>
+        /// <summary>批量导入患者（US-PAT-011/003——Excel 文件 → 批量导入 DTO）</summary>
         [RelayCommand]
         private async Task ImportPatientsAsync()
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "JSON 文件|*.json",
+                Filter = "Excel 文件|*.xlsx",
                 Title = "选择患者导入文件"
             };
             if (dialog.ShowDialog() != true) return;
 
             try
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
-                var request = JsonSerializer.Deserialize<PatientBatchImportInputDto>(json, ImportJsonOptions);
-                if (request?.Patients == null || request.Patients.Count == 0)
+                PatientBatchImportInputDto request;
+                await using (var stream = File.OpenRead(dialog.FileName))
+                {
+                    request = _patientExcelService.ParseImportFile(stream);
+                }
+
+                if (request.Patients.Count == 0)
                 {
                     await MasterDetailServices.Dialog.ShowErrorAsync("文件中没有患者数据，请检查格式", "导入失败");
                     return;
@@ -370,10 +372,10 @@ namespace LYBT.Desktop.Patients.ViewModels
                 _cacheManager.InvalidatePatientCaches();
                 await RefreshAsync();
             }
-            catch (JsonException ex)
+            catch (InvalidDataException ex)
             {
                 Logger.LogError(ex, "解析患者导入文件失败: {File}", dialog.FileName);
-                await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync($"文件格式错误：{ex.Message}", "导入失败");
             }
             catch (Exception ex)
             {
@@ -382,7 +384,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>导出患者数据（US-PAT-012）</summary>
+        /// <summary>导出患者数据（US-PAT-012——服务端 JSON 导出 → 本地生成 .xlsx）</summary>
         [RelayCommand]
         private async Task ExportPatientsAsync()
         {
@@ -397,14 +399,16 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 var dialog = new SaveFileDialog
                 {
-                    Filter = "JSON 文件|*.json",
-                    FileName = $"患者导出_{DateTime.Now:yyyyMMddHHmmss}.json",
+                    Filter = "Excel 文件|*.xlsx",
+                    FileName = $"患者导出_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                     Title = "保存导出文件"
                 };
                 if (dialog.ShowDialog() != true) return;
 
-                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
-                await MasterDetailServices.Dialog.ShowSuccessAsync($"已导出 {result.Data.Length} 字节到：{dialog.FileName}", "导出成功");
+                // B-12: 服务端导出 JSON 数组（含脱敏结果）→ Excel 工作簿（仅表现层转换，后端契约不变）
+                var workbook = _patientExcelService.GenerateExportFile(result.Data);
+                await File.WriteAllBytesAsync(dialog.FileName, workbook);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"患者数据已导出到：{dialog.FileName}", "导出成功");
             }
             catch (Exception ex)
             {

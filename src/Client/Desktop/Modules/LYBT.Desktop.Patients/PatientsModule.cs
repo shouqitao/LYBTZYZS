@@ -43,6 +43,8 @@ namespace LYBT.Desktop.Patients
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<IPatientService, Services.PatientService>();
             containerRegistry.RegisterSingleton<Mappers.PatientMapper>();
+            // B-12: 患者导入导出 Excel 化（无状态转换服务）
+            containerRegistry.RegisterSingleton<Services.PatientExcelService>();
             containerRegistry.AddMasterDetailServices<PatientListDto, PatientDetailModel>();
 
             // Handler DI注册
