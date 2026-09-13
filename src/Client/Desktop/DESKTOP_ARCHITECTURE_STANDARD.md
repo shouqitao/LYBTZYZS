@@ -1850,12 +1850,12 @@ ViewModel 同理按「文件名以 `ViewModel.cs` 结尾、排除 `bin/`/`obj/`�
 
 ### A. 参考文档
 
-- `docs/architecture/client/unified-design-standard.md` - Client 端统一设计标准
+- `docs/03-architecture/16-desktop-architecture-spec.md` - Desktop 端架构规范（视图/VM/对话框/绑定）
 - `docs/03-architecture/02-desktop.md` - Desktop 端架构设计（视图/对话框/交互流程）
 - `docs/07-ui-ux/desktop-layout-framework.md` - Shell 布局框架（§13 依据，固化）
 - `docs/07-ui-ux/desktop-design-spec.md` - Desktop 设计规范（容错/对话框/未保存退出）
-- `docs/development/standards.md` - 开发标准
-- `docs/development/minimal-practice.md` - Issue 驱动工作法
+- `docs/05-development/02-code-standards.md` - 编码规范（C#/XAML 强制约定）
+- `docs/05-development/standards/README.md` - 技术标准索引（STD-01 CQRS 边界 … STD-06 JWT 安全）
 
 ### B. 相关 ADR
 

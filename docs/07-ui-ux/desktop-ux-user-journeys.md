@@ -219,7 +219,7 @@
 
 ## 10. 事实来源
 
-- 计数与清单口径：`docs/compose/specs/.desktop-inventory-facts.tmp.md`（机器扫描，临时件，最终删除）；正文一律表述为「代码实际（src/Client/Desktop）」。
+- 计数与清单口径：以 `src/Client/Desktop` 源码扫描为准（排除 `bin/`/`obj/`，口径见 [`DESKTOP_ARCHITECTURE_STANDARD.md`](../../src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md) §13.5）；全量清单见 [`desktop-view-inventory.md`](../compose/specs/desktop-view-inventory.md)。正文一律表述为「代码实际（src/Client/Desktop）」。
 - 角色与首页：`Core/LYBT.Desktop.Infrastructure/Roles/RoleRegistry.cs`、`Roles/Definitions/{SuperAdmin,Admin,Doctor,Receptionist}RoleDefinition.cs`、`Core/LYBT.Desktop.Infrastructure/Constants/ViewNames.cs`。
 - 导航：`Shell/Services/NavigationManager.cs`、`Core/LYBT.Desktop.Infrastructure/Navigation/NavigationCoordinator.cs`、`Shell/Services/Login/LoginCoordinator.cs`、`Shell/Services/ShellEventCoordinator.cs`。
 - Shell 三控件：`Shell/Views/{HeaderControl,SideNavControl,FooterControl}.xaml` + `Shell/ViewModels/{HeaderViewModel,SideNavViewModel,FooterViewModel}.cs`、`Shell/Services/ISidebarStateManager.cs`。
