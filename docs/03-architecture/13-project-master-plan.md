@@ -102,7 +102,7 @@
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
 | ---- | ------ | ------ | ------ | ------ | ------ |
-| C-01 | Desktop 测试修复 | ~104 个失败测试 | 需运行中 WebAPI | ⬜ | 1d |
+| C-01 | Desktop 测试修复 | 清理22个过期测试+安装LocalDB，742通过/0失败 | 需运行中 WebAPI | ✅ | 0.5d |
 | C-02 | systemd 服务 | 开机自启 | 无 | ⬜ | 0.25d |
 | C-03 | 部署脚本清理 | 删除 .worktrees/ 7 个孤儿 checkout + 重复脚本 | 无 | ✅ `85b2d16c5` | 0.25d |
 | C-04 | NuGet 包清理 | 移除 8 个零使用废弃包 | 无 | ✅ `85b2d16c5` | 0.25d |
@@ -267,7 +267,7 @@
 | B-14 挂号排班 | ⬜ | — | — |
 | B-15 离线同步 v2.0 | ⬜ | — | — |
 | B-16 Swagger | ✅ | 2026-09-12 | `6792904101` — 全量端点 XML 摘要（无摘要 35→0）+ DTO 字段描述 621 条 + 逐操作 Bearer security（`[Authorize]` 声明 / `[AllowAnonymous]` 跳过）+ 生产默认 `Swagger:Enabled=false`（测试发布注入 `Swagger__Enabled=true`）+ `SwaggerAvailability` 单开关 SSOT + L3/L4 契约测试；实测：swagger.json 122 端点全有摘要、源端点 122=122（0 缺失 0 幽灵）、生产默认 401 / env 开启 200 |
-| C-01 Desktop 测试修复 | ⬜ | — | — |
+| C-01 Desktop 测试修复 | ✅ | 2026-09-13 | 2c18a3a20 |
 | C-02 systemd 服务 | ⬜ | — | — |
 | C-03 部署脚本清理 | ✅ | 2026-08-04 | 删除 `.worktrees/` 下 7 个孤儿 checkout（arch-cleanup/fix-high-issues-t1-t4/fix-high-issues-t5-t6/fix-remaining-issues/fix-remove-sync-loader/offline-sync-review/rebase-offline），内含 sync-to-server.ps1/deploy-fixed.ps1 等均为仓库根目录 `tests/newman/`、`tests/postman/` 的过期重复；目录已被 gitignore 且未注册为 worktree，代码可从 git 分支恢复 |
 | C-04 NuGet 包清理 | ✅ | 2026-08-04 | 扫描 38 个 csproj 共 76 个 PackageReference，移除 8 个代码零使用包：NPOI（Foundation/Infrastructure）、EPPlus（WebAPI/Herbs/Formula）、System.CommandLine（PasswordHashGenerator）、Bogus（Tests.Server）、Xunit.StaFact（Tests.Desktop）、Microsoft.Extensions.ObjectPool（Foundation）、Microsoft.Extensions.Logging.Debug（Shell）、Refit.HttpClientFactory（Tests.Desktop）；同步清理 Directory.Packages.props 中央版本钉。保留 SixLabors.Fonts/ImageSharp（QuestPDF 传递依赖 CVE-2025-27598/54575 的安全版本固定）与 EFCore.Tools（迁移工具）。`85b2d16c5`，构建 0 错误 0 警告 |
