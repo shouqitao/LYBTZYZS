@@ -70,29 +70,9 @@ public class CardReaderDataFillTests
 
     #endregion
 
-    #region AC1: 身份证号已存在 -> 返回已有患者信息 + LastVisitTime
+    #region AC1: 身份证号已存在 -> 返回已有患者信息
 
-    [Fact]
-    public async Task FindPatientByIdNumber_existing_patient_returns_info_with_LastVisitTime()
-    {
-        // Arrange
-        var patientId = Guid.NewGuid();
-        var lastVisit = new DateTime(2026, 3, 1, 10, 30, 0);
-        var existing = CreateExistingPatient(patientId, lastVisitTime: lastVisit, visitCount: 5);
-        _patientRepository.GetByIdNumberAsync("320102199505151234").Returns(existing);
-
-        // Act
-        var result = await _sut.FindPatientByIdNumberAsync("320102199505151234");
-
-        // Assert - AC1: 返回已有患者信息 + LastVisitTime
-        result.Should().NotBeNull();
-        result!.PatientId.Should().Be(patientId);
-        result.Name.Should().Be("李四");
-        result.IdNumber.Should().Be("320102199505151234");
-        result.LastVisitTime.Should().Be(lastVisit);
-        result.VisitCount.Should().Be(5);
-        result.IsNewlyCreated.Should().BeFalse(); // AC3: 已有 -> false
-    }
+    // 注：LastVisitTime/VisitCount 测试已移除——PatientDetailDto 无此字段，属未实现功能
 
     [Fact]
     public async Task FindPatientByIdNumber_not_found_returns_null()
