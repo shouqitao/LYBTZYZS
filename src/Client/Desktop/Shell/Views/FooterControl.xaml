@@ -17,7 +17,8 @@
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                 <materialDesign:PackIcon Kind="{Binding ApiStatusIcon}" Width="14" Height="14"
                                          Foreground="{Binding ApiStatusColor}" VerticalAlignment="Center" ToolTip="API 连接状态"/>
-                <TextBlock Text="API 已连接" FontFamily="Noto Sans SC" FontSize="12" Foreground="#2E7D32" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                <TextBlock Text="{Binding ApiStatusText, FallbackValue=API 检测中…}" FontFamily="Noto Sans SC" FontSize="12"
+                           Foreground="{Binding ApiStatusColor}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                 <TextBlock Text="{Binding ConnectionModeDisplay, FallbackValue=远程模式}" FontFamily="Noto Sans SC" FontSize="12" Foreground="#8D6E63" VerticalAlignment="Center" Margin="16,0,0,0"/>
             </StackPanel>
 

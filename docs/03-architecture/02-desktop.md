@@ -664,7 +664,7 @@ PatientMasterDetailViewModel
 
 ### 工作区模式 (UI-D04)
 
-Clinical (诊疗) / Management (管理) 通过主页卡片导航区分。每个角色的 Home View 是导航中心，以功能卡片展示入口；侧边栏仅保留全局操作（个人资料/主题/退出）。
+Clinical (诊疗) / Management (管理) 通过主页卡片导航区分。每个角色的 Home View 是导航中心，以功能卡片展示入口；侧边栏承载角色导航矩阵（`NavigationManager.BuildNavigationItems` 按角色生成，按「主页/业务/管理」分组）与底部全局操作（主题/退出），个人资料入口在顶栏 Header。
 
 **实现**: `MenuManager.SetWorkspaceMode(mode)` 控制 `MenuItems` 集合的 `Visibility`。
 

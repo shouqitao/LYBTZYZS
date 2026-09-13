@@ -1689,13 +1689,17 @@ private async Task ImportDataAsync()
 |------|------|-----------|------|----------|
 | HeaderControl / HeaderViewModel | `Shell/Views/HeaderControl.xaml` `Shell/ViewModels/HeaderViewModel.cs` | h48 fill `$primary` padding `[0,24]` 7 子元素 | 品牌块36×36 `$accent` r10「医」20/700 + 标题17/600白 + 弹性 + 分隔1×20白30% + 用户icon 26 + 姓名13/600白 + 角色12 `#D9C7C1`；用户区可点击 `EditProfileCommand` | — |
 | SideNavControl / SideNavViewModel | `Shell/Views/SideNavControl.xaml` `Shell/ViewModels/SideNavViewModel.cs` | 展开240 收拢64 fill `$primary-dark` | 汉堡h40居中 + 分组标题11/600 `#C9B8A6`（仅展开） + 菜单h38 r10 选中`$primary` gap12 + 底部固定区（分割线+深色模式+退出）；C+矩阵 4角色×3项 | `ShellConstants.SidebarCollapsedWidth=64` `SidebarExpandedWidth=240` |
-| FooterControl / FooterViewModel | `Shell/Views/FooterControl.xaml` `Shell/ViewModels/FooterViewModel.cs` | h32 暖灰 顶部描边 `#E9DFD7`1 padding `[0,24]` | 左组 API状态 `● API已连接`12 `$success` + 连接模式12 `#8D6E63` gap16，右时间12；Tick 订阅已从 MainWindow 迁移 | — |
-| AppShell | `Shell/Views/AppShell.xaml` | 无 VM，纯组合 | Header(48) + Grid( SideNav(240/64 bind SidebarWidth) + 右列[ContentRegion唯一 + Footer32])；`DialogHost Identifier=RootDialog` 包裹 AppShell (R13 T-03) | 引用 ShellConstants |
+| FooterControl / FooterViewModel | `Shell/Views/FooterControl.xaml` `Shell/ViewModels/FooterViewModel.cs` | h32 暖灰 顶部描边 `#E9DFD7`1 padding `[0,24]` | 左组 API 状态（`ApiStatusIcon`/`ApiStatusColor`/`ApiStatusText` 三者同绑定——文本随真实健康状态变化，禁止硬编码「已连接」）+ 连接模式12 `#8D6E63` gap16，右时间12；Tick 订阅已从 MainWindow 迁移 | — |
+| AppShell | `Shell/Views/AppShell.xaml` | 无 VM，纯组合 | Header(48) + Grid( SideNav(240/64，列宽绑**宿主 VM 的 SidebarWidth 代理**，来自 `ISidebarStateManager`) + 右列[ContentRegion唯一 + Footer32])；`DialogHost Identifier=RootDialog` 包裹 AppShell (R13 T-03) | 引用 ShellConstants |
 | ShellConstants | `Shell/ShellConstants.cs` | — | 侧栏宽度 SSOT | 64 / 240 |
+| SidebarStateManager | `Shell/Services/SidebarStateManager.cs` | — | 侧栏展开态/宽度 SSOT（`ISidebarStateManager` 单例）——宿主与侧栏 VM 均为代理，消除 P1 双份状态不同步 | 64 / 240 推导 |
+| ShellLogoutService | `Shell/Services/ShellLogoutService.cs` | — | 登出唯一入口：活跃医案 `RequestLeaveAsync` 守卫 + 二次确认 → `PerformLogoutAsync`；宿主与侧栏退出按钮共用（修复既有审查 #34） | `LogoutOutcome` |
+| ShellViewMappings | `Shell/ShellViewMappings.cs` | — | 视图→VM 显式映射表（约定名不匹配时唯一登记点）；`App.ConfigureViewModelLocator` 调用，守卫测试同源校验 | 5 条映射 |
 
 ### 13.2 命名与职责
 
-- 命名：`HeaderControl/SideNavControl/FooterControl/AppShell` 位于 `Shell.Views`，对应 VM 位于 `Shell.ViewModels`，均以 `...ViewModel` 后缀继承 `ObservableObject`，通过 `prism:ViewModelLocator.AutoWireViewModel="True"` 注入 `IShellServices`。
+- 命名与绑定：`HeaderControl/SideNavControl/FooterControl/AppShell` 位于 `Shell.Views`，对应 VM 位于 `Shell.ViewModels`（`...ViewModel` 后缀，继承 `ObservableObject`，构造注入 `IShellServices`）。**三控件的 Prism 约定名（`HeaderControlViewModel`/`SideNavControlViewModel`/`FooterControlViewModel`）不存在**，因此一律经 `ShellViewMappings.Mappings` 显式映射（`App.ConfigureViewModelLocator` → `ShellViewMappings.Register()`）；新增 AW 控件必须在该表登记，守卫测试 `ShellViewViewModelBindingTests`（架构测试项目）会拦截漏登记——历史上漏登记导致 AW 静默跳过赋值、控件继承宿主 DataContext，绑定失效且无任何异常/日志。
+- 状态来源（SSOT）：侧栏展开态/宽度 = `IShellServices.Sidebar`（`SidebarStateManager`）；深色模式 = `IShellServices.Theme`（`ThemeService` 经 MaterialDesign `PaletteHelper` 应用并持久化）；登录态 = `ILoginStateManager`；API 状态/时间 = `IStatusBarManager`；登出 = `IShellServices.Logout`（含活跃医案守卫）。VM 只做代理，不复制状态。
 - 职责：Header 只读展示+个人资料入口；SideNav 负责导航列表与折叠/主题；Footer 负责健康+时间；AppShell 负责布局组合，不新增 Region。
 - 常量：所有 64/240 引用必须来自 `ShellConstants`，禁止内联。
 

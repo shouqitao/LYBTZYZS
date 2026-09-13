@@ -136,6 +136,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<INavigationCoordinator, NavigationCoordinator>();
             containerRegistry.RegisterSingleton<INavigationManager, NavigationManager>();
             containerRegistry.RegisterSingleton<IStatusBarManager, StatusBarManager>();
+            // P1 修复配套：侧栏状态 SSOT（宿主 MainWindowViewModel 与 SideNavViewModel 共用）
+            containerRegistry.RegisterSingleton<ISidebarStateManager, SidebarStateManager>();
+            // 登出唯一入口（活跃医案守卫）——宿主与侧栏共用，避免侧栏绕过守卫
+            containerRegistry.RegisterSingleton<IShellLogoutService, ShellLogoutService>();
 
             // Navigation 服务拆分
             containerRegistry.RegisterSingleton<INavigationHistoryService, NavigationHistoryService>();

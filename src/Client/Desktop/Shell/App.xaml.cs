@@ -21,7 +21,6 @@ using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Mvvm;
 using Serilog;
 
 namespace LYBT.Desktop.Shell;
@@ -98,6 +97,10 @@ public partial class App : PrismApplication
         containerRegistry.RegisterAllServices();
         containerRegistry.Register<Views.MainWindow>();
         containerRegistry.Register<MainWindowViewModel>();
+        // P1 修复：Shell 三控件 VM 显式注册（AW 约定名与 VM 类名不匹配——HeaderControl→HeaderControlViewModel 不存在）
+        containerRegistry.Register<HeaderViewModel>();
+        containerRegistry.Register<SideNavViewModel>();
+        containerRegistry.Register<FooterViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
@@ -118,8 +121,10 @@ public partial class App : PrismApplication
     protected override void ConfigureViewModelLocator()
     {
         base.ConfigureViewModelLocator();
-        ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
-        ViewModelLocationProvider.Register<Controls.AccountSettingsControl, ViewModels.AccountSettingsViewModel>();
+
+        // 显式映射优于 Prism 约定（约定名 HeaderControlViewModel 等不存在 → AW 会静默失败并继承宿主 DataContext）。
+        // 映射表单一真相源：ShellViewMappings.Mappings（守卫测试 ShellViewViewModelBindingTests 同源校验）。
+        ShellViewMappings.Register();
     }
 
     /// <summary>应用程序初始化完成后的回调</summary>

@@ -20,6 +20,7 @@ Shell/
 ├── Controls/
 │   └── AccountSettingsControl.xaml(.cs) # 账户设置控件
 ├── ShellConstants.cs                    # 侧栏宽度常量 64/240 (SSOT desktop-layout-framework)
+├── ShellViewMappings.cs                 # 视图→VM 显式映射表（Shell 唯一登记点；守卫测试同源校验）
 ├── Views/
 │   ├── HeaderControl.xaml(.cs)          # 顶部应用栏 48 (品牌36+标题17+用户区)
 │   ├── SideNavControl.xaml(.cs)         # 左侧导航 240/64 (汉堡40+分组标题11+菜单38+底部)
@@ -49,6 +50,8 @@ Shell/
 │   ├── MenuManager.cs
 │   ├── NavigationManager.cs
 │   ├── ShellEventCoordinator.cs
+│   ├── ShellLogoutService.cs            # 登出唯一入口（活跃医案离开守卫 + 确认）
+│   ├── SidebarStateManager.cs           # 侧栏展开/宽度 SSOT（宿主与侧栏共用）
 │   ├── SnackbarService.cs
 │   ├── StatusBarManager.cs
 │   ├── ThemeService.cs
@@ -76,9 +79,9 @@ Shell/
 ├── ViewModels/
 │   ├── AccountSettingsViewModel.cs
 │   ├── HeaderViewModel.cs               # 顶部栏 VM (CurrentUser*) + EditProfileCommand
-│   ├── SideNavViewModel.cs              # 侧栏 VM (NavigationItems/IsSidebarExpanded/IsDarkMode)
-│   ├── FooterViewModel.cs               # 底部栏 VM (ApiStatus/ConnectionMode/CurrentTime + Tick)
-│   └── MainWindowViewModel.cs           # 主窗 VM (薄委托，侧栏宽度引用 ShellConstants)
+│   ├── SideNavViewModel.cs              # 侧栏 VM (NavigationItems/IsDarkMode；展开态代理 SidebarStateManager)
+│   ├── FooterViewModel.cs               # 底部栏 VM (ApiStatus*/ConnectionMode/CurrentTime + Tick)
+│   └── MainWindowViewModel.cs           # 主窗 VM (薄委托；侧栏展开态/宽度代理 SidebarStateManager)
 └── Views/
     ├── AccountSettingsView.xaml(.cs)
     └── MainWindow.xaml(.cs)
@@ -90,11 +93,14 @@ Shell/
 |----|---------|------|
 | **App** | PrismApplication 单实例模式 | 单实例 Mutex 防重复启动；Serilog 日志初始化；`ConfigureModuleCatalog` 加载 Core 模块 WhenAvailable + 业务模块 OnDemand；`RegisterTypes` 注册全部服务/对话框/主题；`OnInitialized` 显示主窗口并执行 `RunStartupAsync` |
 | **HeaderControl/HeaderViewModel** | 顶部应用栏 48 | 按 framework 7 子元素 (品牌块36+标题17+弹性+分隔1×20+用户icon26+姓名13+角色12)，用户区点击打开个人资料 |
-| **SideNavControl/SideNavViewModel** | 左侧导航 240/64 | 汉堡40+分组标题11+菜单38 r10 选中primary，收拢仅图标居中；C+矩阵 4角色×3项；深色模式+退出在底部 |
-| **FooterControl/FooterViewModel** | 底部状态栏 32 | 暖灰顶部描边，左组 API状态+连接模式 gap16，右时间；Tick 订阅已从 MainWindow 迁移 |
-| **AppShell** | 纯 UserControl 组合 | Header(48)+SideNav(240/64)+ContentRegion唯一+Footer(32)，DialogHost 包裹 AppShell (R13 T-03) |
+| **SideNavControl/SideNavViewModel** | 左侧导航 240/64 | 汉堡40+分组标题11+菜单38 r10 选中primary，收拢仅图标居中；C+矩阵 4角色×3项；深色模式+退出在底部。展开态/宽度代理 `ISidebarStateManager`（SSOT，与宿主 Ctrl+M 同源），深色模式代理 `IThemeService` |
+| **FooterControl/FooterViewModel** | 底部状态栏 32 | 暖灰顶部描边，左组 API 状态（图标/颜色/文本均绑定 `ApiStatusIcon/ApiStatusColor/ApiStatusText`——随真实健康状态，禁止硬编码）+ 连接模式 gap16，右时间；Tick 订阅已从 MainWindow 迁移 |
+| **AppShell** | 纯 UserControl 组合 | Header(48)+SideNav(列宽绑宿主 VM 的 `SidebarWidth` 代理)+ContentRegion唯一+Footer(32)，DialogHost 包裹 AppShell (R13 T-03) |
 | **ShellConstants** | 常量 SSOT | `SidebarCollapsedWidth=64` `SidebarExpandedWidth=240`，XAML/VM 均引用 |
-| **MainWindowViewModel** | CoreViewModelBase，组合优于继承 | 委托 LoginStateManager/MenuManager/NavigationManager/StatusBarManager 四大管理器；`LogoutAsync` 含活跃医案检查防误退出；`ToggleSidebar` 侧边栏折叠 (引用 ShellConstants)；17 个 ICommand 均为委托转发 |
+| **SidebarStateManager** : ISidebarStateManager | 侧栏状态 SSOT（P1 修复） | `IsSidebarExpanded/SidebarWidth/IsNavTextVisible/Toggle`；宿主与侧栏 VM 均为只读代理，消除双份状态不同步 |
+| **ShellLogoutService** : IShellLogoutService | 登出唯一入口（既有审查 #34 修复） | `RequestLogoutAsync`：活跃医案 → `RequestLeaveAsync` 守卫；无则二次确认；返回 `LogoutOutcome`（LoggedOut/Cancelled/Failed）。宿主与侧栏退出按钮共用 |
+| **ShellViewMappings** | 视图→VM 显式映射（约定名不匹配时的唯一登记点） | `Mappings` + `Register()`；`App.ConfigureViewModelLocator` 与守卫测试 `ShellViewViewModelBindingTests` 同源——新增 Shell 控件漏登记即测试失败 |
+| **MainWindowViewModel** | CoreViewModelBase，组合优于继承 | 委托 LoginStateManager/MenuManager/NavigationManager/StatusBarManager 四大管理器；`LogoutAsync` 委托 `IShellLogoutService`（含活跃医案守卫）；`ToggleSidebar` 委托 `IShellServices.Sidebar`（Ctrl+M 与汉堡按钮同源）；其余 ICommand 均为委托转发 |
 | **NavigationManager** | ObservableObject，基于角色动态构建 | `BuildNavigationItems` 按用户角色 + RoleRegistry 生成导航项，按「主页/业务/管理」分组 |
 | **MenuManager** | DelegateCommand 快捷键绑定 | QuickAdd(`Ctrl+N`)、QuickStartMedicalCase(`Ctrl+Shift+C`)、Help(`F1`)、Settings(`Ctrl+,`)、主题切换、面包屑导航 |
 | **StatusBarManager** | 响应式状态聚合 | 暴露 ApiStatus/ConnectionUrl/IsLocal/CurrentTime/ApiStatusIcon/ApiStatusColor；订阅 HealthMonitor + Connection 事件自动刷新 |

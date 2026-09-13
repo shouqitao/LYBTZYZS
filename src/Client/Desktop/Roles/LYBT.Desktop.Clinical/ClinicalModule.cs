@@ -25,6 +25,8 @@ namespace LYBT.Desktop.Clinical
             containerRegistry.Register<ViewModels.ClinicalHomeViewModel>();
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();
             containerRegistry.Register<ViewModels.MedicalCaseWorkspaceViewModel>();
+            // P2 修复：ClinicalWorkspaceView 的导航 VM 此前未注册（靠 DryIoc 具体类型兜底构造）——与其他导航 VM 对齐
+            containerRegistry.Register<ViewModels.ClinicalWorkspaceViewModel>();
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.ClinicalHomeView>();

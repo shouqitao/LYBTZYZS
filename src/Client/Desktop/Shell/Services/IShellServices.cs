@@ -12,10 +12,14 @@ public interface IShellServices
     IMenuManager Menu { get; }
     INavigationManager Navigation { get; }
     IStatusBarManager StatusBar { get; }
+    ISidebarStateManager Sidebar { get; }
     ILoginStateManager LoginState { get; }
     ShellEventCoordinator Events { get; }
     ShellDialogHelper Dialogs { get; }
     IThemeService Theme { get; }
     IApplicationTickService Tick { get; }
     IActiveConsultationService ActiveConsultation { get; }
+
+    /// <summary>Shell 唯一登出入口（含活跃医案离开守卫）</summary>
+    IShellLogoutService Logout { get; }
 }

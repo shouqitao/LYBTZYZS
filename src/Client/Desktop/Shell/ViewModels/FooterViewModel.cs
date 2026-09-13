@@ -25,6 +25,14 @@ public partial class FooterViewModel : ObservableObject, IDisposable
     public PackIconKind ApiStatusIcon => _shell.StatusBar.ApiStatusIcon;
     public Brush ApiStatusColor => _shell.StatusBar.ApiStatusColor;
 
+    /// <summary>API 状态文本（随真实健康状态变化——避免 XAML 硬编码「已连接」）</summary>
+    public string ApiStatusText => ApiStatus switch
+    {
+        ApiHealthStatus.Healthy => "API 已连接",
+        ApiHealthStatus.Unhealthy => "API 未连接",
+        _ => "API 检测中…",
+    };
+
     public FooterViewModel(IShellServices shell)
     {
         _shell = shell ?? throw new ArgumentNullException(nameof(shell));
@@ -39,6 +47,7 @@ public partial class FooterViewModel : ObservableObject, IDisposable
         if (e.PropertyName == nameof(IStatusBarManager.ApiStatus) || e.PropertyName == nameof(IStatusBarManager.ConnectionModeDisplay))
         {
             OnPropertyChanged(nameof(ApiStatus));
+            OnPropertyChanged(nameof(ApiStatusText));
             OnPropertyChanged(nameof(ConnectionModeDisplay));
             OnPropertyChanged(nameof(ApiStatusIcon));
             OnPropertyChanged(nameof(ApiStatusColor));

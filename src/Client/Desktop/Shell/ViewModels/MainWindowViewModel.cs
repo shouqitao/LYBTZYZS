@@ -54,19 +54,30 @@ public partial class MainWindowViewModel : NavigableViewModelBase
 
     #endregion
 
-    #region 可观察属性
+    /// <summary>
+    /// 侧栏状态代理 — 单一真相源 <see cref="IShellServices.Sidebar"/>（与 SideNavViewModel 共用同一实例）。
+    /// 宿主侧仅暴露绑定面：Ctrl+M 命令、AppShell 列宽。宽度由 ShellConstants 推导，不在此另存状态。
+    /// </summary>
+    public bool IsSidebarExpanded
+    {
+        get => _shell.Sidebar.IsSidebarExpanded;
+        set
+        {
+            if (_shell.Sidebar.IsSidebarExpanded == value) return;
+            _shell.Sidebar.IsSidebarExpanded = value;
+        }
+    }
 
-    [ObservableProperty]
-    private double _sidebarWidth = ShellConstants.SidebarCollapsedWidth;
+    public double SidebarWidth => _shell.Sidebar.SidebarWidth;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsNavTextVisible))]
-    private bool _isSidebarExpanded = false;
+    public bool IsNavTextVisible => _shell.Sidebar.IsNavTextVisible;
 
-    public bool IsNavTextVisible =>
-        IsSidebarExpanded;
-
-    #endregion
+    private void OnSidebarStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(IsSidebarExpanded));
+        OnPropertyChanged(nameof(SidebarWidth));
+        OnPropertyChanged(nameof(IsNavTextVisible));
+    }
 
     #region 计算属性（委托给 NavigationManager / StatusBarManager）
 
@@ -98,6 +109,8 @@ public partial class MainWindowViewModel : NavigableViewModelBase
 
         _shell.LoginState.LoginStateChanged += OnLoginStateChanged;
         _shell.Events.LoginSuccessHandled += OnLoginSuccessHandled;
+        // 侧栏状态 SSOT 变更 → 重新广播宿主绑定面（IsSidebarExpanded/SidebarWidth/IsNavTextVisible）
+        _shell.Sidebar.PropertyChanged += OnSidebarStateChanged;
     }
 
     #endregion
@@ -115,7 +128,6 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     public ICommand ExportCommand => _shell.Menu.ExportCommand;
     public ICommand UndoCommand => _shell.Menu.UndoCommand;
     public ICommand RedoCommand => _shell.Menu.RedoCommand;
-    public ICommand EditProfileCommand => _shell.Menu.EditProfileCommand;
     public new ICommand NavigateToHomeCommand => _shell.Menu.NavigateToHomeCommand;
     public ICommand NavigateToSystemSettingsCommand => _shell.Menu.NavigateToSystemSettingsCommand;
     public ICommand NavigateBackCommand => _shell.Menu.NavigateBackCommand;
@@ -128,32 +140,9 @@ public partial class MainWindowViewModel : NavigableViewModelBase
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        try
-        {
-            if (_shell.ActiveConsultation.HasActiveConsultation)
-            {
-                var leaveResult = await _shell.ActiveConsultation.RequestLeaveAsync();
-                if (!leaveResult.CanLeave)
-                {
-                    Logger.LogDebug("用户选择继续停留，取消退出登录");
-                    return;
-                }
-                Logger.LogInformation("活跃医案已处理（选择: {Choice}），继续退出登录", leaveResult.Choice);
-            }
-            else
-            {
-                var result = await ShowConfirmationAsync("确定要退出登录吗？");
-                if (!result)
-                    return;
-            }
-
-            await _shell.LoginState.PerformLogoutAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "退出登录时发生异常");
-            await ShowErrorMessageAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("退出登录", ex));
-        }
+        // 守卫 + 确认 + 执行统一在 IShellLogoutService（侧栏退出按钮同源，避免绕过活跃医案守卫）
+        if (await _shell.Logout.RequestLogoutAsync() == LogoutOutcome.Failed)
+            await ShowErrorMessageAsync("退出登录失败，请稍后重试");
     }
 
     [RelayCommand]
@@ -162,16 +151,9 @@ public partial class MainWindowViewModel : NavigableViewModelBase
         await _shell.StatusBar.ForceCheckAsync();
     }
 
-    partial void OnIsSidebarExpandedChanged(bool value)
-    {
-        SidebarWidth = value ? ShellConstants.SidebarExpandedWidth : ShellConstants.SidebarCollapsedWidth;
-    }
-
+    /// <summary>切换侧栏展开/收拢（Ctrl+M 绑定）——委托共享状态，与侧栏汉堡按钮同源</summary>
     [RelayCommand]
-    private void ToggleSidebar()
-    {
-        IsSidebarExpanded = !IsSidebarExpanded;
-    }
+    private void ToggleSidebar() => _shell.Sidebar.Toggle();
 
     #endregion
 
@@ -244,6 +226,7 @@ public partial class MainWindowViewModel : NavigableViewModelBase
         {
             _shell.LoginState.LoginStateChanged -= OnLoginStateChanged;
             _shell.Events.LoginSuccessHandled -= OnLoginSuccessHandled;
+            _shell.Sidebar.PropertyChanged -= OnSidebarStateChanged;
             _shell.Events.Dispose();
             _shell.LoginState.Dispose();
             _shell.StatusBar.Dispose();
