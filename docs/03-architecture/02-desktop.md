@@ -24,10 +24,10 @@ graph TB
         M_Auth["Auth"]
         M_Users["Users"]
         M_Patients["Patients"]
-        M_Herbs["Herbs"]
-        M_Formula["Formula"]
+        M_Catalog["Catalog<br>(药材+验方)"]
         M_MC["MedicalCase"]
         M_Reg["Registration"]
+        M_Reports["Reports"]
     end
 
     subgraph Core["Core 层 (基础设施)"]
@@ -40,9 +40,9 @@ graph TB
     end
 
     App --> Admin & Clinical
-    Admin --> M_Auth & M_Users & M_Patients & M_Herbs & M_Formula
-    Clinical --> M_Auth & M_Patients & M_MC & M_Reg & M_Herbs & M_Formula
-    M_Auth & M_Users & M_Patients & M_Herbs & M_Formula & M_MC & M_Reg --> Infrastructure
+    Admin --> M_Auth & M_Users & M_Patients & M_Catalog & M_MC & M_Reports
+    Clinical --> M_Auth & M_Patients & M_Catalog & M_MC & M_Reg & M_Reports
+    M_Auth & M_Users & M_Patients & M_Catalog & M_MC & M_Reg & M_Reports --> Infrastructure
     Infrastructure --> Foundation --> Contracts
     Modules --> Models
 ```
@@ -86,8 +86,8 @@ graph TB
 
 | 项目 | 文件数 | 引用模块 | 依据 |
 |------|--------|---------|------|
-| **LYBT.Desktop.Admin** | 17 | Herbs/Formula/Patients/MedicalCase/Users | 业务管理角色（08-04 角色画像）|
-| **LYBT.Desktop.Clinical** | 21 | Herbs/Formula/Patients/MedicalCase/Registration | 临床看诊角色 |
+| **LYBT.Desktop.Admin** | 17 | Catalog/Patients/MedicalCase/Users/Reports | 业务管理角色（08-04 角色画像）|
+| **LYBT.Desktop.Clinical** | 21 | Catalog/Patients/MedicalCase/Registration/Reports | 临床看诊角色 |
 
 ### Shell（组合根）
 
@@ -208,7 +208,7 @@ LYBT.Desktop.{Domain}/
 
 ### Admin (管理员工作台)
 
-- **包含模块**: Auth, Users, Patients, Herbs, Formula
+- **包含模块**: Auth, Users, Patients, Catalog
 - **核心功能**: 用户管理、数据维护、系统配置
 
 ### Clinical (临床工作台)
@@ -522,8 +522,8 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 | FormulaImportDialog | Modules/MedicalCase/Dialogs | 从验方库导入药材到处方 | DialogViewModelBase |
 | HistoryCopyDialog | Modules/MedicalCase/Dialogs | 从历史医案复制处方 | DialogViewModelBase |
 | UnsavedChangesDialog | Modules/MedicalCase/Dialogs | 未保存修改确认 (保存/放弃/取消) | ObservableObject |
-| SyncConflictDialog | Modules/Sync/ViewModels | 同步冲突逐条处理 | DialogViewModelBase |
-| UnfinishedCaseDialog | Core/Infrastructure/ViewModels | 未完成医案处理 (继续/新建/关闭) | ObservableObject |
+| ~~SyncConflictDialog~~ | Modules/Sync/ViewModels | 🧲 v2.0 规划（SyncModule v2.0，N1 决策） | — |
+| ~~UnfinishedCaseDialog~~ | — | 代码中未找到此文件，可能已移除 | — |
 
 ### FormulaImportDialog
 

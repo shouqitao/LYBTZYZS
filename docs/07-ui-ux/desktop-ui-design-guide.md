@@ -139,12 +139,14 @@ AdminHomeView
 ### 4.4 Sysadmin 导航
 
 ```
-SysadminHomeView
-  ├→ UserManagementView（用户管理）
-  ├→ SystemSettingsView（系统设置）
+SysadminHomeView（运维设置主页）
+  ├→ 用户管理面板（内嵌于 SysadminHomeView）
+  ├→ 诊所信息 / 会话设置 / 连接设置 / 安全策略 / 功能开关 / 系统信息
   ├→ BackupManagementView（备份管理）
   ├→ DeploymentView（部署管理）
-  └→ LogLevelControlView（日志级别）
+  ├→ LogLevelControlView（日志级别）
+  ├→ SecurityAuditLogView（安全审计日志）
+  └→ AccountSettingsView（个人资料）
 ```
 
 ---

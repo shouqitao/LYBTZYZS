@@ -156,10 +156,10 @@ children = [左侧导航, 右列]
 
 | 角色 | 菜单项（展开） | 图标（Material Symbols） |
 |------|---------------|-------------------------|
-| Doctor | 主页 / 患者选择 / 医案工作台 | home / person_search / edit_note |
-| Receptionist | 主页 / 新建挂号 / 患者管理 | home / add_circle / people |
-| Admin | 主页 / 用户管理 / 药材/验方 | home / manage_accounts / herbalism |
-| Sysadmin | 主页 / 备份管理 / 部署管理 | home / backup / deploy |
+| Doctor | 首页 / 患者管理 / 医案管理 / 药材(只读) / 验方 / 挂号 / 报表 / 个人资料 | home / people / medical_services / herbalism / recipe / assignment / bar_chart / person |
+| Receptionist | 首页 / 患者管理 / 挂号 / 个人资料 | home / people / assignment / person |
+| Admin | 首页 / 用户管理 / 患者管理 / 药材/验方 / 医案查看 / 报表 / 个人资料 | home / manage_accounts / people / herbalism / medical_services / bar_chart / person |
+| Sysadmin | 首页 / 备份管理 / 部署管理 / 日志级别 / 安全审计 / 个人资料 | home / backup / deploy / tune / security / person |
 | 共用底部 | 深色模式 / 退出 | dark_mode / logout |
 
 ### 底部固定区（左侧栏底部）
