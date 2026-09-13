@@ -174,6 +174,7 @@ ss -tlnp | grep 5000                        # 端口
 | 10 | SSH 密码认证失败 | PasswordAuthentication no | 开启 PasswordAuthentication yes |
 | 11 | 全局 SplitQuery + 远程 SQL | 多连接超时 | 移除全局 SplitQuery，改查询级 |
 | 12 | 多进程/端口占用 | 脚本层无防护 | start.sh 四层防护 + Program.cs Mutex |
+| 13 | 本地模式首启种子失败报「User security stamp cannot be null」 | `EnsureUserAsync` 忽略 `CreateAsync` 结果；占位符密码先触发策略校验失败（在写 SecurityStamp 之前）→ 后续角色分配报与真因无关的 stamp 错误 | ① 种子校验 `CreateAsync` 结果并抛可执行错误（含配置键与密码策略）；② 本地模式注入合规 `DefaultPasswords__SysAdminPassword/NewUserPassword`（见 `05-development/01-setup.md` 本地模式） |
 
 > **代码-文档一致性约定**：每次部署相关变更必须同步本清单与对应文档。
 

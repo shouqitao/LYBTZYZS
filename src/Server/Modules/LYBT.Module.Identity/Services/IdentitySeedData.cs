@@ -7,6 +7,7 @@ using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Primitives;
+using LYBT.Shared.Models.Utilities.Security;
 
 namespace LYBT.Module.Identity.Services;
 
@@ -72,26 +73,33 @@ public static class IdentitySeedData
                 IsSysAdmin = isSysAdmin,
                 Role = Enum.Parse<LYBT.Shared.Models.Enums.UserRole>(role)
             };
-            await userManager.CreateAsync(user, defaultPassword);
+
+            var createResult = await userManager.CreateAsync(user, defaultPassword);
+            if (!createResult.Succeeded)
+            {
+                // 建号失败必须显式抛出：Identity 的 CreateAsync(user, password) 在「密码不满足策略」时
+                // **先于**写入 SecurityStamp 返回失败结果；若忽略该结果继续 AddToRoleAsync，
+                // 只会得到与真实原因无关的「User security stamp cannot be null.」
+                // ——掩盖「默认密码未注入/仍为占位符」等运维问题（本地模式 Shell appsettings 的 __REPLACE__ 即此场景，13c #134/#135）。
+                throw new InvalidOperationException(
+                    $"[SEED] 创建用户 {userName} 失败：{string.Join("; ", createResult.Errors.Select(e => e.Description))}"
+                    + $"。请检查默认密码配置 DefaultPasswords:SysAdminPassword（环境变量 DefaultPasswords__SysAdminPassword）"
+                    + $"是否满足密码策略（至少 {PasswordPolicyValidator.Policy.MinLength} 位，含大写/小写/数字/特殊字符）"
+                    + "——占位符 __REPLACE__ 不可用，本地/测试环境同样需注入。");
+            }
+
+            // 防御：个别 Store/早退路径可能未写 stamp，而后续角色分配要求非空
+            await EnsureSecurityStampAsync(userManager, user, userName);
             await userManager.AddToRoleAsync(user, role);
             return;
         }
 
-        // 存量用户 SecurityStamp 修复（Seed 共用修复点，2026-08-17）：
-        // 历史版本曾经裸 EF Core 建用户 → SecurityStamp 为空 → 后续
-        // GeneratePasswordResetTokenAsync → GetSecurityStampAsync 抛
+        // 存量用户 SecurityStamp 修复（2026-08-17）：历史版本曾经裸 EF Core 建用户 → SecurityStamp 为空 →
+        // 后续 GeneratePasswordResetTokenAsync → GetSecurityStampAsync 抛
         // InvalidOperationException("User security stamp cannot be null.")
         // → LocalWebAPI 种子失败 → 嵌入式服务启动失败 → 本地模式不可用。
         // 先补 stamp 再进入密码重置/角色校准流程（校验与令牌生成均依赖 stamp）。
-        if (string.IsNullOrEmpty(user.SecurityStamp))
-        {
-            var stampResult = await userManager.UpdateSecurityStampAsync(user);
-            if (!stampResult.Succeeded)
-            {
-                throw new InvalidOperationException(
-                    $"无法为用户 {userName} 修复 SecurityStamp: {string.Join("; ", stampResult.Errors.Select(e => e.Description))}");
-            }
-        }
+        await EnsureSecurityStampAsync(userManager, user, userName);
 
         if (user.LastLoginTime == null)
         {
@@ -126,5 +134,27 @@ public static class IdentitySeedData
         var roles = await userManager.GetRolesAsync(user);
         if (!roles.Contains(role))
             await userManager.AddToRoleAsync(user, role);
+    }
+
+    /// <summary>
+    /// 保证用户 SecurityStamp 非空——Identity 的角色分配/令牌生成链
+    /// （AddToRoleAsync → UpdateUserAsync → ValidateUserAsync → GetSecurityStampAsync）要求其非空，
+    /// 否则抛「User security stamp cannot be null.」。覆盖两类来源：
+    /// ① 历史版本裸 EF Core 建号（库中为 NULL）；② 建号路径早退未写 stamp。
+    /// </summary>
+    private static async Task EnsureSecurityStampAsync(
+        UserManager<ApplicationUser> userManager,
+        ApplicationUser user,
+        string userName)
+    {
+        if (!string.IsNullOrEmpty(user.SecurityStamp))
+            return;
+
+        var stampResult = await userManager.UpdateSecurityStampAsync(user);
+        if (!stampResult.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"[SEED] 无法为用户 {userName} 修复 SecurityStamp：{string.Join("; ", stampResult.Errors.Select(e => e.Description))}");
+        }
     }
 }

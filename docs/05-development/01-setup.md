@@ -69,6 +69,21 @@ CREATE DATABASE LYBTDB_Dev;
 - 数据存储位置: `%APPDATA%\LYBT\data\` (LocalDB MDF 文件)
 - LocalDB 随 Visual Studio / SQL Server Express 安装，无需额外配置
 
+> ⚠️ **首次运行必须注入默认密码**（2026-09-13 修复，见 13c #135）：
+> 嵌入式 LocalWebAPI 首启会执行种子 `IdentitySeedData.SeedRolesAndAdminAsync`（建 4 角色 + sysadmin）。
+> 仓库内 `Shell/appsettings.json` 的 `DefaultPasswords` 为占位符 `__REPLACE__`，**不满足密码策略**，
+> 种子会 fail-fast 并打印可执行错误（`[SEED] 创建用户 sysadmin 失败：…请检查默认密码配置…`）。
+> 本地调试请先注入合规密码（≥8 位，含大写/小写/数字/特殊字符）再启动客户端：
+
+```powershell
+$env:DefaultPasswords__SysAdminPassword = 'SeedTest@2026!'
+$env:DefaultPasswords__NewUserPassword  = 'SeedTest@2026!'
+# 然后启动 Desktop（或从该终端 dotnet run）
+```
+
+> 未注入时本地模式不可用（登录无账号），属**预期的安全行为**（禁止明文/默认密码回退——K4 加固）；
+> 远程 WebAPI 同源种子逻辑，生产由环境变量 `DefaultPasswords__SysAdminPassword` 注入。
+
 ### 端口说明
 
 | 端口 | 用途 | 说明 |
