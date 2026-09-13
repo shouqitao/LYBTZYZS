@@ -84,19 +84,22 @@
 
 | 目录 | 内容 | 文件数 |
 |------|------|:------:|
-| [00-governance](00-governance/README.md) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 4 |
+| [00-governance](00-governance/README.md) | 文档治理：命名规范、SSOT 架构、技术引入治理 | 6 |
 | [01-product](01-product/README.md) | 产品愿景、用户画像、术语表、权限矩阵、角色交互 | 6 |
 | [02-requirements](02-requirements/README.md) | 需求文档（15 模块，142 US） | 19 |
-| [03-architecture](03-architecture/README.md) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 57 |
+| [03-architecture](03-architecture/README.md) | 架构文档（当前值）、ADR 决策记录、权限矩阵、总账 | 65 |
 | [04-api-reference](04-api-reference/README.md) | API 端点文档 | 15 |
-| [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 17 |
+| [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 18 |
 | [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 12 |
-| [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求 | 2 |
-| [compose](compose/README.md) | 过程文档归档：specs（图表资产） | 3 |
-| [prompts](prompts/README.md) | Prompt 模板 | 2 |
-| [training](training/README.md) | 培训材料 | 1 |
+| [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求、UX 旅程/交互/错误/加载 | 12 |
+| [compose](compose/README.md) | 过程文档归档：specs（图表资产）、报告、计划 | 56 |
+| [prompts](prompts/README.md) | Prompt 模板 | 3 |
+| [training](training/README.md) | 培训材料 | 2 |
 
-**总计：151 个文档**（compose 报告/计划已清理，06-operations 部署文档已收敛，03-architecture 编号已修复，05-development 测试文档已整合，2026-08-20）
+**总计：214 个文档**
+
+> **计数口径（2026-09-13 复核）**：文件数 = 该目录**含子目录**（`archive/`、`decisions/`、`modules/`、`localwebapi/` 等）在内的 `*.md` 计数。
+> 此前基线「151 个文档（2026-08-20）」用同口径无法复现，已按上述规则重算并逐目录列出，便于后续核对。
 
 ---
 

@@ -1,18 +1,17 @@
 # LYBT.Desktop.Patients - Desktop Patients Module
 
-**Purpose**: Desktop UI module for patient management with workflow entry point and card reader integration.
+**Purpose**: Desktop UI module for patient management with workflow entry point and card reader integration. Exposes embeddable `Controls/` only — it registers no navigation views and no dialogs.
 
 ## Structure
 
 ```
 LYBT.Desktop.Patients/
 ├── Controls/            # PatientMasterDetailControl, PatientEditControl, PatientSelectionControl, PatientViewControl
-├── Interfaces/          # IPatientRepository, IPatientSearchCache, IPatientService
-├── Models/              # PatientDetailModel, PatientViewState, Display models
-├── Repositories/        # PatientRepository
-├── Services/            # PatientService, PatientSearchCache, PatientImportExecutor, PendingQueueManager, etc.
-├── ViewModels/          # PatientMasterDetailViewModel, Components/ (Validator, Coordinator)
-├── Views/               # PatientMasterDetailView XAML views
+├── Mappers/             # PatientMapper (Mapperly, DTO↔Model↔InputDto)
+├── Models/              # PatientDetailModel, ImportWizardStep, Items/PatientEditContext
+├── Repositories/        # PatientRepository (EntityApiClientRepositoryBase + IApiClientPatients)
+├── Services/            # PatientService, PatientCardReaderIntegration, PatientExcelService (B-12)
+├── ViewModels/          # PatientMasterDetailViewModel, PatientEditorViewModel, PatientCardReaderViewModel, Handlers/
 └── PatientsModule.cs    # Prism IModule registration
 ```
 
@@ -20,20 +19,23 @@ LYBT.Desktop.Patients/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Module registration | `PatientsModule.cs` | Registers all services + components |
+| Module registration | `PatientsModule.cs` | `[ModuleDependency("AuthenticationModule")]` + `("UsersModule")`; registers services, validator, mapper, MasterDetail, 3 VMs |
 | ViewModel logic | `ViewModels/PatientMasterDetailViewModel.cs` | MasterDetailViewModelBase derivative |
-| Pending queue | `Services/PendingQueueManager.cs` | Waiting patient queue |
-| Card reader | `Services/PatientCardReaderIntegration.cs` | ID card lookup/create |
-| Medical case start | `ViewModels/Components/MedicalCaseStartCoordinator.cs` | Multi-doctor detection |
-| Search cache | `Services/PatientSearchCache.cs` | LRU, 10 items, 5min expiry |
+| Card reader | `Services/PatientCardReaderIntegration.cs` | ID card dedupe chain (PRD-15) |
+| Card reader VM | `ViewModels/PatientCardReaderViewModel.cs` | ReadCardCommand / FindPatientByIdNumberAsync / MaskIdNumber |
+| Excel import/export | `Services/PatientExcelService.cs` | B-12: template/parse/export `.xlsx`; backend keeps JSON contract |
+| Status handler | `ViewModels/Handlers/PatientStatusHandler.cs` | Restore only (no ToggleStatus) |
 
 ## CONVENTIONS
 
-- **ViewModel base** — `MasterDetailViewModelBase<ListDto, DetailModel>` (V2 composition pattern)
-- **Component architecture** — ViewModel split into Components (Validator, Coordinator) and Services
-- **DataSource abstraction** — Repository delegates to IPatientDataSource (Local/Remote)
+- **ViewModel base** — `MasterDetailViewModelBase<ListDto, DetailModel>`; edit sub-VM uses `EditorViewModelBase<PatientEditContext>`
+- **Component architecture** — status handling split into `ViewModels/Handlers/`; read-card concerns split into `PatientCardReaderViewModel`
+- **Data access** — `PatientRepository : EntityApiClientRepositoryBase<...>` routed through `Contracts.ApiClient.IApiClientPatients` (no Local/Remote branch)
+- **Embedded UI** — role workspaces embed `PatientMasterDetailControl` / `PatientSelectionControl`; VM resolved via `ViewModelLocationProvider.Register`
 
 ## ANTI-PATTERNS
 
-- **PatientViewState dead code** — Defined but no runtime consumers
-- **Cross-module references** — MUST NOT reference other Desktop modules directly
+- **Cross-module references** — MUST NOT reference other Desktop modules directly; use `LYBT.Desktop.Contracts` interfaces
+- **Assuming a Local fallback exists** — batch import/export/template go straight to the API and return null on failure
+
+<!-- MANUAL: -->

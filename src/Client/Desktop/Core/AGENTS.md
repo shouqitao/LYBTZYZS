@@ -38,7 +38,7 @@ Core infrastructure libraries for the WPF desktop client. Provides interface con
 ## Dependencies
 
 ### Internal
-- [Shared/](../../../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Configuration`
+- [Shared/](../../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Configuration`
 
 ### External
 - Refit (HTTP client generation)

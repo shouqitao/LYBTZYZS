@@ -1,8 +1,9 @@
 # Desktop 端架构设计标准
 
-> **文档版本**: v1.0
-> **最后更新**: 2026-07-17
+> **文档版本**: v1.1
+> **最后更新**: 2026-09-13
 > **适用范围**: LYBT.Desktop.* 所有业务模块
+> **适用系统**: 凌隐宝堂中医诊所管理系统（桌面端）
 
 ## 📋 目录
 
@@ -19,6 +20,10 @@
 - [10. 代码示例](#10-代码示例)
 - [11. 架构测试](#11-架构测试)
 - [12. 常见问题](#12-常见问题)
+- [13. Shell 公共组件](#13-shell-公共组件2026-08-25-抽取ssot-desktop-layout-framework)
+  - [13.4 对话框（Dialog）规范](#134-对话框dialog规范)
+  - [13.5 数量口径与视图/VM 清单校验](#135-数量口径与视图vm-清单校验)
+- [附录](#附录)
 
 ---
 
@@ -67,6 +72,14 @@
 │  - 由 Shell 统一注册                                │
 └─────────────────────────────────────────────────────┘
 ```
+
+### 1.4 示例代码约定（与代码实际的边界）
+
+本文档 §3 / §5 / §6 / §8 / §10 的代码示例为**教学骨架**，以 `Users` 模块为模板演示分层写法；其中的文件路径与类型名**不构成对代码实际（src/Client/Desktop）文件清单的断言**。口径与清单以 §13.5 为准。
+
+- `UserManagementView` 实际位于 `Roles/LYBT.Desktop.Admin/Views/UserManagementView.xaml`（命名空间 `LYBT.Desktop.Admin.Views`），由 `Roles/LYBT.Desktop.Admin/AdminModule.cs` 注册导航；示例中写作 `LYBT.Desktop.Users.Views` 仅为便于连续阅读。
+- `UserDetailView`、`UserEditorDialog`、`UserDetailViewModel`、`UserManagementViewModel` 在代码实际中**不存在** `[未建视图]`：用户模块的列表 + 详情由 `Modules/LYBT.Desktop.Users/Controls/UserMasterDetailControl.xaml`（+ `UserMasterDetailViewModel`）承载，编辑/查看由同目录 `UserEditControl.xaml`（+ `UserEditorViewModel`）/`UserViewControl.xaml` 承载，均**不是**独立导航视图、也不是对话框。
+- 示例中的 `{模块}/Interfaces/` 目录与「模块内注册 Repository」写法为教学骨架；代码实际的落点是——接口 `Core/LYBT.Desktop.Contracts/Repositories/`、实现 `Modules/{模块}/Repositories/`、注册集中在 Shell（`Shell/Extensions/DataSourceRegistrationExtensions.cs` 的 `RegisterRepositories`，`I{实体}Repository` → 模块实现，基于 `IApiClient{实体}`）。
 
 ---
 
@@ -123,6 +136,8 @@
 ### 3.1 接口定义
 
 **位置**: `{模块}/Interfaces/IXxxRepository.cs`
+
+> **代码实际**：接口位于 `Core/LYBT.Desktop.Contracts/Repositories/I{实体}Repository.cs`（SYNC-D02；`tests/LYBT.Tests.Architecture/DesktopLayerArchTests.cs` 的 `DM05` 断言此约束），示例命名空间 `LYBT.Desktop.Users.Interfaces` 为教学骨架（见 §1.4）。
 
 **命名规范**:
 - 接口名称: `I{业务实体}Repository`
@@ -230,6 +245,8 @@ public class UserRepository : IUserRepository
 
 **注册方式**: `RegisterSingleton<IXxxRepository, XxxRepository>()`
 
+> **代码实际**：注册集中在 Shell——`Shell/Extensions/DataSourceRegistrationExtensions.cs` 的 `RegisterRepositories` 以 `containerRegistry.Register<I{实体}Repository>(…)` 把接口绑定到模块实现（实现基于 `IApiClient{实体}`），见 §12.2。
+
 **示例**:
 ```csharp
 public class UsersModule : IModule
@@ -241,11 +258,12 @@ public class UsersModule : IModule
         containerRegistry.RegisterSingleton<IUserRepository, UserRepository>();
 
         // 注册 ViewModel
-        containerRegistry.Register<UserManagementViewModel>();
-        containerRegistry.Register<UserDetailViewModel>();
+        containerRegistry.Register<UserManagementViewModel>(); // [未建 VM] 代码实际为 UserMasterDetailViewModel
+        containerRegistry.Register<UserDetailViewModel>();     // [未建 VM] 见 §1.4
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.UserManagementView>();
+        // [未建视图] UserDetailView 在代码实际中不存在（见 §1.4）；用户详情由 Controls/UserViewControl.xaml 承载
         containerRegistry.RegisterForNavigation<Views.UserDetailView>();
     }
 }
@@ -462,6 +480,8 @@ var inputDto = _mapper.ToInputDto(model);
 
 ### 5.2 XAML 示例
 
+> 示例命名空间 `LYBT.Desktop.Users.Views` 为教学骨架；`UserManagementView` 的代码实际位置是 `Roles/LYBT.Desktop.Admin/Views/UserManagementView.xaml`（见 §1.4）。
+
 ```xml
 <UserControl x:Class="LYBT.Desktop.Users.Views.UserManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -615,9 +635,12 @@ public class UsersModule : IModule
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.UserManagementView>();
+        // [未建视图] UserDetailView 在代码实际中不存在（见 §1.4）
         containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
         // 注册对话框（可选）
+        // [未建视图] UserEditorDialog / UserEditorDialogViewModel 在代码实际中不存在（见 §1.4）；
+        // 用户编辑由 Controls/UserEditControl.xaml + UserEditorViewModel 承载（控件复用，非对话框）
         containerRegistry.RegisterDialog<Views.UserEditorDialog, ViewModels.UserEditorDialogViewModel>();
     }
 }
@@ -658,14 +681,16 @@ public class PatientsModule : IModule { }
 | **聚合根模块** | Repository + DataManager | 管理聚合及其子实体的生命周期 | MedicalCase, Formula |
 | **从属实体模块** | CommandHandler | 子实体，通过父聚合的DataManager访问 | Consultation, Prescriptions |
 
+> **代码实际（src/Client/Desktop）模块清单**：`Auth` / `Catalog`（药材 + 验方，即表中 `Herbs`、`Formula` 的合并落点）/ `MedicalCase` / `Patients` / `Registrations` / `Users`；表中 `Consultation`、`Prescriptions` 为 `MedicalCase` 聚合内的子实体，**无独立模块** `[未建模块]`。
+
 #### 6.3.1 独立实体模块
 
 独立实体模块直接使用Repository进行数据访问：
 
 ```csharp
-// 目录结构
+// 目录结构（教学骨架；视图落点已按代码实际修正：Patients 模块用 Controls/ 而非 Views/）
 LYBT.Desktop.Patients/
-├── Interfaces/
+├── Interfaces/                      // 教学骨架：Repository 接口现位于 Core/LYBT.Desktop.Contracts/Repositories/IPatientRepository.cs
 │   └── IPatientRepository.cs        // Repository接口
 ├── Repositories/
 │   └── PatientRepository.cs         // Repository实现
@@ -675,9 +700,15 @@ LYBT.Desktop.Patients/
 │   └── Items/
 │       └── PatientEditContext.cs    // 编辑上下文模型
 ├── ViewModels/
-│   └── PatientMasterDetailViewModel.cs
-└── Views/
-    └── PatientMasterDetailView.xaml
+│   ├── PatientMasterDetailViewModel.cs
+│   ├── PatientEditorViewModel.cs
+│   └── PatientCardReaderViewModel.cs
+└── Controls/                        // 代码实际：内嵌组件（由角色台 View 复用，非独立导航视图）
+    ├── PatientMasterDetailControl.xaml
+    ├── PatientEditControl.xaml
+    ├── PatientViewControl.xaml
+    └── PatientSelectionControl.xaml
+                                       // [未建视图] Views/PatientMasterDetailView.xaml 不存在
 
 // 模块注册
 public class PatientsModule : IModule
@@ -686,7 +717,7 @@ public class PatientsModule : IModule
     {
         containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
         containerRegistry.Register<PatientMasterDetailViewModel>();
-        containerRegistry.RegisterForNavigation<PatientMasterDetailView>();
+        containerRegistry.RegisterForNavigation<PatientMasterDetailView>(); // [未建视图] 代码实际无此视图
     }
 }
 ```
@@ -734,7 +765,7 @@ public class MedicalCaseModule : IModule
 从属实体模块通过CommandHandler委托给父聚合的DataManager：
 
 ```csharp
-// 目录结构
+// 目录结构（教学骨架：[未建模块] 代码实际无 LYBT.Desktop.Consultation 模块）
 LYBT.Desktop.Consultation/
 ├── Interfaces/
 │   └── IConsultationValidator.cs    // 验证器接口(可选)
@@ -745,7 +776,7 @@ LYBT.Desktop.Consultation/
 │   └── Items/
 │       └── ConsultationItem.cs
 └── ViewModels/
-    └── ConsultationPanelViewModel.cs
+    └── ConsultationPanelViewModel.cs  // [未建 VM] 代码实际为 MedicalCase/ViewModels/Workspace/ConsultationEditorViewModel.cs
 
 // CommandHandler职责：
 // - 实现ICommandHandler接口
@@ -928,6 +959,7 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
     containerRegistry.RegisterForNavigation<Views.UserManagementView>();
 
     // 对话框：View + ViewModel
+    // [未建视图] UserEditorDialog 在代码实际中不存在（见 §1.4）；对话框清单见 §13.4
     containerRegistry.RegisterDialog<Views.UserEditorDialog, ViewModels.UserEditorDialogViewModel>();
 }
 ```
@@ -955,9 +987,9 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 |------|---------|------|
 | Repository 接口 | `I{实体}Repository` | `IUserRepository` |
 | Repository 实现 | `{实体}Repository` | `UserRepository` |
-| ViewModel | `{功能}ViewModel` | `UserManagementViewModel`, `UserDetailViewModel` |
-| View | `{功能}View` | `UserManagementView`, `UserDetailView` |
-| Dialog | `{功能}Dialog` | `UserEditorDialog` |
+| ViewModel | `{功能}ViewModel` | `UserMasterDetailViewModel`, `RegistrationListViewModel` |
+| View | `{功能}View` | `UserManagementView`, `RegistrationListView` |
+| Dialog | `{功能}Dialog` | `RegistrationCreateDialog`, `FormulaImportDialog` |
 | UI Model | `{实体}Item`, `{实体}Info` | `HerbItem`, `FormulaItem` |
 | Mapperly Mapper | `{模块}Mapper` | `FormulaDetailModelMapper` |
 | Event | `{实体}{动作}Event` | `UserCreatedEvent`, `UserUpdatedEvent` |
@@ -979,6 +1011,8 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 ### 10.1 完整模块示例
 
 以 `Users` 模块为例，展示完整的三层架构实现。
+
+> **示例骨架说明**：本节的文件路径与类型名为教学骨架，与代码实际（src/Client/Desktop）存在差异——`UserDetailView`、`UserDetailViewModel`、`UserManagementViewModel`、`UserEditorDialog` 均为 `[未建视图]`/`[未建 VM]`，`UserManagementView` 实际位于 `Roles/LYBT.Desktop.Admin/Views/`；差异清单与真实落点见 §1.4，口径见 §13.5。
 
 #### 10.1.1 Repository 接口
 
@@ -1142,7 +1176,7 @@ public class UserRepository : IUserRepository
 
 #### 10.1.6 View
 
-**文件**: `LYBT.Desktop.Users/Views/UserManagementView.xaml`
+**文件**: `Roles/LYBT.Desktop.Admin/Views/UserManagementView.xaml`（代码实际；示例骨架原写作 `LYBT.Desktop.Users/Views/UserManagementView.xaml`，见 §1.4）
 
 ```xml
 <UserControl x:Class="LYBT.Desktop.Users.Views.UserManagementView"
@@ -1252,14 +1286,16 @@ public class UsersModule : IModule
         containerRegistry.RegisterSingleton<IUserRepository, UserRepository>();
 
         // 注册 ViewModel
-        containerRegistry.Register<ViewModels.UserManagementViewModel>();
-        containerRegistry.Register<ViewModels.UserDetailViewModel>();
+        containerRegistry.Register<ViewModels.UserManagementViewModel>(); // [未建 VM] 代码实际为 UserMasterDetailViewModel
+        containerRegistry.Register<ViewModels.UserDetailViewModel>();     // [未建 VM] 见 §1.4
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.UserManagementView>();
+        // [未建视图] UserDetailView 在代码实际中不存在（见 §1.4）
         containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
         // 注册对话框
+        // [未建视图] UserEditorDialog 在代码实际中不存在（见 §1.4）；对话框清单见 §13.4
         containerRegistry.RegisterDialog<Views.UserEditorDialog, ViewModels.UserEditorDialogViewModel>();
     }
 }
@@ -1276,12 +1312,14 @@ public class UsersModule : IModule
 - Desktop 层不依赖 Server 层
 - Desktop 层不包含 DTO 类
 - Desktop 层不直接使用 Entity 类
-- ViewModel 必须继承标准基类
-- Repository 必须在模块中注册
+- ViewModel 必须继承标准基类（`DialogViewModelBase` 在允许基类清单内，见 §13.4）
+- Repository 接口必须位于 `Core/LYBT.Desktop.Contracts/Repositories/`，且必须有远程实现（对应实测 `DM05` / `DM01`；ADR-002 时期「在模块内注册」的口径已随 SYNC-D02 调整，见 §12.2）
+
+> **代码实际（src/Client/Desktop / tests）**：架构测试位于 `tests/LYBT.Tests.Architecture/`——`DesktopLayerArchTests.cs`（DP01–DP09、DM01–DM08）、`ShellViewViewModelBindingTests.cs`（见 §13.5）、`ShellExtractionArchTests.cs`、`CustomControlArchTests.cs` 等。以下 §11.2 为教学骨架，其程序集清单与方法名与代码实际不同，仅示意写法。
 
 ### 11.2 架构测试示例
 
-**文件**: `tests/Architecture/DesktopLayerArchTests.cs`
+**文件**: `tests/LYBT.Tests.Architecture/DesktopLayerArchTests.cs`（示例骨架；实际由 DP/DM 编号系列测试组成）
 
 ```csharp
 using System.Reflection;
@@ -1503,6 +1541,8 @@ Task<ServiceResult<List<UserDto>>> GetAllUsersAsync();
 
 **参考**: ADR-002 架构决策记录
 
+> **代码实际**：ADR-002 之后注册位置已迁移到 Shell——`Shell/Extensions/DataSourceRegistrationExtensions.cs` 的 `RegisterRepositories` 统一绑定 `I{实体}Repository`（`Core/LYBT.Desktop.Contracts/Repositories/`）到各模块 `Modules/{模块}/Repositories/` 的实现，实现基于 `IApiClient{实体}`；`Modules/LYBT.Desktop.Users/UsersModule.cs`、`Modules/LYBT.Desktop.Patients/PatientsModule.cs` 中亦注释「由 Shell DI 注册 (Refit API)」。本问答保留 ADR-002 的决策语境，注册位置以代码实际为准。
+
 ### 12.3 为什么 ViewModel 不直接调用 API？
 
 **问题**: 为什么 ViewModel 不能直接注入 `IUserApi` 调用 API，而必须通过 Repository？
@@ -1709,6 +1749,101 @@ private async Task ImportDataAsync()
 - 角色×菜单矩阵已在 `NavigationManager.BuildNavigationItems` 落地 C+（Doctor 3 等）。
 - `MainWindow` 仅保留 LoginRegion + DialogHost(AppShell) + Snackbar，`ContentRegion` 保持唯一，业务 View 零改动。
 
+### 13.4 对话框（Dialog）规范
+
+**口径**（与 §13.5 同源）：Dialog = 经 `containerRegistry.RegisterDialog<TView, TViewModel>()` 注册的模态对话框（Shell 3 个位于 `Shell/Dialogs/Views/`，模块 4 个位于 `{模块}/Dialogs/`，另有 2 个物理位于 `Modules/LYBT.Desktop.Auth/Views/` 但按对话框注册）。代码实际共 **9 处注册**。
+
+| # | 对话框 | 注册点 | View / ViewModel | 用途 | 需求依据 |
+|---|--------|--------|------------------|------|----------|
+| 1 | ConfirmationDialog | `Shell/App.xaml.cs` | `Shell/Dialogs/Views/ConfirmationDialog.xaml` + `Shell/Dialogs/ViewModels/ConfirmationDialogViewModel.cs` | 通用确认：标题/消息/图标/按钮文案可配；`ShowDeleteOptions=true` 时附软删除（默认）/物理删除二选一；确认 → `ButtonResult.OK`（删除模式经参数回传），取消 → `ButtonResult.Cancel` | 破坏性操作需确认（`docs/07-ui-ux/desktop-design-spec.md` 容错原则）；统一入口 `DialogManager.ShowConfirmAsync` |
+| 2 | MessageDialog | `Shell/App.xaml.cs` | `Shell/Dialogs/Views/MessageDialog.xaml` + `Shell/Dialogs/ViewModels/MessageDialogViewModel.cs` | Success/Error/Warning/Info 四类统一消息（`MessageType`）；关闭 → `ButtonResult.OK` | 统一消息出口；`DialogManager` 常量 `MessageDialogName = "MessageDialog"` |
+| 3 | InputDialog | `Shell/App.xaml.cs` | `Shell/Dialogs/Views/InputDialog.xaml` + `Shell/Dialogs/ViewModels/InputDialogViewModel.cs` | 单值输入：入参 `message`/`title`/`defaultValue`/`placeholder`/`isRequired`，确认 → `ButtonResult.OK` + 输入值参数 | 通用输入基建；代码实际暂无 `ShowDialog("InputDialog")` 调用点（预留） |
+| 4 | FormulaImportDialog | `Modules/LYBT.Desktop.MedicalCase/MedicalCaseModule.cs` | `Modules/LYBT.Desktop.MedicalCase/Dialogs/FormulaImportDialog.xaml` + `.../FormulaImportDialogViewModel.cs` | 从经验方库检索选择验方，批量导入药材到当前处方（只读 DTO 展示，B3 决策 DP-M1 豁免）；确认 → `ButtonResult.OK` + 导入结果参数 | 医案「验方导入到处方」（`docs/02-requirements/07-medical-cases.md`，原 US-MC-016）+ MC-D08（仅 `Validated` 且 `Enabled`）/MC-D09（已禁用药材跳过）/MC-D12（导入为复制）/MC-D17（重复剂量合并策略） |
+| 5 | HistoryCopyDialog | `MedicalCaseModule.cs` | `Modules/LYBT.Desktop.MedicalCase/Dialogs/HistoryCopyDialog.xaml` + `.../HistoryCopyDialogViewModel.cs` | 左历史 / 右当前双栏复制处方；入参 `PatientId`/`PatientName`，默认最近 5 条已完成记录、可展开本患者全部、可切「全部患者」查询；确认 → `ButtonResult.OK` + 复制结果 | US-MC-019（复用 US-MC-009 处方历史），`docs/02-requirements/07-medical-cases.md` |
+| 6 | UnsavedChangesDialog | `MedicalCaseModule.cs` | `Modules/LYBT.Desktop.MedicalCase/Dialogs/UnsavedChangesDialog.xaml` + `.../UnsavedChangesDialogViewModel.cs` | 未保存修改三选项：保存 → `ButtonResult.Yes`、放弃 → `ButtonResult.No`、取消 → `ButtonResult.Cancel`（默认分支） | 未保存退出守卫（`IConfirmNavigationRequest`，见 `docs/07-ui-ux/desktop-design-spec.md`）+ MC-D18（不实现自动保存） |
+| 7 | RegistrationCreateDialog | `Modules/LYBT.Desktop.Registrations/RegistrationModule.cs` | `Modules/LYBT.Desktop.Registrations/Dialogs/RegistrationCreateDialog.xaml` + `.../RegistrationCreateDialogViewModel.cs` | 前台新建挂号（患者 + 医生 + 挂号类型 + 费用）；成功 → `ButtonResult.OK`，调用方 `RegistrationListViewModel` 据此刷新队列 | US-REG-001（前台创建挂号 Waiting 排队） |
+| 8 | ServerConfigView | `Modules/LYBT.Desktop.Auth/AuthenticationModule.cs` | `Modules/LYBT.Desktop.Auth/Views/ServerConfigView.xaml` + `.../ViewModels/ServerConfigViewModel.cs` | 服务器地址配置 + 连接测试（状态机收敛于 `ConnectionTestViewModelBase`） | US-SHELL-007（双模式连接切换）；`docs/03-architecture/05-dual-mode.md` |
+| 9 | FirstRunSetupView | `AuthenticationModule.cs` | `Modules/LYBT.Desktop.Auth/Views/FirstRunSetupView.xaml` + `.../ViewModels/FirstRunSetupViewModel.cs` | 首次运行配置向导（当前 Steps 1-2 完整），由登录页 `LoginViewModel` 触发 | US-SHELL-011（5 步强制向导；B4 决策 I-4 推迟到 v2.0）；`docs/07-ui-ux/desktop-ui-requirements.md` §1.3 |
+
+**基类与生命周期契约**（`Core/LYBT.Desktop.Infrastructure/ViewModels/Base/DialogViewModelBase.cs`，声明为 `DialogViewModelBase : NavigableViewModelBase, IDialogAware`）：
+
+| 成员 | 契约 |
+|------|------|
+| `Title` | `[ObservableProperty]` 对话框标题；子类在构造函数或 `OnDialogOpenedCore` 中赋值 |
+| `OnDialogOpened(IDialogParameters)` | Prism 回调入口；基类记日志后转调 `OnDialogOpenedCore(parameters)` |
+| `OnDialogOpenedCore(IDialogParameters?)` | 子类重写点：读入参并初始化状态（默认空实现） |
+| `CanCloseDialog()` | 默认 `true`；重写可拦截关闭 |
+| `OnDialogClosed()` | Prism 回调入口；基类记日志后转调 `OnDialogClosedCore()` |
+| `OnDialogClosedCore()` | 子类重写点：释放资源/通知宿主（默认空实现） |
+| `RequestClose` | `event Action<IDialogResult>?`——**唯一**关闭通道，子类不直接操作窗口 |
+| `CloseDialog(ButtonResult)` / `CloseDialog(IDialogParameters, ButtonResult = ButtonResult.OK)` | 关闭并回传结果（无参重载默认 `ButtonResult.None`）；多值回传一律走带参重载 |
+| `CancelCommand` / `ConfirmCommand` | 基类内置：`Cancel()` → `ButtonResult.Cancel`；`Confirm()` → `ButtonResult.OK`，可执行条件 `CanConfirm()` 默认 `!IsBusy && !IsLoading`，且 `IsLoading`/`IsBusy` 变更时自动 `NotifyCanExecuteChanged` |
+| `GetDialogParameter<T>(parameters, key)` / `(…, defaultValue)` | 入参提取；无默认值重载在缺失或为 `null` 时抛 `ArgumentException` |
+
+约定：
+
+- 新业务对话框统一继承 `DialogViewModelBase`；现网唯一中间基类是 Auth 的 `ConnectionTestViewModelBase : DialogViewModelBase`（收敛 `ServerConfigViewModel`/`FirstRunSetupViewModel` 约 95% 同构的连接测试状态机，A-31-C5-4）。
+- 目录：模块对话框放 `Modules/{模块}/Dialogs/`（XAML 与 `...DialogViewModel.cs` 同目录、均**不**在 `Views/`）；Shell 通用对话框放 `Shell/Dialogs/Views/` + `Shell/Dialogs/ViewModels/`。
+- 结果语义：`ButtonResult.OK` = 已确认/已提交，宿主据此执行业务动作（如 `RegistrationListViewModel` 刷新队列、`MedicalCaseCommandsViewModel` 执行导入/复制）；`Cancel`/`None` = 放弃。
+
+**DataContext 装配（无需在 XAML 写 AutoWire）**：
+
+- `RegisterDialog<TView, TViewModel>()` 装配容器时同时登记 View→VM 映射；`IDialogService.ShowDialog(name, parameters, callback)` 由 Prism `DialogService` 创建窗口内容后经 `ConfigureDialogWindowContent → MvvmHelpers.AutowireViewModel(dialogContent)`（Prism.Wpf 8.1.97）**自动**把 DataContext 设为已注册的 VM，并断言 `dialogContent.DataContext is IDialogAware`（不满足即抛异常，不会静默失效）。
+- 因此对话框 XAML **不需要**（也不应依赖）`prism:ViewModelLocator.AutoWireViewModel="True"`；代码实际中仅 `InputDialog.xaml`/`MessageDialog.xaml` 保留了该属性（冗余、无害），`ConfirmationDialog.xaml` 与 4 个模块对话框均未声明。
+- 与 §13.2 的 Shell 控件映射问题（`ShellViewMappings`）不同：对话框走「注册即映射」路径，不存在约定名不匹配导致 AW 静默跳过赋值的风险。
+
+### 13.5 数量口径与视图/VM 清单校验
+
+**为什么固定口径**：本文件历史版本只谈分层写法，未定义「View/Control/Dialog」的计数边界，导致同一仓库在不同文档出现互相矛盾的数字。以下口径与数字是 **2026-09-13** 对代码实际（`src/Client/Desktop`，排除 `bin/`、`obj/`）机器扫描的结果；任何引用都必须连同口径一起声明。
+
+| 类别 | 判定规则 | 计数 |
+|------|----------|------|
+| View（页面/导航级） | `*/Views/*.xaml`：`Shell/Views/`、`Modules/*/Views/`、`Roles/*/Views/`、`Roles/*/*/Views/`、`Modules/*/Reports/Views/`——**排除** `*/Dialogs/Views/*`（那 3 个归 Dialog） | **30** |
+| Control（内嵌组件） | `*/Controls/*.xaml`：`Core/LYBT.Desktop.Controls/Controls/`（共享设计系统控件）与各模块 `Controls/`（含 `Shell/Controls/AccountSettingsControl`） | **33** |
+| Dialog（模态对话框） | `*/Dialogs/**/*.xaml`（经 `RegisterDialog` 注册） | **7** |
+| Root | `Shell/App.xaml`（应用级资源，非视图） | **1** |
+| 资源/模板 XAML | `Core/LYBT.Desktop.Controls/Themes/*`、`Core/LYBT.Desktop.Controls/Converters/*`、`Core/LYBT.Desktop.Printing/Templates/*` | **11** |
+| ViewModel | 文件名以 `ViewModel.cs` 结尾的 C# 文件，**每文件 1 个 VM 类型**——含模块 `*/Dialogs/*ViewModel.cs`（4 个）、Shell `Shell/Dialogs/ViewModels/*.cs`（3 个）与 `Core/LYBT.Desktop.Controls/Controls/**` 内的控件 VM（2 个）；`ViewModels/Handlers/` 下的 Handler 类与 `obj/` 生成物不计入 | **55** |
+
+**合计校验**：XAML 合计 **82** = 视图 **71**（View 30 + Control 33 + Dialog 7 + Root 1）+ 资源/模板 **11**。
+
+**边界（口径必须显式声明的两条）**：
+
+- `Modules/LYBT.Desktop.Auth/Views/ServerConfigView.xaml` 与 `FirstRunSetupView.xaml` 物理在 `Views/`（按路径计为 View），但经 `RegisterDialog` 按**对话框**注册——§13.4 的 9 条注册清单中这 2 条与 View 计数**重叠，不重复计数**。
+- `Shell/Views/HeaderControl.xaml`、`SideNavControl.xaml`、`FooterControl.xaml` 按路径归 View（Shell 区域），与 §13.1 组件清单中的 VM 一一对应。
+
+**校验方法**（可复现，无需构建）：以 `src/Client/Desktop` 为根递归枚举 `*.xaml`，排除 `bin/`、`obj/`，按路径归类计数：
+
+```powershell
+Get-ChildItem src/Client/Desktop -Recurse -Filter *.xaml |
+  Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
+  Group-Object { if     ($_.FullName -match '\\Dialogs\\')   { 'Dialog' }
+                 elseif ($_.FullName -match '\\Controls\\')  { 'Control' }
+                 elseif ($_.FullName -match '\\Themes\\|\\Converters\\|\\Templates\\') { 'Resource' }
+                 elseif ($_.Name -eq 'App.xaml')             { 'Root' }
+                 else                                        { 'View' } } |
+  Sort-Object Name | Format-Table Name, Count
+```
+
+ViewModel 同理按「文件名以 `ViewModel.cs` 结尾、排除 `bin/`/`obj/`、每文件 1 个类型」口径枚举计数（结果为 55）。
+
+**守护测试**（`tests/LYBT.Tests.Architecture/`）：
+
+- `ShellViewViewModelBindingTests.Shell_AutoWireViews_Must_Resolve_ViewModel_By_Convention_Or_Explicit_Mapping`：扫描 Shell XAML 中开启 `AutoWireViewModel="True"` 的视图，断言其 VM 可经 Prism 约定名或 `ShellViewMappings.Mappings` 解析——新增 AW 控件漏登记即失败。
+- `ShellViewViewModelBindingTests.Shell_Mappings_Must_Be_Concrete_ViewModels_In_Shell_Assembly`：校验映射表目标必须是 Shell 程序集内的具体 VM 类型。
+- 同项目 `DesktopLayerArchTests`（ViewModel 必须继承标准基类，`DialogViewModelBase` 在允许清单内）与 `ShellExtractionArchTests` 提供相邻约束。
+
+**本轮修正的文档-代码落差**（同一事实源）：
+
+| 落差 | 文档旧表述 | 代码实际（src/Client/Desktop） |
+|------|-----------|------------------------------|
+| 侧栏定位 | 「侧边栏仅保留全局操作（个人资料/主题/退出），不放功能导航」 | `SideNavControl` 绑定 `GroupedNavigationItems` = `NavigationManager.BuildNavigationItems` **按角色生成的角色导航矩阵**（每个角色 **3 项** = 标题「主页」+ 2 个业务入口；`NavigationItem.Group` 取值为「临床」/「目录」/「管理」——模型默认值「业务」未被 `NavigationManager` 使用）+ 底部全局操作（深色模式/退出）；**个人资料入口在顶栏 Header**（`HeaderViewModel.EditProfileCommand`）。对应 US-SHELL-005（菜单导航）/ US-SHELL-004（个人资料） |
+| Doctor 首页 | `ClinicalHomeView` | `RoleRegistry` 注册 **Doctor 首页 = `ClinicalWorkspaceView`**；`ClinicalHomeView` 仍存在但**不是**首页 |
+| Receptionist 新建挂号 | `RegistrationCreateView`（或可弹窗） | `RegistrationCreateDialog`（对话框，见 §13.4 #7，US-REG-001） |
+| 幽灵视图 | `InitializationWizardView`(W-01)、`CardReaderDiagnosticsView`(SY-05)、`ConfigExportImportView`(SY-07)、`ServerConfigPanelView`(SY-08)、`SessionTimeoutWarningDialog`(AD-01)、`UnfinishedCaseDialog`(DD-04)、`PrintPreviewDialog`(DD-05)、`PendingQueueView`(DOC-02) | 前七者全部 `[未建视图]`：SY-05/SY-07/SY-08 的 VM（`CardReaderDiagnosticsViewModel`/`ConfigurationCenterViewModel`/`ServerConfigSectionViewModel`）**存在**，但是 `SysadminHomeView`（US-SHELL-018）的内嵌子 VM，非独立视图；`PendingQueueView` 的 XAML 已于 2026-08-29 删除，其功能内嵌 `PatientSelectionView`，`PendingQueueViewModel` 保留为子组件 |
+| 计数 | 外部文档曾引「25 View + 24 Control + 7 Dialog + 51+ ViewModel」 | 以本节口径为准：**View 30 / Control 33 / Dialog 7 / ViewModel 55** |
+| 品牌名 | 混用「LYBT 诊疗管理系统」等 | 系统名统一 **「凌隐宝堂中医诊所管理系统」**（WebAPI Swagger 标题「凌隐宝堂中医诊所 API」） |
+
 ---
 
 ## 附录
@@ -1716,6 +1851,9 @@ private async Task ImportDataAsync()
 ### A. 参考文档
 
 - `docs/architecture/client/unified-design-standard.md` - Client 端统一设计标准
+- `docs/03-architecture/02-desktop.md` - Desktop 端架构设计（视图/对话框/交互流程）
+- `docs/07-ui-ux/desktop-layout-framework.md` - Shell 布局框架（§13 依据，固化）
+- `docs/07-ui-ux/desktop-design-spec.md` - Desktop 设计规范（容错/对话框/未保存退出）
 - `docs/development/standards.md` - 开发标准
 - `docs/development/minimal-practice.md` - Issue 驱动工作法
 
@@ -1733,3 +1871,4 @@ private async Task ImportDataAsync()
 
 **文档版本历史**:
 - v1.0 (2025-10-12): 初始版本，涵盖完整的 Desktop 三层架构设计标准
+- v1.1 (2026-09-13): 本次文档复盘——新增 §1.4「示例代码约定」、§13.4「对话框（Dialog）规范」（9 处 `RegisterDialog` 注册清单 + `DialogViewModelBase` 生命周期契约 + Prism 对话框 DataContext 自动装配）与 §13.5「数量口径与视图/VM 清单校验」（View 30 / Control 33 / Dialog 7 / Root 1 / ViewModel 55，XAML 82 = 71 + 11；目录扫描校验方法 + 守护测试 `ShellViewViewModelBindingTests`）；修正幽灵视图引用（`UserDetailView`/`UserDetailViewModel`/`UserManagementViewModel`/`UserEditorDialog`/`PatientMasterDetailView`/`ConsultationPanelViewModel` 等标 `[未建视图]`/`[未建 VM]`）、侧栏定位表述、Doctor 首页与品牌名口径。

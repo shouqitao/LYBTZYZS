@@ -14,13 +14,11 @@
 ```
 LYBT.Desktop.Users/
 ├── UsersModule.cs                           # Prism 模块注册 (IModule, 依赖 AuthenticationModule)
-├── Interfaces/
-│   └── IUserService.cs                      # 用户 Service 接口 (14 方法, CommandResult<T> 模式)
 ├── Services/
-│   └── UserService.cs                       # IUserService 实现，通过 IUserRepository 调用远程 API
+│   └── UserService.cs                       # IUserService 实现（CrudServiceBase 派生，经 IUserRepository 访问远程 API）
 ├── ViewModels/
 │   ├── UserMasterDetailViewModel.cs         # Master-Detail 主 VM (组合模式)
-│   ├── UserEditorViewModel.cs               # 编辑子 VM (ObservableObject, 对象 DP 模式)
+│   ├── UserEditorViewModel.cs               # 编辑子 VM (EditorViewModelBase<UserEditContext>)
 │   └── Handlers/
 │       ├── IUserPasswordHandler.cs          # 密码处理接口
 │       ├── UserPasswordHandler.cs           # 重置密码 (确认 + API + 显示新密码)
@@ -30,14 +28,31 @@ LYBT.Desktop.Users/
 │   ├── UserMasterDetailControl.xaml/.cs     # Master-Detail 可复用控件
 │   ├── UserEditControl.xaml/.cs             # 用户编辑控件
 │   └── UserViewControl.xaml/.cs             # 用户只读预览控件
+├── Mappers/
+│   └── UserMapper.cs                        # Mapperly 编译时映射 (DTO↔Model↔EditContext↔InputDto)
 ├── Models/
 │   ├── UserDetailModel.cs                   # Detail 编辑模型 (ValidatableModelBase)
 │   └── Items/
 │       └── UserEditContext.cs               # 编辑上下文 (ValidateAll)
 ├── Repositories/
-│   └── UserRepository.cs                    # 仓储实现 (委托 IUserRepository)
+│   └── UserRepository.cs                    # 仓储实现（EntityApiClientRepositoryBase + IUserRepository）
 └── README.md
 ```
+
+> 本模块**无 `Interfaces/` 与 `Views/`**：`IUserService` 定义在 `LYBT.Desktop.Contracts.Services`，`IUserRepository` 在 `LYBT.Desktop.Contracts.Repositories`；模块不注册导航视图，仅向角色台提供可嵌入的 `Controls/`。
+
+## 视图 / ViewModel 清单
+
+**计数口径**：View = 页面/导航级 XAML（`*/Views/*.xaml`）；Control = 内嵌组件（`*/Controls/*.xaml`）；Dialog = `*/Dialogs/**/*.xaml`；ViewModel 按「每文件 1 个 VM 类型」计。
+
+| 类别 | 数量 | 明细 |
+|------|------|------|
+| View | 0 | 本模块不注册导航视图 |
+| Control | 3 | `UserMasterDetailControl`、`UserEditControl`、`UserViewControl` |
+| Dialog | 0 | — |
+| ViewModel | 2 | `UserMasterDetailViewModel`、`UserEditorViewModel`（`ViewModels/Handlers/` 下 4 个文件为 Handler，非 VM） |
+
+> 全桌面口径：View 30 / Control 33 / Dialog 7 / ViewModel 55（代码实际：`src/Client/Desktop`）。
 
 ## 核心组件
 
@@ -47,12 +62,13 @@ LYBT.Desktop.Users/
 
 | 注册项 | 方式 | 说明 |
 |--------|------|------|
-| `IUserService` → `UserService` | `Register<TFrom, TTo>()` | 用户 Service 实现 |
+| `IUserService` → `UserService` | `Register<TFrom, TTo>()` | 用户 Service 实现（`IUserRepository` 由 Shell DI 注册） |
 | `IUserPasswordHandler` → `UserPasswordHandler` | `Register<TFrom, TTo>()` | 密码重置 Handler |
 | `IUserStatusHandler` → `UserStatusHandler` | `Register<TFrom, TTo>()` | 状态切换 Handler |
 | `IMasterDetailServices<UserListDto, UserDetailModel>` | `AddMasterDetailServices<TList, TDetail>()` | MasterDetail 基础设施 |
+| `UserMapper` | `RegisterSingleton<T>()` | Mapperly 映射器（无状态，单例） |
 | `UserEditorViewModel` | `Register<T>()` | 编辑子 VM |
-| `UserMasterDetailViewModel` | `Register<T>()` | 主 VM + ViewModelLocationProvider 映射 |
+| `UserMasterDetailViewModel` | `Register<T>()` | 主 VM + `ViewModelLocationProvider.Register(UserMasterDetailControl → UserMasterDetailViewModel)` |
 
 ### UserMasterDetailViewModel — Master-Detail 主逻辑
 
@@ -75,19 +91,20 @@ LYBT.Desktop.Users/
 
 ### UserEditorViewModel — 编辑子 ViewModel
 
-**设计依据**: 继承 `ObservableObject`；对象 DP 模式，封装编辑状态供 `UserMasterDetailViewModel` 组合使用
+**设计依据**: 继承 `EditorViewModelBase<UserEditContext>`（D3 对齐 Patients/Catalog：原先的 `ObservableObject` 手写 DP 已收敛到基类）；映射经 Mapperly `UserMapper`（D2）；`Reset()` 覆写后失效用户缓存
 
 | 方法 | 说明 |
 |------|------|
-| `InitializeFromDto(UserDetailDto)` | 编辑模式初始化 |
-| `InitializeForNewCase()` | 新建模式初始化 |
-| `Validate()` | 委托 `UserEditContext.ValidateAll()` |
-| `GetUserInput()` | 提取 `UserInputDto` 用于 API 调用 |
+| `InitializeFromDto(UserDetailDto)` | 编辑模式初始化（`UserMapper.ToEditContext`，保留 PinYinCode 回退） |
+| `InitializeForNewCase()` | 新建模式初始化（基类实现，`CreateNewContext()` 返回 `UserEditContext.CreateNew()`） |
+| `Validate()`（基类） | 委托 `UserEditContext.ValidateAll()` |
+| `GetUserInput()` | `UserMapper.ToInputDto`（保留 Trim 行为） |
+| `Reset()`（覆写） | 基类重置 + `IDesktopCacheManager.InvalidateUserCaches()` |
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `User` | `UserEditContext` | `[ObservableProperty]`，编辑上下文 |
-| `IsDirty` | `bool` | `[ObservableProperty]`，是否已修改 |
+| `User` | `UserEditContext` | 编辑上下文（XAML 绑定目标，等价于基类 `Context`） |
+| `IsDirty` | `bool` | 基类提供，是否已修改 |
 
 ### UserPasswordHandler — 密码重置
 
@@ -100,40 +117,51 @@ LYBT.Desktop.Users/
 
 ### UserStatusHandler — 状态切换
 
-**设计依据**: 继承 `BaseStatusHandler<UserListDto>`；`ToggleUserStatusAsync` 独立实现走 UserService，`RestoreAsync` 委托基类
+**设计依据**: 继承 `BaseStatusHandler<UserListDto>`（`ToggleStatusAsync`/`RestoreAsync` 模板方法）；钩子实现 `ExecuteSetStatusAsync`（走 `IUserService.SetStatusAsync`）与 `ExecuteRestoreAsync`（走 `IUserRepository.RestoreAsync`）
 
 | 方法 | 说明 |
 |------|------|
-| `ToggleUserStatusAsync(UserListDto)` | 切换启用/禁用，成功后返回 `true` 触发刷新 |
-| `RestoreAsync(UserListDto)` | 恢复已删除用户 |
+| `ToggleUserStatusAsync(UserListDto)` | 转发基类 `ToggleStatusAsync`，成功后返回 `true` 触发刷新 |
+| `RestoreAsync(UserListDto)` | 基类模板：恢复已删除用户 |
 | `CanToggleUserStatus(UserListDto?, bool)` | `user != null && !isBusy` |
 
 ### UserService — IUserService 实现
 
-**设计依据**: 14 个方法，统一 `CommandResult<T>` 返回模式；通过 `IUserRepository` 调用远程 API；`ClientErrorMessageMapper` 转换异常为用户友好消息
+**设计依据**: 继承 `CrudServiceBase<UserListDto, UserDetailDto, UserInputDto>`（`Core/LYBT.Desktop.Contracts/Services/ICrudService.cs` 契约）；统一 `CommandResult<T>` 返回模式；通过 `IUserRepository` 访问远程 API；`ClientErrorMessageMapper` 转换异常为用户友好消息
 
 | 方法分组 | 方法 | 返回类型 |
 |----------|------|----------|
-| CRUD | `CreateUserAsync` / `UpdateUserAsync` / `DeleteUserAsync` / `BatchDeleteAsync` | `CommandResult<UserDetailDto>` / `CommandResult<bool>` / `CommandResult<BatchOperationResultDto>` |
-| 查询 | `GetByIdAsync` / `GetPagedAsync` / `GetAllAsync` / `GetByUsernameAsync` / `SearchAsync` / `GetDoctorsAsync` | `CommandResult<T>` |
+| CRUD（基类） | `CreateAsync` / `UpdateAsync` / `DeleteAsync` / `GetByIdAsync` / `GetPagedAsync` / `SearchAsync` | `CommandResult<T>` |
+| 查询（模块） | `GetAllAsync`（`new`，内部分页拉全量） / `GetByUsernameAsync` / `GetDoctorsAsync` | `CommandResult<T>` |
+| 批量 | `BatchDeleteAsync` / `BatchSetStatusAsync`（另含 `[Obsolete]` 的 `BatchEnableAsync`/`BatchDisableAsync`） | `CommandResult<BatchOperationResultDto>` |
 | 个人资料 | `ChangeProfileAsync` | `CommandResult<UserDetailDto>` |
 | 密码 | `ChangePasswordAsync` / `ResetPasswordAsync` | `CommandResult<bool>` / `CommandResult<ResetPasswordResponseDto>` |
-| 状态 | `ToggleStatusAsync` | `CommandResult<UserDetailDto>` |
+| 状态 | `SetStatusAsync`（另含 `[Obsolete]` 的 `ToggleStatusAsync`） | `CommandResult<UserDetailDto>` |
 
 ## 依赖关系
 
-```
-LYBT.Desktop.Users
-├── LYBT.Desktop.Foundation      (IDesktopCacheManager)
-├── LYBT.Desktop.Infrastructure   (MasterDetailViewModelBase, BaseStatusHandler, IMasterDetailServices, IViewModelServices)
-├── LYBT.Desktop.Contracts        (IUserRepository)
-├── LYBT.Shared.Models            (UserListDto, UserDetailDto, UserInputDto, UserRole, CommonStatus)
-└── LYBT.Shared.Primitives        (PinYinHelper)
-```
+### 依赖（编译时 ProjectReference）
 
-NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Riok.Mapperly`
+| 项目 | 用途 |
+|------|------|
+| LYBT.Desktop.Foundation | `IDesktopCacheManager`（编辑重置后失效用户缓存） |
+| LYBT.Desktop.Infrastructure | `MasterDetailViewModelBase`、`EditorViewModelBase`、`BaseStatusHandler`、`IMasterDetailServices`、`IViewModelServices`、`DependencyInjection` |
+| LYBT.Desktop.Contracts | `Services.IUserService`、`Repositories.IUserRepository`、`ApiClient.IApiClientIdentity`、`Results` |
+| LYBT.Shared.Models | `UserListDto` / `UserDetailDto` / `UserInputDto`、`UserRole`、`CommonStatus`、`Utilities.Text.PinYinHelper` |
 
-**被依赖**: `LYBT.Desktop.Admin`（UserManagementView 嵌入 UserMasterDetailControl）
+传递依赖：`LYBT.Shared.ExceptionHandling`（`ClientErrorMessageMapper`，经 Foundation/Infrastructure）。
+NuGet 直接引用：`Prism.Core` / `Prism.DryIoc` / `Prism.Wpf`、`Riok.Mapperly`。
+
+### 被依赖
+
+| 消费方 | 接口/控件 | 说明 |
+|--------|-----------|------|
+| `Roles/LYBT.Desktop.Admin` `UserManagementView` | `UserMasterDetailControl` | 薄包装（支持 `DefaultRoleFilter` 导航参数） |
+| `Roles/LYBT.Desktop.Admin` `Sysadmin` `SysadminHomeView` | 导航 `ViewNames.UserManagement` | 运维台入口复用同一视图 |
+| `Registrations` `RegistrationCreateDialogViewModel` | `Contracts.Services.IUserService` | 医生下拉列表（经接口，无模块引用） |
+| `Roles/LYBT.Desktop.Clinical` `ReceptionistHomeViewModel` | `Contracts.Services.IUserService` | 前台医生列表 |
+
+> 跨模块仅经 `LYBT.Desktop.Contracts` 接口或共享 Control 交互；`PatientsModule` / `RegistrationModule` 另以 `[ModuleDependency("UsersModule")]` 声明运行时加载顺序。
 
 ## 设计决策
 
@@ -142,13 +170,18 @@ NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Riok.Mapperly`
 | Handler 组件拆分 (Password/Status) | ViewModel 职责过重，SRP 拆分；Handler 可独立测试和复用 |
 | `UserEditorViewModel` 组合模式 | 编辑状态与列表/导航逻辑解耦，Editor 可独立验证 |
 | `CommandResult<T>` 统一返回 | 所有 Service 方法返回 `CommandResult<T>`，统一错误处理路径 |
-| `BaseStatusHandler` 继承 | `UserStatusHandler` 复用基类的确认对话框和错误处理模板 |
-| Mapperly 编译时映射 | 零运行时开销，编译期生成映射代码，替代 AutoMapper |
+| `BaseStatusHandler` 继承 | `UserStatusHandler` 只实现 `EntityTypeName`/`GetEntityId`/`GetEntityDisplayName`/`GetEntityStatus` + 两个执行钩子，确认对话框与错误处理模板由基类复用 |
+| Mapperly 编译时映射 | 零运行时开销，编译期生成映射代码，替代 AutoMapper；`UserMapper` 同时服务 DetailModel / EditContext / InputDto 三向映射，消除三处手写字段映射 |
 | `ViewModelLocationProvider.Register` 手动映射 | Prism 默认约定查找 `UserMasterDetailControlViewModel`（不存在），需显式映射到 `UserMasterDetailViewModel` |
 
 ## 已知陷阱
 
-- `UserService` 通过 `IUserRepository` 调用远程 API，若 Repository 实现抛异常，`ClientErrorMessageMapper` 会转换为用户友好消息，但某些网络异常可能绕过
+- `UserService` 通过 `IUserRepository` 调用远程 API，Repository 内部经 `IApiClientIdentity` 访问服务端；异常在 Service/Repository 层由 `ClientErrorMessageMapper` 转为用户友好消息，但某些网络异常可能绕过
 - `UserEditorViewModel.Validate()` 委托 `UserEditContext.ValidateAll()`，验证失败时 VM 层不设置 ErrorMessage，由调用方（MasterDetailVM）通过 Dialog 显示
-- `UserStatusHandler.ToggleUserStatusAsync` 捕获 `HttpRequestException` 但不重新抛出，返回 `false` 静默处理
-- `DeleteItemAsync` 禁止删除当前登录用户，通过 `SessionManager?.CurrentUser.Id` 比对实现
+- `UserStatusHandler` 不吞异常：状态切换/恢复的异常由 `BaseStatusHandler` 统一 `catch` → 记日志 + `ShowErrorAsync`，返回 `false`；失败不会静默
+- `DeleteItemAsync` 禁止删除当前登录用户（`SessionManager?.CurrentUser.Id` 比对）；批量删除同样过滤当前登录用户并提示被跳过的条数
+- `UserMapper` 与 CommunityToolkit 源生成器互斥：Item 类使用 `[ObservableProperty]` 时 Mapperly 看不到生成成员，需要 `[MapperIgnoreSource/Target]` + 手动补映射（`UserDetailModel.PinYinCode` 即此模式）
+
+---
+
+2026-09-13 docs 复盘：与代码对齐（View/VM 清单、目录树、依赖）

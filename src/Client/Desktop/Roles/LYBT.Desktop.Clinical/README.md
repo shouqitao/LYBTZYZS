@@ -10,41 +10,61 @@ Clinical 模块是 Doctor 角色的核心工作空间，包含诊疗主页、患
 
 ```
 LYBT.Desktop.Clinical/
-├── ClinicalModule.cs                    # Prism IModule 入口
+├── ClinicalModule.cs                    # Prism IModule 入口（依赖 Patients/MedicalCase/Registration/CardReader）
 ├── ViewModels/
-│   ├── ClinicalHomeViewModel.cs         # 医生主页（今日统计 + 6 导航卡片）
-│   ├── ClinicalWorkspaceViewModel.cs    # 左右分栏工作区
+│   ├── ClinicalHomeViewModel.cs         # 诊疗主页（今日统计 + 导航卡片）
+│   ├── ClinicalWorkspaceViewModel.cs    # 左右分栏工作区（左侧 PatientSelectionControl + 右侧看诊区）
+│   ├── MedicalCaseWorkspaceViewModel.cs # 医案工作区复合 VM（实现 IMedicalCaseWorkspaceContext / IWorkspaceHost / IMedicalCaseDataProvider）
 │   ├── PatientSelectionViewModel.cs     # 患者选择（列表 + 读卡器 + 待诊队列）
 │   ├── PatientSelectionWorkspaceContext.cs
 │   └── Workspace/
-│       ├── MedicalCaseWorkspaceViewModel.cs  # 医案工作区（复合 VM）
-│       ├── PendingQueueViewModel.cs          # 待诊队列
-│       └── CardReaderViewModel.cs            # 身份证读卡器
-└── Views/
-    ├── ClinicalHomeView.xaml(.cs)
-    ├── ClinicalWorkspaceView.xaml(.cs)
-    ├── PatientSelectionView.xaml(.cs)
-    ├── MedicalCaseWorkspaceView.xaml(.cs)
-    ├── HerbManagementView.xaml(.cs)           # 薄包装
-    ├── FormulaManagementView.xaml(.cs)        # 薄包装
-    ├── PatientManagementView.xaml(.cs)        # 薄包装
-    └── MedicalCaseManagementView.xaml(.cs)    # 薄包装
+│       ├── PendingQueueViewModel.cs     # 待诊队列（ChildViewModelBase）
+│       ├── CardReaderViewModel.cs       # 身份证读卡器（ChildViewModelBase）
+│       ├── WorkspaceNavigationHandler.cs # 工作区导航处理
+│       └── WorkspaceStateManager.cs     # 工作区状态管理
+├── Views/
+│   ├── ClinicalHomeView.xaml(.cs)
+│   ├── ClinicalWorkspaceView.xaml(.cs)
+│   ├── PatientSelectionView.xaml(.cs)
+│   ├── MedicalCaseWorkspaceView.xaml(.cs)
+│   ├── HerbManagementView.xaml(.cs)           # 薄包装，复用 Catalog 模块 Control
+│   ├── FormulaManagementView.xaml(.cs)        # 薄包装，复用 Catalog 模块 Control
+│   ├── PatientManagementView.xaml(.cs)        # 薄包装，复用 Patients 模块 Control
+│   └── MedicalCaseManagementView.xaml(.cs)    # 薄包装，复用 MedicalCase 模块 Control
+└── Receptionist/                        # 前台角色台（原 Receptionist 模块，并入 Clinical）
+    ├── Views/ReceptionistHomeView.xaml(.cs)
+    └── ViewModels/ReceptionistHomeViewModel.cs
 ```
 
 > `PendingQueueView.xaml` 已于 2026-08-29 删除（未导航注册的死页）。待诊队列 UI 内嵌在 `PatientSelectionView`，由 `PendingQueueViewModel` 驱动。
+
+## 视图 / ViewModel 清单
+
+**计数口径**：View = 页面/导航级 XAML（`*/Views/*.xaml`，含 `Receptionist/Views/`）；Control = 内嵌组件（本模块无 `Controls/`）；Dialog = `*/Dialogs/**/*.xaml`（本模块无）；ViewModel 按「每文件 1 个 VM 类型」计。
+
+| 类别 | 数量 | 明细 |
+|------|------|------|
+| View | 9 | `ClinicalHomeView`、`ClinicalWorkspaceView`、`PatientSelectionView`、`MedicalCaseWorkspaceView`、`HerbManagementView`、`FormulaManagementView`、`PatientManagementView`、`MedicalCaseManagementView`、`Receptionist/Views/ReceptionistHomeView` |
+| Control | 0 | — |
+| Dialog | 0 | — |
+| ViewModel | 7 | `ClinicalHomeViewModel`、`ClinicalWorkspaceViewModel`、`MedicalCaseWorkspaceViewModel`、`PatientSelectionViewModel`、`Receptionist/ViewModels/ReceptionistHomeViewModel`、`Workspace/` 两个子 VM（`PendingQueueViewModel`/`CardReaderViewModel`）；`WorkspaceNavigationHandler`/`WorkspaceStateManager`/`PatientSelectionWorkspaceContext` 为辅助类，非 VM |
+
+> 全桌面口径：View 30 / Control 33 / Dialog 7 / ViewModel 55（代码实际：`src/Client/Desktop`）。
 
 ## 核心组件
 
 ### ClinicalModule
 
-**设计依据**: Prism IModule 标准入口，依赖 Patients 和 MedicalCase 业务模块。
+**设计依据**: Prism IModule 标准入口，编译期引用 Patients / Catalog / MedicalCase / Registrations 四个业务模块（用于嵌入其 Control）。
 
 | 注册项 | 类型 | 说明 |
 |--------|------|------|
-| `ClinicalHomeViewModel` | ViewModel | 医生主页 VM |
+| `ClinicalHomeViewModel` | ViewModel | 诊疗主页 VM |
 | `PatientSelectionViewModel` | ViewModel | 患者选择 VM |
 | `MedicalCaseWorkspaceViewModel` | ViewModel | 医案工作区 VM |
-| `ClinicalHomeView` | Navigation | 医生主页 |
+| `ClinicalWorkspaceViewModel` | ViewModel | 左右分栏工作区 VM（P2 修复：此前未注册，靠 DryIoc 具体类型兜底） |
+| `Receptionist.ViewModels.ReceptionistHomeViewModel` | ViewModel | 前台工作台 VM |
+| `ClinicalHomeView` | Navigation | 诊疗主页 |
 | `PatientSelectionView` | Navigation | 患者选择页 |
 | `MedicalCaseWorkspaceView` | Navigation | 医案工作区 |
 | `ClinicalWorkspaceView` | Navigation | 左右分栏工作区 |
@@ -52,27 +72,35 @@ LYBT.Desktop.Clinical/
 | `FormulaManagementView` | Navigation | 验方管理（薄包装） |
 | `PatientManagementView` | Navigation | 患者管理（薄包装） |
 | `MedicalCaseManagementView` | Navigation | 医案管理（薄包装） |
+| `Receptionist.Views.ReceptionistHomeView` | Navigation | 前台工作台主页 |
 
-**模块依赖**: `PatientsModule`, `MedicalCaseModule`
+**模块依赖**: `PatientsModule`, `MedicalCaseModule`, `RegistrationModule`, `CardReaderModule`
+
+> `CardReaderModule` 位于 `LYBT.Desktop.Infrastructure/CardReader`，非独立项目。
 
 ### ClinicalHomeViewModel
 
-**设计依据**: NavigableViewModelBase 子类，今日统计 + 6 个功能导航卡片。
+**设计依据**: NavigableViewModelBase 子类，今日统计 + 功能导航卡片（`[RelayCommand]` 源生成）。
 
 | 属性 | 说明 |
 |------|------|
-| `CurrentUserName` | 当前医生姓名 |
+| `CurrentUserName` | 当前医生姓名（默认「医生」） |
 | `TodayConsultationCount` | 今日问诊数 |
-| `TodayPatientCount` | 今日患者数 |
+| `PendingCaseCount` | 待处理医案数 |
 
-| 命令 | 导航目标 |
+| 命令 | 导航目标（`ViewNames`） |
 |------|----------|
-| `StartMedicalCase` | 开始诊疗（患者选择） |
-| `NavigateToPatientManagement` | 患者管理 |
-| `NavigateToMedicalCaseQuery` | 医案查询 |
-| `NavigateToHerbLibrary` | 药材库 |
-| `NavigateToFormulaLibrary` | 验方库 |
-| `NavigateToRegistrationQueue` | 挂号队列 |
+| `StartMedicalCase` | `ClinicalWorkspace`（临床工作台） |
+| `NavigateToPatientManagement` | `PatientManagement` |
+| `NavigateToMedicalCaseQuery` | `MedicalCaseManagement` |
+| `NavigateToHerbLibrary` | `HerbManagement` |
+| `NavigateToFormulaLibrary` | `FormulaManagement` |
+| `NavigateToRegistrationQueue` | `RegistrationList` |
+| `NavigateToReports` | `ReportsHome` |
+| `NavigateToAuditLog` | `AuditLog` |
+| `EditProfile` / `ChangePassword` | `AccountSettings`（改密码带 `Tab=Password` 参数） |
+
+> `StartMedicalCase` 导航的是 `ClinicalWorkspaceView`，而 **Doctor 角色的首页也是 `ClinicalWorkspaceView`**（`RoleRegistry` 注册）；`ClinicalHomeView` 仍存在并注册为导航目标，但不是 Doctor 首页。
 
 ### ClinicalWorkspaceViewModel
 
@@ -140,22 +168,35 @@ LYBT.Desktop.Clinical/
 
 ## 依赖关系
 
-```
-ClinicalModule
-├── LYBT.Desktop.Contracts    # IAuthenticationService, INavigationCoordinator, IMedicalCaseService
-├── LYBT.Desktop.Infrastructure  # NavigableViewModelBase, ChildViewModelBase, ViewNames
-├── LYBT.Desktop.Patients     # IPatientService, IPatientCardReaderIntegration
-├── LYBT.Desktop.MedicalCase  # IMedicalCaseService, EditModeStateMachine, WorkspaceMode/EditState
-├── LYBT.Desktop.CardReader   # ICardReaderService
-└── LYBT.Shared.Models        # DTOs
-```
+### 依赖（编译时 ProjectReference）
+
+| 项目 | 用途 |
+|------|------|
+| LYBT.Desktop.Foundation | 基础设施（`Application`、`Security`、`ExceptionHandling`） |
+| LYBT.Desktop.Infrastructure | `NavigableViewModelBase`、`ChildViewModelBase`、`Constants.ViewNames`、`Extensions`、`CardReader`（`ICardReaderService`） |
+| LYBT.Desktop.Contracts | `Services`（`IMedicalCaseService`、`IRegistrationService`、`IPatientService`、`IUserService`、`INavigationCoordinator`）、`Enums`/`Models`（`WorkspaceMode`/`EditState`）、`CrossModule` 搜索提供者 |
+| LYBT.Desktop.Catalog | `HerbMasterDetailControl` / `FormulaMasterDetailControl`（薄包装 XAML 嵌入） |
+| LYBT.Desktop.Patients | `PatientMasterDetailControl` / `PatientSelectionControl`（薄包装 XAML 嵌入） |
+| LYBT.Desktop.MedicalCase | `MedicalCaseMasterDetailControl` / `MedicalCaseEditControl` / `MedicalCaseViewControl`、`EditModeStateMachine`、Workspace 子 VM |
+| LYBT.Desktop.Registrations | 挂号队列视图引用（`ViewNames.RegistrationList`） |
+| LYBT.Shared.Models | DTOs |
+
+NuGet：`Prism.Core` / `Prism.DryIoc` / `Prism.Wpf`、`CommunityToolkit.Mvvm`、`Microsoft.Extensions.Logging.Abstractions`。
+
+### 被依赖
+
+| 消费方 | 说明 |
+|--------|------|
+| Shell `App.ConfigureModuleCatalog` | `ClinicalModule` 以 `InitializationMode.WhenAvailable` 立即加载（Doctor / Receptionist 角色台） |
+| `Roles/LYBT.Desktop.Admin` | **无编译期引用**：Admin 的卡片按视图名导航到 `PatientManagement`/`HerbManagement`/`FormulaManagement`/`MedicalCaseManagement`，这些视图由 `ClinicalModule`（`WhenAvailable` 常驻加载）注册，运行时解析 |
 
 ## 设计决策
 
 1. **复合 VM 模式**: MedicalCaseWorkspaceViewModel 不是单一职责，而是整合问诊、处方、命令的复合体，通过子组件委托实现关注点分离
 2. **EditModeStateMachine 转发表**: 使用 `Dictionary<(State, Event), State>` 驱动状态转换，线程安全锁 + 锁外事件触发防止死锁
 3. **ChildViewModelBase**: PendingQueueViewModel 和 CardReaderViewModel 继承此基类，通过 `IWorkspaceHost` 接口与父 VM 通信
-4. **薄包装 View**: 药材/验方/患者/医案管理视图复用业务模块的 MasterDetail Control
+4. **薄包装 View**: 药材/验方/患者/医案管理视图复用业务模块的 MasterDetail Control（View 在角色台，Control 在业务模块）
+5. **前台角色内聚**: 前台工作台（`Receptionist/`）作为子命名空间并入 Clinical 模块，不再有独立 Receptionist 模块
 
 ## 已知陷阱
 
@@ -164,3 +205,8 @@ ClinicalModule
 - **CardReader 事件订阅**: 必须在 `Dispose()` 中取消 `ConnectionStateChanged`/`CardReadCompleted`/`CardReadError` 事件订阅，否则内存泄漏
 - **ClinicalWorkspace 缓存**: 5 分钟缓存可能导致数据过期，需要手动刷新
 - **MedicalCaseWorkspace 导航参数**: 必须同时传 `MedicalCaseId`、`CurrentPatient`、`WorkspaceMode`、`InitialEditState`
+- **Doctor 首页不是 ClinicalHomeView**: `RoleRegistry` 注册 Doctor 首页 = `ClinicalWorkspaceView`；改动「首页跳转」逻辑时以 `RoleRegistry` 为准
+
+---
+
+2026-09-13 docs 复盘：与代码对齐（View/VM 清单、目录树、依赖）
