@@ -49,7 +49,7 @@ graph TB
 
 ## Desktop 层详细结构（16 项目）
 
-### Core（6 项目）
+### Core（8 项目）
 
 | 项目 | 文件数 | 职责 | 设计依据 |
 |------|--------|------|---------|
@@ -461,9 +461,9 @@ Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusP
 
 | 角色 | 加载模块 | 说明 |
 |------|---------|------|
-| Doctor | IdentityModule, PatientsModule, MedicalCaseModule, RegistrationModule, CatalogModule | 临床全功能 |
-| Admin | IdentityModule, PatientsModule, CatalogModule | 管理全功能 |
-| Receptionist | IdentityModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
+| Doctor | UsersModule, PatientsModule, CatalogModule, MedicalCaseModule, RegistrationModule, ReportsModule | 临床全功能 |
+| Admin | UsersModule, PatientsModule, CatalogModule, MedicalCaseModule, ReportsModule | 管理全功能 |
+| Receptionist | UsersModule, PatientsModule, RegistrationModule | 患者 CRUD + 挂号 (临床子集) |
 | SuperAdmin | 全部模块 | 系统管理 + 临床 |
 
 > 🧲 **SyncModule 属 v2.0**（N1 决策）：上表已从 Doctor 角色模块清单中移除 SyncModule。SyncModule 代码仍存在，但 v1.0 不通过 `RoleRegistry` 加载。
@@ -843,7 +843,8 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 |------|--------|----------|------|
 | **FirstRun 5 步向导** | `desktop-ui-requirements §1.3` P0：改密→诊所→连接→创建 Admin→完成 | `FirstRunSetupView` 仅基础框架（`FirstRunSetupViewModel` 仅步骤 1-2 完整） | **B4 决策 I-4：推迟到 v2.0**（`13-traceability-matrix` SHELL-011 `🧲 v2.0`） |
 | **Reports 趋势/绩效** | `ReportsHomeView` P1：8 端点含趋势/绩效排行 | 仅 `daily` 3 端点；`ReportsHomeView` 仅 3/8 能力 | **B4 决策 I-3：推迟到 v2.0**（`13-traceability-matrix` REPORT-004 `🧲 v2.0`） |
-| **安全审计/数据导入导出** | `desktop-ui-requirements §七-3/4` 🔴 缺失 | 无 Sysadmin 审计日志页/数据管理页 | 属 v1.0 待实现，蓝图不展开 |
+| **安全审计日志** | `desktop-ui-requirements §七-3` ✅ 已实现（2026-08-29） | SecurityAuditLogView 已完成 | — |
+| **数据导入导出** | `desktop-ui-requirements §七-4` ⚠️ 部分实现 | JSON 导入导出已实现；独立 ConfigExportImportView 待新建 | — |
 
 ---
 

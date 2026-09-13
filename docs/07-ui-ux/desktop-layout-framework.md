@@ -54,7 +54,7 @@
 |---|------|------|------|
 | 1 | 品牌标识 | frame | w=36 h=36 fill=$accent cornerRadius=10 layout=horizontal alignItems=center justifyContent=center |
 | 1.1 | 标识字 | text | content=`医` fontFamily=$font-ui fontSize=20 fontWeight=700 fill=$primary-dark |
-| 2 | 诊所名 | text | content=`凌隐宝堂中医诊所` fontFamily=$font-ui fontSize=17 fontWeight=600 fill=$on-primary |
+| 2 | 诊所名 | text | content=`中医诊所管理系统` fontFamily=$font-ui fontSize=17 fontWeight=600 fill=$on-primary |
 | 3 | 弹性占位 | frame | width=fill_container height=fill_container |
 | 4 | 用户分隔线 | frame | width=1 height=20 fill=#FFFFFF opacity=0.3 |
 | 5 | (无name) | icon | icon=account_circle library=Material\ Symbols\ Rounded width=26 height=26 fill=#F0E4DE |

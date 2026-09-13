@@ -21,7 +21,7 @@
 | Workspace | 医案工作台 | 顶患者卡 + 左右分栏（左辨证 45% 右处方 55%）+ 底部操作栏 | `MedicalCaseWorkspaceView` |
 | Dashboard Grid | 各角色首页 | 2-4 列 `InfoCard` 网格 + 顶部统计 + 趋势区 | `ClinicalHomeView` |
 | Form Dialog | 新增/编辑 | 居中 640×480，`BaseDetailContainer` 表单+底部 `Save/Cancel` | `PatientEditControl` |
-| Split View | 挂号队列 | 左队列 `DataGrid` + 右 `PatientViewControl` | `PendingQueueView` |
+| Split View | 挂号队列 | 左队列 `DataGrid` + 右 `PatientViewControl` | `PatientSelectionView`（内嵌 PendingQueue） |
 
 ### 1.3 共享控件清单（`LYBT.Desktop.Controls` 16 个）
 | 控件 | 文件 | 复用页面 | 关键属性 |
@@ -95,13 +95,12 @@ Login → AdminHomeView (卡片: 用户/患者/系统)
 
 ### 3.3 Doctor
 ```
-Login → ClinicalHomeView (待诊大卡置顶 + 红点)
-  ├─ 临床工作台 → ClinicalWorkspaceView
-  ├─ 待诊队列 → PendingQueueView (超时分级黄/红) → 选中 → MedicalCaseWorkspaceView
+Login → ClinicalWorkspaceView (患者列表 + 看诊工作区一体化)
   ├─ 患者管理 → PatientManagementView → 选患者 → MedicalCaseWorkspaceView
   ├─ 医案管理 → MedicalCaseMasterDetailView → 选医案 → MedicalCaseWorkspaceView
   ├─ 药材(只读) → HerbManagementView
   ├─ 验方 → FormulaManagementView
+  ├─ 挂号 → RegistrationListView
   └─ 报表 → ReportsHomeView
 ```
 
@@ -110,8 +109,7 @@ Login → ClinicalHomeView (待诊大卡置顶 + 红点)
 Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
   ├─ 挂号列表 → RegistrationListView (新建/取消/ReceptionistOnly)
   ├─ 患者管理 → PatientManagementView (新建 + 读身份证主按钮)
-  ├─ 患者选择 → PatientSelectionView (SearchBox + 读卡)
-  └─ 待诊队列 → PendingQueueView
+  └─ 患者选择 → PatientSelectionView (SearchBox + 读卡 + 内嵌待诊队列)
 ```
 
 > 导航经 `ViewNames` 强类型 + `INavigationCoordinator.NavigateToMedicalCaseWorkspace(params)` + `RegionNames.MainContent`（R09），`KeepAlive` 列表页保持搜索/分页。
@@ -215,8 +213,8 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
 - **打印**: `IPrintService.PreviewAsync → PrescriptionPrintTemplate` FixedDocument
 - **交互**: 行单击选中/双击编辑统一，`Ctrl+S` 保存，拖拽排序 `GongSolutions.WPF.DragDrop`，`EditReason` 条件展开
 
-### 4.11 待诊队列 (`PendingQueueView`)
-左队列 `DataGrid` + 右 `PatientViewControl`；列 患者/队列号/状态/`等待时间 StatusBadge`（>30 黄 >60 红）；`SignalR RegistrationHub doctor-{id}` 分组实时推送；在诊/超时筛选 Toggle；选中 → `MedicalCaseWorkspaceView`。
+### 4.11 ~~待诊队列 (`PendingQueueView`)~~ → 已合并
+> XAML 2026-08-29 删除。功能已嵌入 `PatientSelectionView`（`PendingQueueViewModel` 作为子组件）。参见 §4.6 PatientSelectionView。
 
 ### 4.12 挂号列表 (`RegistrationListView`)
 `MasterDetail` + `RegistrationCreateDialog` 新建；字段 患者/医生/队列号/状态/费用/来源；按钮 新建 `Receptionist/Doctor`、取消 `ReceptionistOnly` 二次确认、开始就诊 `DoctorOnly start-visit` 原子建档 `MedicalCaseId`；单患者单 `Waiting/InProgress` 过滤唯一索引 `UX_Registrations_PatientId_Pending`；状态机 `Waiting→InProgress→Completed/Cancelled`。

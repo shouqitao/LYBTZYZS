@@ -743,7 +743,7 @@ AdminHomeView/ClinicalHomeView → 统计报表卡片
 | A-1 | 部分视图未使用 MasterDetailLayout | MedicalCaseManagementView 等薄包装 | 布局不一致 | 统一使用 MasterDetailLayout |
 | A-2 | 首页卡片布局硬编码 | AdminHomeView/ClinicalHomeView | 响应式差 | 改用 WrapPanel 或自适应 Grid |
 | A-3 | MessageDialog 图标样式内联硬编码颜色 | MessageDialog.xaml | 主题切换不一致 | 改用 TCM 品牌色资源 |
-| A-4 | PendingQueueView 状态徽章硬编码 `#5B8FA8` | PendingQueueView.xaml | 暗色主题不一致 | 改用 StatusBadge 控件 |
+| A-4 | ~~PendingQueueView 状态徽章硬编码~~ | ~~PendingQueueView.xaml~~ | XAML 已删除（2026-08-29），功能嵌入 PatientSelectionView | 已合并，无需修复 |
 
 ### B 级（UX 优化）
 

@@ -391,7 +391,7 @@ LoginView（A-01）
 | HerbManagementView | Clinical | ✅ 已有 | — |
 | PatientManagementView | Clinical | ✅ 已有 | — |
 | PatientSelectionView | Clinical | ✅ 已有 | — |
-| PendingQueueView | Clinical | ✅ 已有 | — |
+| PendingQueueView | Clinical | ~~✅~~ XAML 已删（2026-08-29） | 功能嵌入 PatientSelectionView，PendingQueueViewModel 保留为子组件 |
 | ReceptionistHomeView | Clinical/Receptionist | ✅ 已有 | — |
 | RegistrationListView | Registrations | ✅ 已有 | — |
 | AuditLogView | MedicalCase | ✅ 已有 | — |
