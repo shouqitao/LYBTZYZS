@@ -106,7 +106,7 @@
 | C-02 | systemd 服务 | 开机自启 | 无 | ⬜ | 0.25d |
 | C-03 | 部署脚本清理 | 删除 .worktrees/ 7 个孤儿 checkout + 重复脚本 | 无 | ✅ `85b2d16c5` | 0.25d |
 | C-04 | NuGet 包清理 | 移除 8 个零使用废弃包 | 无 | ✅ `85b2d16c5` | 0.25d |
-| C-05 | 文档同步 | AGENTS.md/README.md 更新 | 所有代码改动后 | ⬜ | 0.5d |
+| C-05 | 文档同步 | 前端文档深度审计+修正（7文件22处） | 所有代码改动后 | ✅ | 0.5d |
 
 ### D 类 — 医案/挂号专项（2026-08-03 批次）
 
@@ -271,7 +271,7 @@
 | C-02 systemd 服务 | ⬜ | — | — |
 | C-03 部署脚本清理 | ✅ | 2026-08-04 | 删除 `.worktrees/` 下 7 个孤儿 checkout（arch-cleanup/fix-high-issues-t1-t4/fix-high-issues-t5-t6/fix-remaining-issues/fix-remove-sync-loader/offline-sync-review/rebase-offline），内含 sync-to-server.ps1/deploy-fixed.ps1 等均为仓库根目录 `tests/newman/`、`tests/postman/` 的过期重复；目录已被 gitignore 且未注册为 worktree，代码可从 git 分支恢复 |
 | C-04 NuGet 包清理 | ✅ | 2026-08-04 | 扫描 38 个 csproj 共 76 个 PackageReference，移除 8 个代码零使用包：NPOI（Foundation/Infrastructure）、EPPlus（WebAPI/Herbs/Formula）、System.CommandLine（PasswordHashGenerator）、Bogus（Tests.Server）、Xunit.StaFact（Tests.Desktop）、Microsoft.Extensions.ObjectPool（Foundation）、Microsoft.Extensions.Logging.Debug（Shell）、Refit.HttpClientFactory（Tests.Desktop）；同步清理 Directory.Packages.props 中央版本钉。保留 SixLabors.Fonts/ImageSharp（QuestPDF 传递依赖 CVE-2025-27598/54575 的安全版本固定）与 EFCore.Tools（迁移工具）。`85b2d16c5`，构建 0 错误 0 警告 |
-| C-05 文档同步 | ⬜ | — | — |
+| C-05 文档同步 | ✅ | 2026-09-13 | 0781c9ce0 |
 | D-01 接诊链修复（D8：StartVisit 原子建医案，2026-08-03 决策确认） | ✅ | 2026-08-03 | `7caa1fb4a` |
 | D-02 QuickVisit Desktop 接线（US-REG-002 激活） | ✅ | 2026-08-03 | `7caa1fb4a` |
 | D-03 医案状态机重构（B6-B9：取消=物理删 / 仅 Completed 打印 / 打印保护简化 / 堵状态机绕过） | ✅ | 2026-08-03 | `64adfebd3` `5bc01de5b` `7fd4a09e5` `d98332394` |
