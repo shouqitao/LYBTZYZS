@@ -322,7 +322,8 @@ private bool CanSave() => ...;
 | 检查 | 命令 | 结果 |
 |------|------|------|
 | Shell 编译 | `dotnet build src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj --no-incremental` | ✅ 0 错误 0 警告 |
-| Shell/Controls 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Shell\|FullyQualifiedName~Controls\|FullyQualifiedName~Menu"` | 见 §8.7 全量结果 |
+| Shell/Controls 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Shell\|FullyQualifiedName~Controls\|FullyQualifiedName~Menu"` | ✅ 35/35 |
+| 全量回归（三项目） | `dotnet test tests/LYBT.Tests.Desktop/`（`--settings` 临时放宽 20 分钟会话上限）/ `tests/LYBT.Tests.Server/` / `tests/LYBT.Tests.Architecture/` | Desktop **912/914**、Server **828/828**、Architecture **98/99**——2 个失败均为既有患者关键词检索 500（`RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword`、`RemoteApi/ReceptionistRoleTests.GetPatientByIdNumber_FindsPatient`，后者虽名为按身份证查询实则走 `GetPatientsAsync(keyword:)`），根因见 13c #137③a；架构守卫唯一失败为既有 `SecurityAuditLogViewModel` DTO 属性违规 |
 
 ### 8.7 变更记录
 
