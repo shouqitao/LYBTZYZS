@@ -418,6 +418,7 @@ stateDiagram-v2
 **角色**: 医生
 **优先级**: Should
 **状态**: ✅ 已实现（未文档化补记；⚠️ 仅本地模式——远程 WebAPI 无 clone 端点，远程调用 404）
+（2026-09-14 修复 + E2E 覆盖：克隆药材组成曾**漏拷 `ProcessingMethod`（炮制方法）**，已在 `LocalWebAPI/Controllers/FormulasController.cs` 补齐并断言逐字段复制；E2E 见 `Integration/E2E/HerbFormulaFlow/FormulaCrudE2ETests.Clone_Formula_*`）
 
 **作为** 医生，**我想要** 基于现有验方快速克隆一份新验方（Draft 状态），**以便** 在相近处方基础上调整，提高开方效率。
 

@@ -140,7 +140,8 @@
 
 **角色**: 医生
 **优先级**: Must
-**状态**: ✅ 已实现（双模路由✅ + SwitchMode 守卫 ERR-70506 拦截未完成医案✅）
+**状态**: ⚠️ 部分实现（双模路由✅ + URL 驱动切换✅ + NO_REMOTE_URL 阻断✅；ERR-70506 未完成医案守卫**仅日志未阻断**——`FireAndForgetRemoteProbeAsync` 只记 warning，`ModeSwitchResult.PendingCasesBlocked` 有定义无调用，待修）
+（E2E 覆盖：`tests/LYBT.Tests.Desktop/Integration/E2E/ShellFlow/ModeSwitchE2ETests.cs`——远程↔本地切换、模式持久化、双库数据隔离、未配置远程地址阻断）
 
 **作为** 医生，**我想要** 手动切换远程/本地工作模式，**以便** 根据网络环境选择合适模式，外出看诊离线工作。
 

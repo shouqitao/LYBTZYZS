@@ -143,7 +143,8 @@
 
 **角色**: 开发人员
 **优先级**: Should
-**状态**: ✅ 已实现（FluentValidation ValidationBehavior + ErrorCodeExtensions.ToHttpStatusCode 映射）
+**状态**: ⚠️ 部分实现（2026-09-14 E2E 实测映射校准：模型校验 → 400 **ProblemDetails**（非 ApiResponse：`SharedHost.AddSharedControllers` 的 `InvalidModelStateResponseFactory` 只在 `SharedHost.CreateBuilder` 链路生效，LocalWebAPI 自建 builder 未走该链路）；业务失败 → ApiResponse；本地模式**无 409 生产者**）
+（E2E 覆盖：`Integration/E2E/ErrorFlow/ExceptionMappingE2ETests.cs`——400 字段级 errors / 404 / 401 / 403 / 422 / 成功响应 ApiResponse 规范）
 
 **作为** 开发人员，**我想要** 验证错误以统一格式返回（含字段级 errors 字典），**以便** 客户端能在表单内精确高亮错误字段。
 
@@ -169,6 +170,7 @@
 **角色**: 开发人员
 **优先级**: Should
 **状态**: ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失）
+（2026-09-14 E2E 取证补充：本地模式 ErrorCode→HTTP 映射中 `ConcurrencyConflict`/`MedicalCaseVersionConflict`/`MedicalCaseLocked`/`PatientPhoneDuplicate`→409 均**无生产者**——前三者无代码抛出，电话重复查重因 `PhoneNumber` 经 AES-GCM 非确定性加密导致 SQL 等值比较恒不命中（实测同号两次创建均 201）；故 409 分支当前不可达，`ConflictException` 体系缺失与此同源。E2E 覆盖见 `Integration/E2E/ErrorFlow/ExceptionMappingE2ETests.cs`）
 
 **作为** 开发人员，**我想要** 使用分层的异常类型体系抛出业务异常，**以便** 每种异常自动映射到正确 HTTP 状态码与错误类别。
 

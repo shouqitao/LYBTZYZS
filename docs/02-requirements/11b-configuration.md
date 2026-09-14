@@ -138,7 +138,13 @@ FeatureToggle 通过 `ConfigurationOptionsMonitor<T>` + `OptionsMonitorWrapper<T
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: ✅ 已实现（未文档化补记——R1 反向脱节；代码实现为 clinic-settings.json + IOptions reloadOnChange）
+**状态**: ⚠️ 部分实现（2026-09-14 E2E 取证校准——原标「✅ 已实现（clinic-settings.json + IOptions reloadOnChange）」过度声明）：
+- ✅ **文件链已通**：`ClientConfigurationStore.SaveSectionAsync` 节级原子写 `AppContext.BaseDirectory/clinic-settings.json` + `IConfigurationRoot.Reload()`；Shell 启动 `AddJsonFile("clinic-settings.json", reloadOnChange: true)`（同路径），重启/重绑后可读到新值
+- 🔴 **同进程不热更新**：生产读取方 `ClinicSettingsService`/`ConfigurationCenterViewModel` 注入的是 `PrismConfigurationExtensions.RegisterOptions` 在**启动时**绑定的静态 `IOptions<T>` 快照（非 `IOptionsMonitor`）→ 保存后同进程读到的仍是旧值，需求 AC「即时生效（无需重启）」不成立
+- 🔴 **UI 写入路径不一致**：`SystemSettingsViewModel` → `IClinicSettingsService.SaveSettingsAsync` 写 `Directory.GetCurrentDirectory()/clinic-settings.json`，与 Shell 读取的 `AppContext.BaseDirectory/...` 可能不是同一文件
+- ⚠️ **本地端点不可用**：`PUT /api/v1/configuration/sections/ClinicSettings` 被 `ConfigurationWritePolicy` 白名单拦下（节未在 `AllowedSections`）→ 422，诊所节只能走客户端文件链
+
+（E2E 覆盖：`Integration/E2E/AdminFlow/ConfigurationE2ETests.UpdateClinicSettings_PersistsAndReloads`——落盘持久化 + 重载可读 + 不影响其他配置节；白名单 422 取证见 `Integration/E2E/ErrorFlow/ExceptionMappingE2ETests.BusinessRuleViolation_Returns422WithApiResponse`）
 
 **作为** 管理员，**我想要** 修改诊所名称/地址/电话等信息并即时生效（无需重启 Desktop），**以便** 诊所信息变更即时反映到处方打印等场景。
 

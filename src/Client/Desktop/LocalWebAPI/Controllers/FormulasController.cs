@@ -160,7 +160,7 @@ public class FormulasController : BaseCrudController
     /// 获取验方详情
     /// </summary>
     [HttpGet("/api/v1/formulas/{id}")]
-    public async Task<IActionResult> GetFormulaById(Guid id, CancellationToken ct)
+    public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await _formulaService.GetByIdAsync(id, ct);
         if (!result.IsSuccess || result.Value == null)
@@ -198,7 +198,7 @@ public class FormulasController : BaseCrudController
 
         LogOperation("新增验方成功", result.Value, null);
         return CreatedAtAction(
-            nameof(GetFormulaById),
+            nameof(GetById),
             new { id = result.Value.Id },
             ApiResponse<FormulaDetailDto>.CreateSuccess(result.Value, "验方创建成功")
         );
@@ -322,6 +322,7 @@ public class FormulasController : BaseCrudController
                         Dosage = h.Dosage,
                         Unit = h.Unit,
                         Usage = h.Usage,
+                        ProcessingMethod = h.ProcessingMethod,
                         DecocteMethod = h.DecocteMethod,
                     })
                     .ToList()

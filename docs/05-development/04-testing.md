@@ -27,11 +27,24 @@ tests/
       Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
 
   LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, ~760 tests)
-    _Infrastructure/                  # DesktopFixture (SQL Server LocalDB + 真实 Repository)
-    ViewModels/                       # ViewModel 集成测试 (真实 DataSource)
-    EndToEnd/                         # 业务流 E2E (Repository -> LocalDB)
-    LocalData/                        # 本地数据层 DataSource 测试
-    PureLogic/                        # 纯逻辑 (状态机、事件、模型)
+    _Infrastructure/                  # 测试基建 (测试替身/Builder/断言辅助)
+    Unit/                             # 单元测试 (纯逻辑 + 最小 mock；Auth/Shell/Foundation/...)
+    Integration/
+      LocalApi/                       # 真实 LocalWebAPI (Kestrel) + LocalDB 基类与控制器测试
+      RemoteApi/                      # 桌面客户端 → 远程 WebAPI 集成 (角色矩阵)
+      Infrastructure/                  # AdminTestBase/DoctorTestBase、AuthenticationDelegatingHandler 等
+      E2E/                            # 端到端业务流 (真实 IApiClient → LocalWebAPI → LocalDB)
+        Infrastructure/               # E2ETestBase (8 个桌面 API 客户端 + 角色登录缓存) / E2ELocal 集合
+        AuthFlow/                     # 登录登出、Token 刷新
+        PatientFlow/                  # 患者 CRUD、搜索
+        RegistrationFlow/             # 挂号
+        MedicalCaseFlow/              # 接诊、医案、处方
+        HerbFormulaFlow/              # 药材 CRUD、验方 CRUD/克隆/导入
+        AdminFlow/                    # 用户管理、系统配置、诊所信息
+        SysadminFlow/                 # 备份、诊断
+        ShellFlow/                    # 模式切换 (US-SHELL-007，双后端真实服务器)
+        ErrorFlow/                    # 异常映射 (US-ERR-006/007，状态码 + 响应体规范)
+        BoundaryFlow/                 # 并发隔离、权限边界
 
   LYBT.Tests.Architecture/            # 架构防护测试 (net8.0, 87 tests)
     ServerArchTests                   # 层依赖、命名规范
@@ -44,6 +57,29 @@ tests/
 **Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
 
 **平台分离**: Server 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
+
+---
+
+## E2E 套件清单（Desktop，US → 测试类）
+
+真实链路固定为：桌面 `IApiClientXxx` → HTTP → LocalWebAPI (Kestrel) → Service/Handler → LocalDB；
+集合 `[Collection("E2ELocal")]` 禁用并行，每个测试类自带独立 LocalDB。
+
+| 测试类 | 覆盖 US | 关键场景 |
+|--------|---------|----------|
+| `AuthFlow/LoginLogoutE2ETests`、`AuthFlow/TokenRefreshE2ETests` | US-AUTH-001/004/008/009 | 登录/登出/自动登录/Token 刷新 |
+| `PatientFlow/PatientCrudE2ETests`、`PatientFlow/PatientSearchE2ETests` | US-PAT-001/002/003 | 患者 CRUD、搜索、脱敏契约 |
+| `RegistrationFlow/RegistrationE2ETests` | US-REG-001/002 | 挂号、接诊流转 |
+| `MedicalCaseFlow/{MedicalCase,Consultation,Prescription}E2ETests` | US-MC-001… | 医案生命周期、处方 |
+| `HerbFormulaFlow/HerbCrudE2ETests`、`HerbFormulaFlow/FormulaCrudE2ETests` | US-HERB-001、US-FORM-001/014 | 药材/验方 CRUD、克隆（组成逐字段复制）、批量导入 |
+| `AdminFlow/UserManagementE2ETests`、`AdminFlow/ConfigurationE2ETests` | US-USER-*、US-SHELL-003、US-CFG-005/006 | 用户管理、系统配置读写、诊所信息文件链（持久化 + 重载可读 + 节隔离） |
+| `SysadminFlow/{Backup,Diagnostics}E2ETests` | US-SHELL-008/009 | 备份、诊断 |
+| `ShellFlow/ModeSwitchE2ETests` | US-SHELL-007 | 远程↔本地切换、模式持久化、双库数据隔离、未配置远程地址阻断（阶段一：双真实服务器，本地腿固定 `localhost:5300`） |
+| `ErrorFlow/ExceptionMappingE2ETests` | US-ERR-006/007 | 400（ProblemDetails + 字段级 errors）/404/401/403/422 状态码与 ApiResponse 规范 |
+| `BoundaryFlow/{PermissionBoundary,ConcurrencyAndIsolation}E2ETests` | 跨模块权限/并发边界 | 角色边界、数据隔离 |
+
+> **模式相关注意事项**：`ModeSwitchE2ETests` 会独占本机 `localhost:5300`（嵌入式 LocalWebAPI 固定端口）。
+> 桌面应用正在运行时会先绑定失败并立即报错（避免误连真实服务），需关闭应用后重跑。
 
 ---
 

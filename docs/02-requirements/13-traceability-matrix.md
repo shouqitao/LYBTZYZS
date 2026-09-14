@@ -107,7 +107,7 @@
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 | WebAPI | Desktop |
 
-| US-FORM-014 | Should | — | — | POST /formulas/{id}/clone | LocalWebAPI CatalogController.cs:459 | — | ✅ 已实现（R3-补：克隆——仅本地，远程待补） | ⚠️ | ✅ |
+| US-FORM-014 | Should | — | — | POST /formulas/{id}/clone | LocalWebAPI/Controllers/FormulasController.cs（CloneFormula） | — | ✅ 已实现（R3-补：克隆——仅本地，远程待补；2026-09-14 修复克隆漏拷 ProcessingMethod + E2E `FormulaCrudE2ETests.Clone_*`） | ⚠️ | ✅ |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
 | US-FORM-001 | Must | ADR-0007 | — | GET /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（列表 Doctor 仅本人+共享） | ✅ | ✅ |
 | US-FORM-002 | Must | ADR-0007 | — | GET /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（Doctor 所有权检查 403） | ✅ | ✅ |
@@ -179,7 +179,7 @@
 | US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | ✅ 已实现（角色模块加载 + LoginCoordinator 死代码已清——C7 删 HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics，2026-08-09 实际已处理，状态列 2026-08-11 校准） | N/A | ✅ |
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 | N/A | ✅ |
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 | N/A | ✅ |
-| US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ✅ 部分实现（双模路由✅；SwitchMode 守卫 ERR-70506 无代码） | ⚠️ | ✅ |
+| US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ⚠️ 部分实现（双模路由✅/NO_REMOTE_URL 阻断✅；ERR-70506 未完成医案守卫仅日志未阻断——2026-09-14 E2E 取证 `ModeSwitchE2ETests`） | ⚠️ | ✅ |
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
@@ -204,7 +204,7 @@
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
 | US-CFG-005 | Should | — | — | PUT /configuration 批量 + validate | ConfigurationController.cs | — | ✅ 已实现（R3-补：配置管理端点） | ✅ | ✅ |
 
-| US-CFG-006 | Should | — | — | clinic-settings.json 热更新 | ClinicSettingsService.cs | — | ✅ 已实现（R3-补：诊所信息热更新） | ⚠️ | ✅ |
+| US-CFG-006 | Should | — | — | clinic-settings.json 热更新 | ClinicSettingsService.cs / ClientConfigurationStore.cs | — | ⚠️ 部分实现（2026-09-14 校准：文件链✅持久化+重载可读；同进程不热更新——消费者注入启动期静态 IOptions；UI 写 CWD 与 Shell 读 BaseDirectory 不一致；本地 section 端点白名单拦截 422。E2E `ConfigurationE2ETests.UpdateClinicSettings_PersistsAndReloads`） | ⚠️ | ✅ |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
 | US-CFG-001 | Must | ADR-0005 | — | GET /configuration | ConfigurationController.cs:15 | S3 | ✅ 已实现 | ✅ | ✅ |
 | US-CFG-002 | Must | ADR-0005 | — | GET /configuration/{section} | ConfigurationController.cs:15 | S3 | ✅ 已实现 | ✅ | ✅ |
@@ -220,8 +220,8 @@
 | US-ERR-003 | Should | — | — | DesktopExceptionHandler | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 | US-ERR-004 | Should | ADR-0004 | — | AsyncLocalCorrelationIdProvider | CorrelationIdEnricher | S3 | ✅ 已实现 | ✅ | ✅ |
 | US-ERR-005 | Must | — | — | Business/SystemExceptionHandler | BusinessExceptionHandler | — | ✅ 已实现 | ✅ | N/A |
-| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ✅ 部分实现（FluentValidation→400 映射✅；自定义 ValidationException 链缺失） | ⚠️ | N/A |
-| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ✅ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失） | ⚠️ | ⚠️ |
+| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（2026-09-14 实测：模型校验 400 ProblemDetails 含 errors 字段字典；业务失败 ApiResponse；本地无 409 生产者。E2E `ExceptionMappingE2ETests`） | ⚠️ | N/A |
+| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失；409 分支无生产者——电话唯一查重因 AES-GCM 非确定性加密恒不命中。E2E `ExceptionMappingE2ETests`） | ⚠️ | ⚠️ |
 | US-ERR-008 | Should | — | — | ErrorSeverity/ErrorCategory | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 
 ## 十二、平台基础设施 — Logging & Audit（US-LOG × 7）
@@ -308,6 +308,7 @@
 | 2026-08-19 | **v1.10 P1 修复（desktop-deep-review 派单）**：① 药材 export/import-template/export-all 双端补端点——Remote CatalogController 新増 `GET /herbs/export`（筛选导出，对齐患者；此前 Desktop 契约调 /export 而服务端只有 /export-all → 404）；LocalWebAPI 补 `GET /herbs/import-template`/`/export`/`/export-all`（此前缺失 → 本地模式 404）；② 验方模板 DTO 对齐——FormulaImportItemDto 补 Category（实体/Factory 已支持，导入分类不再静默丢弃）+ 模板 Example.Herbs 改对象数组 [{HerbName,Dosage,Unit}]（照抄模板此前必解析失败）；③ 同类路由修复（新发现）：LocalWebAPI 验方 16 个 action 路由模板缺前导 `/` → 属性路由与类级 herbs 前缀拼接成 /api/v1/herbs/api/v1/formulas/*（离线模式验方全操作 404）——对齐 Remote CATALOG-ROUTE-FIX 先例改绝对路径；④ 新增契约-端点路由对齐守卫测试（ImportExportRouteParityTests——Refit 路径 ↔ Remote/Local 路由表反射比对）+ ImportExportJsonTests/LocalImportExportJsonTests 补药材断言；⑤ 修正 HERB-007/013 Desktop ⚠️→✅（修复后成立）；FORM-013 Desktop ✅→⚠️（导出缺药材组成明细 + 分类筛选参数对齐 P2 待办）；⑥ 需求文档：US-PAT-011/012 状态 🔧→✅、US-HERB-007/013 验收标准去 Excel 残留、删虚构接口 IHerbImportExportService/IFormulaImportExportService、US-FORM-013 删 AllowAnonymous 矛盾规则 | 任务书 .hermes-task-p1-fixes.md（源自 desktop-deep-code-review-2026-08-19 报告 P1/P2 结论） |
 | 2026-08-19 | **v1.9 批量导入/导出 UI 接线完成**——PAT-011/012、HERB-006/007/013、FORM-006/013 Desktop ⚠️→✅（PatientMasterDetailViewModel/HerbMasterDetailViewModel/FormulaMasterDetailViewModel 加 Import/Export/DownloadTemplate 命令 + View 工具栏按钮；修复 Herb 死绑定 ImportHerbsCommand/ExportHerbsCommand；User 无导出 API 删除 ExportCommand 死绑定）；详见报告 desktop-batch-import-export-2026-08-19.md | 任务书 batch-import-export-ui：将 Service/Repository 层接线到 ViewModel/View |
 | 2026-08-19 | **v1.8 Desktop 状态列代码级复核修正（desktop-doc-check）**——批量操作 US（USER-012/PAT-008/HERB-012/FORM-005/MC-015）Desktop ⚠️（UI 批量交互但循环单条删除，未消费批量端点）；引用检查 US（PAT-009/010/HERB-008/009）Desktop ⚠️（ViewModel 零消费） | 任务书 desktop-doc-check：基于最新文档验证 Desktop 实现状态 |
+| 2026-09-14 | **⚠️ US 补 E2E 测试批次（4 组）**：US-FORM-014/Shell-007/CFG-006/ERR-006+007 状态列按 E2E 实测校准——US-SHELL-007 ✅部分实现→⚠️（ERR-70506 仅日志未阻断）、US-CFG-006 ✅已实现→⚠️（同进程静态 IOptions 快照不热更新 + UI 写路径 CWD 与读取路径不一致 + 本地 section 白名单拦截）、US-ERR-006/007 补实测映射（模型校验 400 ProblemDetails / 业务失败 ApiResponse / 本地无 409 生产者，电话唯一查重因 AES-GCM 恒不命中）、US-FORM-014 记录克隆漏拷 ProcessingMethod 修复；新增 E2E：ModeSwitchE2ETests（4）/ExceptionMappingE2ETests（6）/FormulaCrudE2ETests.Clone_*（4）/ConfigurationE2ETests.UpdateClinicSettings_PersistsAndReloads（1） | 任务书 e2e-tests-for-warning-us：⚠️ US 需有 E2E 覆盖，且状态列必须与代码实测一致（禁止「✅ 已实现」覆盖已知缺口） |
 | 2026-08-19 | **v1.7 新增 WebAPI/Desktop 双端状态分列**——全部 US 填充（实际 154 行：Shell 20 含 020~025 追加，统计表 151 为既有滞后未改）；图例加两列定义 + 判定依据；批量导入/导出、引用检查、history/batch-details、权限查询等端点 Desktop 有 API 层但无 ViewModel 消费 → ⚠️；US-REG-002 两步建号 Desktop 第 1 步（Source=Doctor 建号）无 UI → ⚠️；US-FORM-014 克隆远程缺端点 → WebAPI ⚠️ | 任务书 traceability-webapi-desktop：明确每个 US 双端实现状态（依据 doc-code-audit 报告 + 代码扫描） |
 | 2026-06-28 | 新增「十五、报表管理」（US-REPORT × 3，均 ✅ 已实现）；合计 139→142（v1.0 138→141） | A7 报表清单设计落地 |
 | 2026-06-28 | US-REG-002 ⚠️→🧲（QuickVisit 待激活：急诊+本地常规）；US-REG-005 D8 注细化；REG/合计统计同步 | R10 spec S8 文档更新 |
