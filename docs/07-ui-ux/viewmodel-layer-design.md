@@ -121,8 +121,8 @@
 1. ✅ **Shell 模块**（5 个 ViewModel）— 核查完成：**无需迁移**（5 个 VM 已全量使用 `[ObservableProperty]`/`[RelayCommand]`；`OnPropertyChanged` 仅用于代理/派生属性广播，属 SSOT 设计；15 个 `public ICommand` 全部委托 `IShellServices.Menu`）——详见 §八
 2. ✅ **Auth 模块**（5 个 ViewModel + 1 基类）— 已迁移：`LoginViewModel` 4 处手写命令实例化 → `[RelayCommand]`（含 `CanExecute = nameof(CanLogin)`）；其余 4 个 VM 与 `ConnectionTestViewModelBase` 已符合最佳实践——详见 §八
 3. ✅ **Patients 模块**（3 个 ViewModel）— 已迁移/核查：`PatientEditorViewModel`（手写 `SetProperty` 属性 → `[ObservableProperty]`）、`PatientCardReaderViewModel`（private-set 手写属性 → `[ObservableProperty]`）；`PatientMasterDetailViewModel` 核查后**无需改动**（6 个 `[RelayCommand]` 源生成，属性全部来自基类与子 VM 代理）——详见 §八
-4. ⬜ **Catalog 模块**（6 个 ViewModel）— 药材/验方，中等复杂度
-5. ⬜ **MedicalCase 模块**（10 个 ViewModel）— 最复杂，最后迁移（现存 2 处手写命令实例化：`Workspace/MedicalCaseCommandsViewModel`、Clinical `MedicalCaseWorkspaceViewModel`）
+4. ✅ **Catalog 模块**（6 个 ViewModel）— 已迁移：`HerbEditorViewModel.Herb`、`FormulaEditorViewModel.Formula`、`FormulaHerbItemViewModel.Remark` 手写 `SetProperty` → `[ObservableProperty]`；`FormulaValidationItemViewModel` 已符合最佳实践；`HerbMasterDetailViewModel`/`FormulaMasterDetailViewModel` 仅剩派生属性通知（`IsNameEditable`/`DetailTitle`/`IsValidationDetail`）**有意保留**（派生属性必须手动广播）——详见 §八.4
+5. ⬜ **MedicalCase 模块**（10 个 ViewModel + 3 对话框）— 最复杂，最后迁移（现存 9 处手写命令实例化：`Workspace/MedicalCaseCommandsViewModel`；1 个 VM 因 Mapperly 互操作被**既有决策阻塞**：`Items/PrescriptionItemViewModel`）
 6. ⬜ **Shell 服务层**（`MenuManager`/`NavigationManager` 2 处手写命令实例化）与 Controls code-behind（2 处）— 非 ViewModel，按需并入
 
 ### 4.2 迁移规则
@@ -269,7 +269,28 @@ private bool CanSave() => ...;
 | Patients 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Patients"` | ⚠️ 30/31——唯一失败 `Integration/RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword`（远程患者关键词检索 500），**既有缺陷**：`git stash` 摘除本批次改动后同一用例仍失败（对照运行已留证），根因见 13c #137③a/#139；与 ViewModel 迁移无关 |
 | 全量编译 | `dotnet build LYBTZYZS.sln --no-incremental` | ✅ 0 错误 0 警告 |
 
-### 8.3 变更记录
+### 8.4 批次 4：Catalog（2026-09-14）
+
+| 文件 | 核查/变更 | 说明 |
+|------|-----------|------|
+| `HerbEditorViewModel` | **迁移 1 处手写属性** | `HerbEditContext Herb { get; set; }`（`SetProperty`）→ `[ObservableProperty] private HerbEditContext _herb = HerbEditContext.CreateNew();` |
+| `FormulaEditorViewModel` | **迁移 1 处手写属性** | `FormulaEditContext Formula { get; set; }`（`SetProperty`）→ `[ObservableProperty] private FormulaEditContext _formula = …`；`HerbCount` 派生属性与 6 处 `OnPropertyChanged(nameof(HerbCount))` **保留**（派生属性必须手写广播） |
+| `FormulaHerbItemViewModel` | **迁移 1 处手写属性** | `Remark`（`SetProperty`）→ `[ObservableProperty] private string? _remark;`；类由 `public class` 改 `public partial class`（源生成器要求） |
+| `FormulaValidationItemViewModel` | 无需改动 | 2 处 `[ObservableProperty]` 已符合最佳实践 |
+| `HerbMasterDetailViewModel` | 无需改动 | 6 个命令全 `[RelayCommand]` 源生成；仅 `OnPropertyChanged(nameof(IsNameEditable))`（派生属性） |
+| `FormulaMasterDetailViewModel` | 无需改动 | 4 属性 `[ObservableProperty]` + 10 命令 `[RelayCommand]`；仅 `DetailTitle`/`IsValidationDetail` 派生通知 |
+| `ViewModels/Handlers/*`（4 文件） | 无需改动 | 状态处理器，无 MVVM 手写模式 |
+
+> **注意**：任务书列出的 `FormulaImportDialogViewModel` 不在 Catalog 模块，实际位于 **`Modules/LYBT.Desktop.MedicalCase/Dialogs/`**（属 MedicalCase 批次）。
+
+**验证证据（批次 4）**
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| 模块编译 | `dotnet build src/Client/Desktop/Modules/LYBT.Desktop.Catalog/ --no-incremental` | ✅ 0 错误 0 警告 |
+| Catalog 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Catalog\|FullyQualifiedName~Herb\|FullyQualifiedName~Formula"` | ✅ 69/69 |
+
+### 8.99 变更记录
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|

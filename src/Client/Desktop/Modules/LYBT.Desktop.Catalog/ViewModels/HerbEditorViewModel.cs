@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models.Items;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -14,6 +15,9 @@ namespace LYBT.Desktop.Catalog.ViewModels;
 public partial class HerbEditorViewModel : EditorViewModelBase<HerbEditContext>
 {
     private readonly HerbDetailModelMapper _mapper;
+
+    /// <summary>药材编辑上下文 (XAML 绑定目标)——[ObservableProperty] 源生成属性 Herb</summary>
+    [ObservableProperty]
     private HerbEditContext _herb = HerbEditContext.CreateNew();
 
     /// <summary>
@@ -22,13 +26,6 @@ public partial class HerbEditorViewModel : EditorViewModelBase<HerbEditContext>
     public HerbEditorViewModel(HerbDetailModelMapper mapper)
     {
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
-    /// <summary>药材编辑上下文 (XAML 绑定目标)</summary>
-    public HerbEditContext Herb
-    {
-        get => _herb;
-        set => SetProperty(ref _herb, value);
     }
 
     protected override HerbEditContext Context

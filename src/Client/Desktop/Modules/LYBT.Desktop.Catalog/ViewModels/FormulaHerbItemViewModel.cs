@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
@@ -8,24 +9,17 @@ namespace LYBT.Desktop.Catalog.ViewModels
     /// Phase 3: 复用共享基类的拼音码过滤逻辑
     /// Issue: unify-herb-card-control - 统一经验方和处方的药材编辑体验
     /// </summary>
-    public class FormulaHerbItemViewModel : HerbItemViewModelBase
+    public partial class FormulaHerbItemViewModel : HerbItemViewModelBase
     {
         #region 字段
 
+        /// <summary>备注（加工方法等）——[ObservableProperty] 源生成属性 Remark</summary>
+        [ObservableProperty]
         private string? _remark;
 
         #endregion
 
         #region 属性
-
-        /// <summary>
-        /// 备注（加工方法等）
-        /// </summary>
-        public string? Remark
-        {
-            get => _remark;
-            set => SetProperty(ref _remark, value);
-        }
 
         /// <summary>
         /// 单价 - 经验方模块不涉及价格，固定返回0

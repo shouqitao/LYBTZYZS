@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models.Items;
 using LYBT.Desktop.Infrastructure.Extensions;
@@ -17,8 +18,11 @@ namespace LYBT.Desktop.Catalog.ViewModels;
 public partial class FormulaEditorViewModel : EditorViewModelBase<FormulaEditContext>
 {
     private readonly FormulaDetailModelMapper _mapper;
-    private FormulaEditContext _formula = FormulaEditContext.CreateNew();
     private readonly ObservableCollection<FormulaHerbItemViewModel> _editHerbItems = new();
+
+    /// <summary>验方编辑上下文 (XAML 绑定目标)——[ObservableProperty] 源生成属性 Formula</summary>
+    [ObservableProperty]
+    private FormulaEditContext _formula = FormulaEditContext.CreateNew();
 
     /// <summary>
     /// 构造函数
@@ -26,13 +30,6 @@ public partial class FormulaEditorViewModel : EditorViewModelBase<FormulaEditCon
     public FormulaEditorViewModel(FormulaDetailModelMapper mapper)
     {
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
-    /// <summary>验方编辑上下文 (XAML 绑定目标)</summary>
-    public FormulaEditContext Formula
-    {
-        get => _formula;
-        set => SetProperty(ref _formula, value);
     }
 
     /// <summary>编辑模式下的药材列表</summary>
