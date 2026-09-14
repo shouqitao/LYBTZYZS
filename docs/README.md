@@ -91,15 +91,18 @@
 | [04-api-reference](04-api-reference/README.md) | API 端点文档 | 15 |
 | [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 18 |
 | [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 12 |
-| [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求、UX 旅程/交互/错误/加载 | 12 |
-| [compose](compose/README.md) | 过程文档归档：specs（图表资产）、报告、计划 | 56 |
+| [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求、UX 旅程/交互/错误/加载、ViewModel 层设计 | 13 |
+| [compose](compose/README.md) | 过程文档归档：specs（图表资产）、报告、计划 | 55 |
 | [prompts](prompts/README.md) | Prompt 模板 | 3 |
 | [training](training/README.md) | 培训材料 | 2 |
+| [_templates](_templates/) | 文档模板 | 1 |
+| （顶层文件） | `README.md` / `CONTRIBUTING.md` / `_health-dashboard.md` | 3 |
 
-**总计：214 个文档**
+**总计：218 个文档**
 
-> **计数口径（2026-09-13 复核）**：文件数 = 该目录**含子目录**（`archive/`、`decisions/`、`modules/`、`localwebapi/` 等）在内的 `*.md` 计数。
-> 此前基线「151 个文档（2026-08-20）」用同口径无法复现，已按上述规则重算并逐目录列出，便于后续核对。
+> **计数口径（2026-09-14 复核）**：文件数 = 该目录**含子目录**（`archive/`、`decisions/`、`modules/`、`localwebapi/` 等）在内的 `*.md` 计数；顶层 3 个文件单列。
+> 2026-09-13 复核基线「214」的偏差来源：① 07-ui-ux +1（新增 `viewmodel-layer-design.md`）；② compose -1（临时事实清单 `desktop-inventory-facts.tmp.md` 已删）；
+> ③ 原表遗漏 `_templates`(1) 与顶层文件(3)。总计 214 → **218**。此前基线「151 个文档（2026-08-20）」用同口径不可复现。
 
 ---
 

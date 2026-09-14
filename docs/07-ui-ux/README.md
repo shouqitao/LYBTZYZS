@@ -17,9 +17,10 @@
 | [desktop-ux-interaction-spec.md](desktop-ux-interaction-spec.md) | 交互规范（键盘、焦点与 Tab、鼠标、对话框契约、工具栏顺序、文案口径） |
 | [desktop-ux-error-handling.md](desktop-ux-error-handling.md) | 错误处理规范（三层兜底、错误分类与恢复、认证失效链路、关联 ID） |
 | [desktop-ux-loading-states.md](desktop-ux-loading-states.md) | 加载状态规范（遮罩/进度条矩阵、分页、防重入、超时取消、健康探测、启动管道） |
+| [viewmodel-layer-design.md](viewmodel-layer-design.md) | ViewModel 层设计（现状统计口径、CommunityToolkit 最佳实践、渐进式迁移规则与记录） |
 
 > 计数口径（新增 4 份 UX 文档统一声明）：View **30** / Control **33** / Dialog **7** / Root 1（`Shell/App.xaml`）；ViewModel **55**；XAML 合计 **82** = 视图 71 + 资源/模板 11。
 
 ---
 
-*文档版本: v1.1 | 最后更新: 2026-09-13*
+*文档版本: v1.2 | 最后更新: 2026-09-14*

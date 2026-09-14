@@ -63,6 +63,9 @@ namespace LYBT.Desktop.Auth.ViewModels
         #endregion
 
         #region 代理属性（XAML 向后兼容）
+        // 说明（viewmodel-layer-design §4.2）：这些属性是子 VM（Credentials/ConnectionStatus）的**代理**，
+        // 状态唯一真相源在子 VM，本 VM 不另存字段——故不迁 [ObservableProperty]（迁则会引入第二份状态并与子 VM 失同步）。
+        // 子 VM 属性变更经下方“子 VM 属性转发”区域直接转发 PropertyChanged。
 
         public string Username
         {
@@ -143,15 +146,17 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #region 命令
 
-        public IAsyncRelayCommand LoginCommand { get; }
-        public ICommand CloseApplicationCommand { get; }
-        public ICommand RetryApiCheckCommand { get; }
-        public ICommand OpenSettingsCommand { get; }
-        public ICommand SwitchToLocalCommand { get; }
-        public ICommand SwitchToRemoteCommand { get; }
+        /// <summary>连通性重试（代理子 VM 命令——保持命令实例与其 CanExecute 同源）</summary>
+        public ICommand RetryApiCheckCommand => ConnectionStatus.RetryApiCheckCommand;
 
-        /// <summary>忘记密码链接（设计稿对齐；找回流程待业务确认，空实现占位）</summary>
-        public ICommand ForgotPasswordCommand { get; }
+        /// <summary>切换到本地模式（代理子 VM 命令）</summary>
+        public ICommand SwitchToLocalCommand => ConnectionStatus.SwitchToLocalCommand;
+
+        /// <summary>切换到远程模式（代理子 VM 命令）</summary>
+        public ICommand SwitchToRemoteCommand => ConnectionStatus.SwitchToRemoteCommand;
+
+        // LoginCommand / CloseApplicationCommand / OpenSettingsCommand / ForgotPasswordCommand
+        // 由 [RelayCommand] 源生成（见下方命令方法），不再手写 ICommand 字段
 
         #endregion
 
@@ -184,14 +189,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             Credentials = credentials ?? new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
             ConnectionStatus = connectionStatus ?? new ConnectionStatusViewModel(services, applicationStateService, connectionModeService, connectionSettingsService);
 
-            // 命令 - P2-14-1 防重入：CanExecute 含 !IsLoading，且 AsyncRelayCommand 默认拒绝并发（allowConcurrentExecutions:false），双击仅首次生效
-            LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync, () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
-            CloseApplicationCommand = new AsyncRelayCommand(ExecuteCloseApplicationAsync);
-            RetryApiCheckCommand = ConnectionStatus.RetryApiCheckCommand;
-            OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings);
-            SwitchToLocalCommand = ConnectionStatus.SwitchToLocalCommand;
-            SwitchToRemoteCommand = ConnectionStatus.SwitchToRemoteCommand;
-            ForgotPasswordCommand = new RelayCommand(() => { /* 设计稿对齐：忘记密码流程待业务确认 */ });
+            // 命令由 [RelayCommand] 源生成（LoginAsync/CloseApplicationAsync/OpenSettings/ForgotPassword）；
+            // RetryApiCheck/SwitchToLocal/SwitchToRemote 为子 VM 命令代理，保持同一命令实例
 
             // 订阅子 VM 属性变更以转发到本 VM
             Credentials.PropertyChanged += OnCredentialsPropertyChanged;
@@ -265,7 +264,12 @@ namespace LYBT.Desktop.Auth.ViewModels
             base.OnNavigatedTo(navigationContext);
         }
 
-        private async Task ExecuteLoginAsync()
+        /// <summary>
+        /// 登录 - P2-14-1 防重入：CanExecute 含 !IsLoading，且 AsyncRelayCommand 默认拒绝并发
+        /// （allowConcurrentExecutions:false），双击仅首次生效
+        /// </summary>
+        [RelayCommand(CanExecute = nameof(CanLogin))]
+        private async Task LoginAsync()
         {
             try
             {
@@ -299,7 +303,12 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
-        private void ExecuteOpenSettings()
+        /// <summary>登录按钮可用性：用户名/密码非空且未在登录中</summary>
+        private bool CanLogin() =>
+            !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading;
+
+        [RelayCommand]
+        private void OpenSettings()
         {
             if (_dialogService is null)
             {
@@ -313,7 +322,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             });
         }
 
-        private async Task ExecuteCloseApplicationAsync()
+        [RelayCommand]
+        private async Task CloseApplicationAsync()
         {
             var confirmed = await CommonDialogService.ShowConfirmAsync("确定要退出程序吗？", "退出确认");
 
@@ -321,6 +331,13 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 Application.Current.Shutdown();
             }
+        }
+
+        /// <summary>忘记密码链接（设计稿对齐；找回流程待业务确认，空实现占位）</summary>
+        [RelayCommand]
+        private void ForgotPassword()
+        {
+            // 设计稿对齐：忘记密码流程待业务确认
         }
 
         #region 子 VM 属性转发
