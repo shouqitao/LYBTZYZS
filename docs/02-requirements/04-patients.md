@@ -17,7 +17,7 @@
 
 **角色**: 前台/医生/管理员
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（姓名/拼音码筛选 ✅；**电话筛选 ❌ 500**——2026-09-14 取证：仓库 `GetPagedAsync` 的 keyword 谓词含 `PhoneNumber.Contains(kw)`，PhoneNumber 为 AES-GCM 加密列 → EF 生成 `LIKE @p ESCAPE N'<密文>'` → SQL Server「invalid escape character … LIKE predicate」；远程用例 `RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword`（关键词「张」）稳定复现，本地亦按关键词复现。登记见 `13c` #137③a/#139）
 
 **作为** 诊所工作人员，**我想要** 分页查询患者列表并支持关键字与拼音搜索，**以便** 快速定位患者档案。
 

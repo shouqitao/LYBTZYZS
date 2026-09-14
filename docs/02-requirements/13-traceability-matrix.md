@@ -71,7 +71,7 @@
 
 | US-PAT-014 | Must | — | — | GET /patients/by-id-number/{idNumber} | PatientsController.cs:296 | — | ✅ 已实现（R3-补：身份证号查询） | ✅ | ✅ |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
-| US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs:38 | R7 | ✅ 已实现 | ✅ | ✅ |
+| US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs（GetPagedAsync） | R7 | ⚠️ 部分实现（姓名/拼音码筛选✅；电话筛选 500——加密列 `PhoneNumber.Contains` 使 EF 生成 `LIKE … ESCAPE N'<密文>'`，2026-09-14 远程/本地复现） | ⚠️ | ✅ |
 | US-PAT-002 | Must | ADR-0010 | — | GET /patients/{id} | PatientsController.cs:65 | — | ✅ 已实现 | ✅ | ✅ |
 | US-PAT-003 | Must | ADR-0010 | Flow 1 | POST /patients | PatientsController.cs:89 | R3 | ✅ 已实现（电话唯一查重） | ✅ | ✅ |
 | US-PAT-004 | Must | ADR-0010 | — | PUT /patients/{id} | PatientsController.cs:114 | — | ✅ 已实现（更新电话唯一查重） | ✅ | ✅ |

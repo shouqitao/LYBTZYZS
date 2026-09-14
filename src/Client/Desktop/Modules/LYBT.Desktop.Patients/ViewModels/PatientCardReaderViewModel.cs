@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Models;
@@ -35,13 +36,9 @@ public partial class PatientCardReaderViewModel : NavigableViewModelBase
     /// <summary>是否已连接读卡器</summary>
     public bool IsCardReaderConnected => _cardReaderService.IsConnected;
 
-    /// <summary>是否正在读卡</summary>
+    /// <summary>是否正在读卡——[ObservableProperty] 源生成属性 IsReadingCard（仅本类内部写入）</summary>
+    [ObservableProperty]
     private bool _isReadingCard;
-    public bool IsReadingCard
-    {
-        get => _isReadingCard;
-        private set => SetProperty(ref _isReadingCard, value);
-    }
 
     /// <summary>刷卡录入命令</summary>
     [RelayCommand(CanExecute = nameof(CanReadCard))]

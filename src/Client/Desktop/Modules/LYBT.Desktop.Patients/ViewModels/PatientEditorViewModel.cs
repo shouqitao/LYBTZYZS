@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Patients.Mappers;
 using LYBT.Desktop.Patients.Models.Items;
@@ -15,6 +16,9 @@ namespace LYBT.Desktop.Patients.ViewModels;
 public partial class PatientEditorViewModel : EditorViewModelBase<PatientEditContext>
 {
     private readonly PatientMapper _mapper;
+
+    /// <summary>患者编辑上下文 (XAML 绑定目标)——[ObservableProperty] 源生成属性 Patient</summary>
+    [ObservableProperty]
     private PatientEditContext _patient = PatientEditContext.CreateNew();
 
     /// <summary>
@@ -23,13 +27,6 @@ public partial class PatientEditorViewModel : EditorViewModelBase<PatientEditCon
     public PatientEditorViewModel(PatientMapper mapper)
     {
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-    }
-
-    /// <summary>患者编辑上下文 (XAML 绑定目标)</summary>
-    public PatientEditContext Patient
-    {
-        get => _patient;
-        set => SetProperty(ref _patient, value);
     }
 
     /// <summary>性别选项 (静态)</summary>

@@ -1,5 +1,5 @@
 # ViewModel 层设计文档
-> 版本: v1.1 | 日期: 2026-09-14 | 状态: Phase 2 进行中（Shell + Auth 已完成，见 §八 迁移记录）
+> 版本: v1.2 | 日期: 2026-09-14 | 状态: Phase 2 进行中（Shell + Auth + Patients 已完成，见 §八 迁移记录）
 
 ## 一、当前状态分析
 
@@ -21,11 +21,11 @@
 | ConnectionTestViewModelBase | 2 | 连接测试 |
 | HerbItemViewModelBase | 1 | 药材项 |
 
-### 1.3 代码模式统计（2026-09-14 实测口径）
+### 1.3 代码模式统计（2026-09-14 实测口径，Patients 批次后复测）
 
 | 模式 | 计数 | 度量口径（grep 排除 bin/obj） | 状态 |
 |------|------|------------------------------|------|
-| `[ObservableProperty]` | 238 | `\[ObservableProperty\]` 行数 | ✅ 已采用 |
+| `[ObservableProperty]` | 242 | `\[ObservableProperty\]` 行数 | ✅ 已采用 |
 | `[RelayCommand]` | 174 | `\[RelayCommand` 行数 | ✅ 已采用 |
 | `OnPropertyChanged(` / `SetProperty(` 调用 | 828 | 调用点行数（**含**代理属性广播与派生属性通知，非全是「手写属性」） | ⚠️ 逐模块评估 |
 | `public ICommand` / `IAsyncRelayCommand` 声明 | 60 | 属性声明行数（含 15 处 Shell 菜单命令代理、3 处 Auth 子 VM 命令代理等**有意的委托**） | ⚠️ 逐模块评估 |
@@ -120,7 +120,7 @@
 **迁移顺序（含完成状态，2026-09-14）：**
 1. ✅ **Shell 模块**（5 个 ViewModel）— 核查完成：**无需迁移**（5 个 VM 已全量使用 `[ObservableProperty]`/`[RelayCommand]`；`OnPropertyChanged` 仅用于代理/派生属性广播，属 SSOT 设计；15 个 `public ICommand` 全部委托 `IShellServices.Menu`）——详见 §八
 2. ✅ **Auth 模块**（5 个 ViewModel + 1 基类）— 已迁移：`LoginViewModel` 4 处手写命令实例化 → `[RelayCommand]`（含 `CanExecute = nameof(CanLogin)`）；其余 4 个 VM 与 `ConnectionTestViewModelBase` 已符合最佳实践——详见 §八
-3. ⬜ **Patients 模块**（3 个 ViewModel）— 刚完成 B-12，代码新鲜
+3. ✅ **Patients 模块**（3 个 ViewModel）— 已迁移/核查：`PatientEditorViewModel`（手写 `SetProperty` 属性 → `[ObservableProperty]`）、`PatientCardReaderViewModel`（private-set 手写属性 → `[ObservableProperty]`）；`PatientMasterDetailViewModel` 核查后**无需改动**（6 个 `[RelayCommand]` 源生成，属性全部来自基类与子 VM 代理）——详见 §八
 4. ⬜ **Catalog 模块**（6 个 ViewModel）— 药材/验方，中等复杂度
 5. ⬜ **MedicalCase 模块**（10 个 ViewModel）— 最复杂，最后迁移（现存 2 处手写命令实例化：`Workspace/MedicalCaseCommandsViewModel`、Clinical `MedicalCaseWorkspaceViewModel`）
 6. ⬜ **Shell 服务层**（`MenuManager`/`NavigationManager` 2 处手写命令实例化）与 Controls code-behind（2 处）— 非 ViewModel，按需并入
@@ -173,11 +173,11 @@ private bool CanSave() => ...;
 - ✅ 差距识别
 - ✅ 设计建议
 
-### Phase 2：代码迁移（OMP 执行）— 进行中（Shell ✅ / Auth ✅，2026-09-14）
-- ✅ 逐模块核查 + 迁移 INPC/ICommand（Shell 核查无需迁移；Auth 迁移 `LoginViewModel` 4 处命令）
+### Phase 2：代码迁移（OMP 执行）— 进行中（Shell ✅ / Auth ✅ / Patients ✅，2026-09-14）
+- ✅ 逐模块核查 + 迁移 INPC/ICommand（Shell 核查无需迁移；Auth 迁移 `LoginViewModel` 4 处命令；Patients 迁移 2 处手写属性）
 - ✅ 每模块独立验证（build + test，见 §八）
 - ✅ 文档同步更新（本文件 §1.3/§4.1/§五/§八）
-- ⬜ 剩余模块（Patients/Catalog/MedicalCase + Shell 服务层与 Controls）按 §4.1 顺序推进
+- ⬜ 剩余模块（Catalog → MedicalCase + Shell 服务层与 Controls）按 §4.1 顺序推进
 
 ### Phase 3：测试补充
 - 为迁移的 ViewModel 补充单元测试
@@ -249,9 +249,30 @@ private bool CanSave() => ...;
 
 **未迁移项（有意保留，登记）**：`LoginViewModel.IsAutoLogin`（纯 UI 状态自动属性，无消费者订阅其变更通知，转 `[ObservableProperty]` 无功能收益）；`ClinicName`（构造期只读注入）。
 
-### 8.2 变更记录
+### 8.2 批次 3：Patients（2026-09-14）
+
+| 文件 | 核查/变更 | 说明 |
+|------|-----------|------|
+| `PatientEditorViewModel` | **迁移 1 处手写属性** | `public PatientEditContext Patient { get => _patient; set => SetProperty(ref _patient, value); }` → `[ObservableProperty] private PatientEditContext _patient = PatientEditContext.CreateNew();`（属性名/可写性不变，`Context` 重写与 `SubscribeContext()` 调用点不变） |
+| `PatientCardReaderViewModel` | **迁移 1 处手写属性** | `IsReadingCard`（`private set => SetProperty(...)`）→ `[ObservableProperty] private bool _isReadingCard;`；写入点仍仅 `ReadCardAsync`（`true`/`false`）+ `CanReadCard()` 读取，通知语义与 `ReadCardCommand` 的 CanExecute 时机保持原样（**未**追加 `NotifyCanExecuteChangedFor`，避免改变运行期行为——原实现亦无该通知） |
+| `PatientMasterDetailViewModel` | **无需改动** | 6 个命令全部 `[RelayCommand]` 源生成（`ReadCardCommand` 带 `CanExecute`）；属性一律来自 `MasterDetailViewModelBase` 或子 VM/服务代理（`PatientEditor`/`CardReaderViewModel`/`IsCardReaderConnected`/`IsReadingCard`）；无手写命令实例化 |
+
+> **未纳入迁移（有意保留）**：`Models/PatientDetailModel.cs` 与 `Models/Items/PatientEditContext.cs` 共 12 处 `SetProperty(...)`——
+> 它们是 **Model**（非 ViewModel），且多处带**联动副作用**（如 `if (SetProperty(ref _birthDate, value)) { …计算 Age… }`），
+> 迁 `[ObservableProperty]` 会把联动逻辑改写成 `OnXxxChanged` 分部方法，收益低、风险高；如需统一，另立批次评估。
+
+**验证证据（批次 3）**
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| 模块编译 | `dotnet build src/Client/Desktop/Modules/LYBT.Desktop.Patients/ --no-incremental` | ✅ 0 错误 0 警告 |
+| Patients 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Patients"` | ⚠️ 30/31——唯一失败 `Integration/RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword`（远程患者关键词检索 500），**既有缺陷**：`git stash` 摘除本批次改动后同一用例仍失败（对照运行已留证），根因见 13c #137③a/#139；与 ViewModel 迁移无关 |
+| 全量编译 | `dotnet build LYBTZYZS.sln --no-incremental` | ✅ 0 错误 0 警告 |
+
+### 8.3 变更记录
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| v1.2 | 2026-09-14 | Phase 2 批次 3：Patients 模块迁移（2 属性）+ §1.3 复测计数 + §八.2 记录 | 渐进式迁移落地 |
 | v1.1 | 2026-09-14 | Phase 2 批次 1-2：Shell 核查（无需迁移）+ Auth `LoginViewModel` 命令迁移；§1.3 计数改为可复算口径；补 §八 迁移记录 | 渐进式迁移落地，数字与结论须可核验 |
-| v1.0 | 2026-09-14 | 建立 ViewModel 层设计文档（现状/差距/迁移策略/风险） | Phase 1 设计
+| v1.0 | 2026-09-14 | 建立 ViewModel 层设计文档（现状/差距/迁移策略/风险） | Phase 1 设计 |

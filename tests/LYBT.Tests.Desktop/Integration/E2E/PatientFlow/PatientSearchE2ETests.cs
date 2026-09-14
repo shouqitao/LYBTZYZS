@@ -1,8 +1,14 @@
 // ---------------------------------------------------------------------------
 // PatientSearchE2ETests — US-PAT-002 搜索 全链路
 // 真实链路：桌面 IApiClientPatients.GetPatientsAsync(keyword) → LocalWebAPI → LocalDB
-// 本地契约：keyword 按患者姓名/拼音码匹配（手机号/身份证不参与搜索；
-// 身份证查询走专用端点 GET /api/v1/patients/by-id-number/{idNumber}）
+// 契约（US-PAT-001 AC）：keyword 按患者姓名/拼音码/电话匹配；身份证查询走专用端点
+//   GET /api/v1/patients/by-id-number/{idNumber}
+//
+// 已知缺口（登记见 13c #137 ③.a / #139）：仓库 GetPagedAsync 的 keyword 谓词含
+//   `PhoneNumber.Contains(kw)`，而 PhoneNumber 是 AES-GCM 加密列 —— EF 生成
+//   `LIKE @p ESCAPE N'<密文>'` → SQL Server 报「invalid escape character … LIKE predicate」500。
+//   触发与关键词/主机相关（本套件的姓名/拼音关键词用例通过；远程 API 用例
+//   RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword 用关键词「张」稳定复现 500）。
 // ---------------------------------------------------------------------------
 
 using LYBT.Shared.Models.Contracts.Patients;
