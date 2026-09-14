@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Prism.Commands;
+using CommunityToolkit.Mvvm.Input;
 
 namespace LYBT.Desktop.Controls.Controls
 {
@@ -18,7 +18,6 @@ namespace LYBT.Desktop.Controls.Controls
         public SearchBox()
         {
             InitializeComponent();
-            ClearCommand = new DelegateCommand(ExecuteClear);
         }
 
         #region SearchText - 搜索文本
@@ -65,9 +64,9 @@ namespace LYBT.Desktop.Controls.Controls
 
         #region ClearCommand - 清除命令
 
-        public ICommand ClearCommand { get; }
-
-        private void ExecuteClear()
+        /// <summary>清除命令——[RelayCommand] 源生成属性 ClearCommand（本控件 XAML 经 DataContext=Root 绑定）</summary>
+        [RelayCommand]
+        private void Clear()
         {
             SearchText = string.Empty;
         }

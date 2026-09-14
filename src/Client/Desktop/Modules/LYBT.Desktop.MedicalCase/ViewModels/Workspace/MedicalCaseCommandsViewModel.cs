@@ -34,7 +34,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 /// Attempting to split would introduce unnecessary complexity and cross-VM coordination overhead.
 /// See: Phase 1 Architecture Review 2026-03-15
 /// </remarks>
-public class MedicalCaseCommandsViewModel : ChildViewModelBase
+public partial class MedicalCaseCommandsViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly IMedicalCaseService _medicalCaseService;
@@ -46,15 +46,9 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
     #region Commands
 
-    public IRelayCommand SaveCommand { get; }
-    public IRelayCommand SuspendCommand { get; }
-    public IRelayCommand CompleteCommand { get; }
-    public IRelayCommand PrintCommand { get; }
-    public IRelayCommand ExportPdfCommand { get; }
-    public IRelayCommand EnterEditModeCommand { get; }
-    public IRelayCommand ImportFormulaCommand { get; }
-    public IRelayCommand CopyHistoryCommand { get; }
-    public IRelayCommand ClearHerbsCommand { get; }
+    // 9 个命令均由 [RelayCommand] 源生成（SaveAsync/SuspendAsync/CompleteAsync/PrintAsync/ExportPdfAsync/
+    // EnterEditMode/ImportFormula/CopyHistory/ClearHerbsAsync）；命令属性名与 XAML 绑定名逐字保持
+    // （见 MedicalCaseWorkspaceView.xaml 的 Commands.* 绑定）
 
     #endregion
 
@@ -76,15 +70,6 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
 
-        SaveCommand = new AsyncRelayCommand(ExecuteSaveAsync, () => CanSave);
-        SuspendCommand = new AsyncRelayCommand(ExecuteSuspendAsync, () => CanSuspend);
-        CompleteCommand = new AsyncRelayCommand(ExecuteCompleteAsync, () => CanComplete);
-        PrintCommand = new AsyncRelayCommand(ExecutePrintAsync, () => CanPrint);
-        ExportPdfCommand = new AsyncRelayCommand(ExecuteExportPdfAsync, () => CanPrint);
-        EnterEditModeCommand = new RelayCommand(ExecuteEnterEditMode, () => CanEnterEditMode);
-        ImportFormulaCommand = new RelayCommand(ExecuteImportFormula);
-        CopyHistoryCommand = new RelayCommand(ExecuteCopyHistory);
-        ClearHerbsCommand = new AsyncRelayCommand(ExecuteClearHerbsAsync);
     }
 
     /// <summary>
@@ -113,7 +98,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
     #region Core Command Implementations
 
-    private async Task ExecuteSaveAsync()
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync()
     {
         try
         {
@@ -147,7 +133,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async Task ExecuteSuspendAsync()
+    [RelayCommand(CanExecute = nameof(CanSuspend))]
+    private async Task SuspendAsync()
     {
         try
         {
@@ -181,7 +168,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async Task ExecuteCompleteAsync()
+    [RelayCommand(CanExecute = nameof(CanComplete))]
+    private async Task CompleteAsync()
     {
         try
         {
@@ -218,7 +206,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async Task ExecutePrintAsync()
+    [RelayCommand(CanExecute = nameof(CanPrint))]
+    private async Task PrintAsync()
     {
         try
         {
@@ -252,7 +241,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private async Task ExecuteExportPdfAsync()
+    [RelayCommand(CanExecute = nameof(CanPrint))]
+    private async Task ExportPdfAsync()
     {
         try
         {
@@ -291,7 +281,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         }
     }
 
-    private void ExecuteEnterEditMode()
+    [RelayCommand(CanExecute = nameof(CanEnterEditMode))]
+    private void EnterEditMode()
     {
         Host.RequestEnterEditMode();
     }
@@ -300,7 +291,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
 
     #region Import Operations (migrated from PrescriptionImportHandler)
 
-    private void ExecuteImportFormula()
+    [RelayCommand]
+    private void ImportFormula()
     {
         if (_dialogService == null)
         {
@@ -315,7 +307,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         });
     }
 
-    private void ExecuteCopyHistory()
+    [RelayCommand]
+    private void CopyHistory()
     {
         if (_dialogService == null)
         {
@@ -337,7 +330,8 @@ public class MedicalCaseCommandsViewModel : ChildViewModelBase
         });
     }
 
-    private async Task ExecuteClearHerbsAsync()
+    [RelayCommand]
+    private async Task ClearHerbsAsync()
     {
         var prescription = _dataProvider.GetPrescriptionItem();
         if (prescription == null)

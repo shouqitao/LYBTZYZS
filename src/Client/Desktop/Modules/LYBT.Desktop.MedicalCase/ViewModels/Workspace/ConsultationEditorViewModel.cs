@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -14,17 +15,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 /// 包装 ConsultationItem 供 XAML 绑定，通过 ConsultationMapper 处理 DTO 初始化。
 /// 取代 InitializeChildViewModels() 中逐字段复制的方式。
 /// </summary>
-public class ConsultationEditorViewModel : ChildViewModelBase
+public partial class ConsultationEditorViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly ConsultationMapper _mapper = new();
-    private ConsultationItem _consultation = new();
 
-    public ConsultationItem Consultation
-    {
-        get => _consultation;
-        set => SetProperty(ref _consultation, value);
-    }
+    /// <summary>会诊数据 (XAML 绑定目标)——[ObservableProperty] 源生成属性 Consultation</summary>
+    [ObservableProperty]
+    private ConsultationItem _consultation = new();
 
     public ConsultationEditorViewModel(
         IMedicalCaseWorkspaceContext context, IWorkspaceHost host, ILoggerFactory loggerFactory)

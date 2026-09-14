@@ -1,5 +1,5 @@
 # ViewModel 层设计文档
-> 版本: v1.2 | 日期: 2026-09-14 | 状态: Phase 2 进行中（Shell + Auth + Patients 已完成，见 §八 迁移记录）
+> 版本: v1.3 | 日期: 2026-09-14 | 状态: Phase 2 已完成全部规划模块（Shell/Auth/Patients/Catalog/MedicalCase + Shell 服务层与 Controls），见 §八 迁移记录
 
 ## 一、当前状态分析
 
@@ -122,8 +122,8 @@
 2. ✅ **Auth 模块**（5 个 ViewModel + 1 基类）— 已迁移：`LoginViewModel` 4 处手写命令实例化 → `[RelayCommand]`（含 `CanExecute = nameof(CanLogin)`）；其余 4 个 VM 与 `ConnectionTestViewModelBase` 已符合最佳实践——详见 §八
 3. ✅ **Patients 模块**（3 个 ViewModel）— 已迁移/核查：`PatientEditorViewModel`（手写 `SetProperty` 属性 → `[ObservableProperty]`）、`PatientCardReaderViewModel`（private-set 手写属性 → `[ObservableProperty]`）；`PatientMasterDetailViewModel` 核查后**无需改动**（6 个 `[RelayCommand]` 源生成，属性全部来自基类与子 VM 代理）——详见 §八
 4. ✅ **Catalog 模块**（6 个 ViewModel）— 已迁移：`HerbEditorViewModel.Herb`、`FormulaEditorViewModel.Formula`、`FormulaHerbItemViewModel.Remark` 手写 `SetProperty` → `[ObservableProperty]`；`FormulaValidationItemViewModel` 已符合最佳实践；`HerbMasterDetailViewModel`/`FormulaMasterDetailViewModel` 仅剩派生属性通知（`IsNameEditable`/`DetailTitle`/`IsValidationDetail`）**有意保留**（派生属性必须手动广播）——详见 §八.4
-5. ⬜ **MedicalCase 模块**（10 个 ViewModel + 3 对话框）— 最复杂，最后迁移（现存 9 处手写命令实例化：`Workspace/MedicalCaseCommandsViewModel`；1 个 VM 因 Mapperly 互操作被**既有决策阻塞**：`Items/PrescriptionItemViewModel`）
-6. ⬜ **Shell 服务层**（`MenuManager`/`NavigationManager` 2 处手写命令实例化）与 Controls code-behind（2 处）— 非 ViewModel，按需并入
+5. ✅ **MedicalCase 模块**（10 个 ViewModel + 3 对话框）— 已迁移：`MedicalCaseCommandsViewModel`（9 处手写命令实例化 → `[RelayCommand]`，含 5 个 `CanExecute` 谓词）、`ConsultationEditorViewModel.Consultation`、`PrescriptionEditorViewModel.Prescription`（含副作用的 setter → `[ObservableProperty]` + `partial void OnPrescriptionChanged` 等价迁移）；其余 7 个已符合最佳实践；**1 个 VM 因既有决策阻塞**：`Items/PrescriptionItemViewModel`（Mapperly 互操作，见 §八.5）——详见 §八.5
+6. ✅ **Shell 服务层 + Controls 手写命令** — `Controls/Controls/SearchBox.xaml.cs`：`ClearCommand`（Prism `DelegateCommand`）→ `[RelayCommand]`；`Shell/Services/MenuManager.cs` 与 `NavigationManager.cs`、`Controls/BaseDetailContainer.xaml.cs` 经核查**有意保留**（硬证据见 §八.6）
 
 ### 4.2 迁移规则
 
@@ -290,10 +290,45 @@ private bool CanSave() => ...;
 | 模块编译 | `dotnet build src/Client/Desktop/Modules/LYBT.Desktop.Catalog/ --no-incremental` | ✅ 0 错误 0 警告 |
 | Catalog 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Catalog\|FullyQualifiedName~Herb\|FullyQualifiedName~Formula"` | ✅ 69/69 |
 
-### 8.99 变更记录
+### 8.5 批次 5：MedicalCase（2026-09-14）
+
+| 文件 | 核查/变更 | 说明 |
+|------|-----------|------|
+| `Workspace/MedicalCaseCommandsViewModel` | **迁移 9 处手写命令实例化** | `new AsyncRelayCommand/RelayCommand(...)` + 9 个 `public IRelayCommand X { get; }` → 9 个 `[RelayCommand]` 方法（`SaveAsync`/`SuspendAsync`/`CompleteAsync`/`PrintAsync`/`ExportPdfAsync`/`EnterEditMode`/`ImportFormula`/`CopyHistory`/`ClearHerbsAsync`）；谓词改为 `CanExecute = nameof(CanSave\|CanSuspend\|CanComplete\|CanPrint\|CanEnterEditMode)`（原 lambda `() => CanX` 语义等价，bool **属性**作谓词受 `[RelayCommand]` 支持）；`RefreshCanExecute()` 的 6 处 `NotifyCanExecuteChanged()` 调用点不变；生成属性名与 XAML `Commands.*` 绑定名逐字一致；类加 `partial` |
+| `Workspace/ConsultationEditorViewModel` | **迁移 1 处手写属性** | `Consultation`（`SetProperty`）→ `[ObservableProperty] private ConsultationItem _consultation = new();` |
+| `Workspace/PrescriptionEditorViewModel` | **迁移 1 处带副作用 setter** | 原 `set { if (SetProperty(...)) { 切换 Items.CollectionChanged 订阅; OnPropertyChanged(nameof(HasItems)); } }` → `[ObservableProperty]` + `partial void OnPrescriptionChanged(PrescriptionItemViewModel value)`（源生成器仅在值实际变化时调用，与 `SetProperty` 返回 true 的时机一致，订阅切换与派生通知逻辑逐行保留） |
+| `Items/PrescriptionItemViewModel` | **有意不迁（既有决策阻塞）** | 类内 TODO（2026-08-21，P1-3）记载：实验证实 `PrescriptionMapper` 的 `[MapperIgnoreSource/Target(nameof(PrescriptionItemViewModel.X))]` 引用的成员由 `[ObservableProperty]` 生成时，Mapperly 源生成器看不到 → RMG004/RMG021/RMG066 → **空映射 → 运行时丢数据**。迁移需先解决生成器互操作（显式映射或生成器顺序）→ 待专项批次 |
+| `Dialogs/FormulaImportDialogViewModel` | 无需改动 | 9 处 `[ObservableProperty]`（任务书曾误列在 Catalog 模块，实际位置在此） |
+| `Dialogs/{HistoryCopy,UnsavedChanges}DialogViewModel`、`Reports/ReportsHomeViewModel`、`ViewModels/AuditLogViewModel`、`MedicalCaseMasterDetailViewModel` | 无需改动 | 已全量 `[ObservableProperty]`/`[RelayCommand]`；仅 `CurrentPatientTotalCount`/`CanShowMoreCurrentPatient` 等**派生属性**保留手写通知 |
+
+**验证证据（批次 5）**
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| 模块编译 | `dotnet build src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ --no-incremental` | ✅ 0 错误 0 警告 |
+| MedicalCase 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~MedicalCase\|FullyQualifiedName~Prescription\|FullyQualifiedName~Consultation"` | ✅ 190/190 |
+
+### 8.6 批次 6：Shell 服务层 + Controls 手写命令（2026-09-14）
+
+| 文件 | 结果 | 依据（硬证据） |
+|------|------|----------------|
+| `Controls/Controls/SearchBox.xaml.cs` | ✅ **已迁移** | `ClearCommand`（`public ICommand ClearCommand { get; }` + `new DelegateCommand(ExecuteClear)`）→ `[RelayCommand] private void Clear()`；无 CanExecute（Prism/toolkit 行为等价）；控件 XAML 经 `DataContext="{Binding ElementName=Root}"` 绑定自身 `ClearCommand`，属性名不变 |
+| `Shell/Services/MenuManager.cs` | ⛔ **有意保留** | 接口 `IMenuManager` 将 8 个命令声明为 `ICommand`（另 2 个导航命令声明为 Prism **`DelegateCommand`**）。实测迁移报 **CS0738**：源生成属性类型为 `IRelayCommand`/`IAsyncRelayCommand`，C# 接口实现要求**类型精确匹配** → 迁移必须先改 `IMenuManager`（违反任务「不修改接口定义」）。另：`NavigateBack/ForwardCommand` 依赖 Prism `DelegateCommand` + `CommandManager` 重新求值语义（`MenuManager.cs:113-114/153-154` 显式 `RaiseCanExecuteChanged()`），改为 toolkit 命令需补显式通知，属行为变更 |
+| `Shell/Services/NavigationManager.cs` | ⛔ **有意保留** | 10 处 `new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.X))` 是 **`NavigationItem` 数据构造**（含按角色定义循环捕获 `definition.HomeViewName` 的 lambda），非 VM 样板；改为 `[RelayCommand]` 无法捕获每项视图名（源生成命令是无参方法），需改数据模型 + XAML `CommandParameter` → 超出迁移范围 |
+| `Controls/Controls/BaseDetailContainer.xaml.cs` | ⛔ **有意保留** | `new DelegateCommand(...)` 在 `UpdateGoBackCommandWithDirtyCheck` 中**按实例包装外部绑定命令**（未保存变更确认对话框 + 重入哨兵 + 写回 `GoBackCommandProperty` 依赖属性）；`[RelayCommand]` 是类级静态命令，无法表达「包装 DP 注入的 ICommand 实例」这一契约 |
+
+**验证证据（批次 6）**
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| Shell 编译 | `dotnet build src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj --no-incremental` | ✅ 0 错误 0 警告 |
+| Shell/Controls 回归 | `dotnet test tests/LYBT.Tests.Desktop/ --filter "FullyQualifiedName~Shell\|FullyQualifiedName~Controls\|FullyQualifiedName~Menu"` | 见 §8.7 全量结果 |
+
+### 8.7 变更记录
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| v1.3 | 2026-09-14 | Phase 2 批次 4-6：Catalog（3 属性）+ MedicalCase（9 命令 + 2 属性，1 VM 因 Mapperly 互操作阻塞）+ Shell 服务层/Controls（SearchBox 迁移；MenuManager/NavigationManager/BaseDetailContainer 记录有意保留依据）；§1.3 复测计数；§八.4-8.6 记录 | 渐进式迁移落地；「保持现有功能不变」优先于迁就工具包 |
 | v1.2 | 2026-09-14 | Phase 2 批次 3：Patients 模块迁移（2 属性）+ §1.3 复测计数 + §八.2 记录 | 渐进式迁移落地 |
 | v1.1 | 2026-09-14 | Phase 2 批次 1-2：Shell 核查（无需迁移）+ Auth `LoginViewModel` 命令迁移；§1.3 计数改为可复算口径；补 §八 迁移记录 | 渐进式迁移落地，数字与结论须可核验 |
 | v1.0 | 2026-09-14 | 建立 ViewModel 层设计文档（现状/差距/迁移策略/风险） | Phase 1 设计 |

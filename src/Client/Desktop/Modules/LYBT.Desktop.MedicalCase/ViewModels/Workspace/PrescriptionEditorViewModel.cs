@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -15,25 +16,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 /// 包装 PrescriptionItemViewModel，处理 DTO 初始化和集合变更通知。
 /// Items 集合变化时通知父级以重新计算状态（CanComplete、CanPrint）。
 /// </summary>
-public class PrescriptionEditorViewModel : ChildViewModelBase
+public partial class PrescriptionEditorViewModel : ChildViewModelBase
 {
     private readonly IMedicalCaseWorkspaceContext _context;
     private readonly PrescriptionMapper _mapper = new();
 
+    /// <summary>处方数据 (XAML 绑定目标)——[ObservableProperty] 源生成属性 Prescription</summary>
+    [ObservableProperty]
     private PrescriptionItemViewModel _prescription = new();
 
-    public PrescriptionItemViewModel Prescription
+    /// <summary>
+    /// 处方实例变更时的订阅切换（原手写 setter 逻辑，等价迁移）
+    /// ——仅在值实际变化时由源生成器调用。
+    /// </summary>
+    partial void OnPrescriptionChanged(PrescriptionItemViewModel value)
     {
-        get => _prescription;
-        set
-        {
-            if (SetProperty(ref _prescription, value))
-            {
-                _prescription.Items.CollectionChanged -= OnItemsCollectionChanged;
-                _prescription.Items.CollectionChanged += OnItemsCollectionChanged;
-                OnPropertyChanged(nameof(HasItems));
-            }
-        }
+        value.Items.CollectionChanged -= OnItemsCollectionChanged;
+        value.Items.CollectionChanged += OnItemsCollectionChanged;
+        OnPropertyChanged(nameof(HasItems));
     }
 
     /// <summary>
