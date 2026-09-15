@@ -51,7 +51,6 @@ public class RegistrationsController : BaseRegistrationsController
     /// </summary>
     /// <param name="id">挂号 ID</param>
     /// <param name="ct">取消令牌</param>
-    [HttpPut("{id}/start-visit")]
     [EnableRateLimiting("ApiCalls")]
     [Authorize(Policy = PolicyConstants.DoctorOnly)]
     public override async Task<IActionResult> StartVisit(Guid id, CancellationToken ct)
@@ -70,7 +69,6 @@ public class RegistrationsController : BaseRegistrationsController
     /// 取消挂号 — 仅 Receptionist（04-permissions P0-3 / REG-BR-002）
     /// </summary>
     [Authorize(Policy = PolicyConstants.ReceptionistOnly)]
-    [HttpPut("{id}/cancel")]
     [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {

@@ -494,7 +494,9 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     {
         if (disposing)
         {
+            // 本 VM 自建的两个子 VM 一律对称释放（CardReader 退订读卡器事件；PendingQueue 为 ChildViewModelBase）
             CardReader?.Dispose();
+            PendingQueue?.Dispose();
         }
         base.Dispose(disposing);
     }

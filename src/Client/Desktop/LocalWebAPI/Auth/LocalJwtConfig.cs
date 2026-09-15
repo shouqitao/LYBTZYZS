@@ -70,6 +70,14 @@ public static class LocalJwtConfig
 
         services.AddAuthorization(options =>
         {
+            // 默认拒绝：未显式标注 [Authorize]/[AllowAnonymous] 的端点一律要求已认证，
+            // 与 Remote（AuthenticationServiceCollectionExtensions 的 FallbackPolicy）语义对齐。
+            // 匿名端点必须显式 [AllowAnonymous]（AuthController 的 login/logout/refresh/auto-login、
+            // HealthController 类级、DownloadController.Index 已标注）。
+            options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
             // 纯 Admin（业务管理）策略：不含 SuperAdmin（系统运维不碰业务数据）
             options.AddPolicy(PolicyConstants.AdminBusinessOnly, policy =>
                 policy.RequireAuthenticatedUser()

@@ -29,6 +29,7 @@ namespace LYBT.Desktop.Foundation.Http
         private readonly ApiClientOptions _apiOptions;
         private readonly IEventAggregator? _eventAggregator;
         private readonly HttpClient _refreshHttpClient; // 专用HttpClient，避免循环依赖
+        private readonly IConnectionSettingsService? _connectionSettings;
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
         // Token刷新提前量：提前5分钟刷新，避免临界情况
@@ -50,7 +51,8 @@ namespace LYBT.Desktop.Foundation.Http
             IOptions<ApiClientOptions> apiOptions,
             ILogger<TokenRefreshHandler> logger,
             IUserActivityState? userActivityState = null,
-            IEventAggregator? eventAggregator = null)
+            IEventAggregator? eventAggregator = null,
+            IConnectionSettingsService? connectionSettings = null)
         {
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _credentialVault = credentialVault ?? throw new ArgumentNullException(nameof(credentialVault));
@@ -58,6 +60,7 @@ namespace LYBT.Desktop.Foundation.Http
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
             _eventAggregator = eventAggregator;
+            _connectionSettings = connectionSettings;
 
             // T5.4: 优先使用 IHttpClientFactory（Polly + 复用），回退为手工 HttpClient（循环依赖避免 path 由调用方注入工厂时为空）
             if (httpClientFactory != null)
@@ -93,9 +96,22 @@ namespace LYBT.Desktop.Foundation.Http
             IOptions<ApiClientOptions> apiOptions,
             ILogger<TokenRefreshHandler> logger,
             IUserActivityState? userActivityState = null,
-            IEventAggregator? eventAggregator = null)
-            : this(tokenStorage, credentialVault, null, apiOptions, logger, userActivityState, eventAggregator)
+            IEventAggregator? eventAggregator = null,
+            IConnectionSettingsService? connectionSettings = null)
+            : this(tokenStorage, credentialVault, null, apiOptions, logger, userActivityState, eventAggregator, connectionSettings)
         {
+        }
+
+        /// <summary>
+        /// 刷新/自动登录的目标基址：优先当前连接 URL（用户可改 RemoteUrl），
+        /// 未提供连接设置时回退 appsettings 的 ApiClientOptions.BaseUrl。
+        /// </summary>
+        private Uri ResolveAuthBaseUri()
+        {
+            var current = _connectionSettings?.CurrentUrl;
+            return !string.IsNullOrWhiteSpace(current)
+                ? new Uri(current, UriKind.Absolute)
+                : new Uri(_apiOptions.BaseUrl, UriKind.Absolute);
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -261,8 +277,9 @@ namespace LYBT.Desktop.Foundation.Http
                     RefreshToken = refreshToken
                 };
 
-                // 2. 调用 POST /api/v1/auth/refresh 端点
-                var response = await _refreshHttpClient.PostAsJsonAsync("/api/v1/auth/refresh", requestBody);
+                // 2. 调用 POST /api/v1/auth/refresh 端点（打向当前连接 URL，而非 appsettings BaseUrl）
+                var response = await _refreshHttpClient.PostAsJsonAsync(
+                    new Uri(ResolveAuthBaseUri(), "/api/v1/auth/refresh"), requestBody);
 
                 if (!response.IsSuccessStatusCode)
                 {

@@ -105,6 +105,29 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取待处理医案（Refit 契约 IMedicalCaseApi.GetPendingCasesAsync 的远程对位实现；
+        /// 本地端对位：LocalWebAPI/Controllers/MedicalCasesController.GetPending）
+        /// </summary>
+        [HttpGet("pending")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseListDto>>), 200)]
+        public async Task<IActionResult> GetPending(
+            [FromQuery] Guid? patientId = null, CancellationToken ct = default)
+        {
+            var (operatorId, _, operatorRole) = GetOperator();
+            var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+            var query = new MedicalCaseQueryDto
+            {
+                QueryType = MedicalCaseQueryType.Pending,
+                PatientId = patientId,
+                IncludeAllDoctors = isAdmin
+            };
+            if (!isAdmin)
+                query.DoctorId = operatorId;
+            var result = await _medicalCaseQueryService.QueryAsync(query, ct);
+            return Success(result.Items, "查询成功");
+        }
+
+        /// <summary>
         /// 创建新医案
         /// </summary>
         [HttpPost]
@@ -337,7 +360,7 @@ namespace LYBT.WebAPI.Controllers
         /// 取消医案（统一为软删除 + 审计日志）
         /// </summary>
         [HttpPut("{id}/cancel")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<IActionResult> CancelMedicalCase(

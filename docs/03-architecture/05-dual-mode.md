@@ -90,7 +90,9 @@
 | **RefreshToken** | 支持（滑动续期 + Token Family 防重放） | 不支持 | 本地单用户，无需续期 |
 | **JWT 签名密钥** | 配置文件 (appsettings.json) | 固定常量 (`LYBT-LocalWebAPI-Secret-Key-2024`) | 本地无需运维管理 |
 | **SecurityAuditLog** | 记录（登录/登出/刷新/锁定） | 不记录 | 本地无审计合规需求 |
-| **Rate Limiting** | 5次/60s 登录 + 100次/min API | `LocalLogin` 5次/60s 限流（2026-08-08 修正，原文档声称本地不限制已过时） | 本地登录防爆破 |
+| **Rate Limiting** | 5次/60s 登录 + 100次/min API（均按来源 IP 分区） | `LocalLogin` 5次/60s + `ApiCalls` 100次/min（均按来源 IP 分区，2026-09-16 对齐远程维度；原为全局固定窗口且无 `ApiCalls`） | 本地登录防爆破 |
+| **客户端传输链** | `RefitApiClient`：`HttpClientHandler` → `TokenRefreshHandler` → `AuthorizationMessageHandler` → `LoggingHttpHandler` | `HttpClientApiClient` 经 `LocalApiHttpClientFactory`：`HttpClientHandler` → `AuthorizationMessageHandler`（每次 `CreateClient` 返回新包装 + `disposeHandler:false`）；**不含** `TokenRefreshHandler`（本地令牌续期由 Shell `TokenLifecycleService` 显式驱动，避免误发远程刷新） | 两端同一「携带 Bearer」契约；本地端点同受 `[Authorize]` 保护（2026-09-16 修复：此前本地传输无 `AuthorizationMessageHandler` 且返回共享 `HttpClient`，导致本地受保护端点恒 401、第二次调用 `ObjectDisposedException`） |
+| **默认授权（FallbackPolicy）** | `RequireAuthenticatedUser` | `RequireAuthenticatedUser`（2026-09-16 补齐，此前缺失为 fail-open） | 双端默认拒绝，匿名端点须显式 `[AllowAnonymous]` |
 | **CORS** | 配置允许桌面端 origin | 不配置（同源） | localhost 无跨域 |
 | **Sync 端点** | 6 个（作为 Sync Server） | 无（本地是唯一数据源） | 本地无需与自己同步 |
 | **打印日志** | `POST /print-completed` 写入 `MedicalCasePrintLog` | 不记录 | 本地无服务端审计 |
@@ -106,10 +108,11 @@
 | ------ | ------ | ------ | ------ |
 | Formulas | `/api/v1/formulas/{id}/clone` | POST | 克隆验方（含药材组成） |
 | Patients | `/api/v1/patients/by-id-number/{idNumber}` | GET | 按身份证号查询患者 |
-| MedicalCases | `/api/v1/medicalcases/pending` | GET | 获取待处理医案（无处方） |
 | MedicalCases | `/api/v1/medicalcases/by-status/{status}` | GET | 按状态查询医案 |
 | Diagnostics | `/api/v1/diagnostics/db-info` | GET | 数据库连接信息 + 磁盘空间 |
 | Diagnostics | `/api/v1/diagnostics/logs/recent` | GET | 最近日志条目 |
+
+> `GET /api/v1/medicalcases/pending` 原列于本表，2026-09-16 已在 Remote `MedicalCasesController` 补齐对位实现（Refit 契约 `IMedicalCaseApi.GetPendingCasesAsync` 与 `ConnectionModeService` 的探测此前在远程模式 404）——**不再是 Local 独有**。
 
 > **纠错（D8）**: 原文档另列 `formulas/categories` 与 `patients/by-phone` 为本地独有端点 — 代码全仓不存在，属虚构条目，已移除。
 

@@ -234,7 +234,7 @@ public class FormulasController : BaseCrudController
     /// 删除验方（软删除）
     /// </summary>
     [HttpDelete("/api/v1/formulas/{id}")]
-    public async Task<IActionResult> DeleteFormula(Guid id, CancellationToken ct)
+    public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
             return error;
@@ -256,7 +256,7 @@ public class FormulasController : BaseCrudController
     /// 切换验方启用/禁用状态
     /// </summary>
     [HttpPost("/api/v1/formulas/{id}/toggle-status")]
-    public async Task<IActionResult> ToggleFormulaStatus(Guid id, CancellationToken ct)
+    public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
             return error;
@@ -282,7 +282,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-delete")]
-    public async Task<IActionResult> BatchDeleteFormulas(
+    public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
     ) =>
@@ -398,7 +398,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
     [HttpPost("/api/v1/formulas/{id}/restore")]
-    public async Task<IActionResult> RestoreFormula(Guid id, CancellationToken ct)
+    public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
             return error;

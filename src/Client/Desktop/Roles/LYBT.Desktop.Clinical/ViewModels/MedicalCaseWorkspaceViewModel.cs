@@ -60,8 +60,12 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     #region 导航行为
 
-    /// <summary>医案工作区需要保持状态（编辑中的医案数据）</summary>
-    public override bool KeepAlive => true;
+    /// <summary>
+    /// 医案工作区按医案整体重建，实例不可复用（见 <see cref="IsNavigationTarget"/>）。
+    /// 与之保持一致的 KeepAlive=false：不可复用的视图不应被区域保留，否则每次导航新建实例、
+    /// 旧实例滞留区域（区域视图与订阅泄漏）。
+    /// </summary>
+    public override bool KeepAlive => false;
 
     #endregion 导航行为
 
@@ -75,7 +79,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         {
             if (SetProperty(ref _state, value))
             {
-                OnPropertyChanged(nameof(State));
+                // SetProperty 已通知 State 本身，此处只补派生属性与命令状态
                 OnPropertyChanged(nameof(Completeness));
                 Commands?.RefreshCanExecute();
                 SaveChangesCommand?.NotifyCanExecuteChanged();
@@ -340,6 +344,11 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _activeConsultationService.Register(MedicalCaseId, HandleLeaveRequestAsync);
     }
 
+    /// <summary>
+    /// 每次导航到工作区都新建实例并按导航参数完整重建（见 <see cref="OnNavigatedTo"/>）。
+    /// 不复用实例的原因：本 VM 的按医案状态（Remark / EditReason / IsPrescriptionEnabled）不在导航中复位，
+    /// 复用会把上一医案的编辑内容带入新医案；与 KeepAlive=false 配对（不复用即不保留）。
+    /// </summary>
     public override bool IsNavigationTarget(NavigationContext navigationContext) => false;
 
     public override void OnNavigatedFrom(NavigationContext navigationContext)
@@ -459,8 +468,10 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         else
             PrescriptionEditor.InitializeForNewCase();
 
-        // Subscribe for state updates
+        // Subscribe for state updates（先退订再订阅：本方法每次导航都会执行，多次执行不得叠加订阅）
+        ConsultationEditor.Consultation.PropertyChanged -= OnChildPropertyChanged;
         ConsultationEditor.Consultation.PropertyChanged += OnChildPropertyChanged;
+        PrescriptionEditor.Prescription.PropertyChanged -= OnChildPropertyChanged;
         PrescriptionEditor.Prescription.PropertyChanged += OnChildPropertyChanged;
 
         // Initial print state
@@ -581,6 +592,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
             PrescriptionEditor.Prescription.PropertyChanged -= OnChildPropertyChanged;
             ConsultationEditor.Dispose();
             PrescriptionEditor.Dispose();
+            Commands.Dispose();
         }
         base.Dispose(disposing);
     }

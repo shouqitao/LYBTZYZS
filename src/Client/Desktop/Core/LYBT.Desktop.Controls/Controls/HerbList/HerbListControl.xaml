@@ -30,37 +30,44 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!--  药材列表区域（启用 UI 虚拟化以优化大量药材渲染）  -->
-            <ScrollViewer
+            <!--  药材列表区域：为 ItemsControl 提供自带 ScrollViewer 的模板（CanContentScroll=True），
+                  使 ItemsPanel 中的 VirtualizingStackPanel 成为滚动宿主并真正参与虚拟化。
+                  原先外层 ScrollViewer 会以无限高度测量列表，虚拟化声明实际无效，所有行均被实例化。  -->
+            <ItemsControl
+                x:Name="ItemsHost"
                 Grid.Row="0"
-                HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto">
-                <ItemsControl
-                    x:Name="ItemsHost"
-                    ItemContainerStyle="{StaticResource HerbItemStyle}"
-                    ItemsSource="{Binding Items}"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel
-                                IsVirtualizing="True"
-                                VirtualizationMode="Recycling" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <herbItem:HerbItemControl
-                                AllHerbs="{Binding AllHerbs}"
-                                DeleteRequested="OnHerbItemDeleteRequested"
-                                IsEditMode="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:HerbListControl}}, Path=IsEditMode}"
-                                ItemChanged="OnHerbItemChanged"
-                                ItemIndex="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
-                                NextItemRequested="OnHerbItemNextRequested" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                ItemContainerStyle="{StaticResource HerbItemStyle}"
+                ItemsSource="{Binding Items}"
+                VirtualizingStackPanel.IsVirtualizing="True"
+                VirtualizingStackPanel.ScrollUnit="Pixel"
+                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                <ItemsControl.Template>
+                    <ControlTemplate TargetType="ItemsControl">
+                        <ScrollViewer
+                            CanContentScroll="True"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <herbItem:HerbItemControl
+                            AllHerbs="{Binding AllHerbs}"
+                            DeleteRequested="OnHerbItemDeleteRequested"
+                            IsEditMode="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:HerbListControl}}, Path=IsEditMode}"
+                            ItemChanged="OnHerbItemChanged"
+                            ItemIndex="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
+                            NextItemRequested="OnHerbItemNextRequested" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!--  底部操作栏(仅编辑模式显示)  -->
             <StackPanel

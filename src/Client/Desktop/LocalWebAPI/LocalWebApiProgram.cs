@@ -23,6 +23,8 @@ using LYBT.Module.Reports;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Logging.Management;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Utilities.Security;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -163,15 +165,60 @@ public static class LocalWebApiProgram
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddFixedWindowLimiter(
+
+            // 结构化 429（与 Remote ApiServiceCollectionExtensions.OnRejected 同构）
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                context.HttpContext.Response.ContentType = "application/json";
+
+                var response = ApiResponse.CreateFail(
+                    ErrorMessages.Get(ErrorCode.RateLimitExceeded),
+                    new
+                    {
+                        errorCode = ErrorCode.RateLimitExceeded.ToFormattedString(),
+                        retryAfter = context.Lease.TryGetMetadata(
+                            System.Threading.RateLimiting.MetadataName.RetryAfter, out var retryAfter)
+                            ? retryAfter.TotalSeconds
+                            : 60
+                    });
+                response.RequestId = context.HttpContext.TraceIdentifier;
+
+                await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+            };
+
+            // 登录/刷新：按来源 IP 分区，5 次/分钟（与 Remote 的 Login 策略同维度）
+            options.AddPolicy(
                 "LocalLogin",
-                opt =>
-                {
-                    opt.PermitLimit = 5;
-                    opt.Window = TimeSpan.FromMinutes(1);
-                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    opt.QueueLimit = 0;
-                }
+                context =>
+                    System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        }
+                    )
+            );
+
+            // 写操作限流：与 Remote 的 ApiCalls 同名同维度（100 次/分钟/IP）。
+            // 必须注册——共享的 BaseUsersController 的 batch-enable/batch-disable 标注了该策略名，
+            // 缺失会在限流中间件解析策略时抛异常（500）。
+            options.AddPolicy(
+                "ApiCalls",
+                context =>
+                    System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 100,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        }
+                    )
             );
         });
 

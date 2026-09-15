@@ -80,6 +80,8 @@ public class MedicalCasesController : BaseMedicalCasesController
     [HttpGet("query")]
     public override async Task<IActionResult> Query([FromQuery] MedicalCaseQueryDto query, CancellationToken ct = default)
     {
+        if (ValidatePagination(query.PageIndex, query.PageSize) is { } error) return error;
+
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
         if (!isAdmin && query.DoctorId == null)
@@ -217,7 +219,11 @@ public class MedicalCasesController : BaseMedicalCasesController
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "创建失败");
 
-        return Success(result.Value!, "医案创建成功");
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = result.Value!.Id },
+            ApiResponse<MedicalCaseDetailDto>.CreateSuccess(result.Value!, "医案创建成功")
+        );
     }
 
     /// <summary>

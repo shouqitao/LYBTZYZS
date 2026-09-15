@@ -36,8 +36,10 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     private readonly IPatientService _patientService;
     private readonly ISignalRClient _signalRClient;
     private readonly IDialogService? _dialogService;
+    private readonly IEventAggregator _eventAggregatorAccessor;
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(QueueRefreshIntervalSeconds));
     private CancellationTokenSource? _timerCts;
+    private Task? _refreshLoopTask;
 
     /// <summary>队列自动刷新间隔（秒）——魔法数字提取（P1-F）。</summary>
     private const int QueueRefreshIntervalSeconds = 30;
@@ -154,45 +156,89 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     protected override void OnDisposing()
     {
         // P2-14-7 退订：ViewModel 销毁时取消 EventAggregator 强引用，避免 Dispatcher 回调已释放实例
+        // （只退订订阅时所用的那个 token；Prism 的 Unsubscribe(token) 可重复调用且不抛异常）
         if (_registrationRefreshedToken != null)
         {
-            try { _eventAggregatorAccessor?.GetEvent<RegistrationRefreshedEvent>().Unsubscribe(_registrationRefreshedToken); } catch { }
-            // 备用：直接 via Services.EventAggregator（NavigableViewModelBase 持有）
-            try { Services.EventAggregator.GetEvent<RegistrationRefreshedEvent>().Unsubscribe(OnRegistrationRefreshed); } catch { }
+            _eventAggregatorAccessor.GetEvent<RegistrationRefreshedEvent>().Unsubscribe(_registrationRefreshedToken);
+            _registrationRefreshedToken = null;
         }
         _ = _signalRClient.StopAsync();
         StopAutoRefresh();
-        // P1-F：释放轮询计时器（PeriodicTimer 实现 IDisposable）
-        _refreshTimer.Dispose();
+        // P1-F：释放轮询计时器（PeriodicTimer 实现 IDisposable）——须等轮询循环退出后再释放
+        DisposeRefreshTimer();
         base.OnDisposing();
     }
-
-    // 为 OnDisposing 退订提供 accessor（构造时已注入 eventAggregator，未存字段则通过 Services 兜底）
-    private IEventAggregator? _eventAggregatorAccessor;
-
 
     private void StartAutoRefresh()
     {
         if (_timerCts is not null) return;
 
-        _timerCts = new CancellationTokenSource();
-        _ = RunAutoRefreshLoopAsync(_timerCts.Token);
+        var cts = new CancellationTokenSource();
+        _timerCts = cts;
+
+        // PeriodicTimer 只允许一个未完成的 WaitForNextTickAsync：上一次取消若尚未被旧循环观察到，
+        // 新循环立刻等待会抛 InvalidOperationException（计时器仍处于等待中状态）。
+        // 故新循环挂在旧循环之后启动，确保旧等待已被观察到。
+        var previous = _refreshLoopTask;
+        _refreshLoopTask = previous is null || previous.IsCompleted
+            ? RunAutoRefreshLoopAsync(cts)
+            : previous.ContinueWith(_ => RunAutoRefreshLoopAsync(cts), TaskScheduler.Default).Unwrap();
     }
 
+    /// <summary>
+    /// 停止轮询（可再次 StartAutoRefresh）。
+    /// 只取消、不释放 CTS：轮询循环可能仍在等待该 token（释放后使用会抛 ObjectDisposedException），
+    /// CTS 由循环自身在退出时释放，见 <see cref="RunAutoRefreshLoopAsync"/>。
+    /// </summary>
     private void StopAutoRefresh()
     {
-        _timerCts?.Cancel();
-        _timerCts?.Dispose();
+        var cts = _timerCts;
+        if (cts is null) return;
+
         _timerCts = null;
+        cts.Cancel();
     }
 
-    private async Task RunAutoRefreshLoopAsync(CancellationToken ct)
+    /// <summary>
+    /// 释放轮询计时器：必须等轮询循环退出后再释放，否则与 WaitForNextTickAsync 竞态。
+    /// 循环尚未结束时不能在 UI 线程同步 Wait（其续体需回到 UI 线程 → 死锁），改为在其完成后异步释放。
+    /// </summary>
+    private void DisposeRefreshTimer()
     {
-        while (await _refreshTimer.WaitForNextTickAsync(ct))
+        var loop = _refreshLoopTask;
+        _refreshLoopTask = null;
+
+        if (loop is null)
         {
-            if (IsBusy) continue;
-            Logger.LogDebug("[REG-VM] 定时刷新队列");
-            await LoadQueueAsync();
+            _refreshTimer.Dispose();
+            return;
+        }
+
+        _ = loop.ContinueWith(_ => _refreshTimer.Dispose(), TaskScheduler.Default);
+    }
+
+    /// <summary>
+    /// 轮询循环。CTS 由本循环在退出时释放，保证 token 不会被"释放后使用"。
+    /// </summary>
+    private async Task RunAutoRefreshLoopAsync(CancellationTokenSource cts)
+    {
+        try
+        {
+            // 仅当自身仍是当前轮询循环时继续：Stop 后 _timerCts 置空，旧循环随即退出，不与新一轮 wait 冲突
+            while (ReferenceEquals(_timerCts, cts) && await _refreshTimer.WaitForNextTickAsync(cts.Token))
+            {
+                if (IsBusy) continue;
+                Logger.LogDebug("[REG-VM] 定时刷新队列");
+                await LoadQueueAsync();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 正常停止路径（StopAutoRefresh / OnDisposing）
+        }
+        finally
+        {
+            cts.Dispose();
         }
     }
 

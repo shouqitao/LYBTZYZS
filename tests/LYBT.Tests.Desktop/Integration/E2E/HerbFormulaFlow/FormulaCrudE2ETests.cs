@@ -281,4 +281,37 @@ public class FormulaCrudE2ETests : E2ETestBase
         var paged = await FormulasApi.GetFormulasAsync(1, 20, importName);
         Assert.Contains(paged.Data!.Items, f => f.Name == importName);
     }
+
+    [Fact]
+    public async Task FormulaWriteEndpoints_AreNotShadowedByBaseCrudRoutes()
+    {
+        // L1-01 回归：Local FormulasController 曾以新方法名（DeleteFormula/ToggleFormulaStatus/
+        // BatchDeleteFormulas/RestoreFormula）+ 绝对路由声明这 4 个端点，未 override 基类虚方法：
+        //   - batch-delete 模板与基类完全相同 → AmbiguousMatchException
+        //   - {id} / {id}/toggle-status / {id}/restore 被基类 {id:guid} 抢占 → 基类 NotSupportedException
+        // 四条路径全部 500。此处逐条走真实链路断言可用。
+        await LoginAsAdminAsync();
+        var herbId = await CreateHerbAsync(UniqueName("当归"));
+
+        var created = await FormulasApi.CreateFormulaAsync(NewFormula(herbId, "当归"));
+        Assert.True(created.Success, created.Message);
+        var formulaId = created.Data!.Id;
+
+        var toggled = await FormulasApi.ToggleStatusAsync(formulaId);
+        Assert.True(toggled.Success, toggled.Message);
+        Assert.Equal(CommonStatus.Disabled, toggled.Data!.Status);
+
+        var deleted = await FormulasApi.DeleteFormulaAsync(formulaId);
+        Assert.True(deleted.Success, deleted.Message);
+
+        var restored = await FormulasApi.RestoreAsync(formulaId);
+        Assert.True(restored.Success, restored.Message);
+
+        var second = await FormulasApi.CreateFormulaAsync(NewFormula(herbId, "当归"));
+        Assert.True(second.Success, second.Message);
+
+        var batchDeleted = await FormulasApi.BatchDeleteAsync(
+            new BatchDeleteInputDto { Ids = [second.Data!.Id] });
+        Assert.True(batchDeleted.Success, batchDeleted.Message);
+    }
 }

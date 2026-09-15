@@ -56,21 +56,21 @@ public abstract class BaseCrudController : BaseApiController
     /// </summary>
     [HttpPost("{id:guid}/toggle-status")]
     public virtual Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
-        => throw new NotSupportedException("此资源不支持切换状态操作");
+        => Task.FromResult<IActionResult>(NotFound("此资源不支持切换状态操作"));
 
     /// <summary>
     /// 恢复已删除的资源 — 默认不支持，子类按需 override
     /// </summary>
     [HttpPost("{id:guid}/restore")]
     public virtual Task<IActionResult> Restore(Guid id, CancellationToken ct)
-        => throw new NotSupportedException("此资源不支持恢复操作");
+        => Task.FromResult<IActionResult>(NotFound("此资源不支持恢复操作"));
 
     /// <summary>
     /// 批量删除 — 子类按需 override
     /// </summary>
     [HttpPost("batch-delete")]
     public virtual Task<IActionResult> BatchDelete([FromBody] BatchDeleteInputDto dto, CancellationToken ct)
-        => throw new NotSupportedException("请 override BatchDelete 方法");
+        => Task.FromResult<IActionResult>(NotFound("此资源不支持批量删除操作"));
 
     #region 批量操作模板 - 子类 action 方法体委托到此，消除复制粘贴
 

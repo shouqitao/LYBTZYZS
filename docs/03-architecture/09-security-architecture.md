@@ -147,9 +147,10 @@ options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, RequireRole("Supe
 
 ### 默认安全策略
 
-- **FallbackPolicy**: 要求所有端点默认认证（`RequireAuthenticatedUser`）
-- **显式豁免**: `AllowAnonymous` 标注的端点（login、logout、refresh、health）
+- **FallbackPolicy**: 要求所有端点默认认证（`RequireAuthenticatedUser`）——**双端一致**（Remote `AuthenticationServiceCollectionExtensions`；Local `LocalJwtConfig`，2026-09-16 补齐，此前 Local 缺失即 fail-open：任何漏写 `[Authorize]` 的新端点默认匿名可达）
+- **显式豁免**: `AllowAnonymous` 标注的端点（login、logout、refresh、auto-login、health、download 页）
 - **Swagger 不受影响**: Swagger 中间件在 UseRouting 之前，不经过授权管道（Swagger 启用时另注册 `MapGet("/swagger/{**path}")` 匿名兜底端点，避免 FallbackPolicy 误判 401）。生产默认关闭（`Swagger:Enabled=false`）——关闭时 `/swagger` 既不暴露文档、也不豁免 CSP，见 `06-operations/01-deployment.md`
+- **认证端点状态码**: 刷新/自动登录失败一律 `401` + `ApiResponse` 信封（两端一致；Local 2026-09-16 由 `422 BusinessFail` 收敛为 `401`，使客户端按 `IsSuccessStatusCode` 判定令牌失效的路径在双模式行为相同）；`/auth/validate` 在 Remote 标注 `[AllowAnonymous]`（方法内自解析 Authorization 头并返回 401），与 Local 的匿名 validate 语义对齐
 
 ## 5. 桌面端认证状态机
 
@@ -431,10 +432,13 @@ stateDiagram-v2
 
 | 策略 | 限制 | 适用范围 |
 |------|------|---------| 
-| Login | 详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-003/013 | 登录端点（远程/本地限流策略各自定义） |
-| ApiCalls | 100 次/分钟/IP | 全局 API 调用 |
+| Login（Remote） | 详见 [02-auth.md](../02-requirements/02-auth.md) US-AUTH-003/013 | Remote 登录/刷新端点，按来源 IP 固定窗口 |
+| LocalLogin（Local） | 5 次/60s，按来源 IP 固定窗口 | Local 登录/刷新/自动登录端点 |
+| ApiCalls（双端同名） | 100 次/分钟/IP | 写操作端点（含共享 `BaseUsersController` 的 batch-enable/disable） |
 
-速率限制通过 `Security:RateLimiting:Enabled` 配置项控制，开发/测试环境可设为 `false` 禁用。被限制时返回 429 状态码和结构化错误响应 (`ErrorCode.RateLimitExceeded`)。
+- Remote 经 `Security:RateLimiting:Enabled` 配置项控制（开发/测试可设 `false` 禁用）；Local 恒启用。
+- Local 必须注册与共享控制器标注同名的 `ApiCalls` 策略——共享 `BaseUsersController` 的 `[EnableRateLimiting("ApiCalls")]` 在缺失策略时由限流中间件抛异常（500），2026-09-16 补齐。
+- 被限制时双端均返回 429 + 结构化 `ApiResponse`（`ErrorCode.RateLimitExceeded` + `retryAfter`）；Local 的 `OnRejected` 于 2026-09-16 补齐（此前为空体 429）。
 
 ### 7.6 JWT 密钥安全
 

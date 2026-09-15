@@ -148,4 +148,30 @@ public class UserManagementE2ETests : E2ETestBase
         Assert.True(result.Success, result.Message);
         Assert.Equal(2, result.Data!.SuccessCount);
     }
+
+    [Fact]
+    public async Task BatchDisableAndEnable_RoundTripsUserStatus()
+    {
+        // L1-02 回归：共享 BaseUsersController 的 batch-enable/batch-disable 标注
+        // [EnableRateLimiting("ApiCalls")]，LocalWebAPI 曾只注册 "LocalLogin" →
+        // 限流中间件按名解析策略失败，两个端点恒 500。
+        await LoginAsAdminAsync();
+        var input = NewUser();
+        var created = await IdentityApi.CreateUserAsync(input);
+        var id = created.Data!.Id;
+
+        var disabled = await IdentityApi.BatchDisableAsync(
+            new LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto { Ids = [id] });
+        Assert.True(disabled.Success, disabled.Message);
+
+        var afterDisable = await IdentityApi.GetUserByIdAsync(id);
+        Assert.Equal(CommonStatus.Disabled, afterDisable.Data!.Status);
+
+        var enabled = await IdentityApi.BatchEnableAsync(
+            new LYBT.Shared.Models.Contracts.Common.BatchDeleteInputDto { Ids = [id] });
+        Assert.True(enabled.Success, enabled.Message);
+
+        var afterEnable = await IdentityApi.GetUserByIdAsync(id);
+        Assert.Equal(CommonStatus.Enabled, afterEnable.Data!.Status);
+    }
 }

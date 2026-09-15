@@ -35,6 +35,11 @@
     <!-- MDIX 默认 Background 为白色，覆盖为暖灰以创建层次 -->
     <SolidColorBrush x:Key="MaterialDesign.Brush.Background" Color="{DynamicResource SurfaceLevel0Color}" />
 
+    <!-- ======== 覆盖层遮罩 ======== -->
+    <!-- 半透明黑遮罩：加载态覆盖层背景（LoadingOverlay / BaseDetailContainer 使用）
+         取值与 LoginView 现有加载遮罩 (#80000000) 一致；遮罩为黑色半透明，亮/暗主题通用 -->
+    <SolidColorBrush x:Key="DarkOpacityBrush" Color="#80000000" />
+
     <!-- ======== 分隔线 ======== -->
     <Color x:Key="DividerColor">#E0DCD5</Color>
     <Color x:Key="DividerLightColor">#EDE9E3</Color>

@@ -750,7 +750,12 @@ public class DesktopLayerArchTests
         {
             "SelectedItem", "CurrentDetail", "CurrentUser", "PatientDetail",
             "SelectedPatient", "SelectedHerb", "CurrentPatient",
-            "DailyIncome", "DailyConsultations", "DailyHerbUsage"
+            "DailyIncome", "DailyConsultations", "DailyHerbUsage",
+            // SecurityAuditLogViewModel.SelectedLog：DataGrid.SelectedItem 的只读选中项持有者，
+            // 其数据源 Logs（AuditLogDto 集合）已在 readOnlyDisplayCollectionNames 中豁免为只读展示；
+            // 该属性不参与编辑（视图仅绑定 SelectedLog.Details 与 SelectedLog 判空）。DP-M1 的
+            // 「可编辑 DTO 属性」语义不适用，与既有 SelectedPatient/SelectedHerb 先例同类。
+            "SelectedLog"
         };
 
         // 只读展示/引用集合白名单（DP-M1 文档：只读 DTO 属性用于显示除外）

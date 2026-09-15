@@ -37,7 +37,8 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
     }
 
     /// <summary>
-    /// 分页获取实体列表；Data==null 时返回空分页。
+    /// 分页获取实体列表；服务端判定失败（Success=false）抛 <see cref="InvalidOperationException"/>，
+    /// Data==null 时返回空分页（合法的「本页无数据」）。
     /// </summary>
     public virtual async Task<PagedResult<TListDto>> GetPagedAsync(
         int page = 1,
@@ -49,6 +50,9 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
         return await ExecuteAsync(async () =>
         {
             var response = await Api.GetPagedAsync(page, pageSize, keyword, category);
+            if (!response.Success)
+                throw new InvalidOperationException(response.Message ?? "查询失败");
+
             if (response.Data == null)
                 return new PagedResult<TListDto> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize };
 
@@ -64,13 +68,17 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
     }
 
     /// <summary>
-    /// 按 ID 获取实体详情（失败返回 null，不抛异常）。
+    /// 按 ID 获取实体详情；服务端判定失败（Success=false）抛 <see cref="InvalidOperationException"/>，
+    /// Data==null 表示实体不存在（返回 null）。
     /// </summary>
     public virtual Task<TDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return ExecuteAsync(async () =>
         {
             var response = await Api.GetByIdAsync(id);
+            if (!response.Success)
+                throw new InvalidOperationException(response.Message ?? "查询失败");
+
             return response.Data;
         }, nameof(GetByIdAsync));
     }

@@ -197,11 +197,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             ConnectionStatus.PropertyChanged += OnConnectionStatusPropertyChanged;
 
             // ErrorMessage/StatusMessage 变更时通知 HasMessage
-            PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(ErrorMessage) || e.PropertyName == nameof(StatusMessage))
-                    OnPropertyChanged(nameof(HasMessage));
-            };
+            PropertyChanged += OnSelfPropertyChanged;
 
             _cts = new CancellationTokenSource();
             BackgroundInitAsync().SafeFireAndForget(ex => Logger.LogError(ex, "[VM] Login.BackgroundInit failed"));
@@ -357,13 +353,24 @@ namespace LYBT.Desktop.Auth.ViewModels
             OnPropertyChanged(e.PropertyName);
         }
 
+        /// <summary>自身属性变更：ErrorMessage/StatusMessage 变化时补通知派生属性 HasMessage。</summary>
+        private void OnSelfPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ErrorMessage) || e.PropertyName == nameof(StatusMessage))
+                OnPropertyChanged(nameof(HasMessage));
+        }
+
         #endregion
 
         protected override void OnDisposing()
         {
+            // 具名处理器方可退订（原匿名 lambda 无法退订 → 自引用使 VM 永不回收）
+            PropertyChanged -= OnSelfPropertyChanged;
             Credentials.PropertyChanged -= OnCredentialsPropertyChanged;
             ConnectionStatus.PropertyChanged -= OnConnectionStatusPropertyChanged;
 
+            // 两个子 VM（DI 注入或本类 new）成对释放；基类 Dispose 带 _disposed 幂等守卫，重复调用安全
+            Credentials.Dispose();
             ConnectionStatus.Dispose();
 
             if (_cts != null)

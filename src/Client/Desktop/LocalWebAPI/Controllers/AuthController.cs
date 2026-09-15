@@ -53,12 +53,13 @@ public class AuthController : BaseApiController
 
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting("LocalLogin")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
         var result = await _sender.Send(new LocalRefreshTokenCommand(request), ct);
         if (!result.Success)
-            return BusinessFail(result.Message ?? "刷新令牌失败");
-        return Ok(result);
+            return Unauthorized(result);
+        return Success(result.Data!, "Token刷新成功");
     }
 
     [HttpPost("auto-login")]
@@ -68,8 +69,8 @@ public class AuthController : BaseApiController
     {
         var result = await _sender.Send(new LocalAutoLoginCommand(request), ct);
         if (!result.Success)
-            return BusinessFail(result.Message ?? "自动登录失败");
-        return Ok(result);
+            return Unauthorized(result);
+        return Success(result.Data!, "自动登录成功");
     }
 
     [HttpGet("validate")]
@@ -77,6 +78,8 @@ public class AuthController : BaseApiController
     {
         var userId = GetCurrentUserId(User);
         var result = await _sender.Send(new LocalValidateTokenQuery(userId), ct);
-        return Ok(result);
+        if (!result.Success || result.Data?.IsValid != true)
+            return Unauthorized(result);
+        return Success(result.Data, "Token验证成功");
     }
 }

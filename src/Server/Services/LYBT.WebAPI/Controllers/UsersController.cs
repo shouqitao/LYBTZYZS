@@ -95,6 +95,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpPost("/api/v{version:apiVersion}/auth/refresh")]
         [AllowAnonymous]
+        [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
@@ -134,6 +135,7 @@ namespace LYBT.WebAPI.Controllers
         /// 校验 Authorization 头中的访问令牌（有效时返回用户标识与角色）
         /// </summary>
         [HttpGet("/api/v{version:apiVersion}/auth/validate")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> ValidateTokenFromHeaderAsync()

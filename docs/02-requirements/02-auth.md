@@ -427,4 +427,6 @@
 
 **双模式**: 远程不适用（使用远程 `Login` 策略）；本地固定 5 次/分
 
-**实现参考**: `LocalWebAPI/Controllers/AuthController.cs`, 本地限流中间件配置
+**实现参考**: `LocalWebAPI/Controllers/AuthController.cs`, `LocalWebAPI/LocalWebApiProgram.cs`（`LocalLogin` / `ApiCalls` 策略）
+
+> **2026-09-16 修正**：本地限流维度由「全局固定窗口」改为**按来源 IP 分区**（满足 AC「限流基于客户端标识」），并补结构化 429（`ApiResponse` + `ErrorCode.RateLimitExceeded` + `retryAfter`，此前为空体）；同时补齐 `ApiCalls`（100 次/分/IP）策略——共享 `BaseUsersController` 的 batch-enable/disable 标注该策略名，缺失会使限流中间件按名解析失败（500）。

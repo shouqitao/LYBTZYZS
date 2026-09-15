@@ -19,6 +19,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
     private readonly IConnectionSettingsService? _connectionSettingsService;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsApiUnhealthy))]
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
     [ObservableProperty]

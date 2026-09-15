@@ -109,11 +109,15 @@ public static class UnifiedApiClientExtensions
         };
 
         // Factory for Local-mode IHttpClientFactory
+        // 本地端点同样受 [Authorize] 保护：工厂注入 AuthorizationMessageHandler，
+        // 使本地请求与远程一致携带 Bearer Token（此前缺失导致本地授权端点恒 401）。
         Func<string, IHttpClientFactory> localHttpClientFactory = baseUrl =>
-        {
-            var baseAddress = new Uri(baseUrl);
-            return new LocalWebApiHttpClientFactory(baseAddress);
-        };
+            new LocalApiHttpClientFactory(
+                new Uri(baseUrl),
+                TimeSpan.FromSeconds(timeoutSeconds),
+                container.Resolve<ITokenStorageService>(),
+                container.Resolve<ILogger<AuthorizationMessageHandler>>()
+            );
 
         containerRegistry.RegisterSingleton<IApiClient>(resolver =>
         {
@@ -167,33 +171,5 @@ public static class UnifiedApiClientExtensions
         containerRegistry.Register<IApiClientRegistrations>(resolver =>
             resolver.Resolve<IApiClient>().Registrations
         );
-    }
-
-    /// <summary>
-    /// Minimal <see cref="IHttpClientFactory"/> for LocalWebAPI mode.
-    /// </summary>
-    private sealed class LocalWebApiHttpClientFactory : IHttpClientFactory, IDisposable
-    {
-        private readonly HttpClient _httpClient;
-        private bool _disposed;
-
-        public LocalWebApiHttpClientFactory(Uri baseAddress)
-        {
-            _httpClient = new HttpClient
-            {
-                BaseAddress = baseAddress,
-                Timeout = TimeSpan.FromSeconds(30),
-            };
-        }
-
-        public HttpClient CreateClient(string name) => _httpClient;
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
-            _httpClient.Dispose();
-        }
     }
 }
