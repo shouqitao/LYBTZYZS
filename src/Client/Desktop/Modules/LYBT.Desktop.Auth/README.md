@@ -165,7 +165,7 @@ NuGet: `Prism.Core`, `Prism.DryIoc`, `Prism.Wpf`, `Microsoft.Extensions.Logging.
 - 子 VM 属性经主 VM 代理属性转发：`LoginViewModel` 订阅 `Credentials`/`ConnectionStatus` 的 `PropertyChanged` 再 `OnPropertyChanged(e.PropertyName)` 透传；`Username`/`Password` 变化还需额外 `LoginCommand.NotifyCanExecuteChanged()`，否则登录按钮会保持灰色
 - `RememberPassword` 勾选时自动联动勾选 `RememberUsername`（取消时不反向取消）
 - 切换用户名时，如果之前有已保存的密码，会自动清空 `Password` 字段
-- 登录按钮防重入依赖 `LoginCommand` 的 `!IsLoading` 谓词 + `AsyncRelayCommand` 默认拒绝并发执行；`ExecuteLoginAsync` 的 `finally` 必须复位 `IsLoading` 并 `NotifyCanExecuteChanged`，否则登录后返回登录页会残留遮罩
+- 登录按钮防重入依赖 `LoginCommand` 的 `!IsLoading` 谓词 + `AsyncRelayCommand` 默认拒绝并发执行；`LoginAsync`（`[RelayCommand(CanExecute = nameof(CanLogin))]` 源生成）的 `finally` 必须复位 `IsLoading` 并 `NotifyCanExecuteChanged`，否则登录后返回登录页会残留遮罩
 - 单窗口模式：`LoginView` 为 `UserControl` 嵌入主窗口；早期 `LoginWindow.xaml` 已删除，不要再按独立登录窗口的假设改动
 - 首次运行标记文件写入失败时，下次启动仍会弹出向导（设计为可接受的降级）
 - `ForgotPasswordCommand` 是空实现占位（设计稿对齐），未接业务链路

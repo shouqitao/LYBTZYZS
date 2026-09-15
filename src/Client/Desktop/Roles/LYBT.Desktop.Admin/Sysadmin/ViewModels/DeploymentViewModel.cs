@@ -19,10 +19,24 @@ public partial class DeploymentViewModel : NavigableViewModelBase
     private readonly INavigationCoordinator _navigationCoordinator;
 
     [ObservableProperty] private string _statusMessage = string.Empty;
-    [ObservableProperty] private bool _isUploading;
-    [ObservableProperty] private bool _isRestarting;
+
+    // I-3 修复：UploadCommand/RestartCommand 的 CanExecute 依赖以下三态，此前无任何通知 →
+    // 选文件后上传按钮永不启用（上传功能不可达）、上传/重启中按钮状态陈旧
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestartCommand))]
+    private bool _isUploading;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestartCommand))]
+    private bool _isRestarting;
+
     [ObservableProperty] private double _uploadProgress;
-    [ObservableProperty] private string? _selectedFileName;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
+    private string? _selectedFileName;
 
     public DeploymentViewModel(IViewModelServices services, IDeploymentService deploymentService, INavigationCoordinator navigationCoordinator)
         : base(services)

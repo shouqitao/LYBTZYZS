@@ -10,7 +10,6 @@ namespace LYBT.Desktop.Foundation.Security;
 /// 登出事件通过Prism PubSubEvent发布:
 /// - AuthEvents.LogoutCompletedEvent: 登出完成
 /// - AuthEvents.ServerLogoutFailedEvent: 服务端登出失败
-/// - AuthEvents.PendingLogoutsClearedEvent: 待处理登出已清空
 /// </remarks>
 public interface ILogoutService
 {

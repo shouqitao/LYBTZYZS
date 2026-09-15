@@ -4,15 +4,14 @@
     功能：
     - 显示患者基本信息（姓名、性别、年龄等）
     - 支持三种显示模式：Full/Compact/Minimal
-    - 可配置历史按钮和就诊次数显示
+    - 可配置历史按钮显示
 
     使用方式：
     <controls:PatientInfoCardControl
         Patient="{Binding CurrentPatient}"
         DisplayMode="Full"
         ShowHistoryButton="True"
-        HistoryCommand="{Binding ViewHistoryCommand}"
-        ShowVisitCount="True"/>
+        HistoryCommand="{Binding ViewHistoryCommand}"/>
 -->
 <UserControl x:Class="LYBT.Desktop.Controls.Controls.PatientInfoCardControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -121,33 +120,6 @@
                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                 </Grid>
 
-                <!-- 就诊次数 -->
-                <Grid Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Setter Property="Visibility" Value="Visible"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ShowVisitCount, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-                    <TextBlock Grid.Column="0"
-                               Text="就诊次数"
-                               FontSize="14"
-                               Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"/>
-                    <TextBlock Grid.Column="1"
-                               FontSize="14"
-                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-                        <Run Text="{Binding Patient.VisitCount, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                        <Run Text="次"/>
-                    </TextBlock>
-                </Grid>
             </StackPanel>
 
             <!-- 查看历史按钮 -->

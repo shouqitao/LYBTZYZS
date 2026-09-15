@@ -469,7 +469,7 @@
                     <!-- 药材列表-->
                     <herbList:HerbListControl Grid.Row="0"
                         AllHerbs="{Binding AllHerbs}"
-                        HerbItems="{Binding Prescription.Items, Mode=TwoWay}"
+                        HerbItems="{Binding Prescription.Items, Mode=OneWay}"
                         IsEditMode="True"
                         Columns="4"/>
 

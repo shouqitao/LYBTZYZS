@@ -42,7 +42,7 @@ Authentication module for the TCM clinic desktop client. Handles user login/logo
 - API health is monitored via `IApplicationStateService.StatusChanged` event -- `ConnectionStatusViewModel` subscribes in constructor and unsubscribes in `OnDisposing()` (which `LoginViewModel.OnDisposing()` calls).
 - `LoginViewModel` proxies child-VM `PropertyChanged` into its own `OnPropertyChanged(e.PropertyName)`; `Username`/`Password` changes additionally call `LoginCommand.NotifyCanExecuteChanged()`.
 - ViewModels use `NavigableViewModelBase` / `DialogViewModelBase` (not `UnifiedViewModelBase`).
-- Commands are manually instantiated in the constructor (not `[RelayCommand]` attribute) because CanExecute depends on multiple properties; `LoginCommand` relies on `AsyncRelayCommand`'s default `allowConcurrentExecutions: false` for double-click protection.
+- Commands on `LoginViewModel` are source-generated via `[RelayCommand]` (`LoginAsync` → `LoginCommand` with `CanExecute = nameof(CanLogin)`, `CloseApplicationAsync`, `OpenSettings`, `ForgotPassword`); `RetryApiCheck`/`SwitchToLocal`/`SwitchToRemote` are expressions proxying the child `ConnectionStatusViewModel` commands so the same command instance (and its CanExecute notifications) reaches the UI. `LoginCommand` relies on `AsyncRelayCommand`'s default `allowConcurrentExecutions: false` for double-click protection.
 
 ### Testing Requirements
 

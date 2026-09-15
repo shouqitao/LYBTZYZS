@@ -33,9 +33,13 @@ public partial class ServerConfigSectionViewModel : NavigableViewModelBase
     private string _statusMessage = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestartServerCommand))]
     private bool _isLoading;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestartServerCommand))]
     private bool _isSaving;
 
     public ServerConfigSectionViewModel(
@@ -87,9 +91,18 @@ public partial class ServerConfigSectionViewModel : NavigableViewModelBase
             if (response.Success && response.Data != null)
             {
                 foreach (var kv in response.Data)
-                    item.Values[kv.Key] = kv.Value;
+                {
+                    // I-9 修复：UI 侧改为可编辑条目（原 Dictionary<string,string> 迭代产出只读
+                    // KeyValuePair<string,string>，TextBox TwoWay 写不回 → 配置节编辑保存不生效）；
+                    // 脱敏值（***）标记为只读，保存时跳过
+                    item.Entries.Add(new ServerConfigEntry
+                    {
+                        Key = kv.Key,
+                        Value = kv.Value,
+                        IsReadOnly = kv.Value == "***"
+                    });
+                }
                 item.IsLoaded = true;
-                item.IsReadOnly = (key, value) => value == "***";
             }
         }
         catch (Exception ex)
@@ -108,9 +121,9 @@ public partial class ServerConfigSectionViewModel : NavigableViewModelBase
         IsSaving = true;
         try
         {
-            var editable = SelectedSection.Values
-                .Where(kv => !SelectedSection.IsReadOnly(kv.Key, kv.Value))
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
+            var editable = SelectedSection.Entries
+                .Where(e => !e.IsReadOnly)
+                .ToDictionary(e => e.Key, e => e.Value);
 
             var response = await _serverConfig.UpdateSectionAsync(SelectedSection.Section, editable);
             if (response.Success && response.Data != null)
@@ -169,16 +182,28 @@ public partial class ServerConfigSectionViewModel : NavigableViewModelBase
     }
 }
 
-/// <summary>服务端配置节项（节名 + 键值字典 + 脱敏只读标记）</summary>
+/// <summary>服务端配置节项（节名 + 可编辑键值条目）</summary>
 public partial class ServerSectionItem : ObservableObject
 {
     public string Section { get; set; } = string.Empty;
 
     public bool IsLoaded { get; set; }
 
-    public Func<string, string, bool> IsReadOnly { get; set; } = (_, _) => false;
-
-    public Dictionary<string, string> Values { get; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>可编辑键值条目（I-9 修复：替代原只读 Dictionary 迭代项，使 XAML 编辑可回写）</summary>
+    public ObservableCollection<ServerConfigEntry> Entries { get; } = new();
 
     public string DisplayName => Section;
+}
+
+/// <summary>服务端配置节的单个键值条目（可编辑；脱敏项 IsReadOnly=true）</summary>
+public partial class ServerConfigEntry : ObservableObject
+{
+    [ObservableProperty]
+    private string _key = string.Empty;
+
+    [ObservableProperty]
+    private string _value = string.Empty;
+
+    /// <summary>是否只读（脱敏值 "***" 等不可编辑/不参与保存）</summary>
+    public bool IsReadOnly { get; set; }
 }

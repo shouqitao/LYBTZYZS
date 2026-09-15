@@ -427,7 +427,7 @@
                             Formula="{Binding FormulaEditor.Formula}"
                             ErrorsSource="{Binding FormulaEditor.Formula.Errors}"
                             AllHerbs="{Binding AllHerbs}"
-                            HerbItems="{Binding FormulaEditor.EditHerbItems, Mode=TwoWay}"
+                            HerbItems="{Binding FormulaEditor.EditHerbItems, Mode=OneWay}"
                             HerbCount="{Binding FormulaEditor.HerbCount}" />
                     </materialDesign:TransitionerSlide>
                 </materialDesign:Transitioner>

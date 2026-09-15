@@ -77,7 +77,7 @@
                                     <TextBlock Text="{Binding CardReader.IsConnected, StringFormat=连接状态: {0}}"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <Button Content="手动读卡" Command="{Binding CardReader.ReadCardCommand}"
+                                <Button Content="手动读卡" Command="{Binding CardReader.ManualReadCardCommand}"
                                         Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,0,4"/>
                                 <Button Content="{Binding CardReader.IsAutoReadEnabled, StringFormat='{}{0:F0}自动读卡'}"
                                         Command="{Binding CardReader.ToggleAutoReadCommand}"
@@ -146,7 +146,8 @@
                             <TextBlock Text="患者信息" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                         <infraControls:PatientInfoCardControl
-                            DataContext="{Binding SelectedPatient}"
+                            Patient="{Binding SelectedPatientDisplayModel}"
+                            DisplayMode="Full"
                             Margin="0,0,0,12"/>
                     </StackPanel>
                 </ScrollViewer>

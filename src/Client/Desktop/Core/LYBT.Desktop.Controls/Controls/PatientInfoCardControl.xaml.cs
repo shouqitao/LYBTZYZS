@@ -79,21 +79,5 @@ namespace LYBT.Desktop.Controls.Controls
 
         #endregion
 
-        #region ShowVisitCount - 是否显示就诊次数
-
-        /// <summary>
-        /// 是否显示就诊次数
-        /// </summary>
-        public bool ShowVisitCount
-        {
-            get => (bool)GetValue(ShowVisitCountProperty);
-            set => SetValue(ShowVisitCountProperty, value);
-        }
-
-        public static readonly DependencyProperty ShowVisitCountProperty =
-            DependencyProperty.Register(nameof(ShowVisitCount), typeof(bool), typeof(PatientInfoCardControl),
-                new PropertyMetadata(true));
-
-        #endregion
     }
 }

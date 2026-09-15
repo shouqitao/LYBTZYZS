@@ -201,6 +201,13 @@ public partial class AccountSettingsViewModel : NavigableViewModelBase
                 Services.ToastService.ShowSuccess("密码修改成功");
                 Logger.LogInformation("密码修改成功: {UserName}", CurrentUser.UserName);
                 ClearPasswordFields();
+
+                // I-11 修复：补回密码变更事件发布（ShellEventCoordinator.OnPasswordChanged 依赖它清理
+                // 内容区并回到登录界面——Issue #1906 的「改密后强制重新登录」；发布点随旧
+                // AuthenticationService.ChangePasswordAsync 移除而丢失）
+                Services.EventAggregator
+                    .GetEvent<AuthEvents.PasswordChangedEvent>()
+                    .Publish(new PasswordChangedPayload { UserName = CurrentUser.UserName });
             }
             else
             {

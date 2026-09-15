@@ -227,6 +227,16 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
         private bool CanCopyHerb() => HasSelection && !IsBusy && IsAdmin;
 
+        /// <summary>
+        /// I-1 修复：本模块自定义命令的 CanExecute 依赖 HasSelection/IsBusy/IsAdmin，
+        /// 基类在 选中/忙碌/CRUD 状态变化时回调此钩子（基类命令无法覆盖子类命令）
+        /// </summary>
+        protected override void OnCrudCommandStateChanged()
+        {
+            ToggleStatusCommand.NotifyCanExecuteChanged();
+            CopyHerbCommand.NotifyCanExecuteChanged();
+        }
+
         /// <inheritdoc/>
         protected override async Task InvalidateCachesAsync()
         {

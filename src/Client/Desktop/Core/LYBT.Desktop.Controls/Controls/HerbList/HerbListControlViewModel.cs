@@ -397,6 +397,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
 
             OnPropertyChanged(nameof(ValidItemCount));
             ClearAllCommand.NotifyCanExecuteChanged();
+            SortByRoleCommand.NotifyCanExecuteChanged(); // I-1：CanSortByRole 依赖 ValidItemCount
         }
 
         /// <summary>
@@ -477,6 +478,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
             OnPropertyChanged(nameof(HasDuplicates));
             OnPropertyChanged(nameof(IsValid));
             ClearAllCommand.NotifyCanExecuteChanged();
+            SortByRoleCommand.NotifyCanExecuteChanged(); // I-1：CanSortByRole 依赖 ValidItemCount
 
             OnListChanged(HerbListChangeType.ItemModified, e.Item, e.Index);
         }
@@ -488,6 +490,7 @@ namespace LYBT.Desktop.Controls.Controls.HerbList
         {
             OnPropertyChanged(nameof(ValidItemCount));
             ClearAllCommand.NotifyCanExecuteChanged();
+            SortByRoleCommand.NotifyCanExecuteChanged(); // I-1：CanSortByRole 依赖 ValidItemCount
             ListChanged?.Invoke(this, new HerbListChangedEventArgs(changeType, ValidItemCount, item, index));
         }
 

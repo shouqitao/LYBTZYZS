@@ -40,12 +40,6 @@ public static class AuthEvents
     /// </summary>
     public class ServerLogoutFailedEvent : PubSubEvent<ServerLogoutFailedPayload> { }
 
-    /// <summary>
-    /// 待处理登出已清空事件
-    /// 当所有待重试的服务端登出都已处理完成时触发
-    /// </summary>
-    public class PendingLogoutsClearedEvent : PubSubEvent<PendingLogoutsClearedPayload> { }
-
     #endregion
 
     #region 密码相关事件
@@ -178,22 +172,6 @@ public record ServerLogoutFailedPayload
     /// 重试次数
     /// </summary>
     public int RetryCount { get; init; }
-
-    /// <summary>
-    /// 时间戳
-    /// </summary>
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-}
-
-/// <summary>
-/// 待处理登出已清空载荷
-/// </summary>
-public record PendingLogoutsClearedPayload
-{
-    /// <summary>
-    /// 成功处理的登出数量
-    /// </summary>
-    public int ProcessedCount { get; init; }
 
     /// <summary>
     /// 时间戳

@@ -102,7 +102,36 @@ namespace LYBT.Desktop.Patients.ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
             PatientEditor = patientEditor ?? throw new ArgumentNullException(nameof(patientEditor));
 
+            // I-1 修复：读卡过程中 IsReadingCard 变化需重广播宿主绑定面并刷新 ReadCardCommand 的启用状态
+            // （宿主的 CanReadCard 读取子 VM 实时值，但子 VM 变更不会自动触发宿主命令重新求值）
+            _cardReaderViewModel.PropertyChanged += OnCardReaderPropertyChanged;
+
             PageTitle = "患者管理";
+        }
+
+        private void OnCardReaderPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(PatientCardReaderViewModel.IsReadingCard)) return;
+            OnPropertyChanged(nameof(IsReadingCard));
+            ReadCardCommand.NotifyCanExecuteChanged();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDisposing()
+        {
+            _cardReaderViewModel.PropertyChanged -= OnCardReaderPropertyChanged;
+            base.OnDisposing();
+        }
+
+        /// <summary>
+        /// I-1 修复：本模块自定义命令的 CanExecute 依赖选中项 / 读卡状态，
+        /// 基类在 选中/忙碌/CRUD 状态变化时回调此钩子
+        /// </summary>
+        protected override void OnCrudCommandStateChanged()
+        {
+            ViewMedicalRecordsCommand.NotifyCanExecuteChanged();
+            NewConsultationCommand.NotifyCanExecuteChanged();
+            ReadCardCommand.NotifyCanExecuteChanged();
         }
 
         #region 基类抽象方法实现

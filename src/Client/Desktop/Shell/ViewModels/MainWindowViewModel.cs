@@ -111,6 +111,17 @@ public partial class MainWindowViewModel : NavigableViewModelBase
         _shell.Events.LoginSuccessHandled += OnLoginSuccessHandled;
         // 侧栏状态 SSOT 变更 → 重新广播宿主绑定面（IsSidebarExpanded/SidebarWidth/IsNavTextVisible）
         _shell.Sidebar.PropertyChanged += OnSidebarStateChanged;
+        // 导航选中项变更 → 重广播（AppShell 面包屑绑 SelectedNavItem.Title；不重广播则停留在首次绑定值）
+        if (_navigationManager is INotifyPropertyChanged navigationNotify)
+        {
+            navigationNotify.PropertyChanged += OnNavigationManagerPropertyChanged;
+        }
+    }
+
+    private void OnNavigationManagerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(INavigationManager.SelectedNavItem))
+            OnPropertyChanged(nameof(SelectedNavItem));
     }
 
     #endregion
@@ -227,6 +238,10 @@ public partial class MainWindowViewModel : NavigableViewModelBase
             _shell.LoginState.LoginStateChanged -= OnLoginStateChanged;
             _shell.Events.LoginSuccessHandled -= OnLoginSuccessHandled;
             _shell.Sidebar.PropertyChanged -= OnSidebarStateChanged;
+            if (_navigationManager is INotifyPropertyChanged navigationNotify)
+            {
+                navigationNotify.PropertyChanged -= OnNavigationManagerPropertyChanged;
+            }
             _shell.Events.Dispose();
             _shell.LoginState.Dispose();
             _shell.StatusBar.Dispose();

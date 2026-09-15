@@ -107,30 +107,6 @@ namespace LYBT.Desktop.Infrastructure.Events
         }
 
         /// <summary>
-        /// 发布事件
-        /// </summary>
-        /// <typeparam name="TEvent">事件类型</typeparam>
-        /// <typeparam name="TPayload">事件负载类型</typeparam>
-        /// <param name="payload">事件负载</param>
-        public void Publish<TEvent, TPayload>(TPayload payload)
-            where TEvent : PubSubEvent<TPayload>, new()
-        {
-            ThrowIfDisposed();
-            _eventAggregator.GetEvent<TEvent>().Publish(payload);
-        }
-
-        /// <summary>
-        /// 发布无参数事件
-        /// </summary>
-        /// <typeparam name="TEvent">事件类型</typeparam>
-        public void Publish<TEvent>()
-            where TEvent : PubSubEvent, new()
-        {
-            ThrowIfDisposed();
-            _eventAggregator.GetEvent<TEvent>().Publish();
-        }
-
-        /// <summary>
         /// 获取当前订阅数量
         /// </summary>
         public int SubscriptionCount => _tokens.Count;

@@ -320,23 +320,6 @@
                             HorizontalAlignment="Left"
                             Status="{Binding Formula.IsShared}" />
 
-                        <!--  来源  -->
-                        <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="2"
-                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                            Margin="0,8,8,8"
-                            VerticalAlignment="Center"
-                            Text="来源" />
-                        <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="3"
-                            Style="{StaticResource MaterialDesignBody2TextBlock}"
-                            Margin="0,8,16,8"
-                            VerticalAlignment="Center"
-                            TextWrapping="Wrap"
-                            Text="{Binding Formula.Source, TargetNullValue='-'}" />
-
                         <!--  创建时间  -->
                         <TextBlock
                             Grid.Row="1"

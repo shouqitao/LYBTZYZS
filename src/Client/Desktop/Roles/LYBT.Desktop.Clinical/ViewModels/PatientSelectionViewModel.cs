@@ -59,6 +59,7 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     /// 患者详情
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedPatientDisplayModel))]
     private PatientDetailDto? _patientDetail;
 
     /// <summary>
@@ -85,6 +86,27 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
 
     /// <summary>是否有选中患者</summary>
     public bool HasSelection => SelectedPatient != null;
+
+    /// <summary>
+    /// 患者卡片展示模型（I-7 修复：PatientInfoCardControl 的契约是 <c>Patient</c> 依赖属性
+    /// （PatientDisplayModel），原视图只设 DataContext 导致卡片恒为空）
+    /// </summary>
+    public Controls.Controls.PatientDisplayModel? SelectedPatientDisplayModel =>
+        PatientDetail == null
+            ? null
+            : new Controls.Controls.PatientDisplayModel
+            {
+                Name = PatientDetail.Name ?? string.Empty,
+                Gender = PatientDetail.Gender switch
+                {
+                    Gender.Male => "男",
+                    Gender.Female => "女",
+                    _ => "未知"
+                },
+                Age = PatientDetail.Age,
+                PhoneNumber = PatientDetail.PhoneNumber,
+                RegistrationTime = PatientDetail.CreatedAt
+            };
 
     /// <summary>读卡器子 ViewModel</summary>
     public CardReaderViewModel CardReader { get; }

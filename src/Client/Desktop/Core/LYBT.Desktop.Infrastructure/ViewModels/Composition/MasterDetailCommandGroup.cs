@@ -125,7 +125,7 @@ internal sealed partial class MasterDetailCommandGroup<TListItem, TDetail>
         if (_services.DetailEditor.HasUnsavedChanges)
         {
             var confirmed = await _services.Dialog.ShowConfirmAsync(
-                "确认取消", "有未保存的更改，确定要取消吗？");
+                "有未保存的更改，确定要取消吗？", "确认取消");
             if (!confirmed) return;
         }
         _services.DetailEditor.CancelEdit();
@@ -141,7 +141,7 @@ internal sealed partial class MasterDetailCommandGroup<TListItem, TDetail>
             ? "确定要删除选中的记录吗？"
             : $"确定要删除选中的 {itemsToDelete.Count} 条记录吗？";
 
-        var confirmed = await _services.Dialog.ShowConfirmAsync("确认删除", message);
+        var confirmed = await _services.Dialog.ShowConfirmAsync(message, "确认删除");
         if (!confirmed) return;
 
         if (itemsToDelete.Count == 1)
@@ -171,7 +171,7 @@ internal sealed partial class MasterDetailCommandGroup<TListItem, TDetail>
         if (items.Count == 0) return;
 
         var confirmed = await _services.Dialog.ShowConfirmAsync(
-            "确认启用", $"确定要启用选中的 {items.Count} 条记录吗？");
+            $"确定要启用选中的 {items.Count} 条记录吗？", "确认启用");
         if (!confirmed) return;
 
         await _host.EnableBatchAsync(items);
@@ -185,7 +185,7 @@ internal sealed partial class MasterDetailCommandGroup<TListItem, TDetail>
         if (items.Count == 0) return;
 
         var confirmed = await _services.Dialog.ShowConfirmAsync(
-            "确认禁用", $"确定要禁用选中的 {items.Count} 条记录吗？");
+            $"确定要禁用选中的 {items.Count} 条记录吗？", "确认禁用");
         if (!confirmed) return;
 
         await _host.DisableBatchAsync(items);
@@ -199,7 +199,7 @@ internal sealed partial class MasterDetailCommandGroup<TListItem, TDetail>
         if (item == null) return;
 
         var confirmed = await _services.Dialog.ShowConfirmAsync(
-            "确认恢复", "确定要恢复选中的记录吗？");
+            "确定要恢复选中的记录吗？", "确认恢复");
         if (!confirmed) return;
 
         await _host.RestoreItemAsync(item);

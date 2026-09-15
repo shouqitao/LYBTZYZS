@@ -368,19 +368,17 @@ private bool CanSave() => !IsBusy && !HasErrors;
 
 所有 PubSubEvent 类型按领域组织为静态类内的嵌套类，统一使用 `record` 作为 Payload，通过 `EventSubscriptionManager` 自动管理生命周期。
 
-### 事件清单（按领域）
+### 事件清单（按领域，2026-09-14 与代码核对）
 
-| 领域 | 位置 | 事件类型 |
-|------|------|----------|
-| **AuthEvents** | `Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs` | LoginStarted / LoginSucceeded / LoginFailed / LogoutStarted / LogoutCompleted / ServerLogoutFailed / PendingLogoutsCleared / PasswordChanged / SessionExtended / TokenRefreshSucceeded / TokenRefreshFailed / SessionExpired（12 个） |
-| **AuthStateChangedPubSubEvent** | `AuthenticationStateMachine.cs` | `PubSubEvent<AuthStateChangedEventArgs>` — 状态机转换通知 |
-| **PatientEvents** | `Core/LYBT.Desktop.Infrastructure/Events/PatientEvents.cs` | Created / Updated / Selected |
-| **CaseEvents** | `Core/LYBT.Desktop.Infrastructure/Events/CaseEvents.cs` | ConsultationCompleted / PrescriptionCompleted / WorkspaceChanged |
-| **SyncEvents** 🧲 v2.0 | `Core/LYBT.Desktop.Contracts/Events/SyncEvents.cs` | StatusChanged |
-| **CacheEvents** | `Core/LYBT.Desktop.Contracts/Events/CacheEvents.cs` | Invalidated（`CacheDomain`: Patients/MedicalCases/Herbs/Formulas/Users/All） |
-| **TokenLifecycleStateChangedEvent** | `Core/LYBT.Desktop.Foundation/Security/` | TokenLifecycleStateChanged（`TokenLifecycleState`: Active/Warning/Expired） |
+| 领域 | 位置 | 事件类型（发布 → 订阅） |
+|------|------|------------------------|
+| **CacheEvents** | `Core/LYBT.Desktop.Contracts/Events/CacheEvents.cs` | `Invalidated`（`CacheDomain`: Patients/MedicalCases/Herbs/Formulas/Users/All）——Foundation `DesktopCacheManager` 发布 ×5 → Clinical `ClinicalWorkspaceViewModel` 订阅（**跨模块唯一通道**） |
+| **AuthEvents** | `Core/LYBT.Desktop.Foundation/Security/AuthEvents.cs` | `PasswordChanged`（AccountSettingsViewModel 发布 → ShellEventCoordinator 订阅，改密后回登录页）；`ProfileUpdated`（AccountSettingsViewModel → ShellEventCoordinator）；`TokenLifecycleStateChangedEvent`（TokenLifecycleService → ShellEventCoordinator + SessionLifecycleManager，`TokenLifecycleState`: Active/Warning/Expired）；`LoginStarted`/`LogoutStarted`/`LogoutCompleted`/`ServerLogoutFailed`/`TokenRefreshSucceeded`/`TokenRefreshFailed`/`SessionExtended` —— **仅发布、生产侧无订阅**（当前仅测试消费；清理或补订阅待产品决策） |
+| **RegistrationRefreshedEvent** | `Modules/LYBT.Desktop.Registrations/Events/RegistrationRefreshedEvent.cs` | `RegistrationRefreshed`（SignalRClient 推送/降级轮询发布 → `RegistrationListViewModel` 订阅，模块内闭环） |
 
-> 各事件的具体 Payload 类型、发布者、订阅者详见源码相应文件。
+> **已删除（2026-09-14 死代码清理）**：`PatientEvents`（`UpdatedEvent` 零发布零订阅，随 DC-002 遗漏）、`CaseEvents`（空壳，事件 2026-08-14 已删）、`AuthEvents.PendingLogoutsClearedEvent`（零发布零订阅）。
+> **不存在的事件（旧文档误列）**：`LoginSucceeded`/`LoginFailed`/`SessionExpired`/`AuthStateChangedPubSubEvent`/`SyncEvents`/`PatientEvents.Created|Selected`/`CaseEvents.*`。
+> `EventSubscriptionManager` 只保留订阅侧（4 个 Subscribe 重载 + `ClearSubscriptions`/`Dispose`）；发布一律 `GetEvent<T>().Publish(...)`（原泛型 `Publish<>` 帮助方法零调用已删）。
 
 ### EventSubscriptionManager
 

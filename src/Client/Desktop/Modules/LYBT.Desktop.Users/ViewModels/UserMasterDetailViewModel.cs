@@ -46,6 +46,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         {
             if (SetProperty(ref _selectedRoleFilter, value))
             {
+                NotifyFilterCommands();
                 MasterDetailServices.Pagination.GoToFirstPage();
             }
         }
@@ -59,6 +60,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         {
             if (SetProperty(ref _selectedStatusFilter, value))
             {
+                NotifyFilterCommands();
                 MasterDetailServices.Pagination.GoToFirstPage();
             }
         }
@@ -72,6 +74,7 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
         {
             if (SetProperty(ref _showInactiveUsers, value))
             {
+                NotifyFilterCommands();
                 MasterDetailServices.Pagination.GoToFirstPage();
             }
         }
@@ -330,6 +333,20 @@ public partial class UserMasterDetailViewModel : MasterDetailViewModelBase<UserL
     }
 
     private bool CanToggleUserStatus() => _statusHandler.CanToggleUserStatus(SelectedItem, IsBusy);
+
+    /// <summary>
+    /// I-1 修复：本模块自定义命令的 CanExecute 依赖 选中项/忙碌态/筛选条件，
+    /// 基类在 选中/忙碌/CRUD 状态变化时回调此钩子
+    /// </summary>
+    protected override void OnCrudCommandStateChanged()
+    {
+        ClearFiltersCommand.NotifyCanExecuteChanged();
+        ResetPasswordCommand.NotifyCanExecuteChanged();
+        ToggleUserStatusCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>筛选条件变化时刷新「清除筛选」的启用状态（HasActiveFilters 为派生属性）</summary>
+    private void NotifyFilterCommands() => ClearFiltersCommand.NotifyCanExecuteChanged();
 
     /// <inheritdoc/>
     protected override async Task InvalidateCachesAsync()

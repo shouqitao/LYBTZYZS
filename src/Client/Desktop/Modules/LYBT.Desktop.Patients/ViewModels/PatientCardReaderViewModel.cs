@@ -38,6 +38,7 @@ public partial class PatientCardReaderViewModel : NavigableViewModelBase
 
     /// <summary>是否正在读卡——[ObservableProperty] 源生成属性 IsReadingCard（仅本类内部写入）</summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ReadCardCommand))]
     private bool _isReadingCard;
 
     /// <summary>刷卡录入命令</summary>

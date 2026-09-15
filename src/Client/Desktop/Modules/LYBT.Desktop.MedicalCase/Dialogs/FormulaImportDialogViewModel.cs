@@ -152,17 +152,21 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
 
         /// <summary>
         /// 是否可以确认（子类重写）
+        /// I-4 修复：调用方（MedicalCaseCommandsViewModel.HandleFormulaImportResultAsync）按
+        /// FormulaDetailDto 读取 "SelectedFormula"，故确认前提必须是详情已加载完成（药材与详情同批加载）
         /// </summary>
-        protected override bool CanConfirm() => SelectedFormula != null && SelectedFormulaHerbs.Any();
+        protected override bool CanConfirm() => SelectedFormulaDetail != null && SelectedFormulaHerbs.Any();
 
         /// <summary>
         /// 确认命令（子类重写）
+        /// I-4 修复：回传 SelectedFormulaDetail（FormulaDetailDto）而非 SelectedFormula（FormulaListDto），
+        /// 类型须与消费端 TryGetValue&lt;FormulaDetailDto&gt; 一致（原类型不符导致导入静默失败）
         /// </summary>
         protected override void Confirm()
         {
             var parameters = new DialogParameters
             {
-                { "SelectedFormula", SelectedFormula },
+                { "SelectedFormula", SelectedFormulaDetail },
                 { "SelectedHerbs", SelectedFormulaHerbs.ToList() }
             };
             CloseDialog(parameters, ButtonResult.OK);

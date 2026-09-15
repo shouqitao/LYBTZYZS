@@ -560,6 +560,18 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
         private bool CanDeleteHerb(FormulaHerbItemViewModel? herb) => herb != null && IsEditMode;
 
+        /// <summary>
+        /// I-1 修复：本模块自定义命令的 CanExecute 依赖 HasSelection/IsBusy/IsEditMode，
+        /// 基类在 选中/忙碌/CRUD 状态变化时回调此钩子
+        /// </summary>
+        protected override void OnCrudCommandStateChanged()
+        {
+            ToggleStatusCommand.NotifyCanExecuteChanged();
+            CopyFormulaCommand.NotifyCanExecuteChanged();
+            AddHerbCommand.NotifyCanExecuteChanged();
+            DeleteHerbCommand.NotifyCanExecuteChanged();
+        }
+
         /// <summary>按分类搜索</summary>
         [RelayCommand]
         private async Task SearchByCategoryAsync(string? category)

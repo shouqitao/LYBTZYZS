@@ -254,15 +254,19 @@ public abstract class MasterDetailControlBase : UserControl
 | `BoolToVis` | `BooleanToVisibilityConverter` | bool → Visibility |
 | `InverseBoolToVis` | `InverseBooleanToVisibilityConverter` | !bool → Visibility |
 | `InverseBool` | `InverseBooleanConverter` | !bool |
-| `NullToVis` | `NullToVisibilityConverter` | null → Collapsed |
+| `BoolToInt` | `BoolToIntConverter` | bool ↔ int（`SelectedIndex` 写回用） |
+| `BoolToBrush` | `BoolToBrushConverter` | bool → Brush |
+| `BoolToColor` | `BoolToColorConverter` | bool → Color（当前 XAML 无引用） |
 | `StringToVis` | `StringToVisibilityConverter` | 空字符串 → Collapsed |
-| `ZeroToVis` | `ZeroToVisibilityConverter` | 0 → Collapsed |
+| `NullToVis` | `NullToVisibilityConverter` | **非** null → Visible（注意：命名与实际语义相反，与 `NotNullToVis` 同实现） |
+| `NotNullToVis` | `NullToVisibilityConverter` | 非 null → Visible（与 `NullToVis` 同一实现类型） |
+| `InverseNullToVis` | `InverseNullToVisibilityConverter` | null → Visible |
 | `EnumDesc` | `EnumDescriptionConverter` | 枚举 → Description 特性文本 |
-| `ApiStatusToColor` | `ApiHealthStatusToColorConverter` | API 健康状态 → Brush |
-| `ApiStatusToText` | `ApiHealthStatusToTextConverter` | API 健康状态 → 文本 |
-| `TimestampFormat` | `FirstCharacterConverter` | 首字符提取 |
+| `FirstChar` | `FirstCharacterConverter` | 首字符提取（头像占位字） |
+| `DecocteMethodToVis` | `DecocteMethodToVisibilityConverter` | `DecocteMethod` 特殊煎法 → Visible（非枚举值 → Collapsed） |
 
-> 完整列表以 `Cvt` 类实际导出为准，上表为常用项。`Converters.xaml` ResourceDictionary 仍保留作为备用注入方式。
+> 完整列表以 `Cvt` 类实际导出为准（上表 = `ConverterInstances.cs` 全部 13 个成员，2026-09-14 核对）。
+> `Converters.xaml` ResourceDictionary 仍保留作为备用注入方式（10 个 `x:Key`，经 `App.xaml` 合并，当前仅 `InputDialog.xaml` 用 `StaticResource`）。
 
 ## Helpers
 

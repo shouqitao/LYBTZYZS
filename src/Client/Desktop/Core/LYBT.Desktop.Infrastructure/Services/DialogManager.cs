@@ -69,10 +69,13 @@ namespace LYBT.Desktop.Infrastructure.Services
         {
             var tcs = new TaskCompletionSource<bool>();
 
+            // I-5 修复：键名大小写须与 ConfirmationDialogViewModel.OnDialogOpenedCore 读取的
+            // "Message"/"Title" 一致（DialogParameters 查找大小写敏感，原 "message"/"title" 全部落默认值，
+            // 导致所有确认框显示通用文案而非真实提示）
             var parameters = new DialogParameters
             {
-                { "message", message },
-                { "title", title ?? "确认" }
+                { "Message", message },
+                { "Title", title ?? "确认" }
             };
 
             _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>

@@ -162,7 +162,13 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         #region IServiceEventCallback 实现
 
         void IServiceEventCallback<TListItem, TDetail>.OnPropertyChanged(string? propertyName)
-            => OnPropertyChanged(propertyName);
+        {
+            OnPropertyChanged(propertyName);
+            // I-1 修复：筛选条件（SearchText）变化时给子类一次刷新自定义命令的机会
+            // （基类无法知道子类命令；仅调子类钩子，不额外刷新基类命令集，避免每次按键都触发全量重查）
+            if (propertyName == nameof(SearchText))
+                OnCrudCommandStateChanged();
+        }
 
         void IServiceEventCallback<TListItem, TDetail>.OnIsLoadingChanged(bool isLoading)
             => IsLoading = isLoading;
@@ -171,10 +177,14 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         {
             IsBusy = isBusy;
             _commands.NotifyCrudCommandsChanged();
+            NotifyOwnCrudCommands();
         }
 
         void IServiceEventCallback<TListItem, TDetail>.OnPaginationCommandsChanged()
-            => _commands.NotifyPaginationCommandsChanged();
+        {
+            _commands.NotifyPaginationCommandsChanged();
+            NotifyOwnPaginationCommands();
+        }
 
         Task IServiceEventCallback<TListItem, TDetail>.OnPageChanged()
             => LoadListAsync();
@@ -182,6 +192,7 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
         void IServiceEventCallback<TListItem, TDetail>.OnSelectionChanged()
         {
             _commands.NotifyCrudCommandsChanged();
+            NotifyOwnCrudCommands();
             OnPropertyChanged(nameof(ShowDetailPanel));
         }
 
@@ -195,7 +206,50 @@ namespace LYBT.Desktop.Infrastructure.ViewModels
             => HasUnsavedChanges = hasUnsavedChanges;
 
         void IServiceEventCallback<TListItem, TDetail>.OnCrudCommandsChanged()
-            => _commands.NotifyCrudCommandsChanged();
+        {
+            _commands.NotifyCrudCommandsChanged();
+            NotifyOwnCrudCommands();
+        }
+
+        #region 本类命令通知（I-1 修复）
+
+        /// <summary>
+        /// XAML 绑定的是本基类源生成的代理命令（如 <c>CreateNewCommand</c>），而服务层回调此前只通知
+        /// <see cref="MasterDetailCommandGroup{TListItem,TDetail}"/> 内部的同名命令实例 → 基类命令的
+        /// CanExecute 永不重新求值（toolkit 命令不参与 WPF CommandManager 重求值），5 个主从页工具栏
+        /// 的 新增/编辑/保存/取消/删除/恢复/批量/分页 启用状态会停留在首次绑定时的状态。
+        /// 此处在每个既有通知点同步转发到本类命令。
+        /// </summary>
+        private void NotifyOwnCrudCommands()
+        {
+            CreateNewCommand.NotifyCanExecuteChanged();
+            EditCommand.NotifyCanExecuteChanged();
+            SaveCommand.NotifyCanExecuteChanged();
+            CancelCommand.NotifyCanExecuteChanged();
+            DeleteCommand.NotifyCanExecuteChanged();
+            RestoreCommand.NotifyCanExecuteChanged();
+            BatchEnableCommand.NotifyCanExecuteChanged();
+            BatchDisableCommand.NotifyCanExecuteChanged();
+            OnCrudCommandStateChanged();
+        }
+
+        private void NotifyOwnPaginationCommands()
+        {
+            GoToFirstPageCommand.NotifyCanExecuteChanged();
+            GoToPreviousPageCommand.NotifyCanExecuteChanged();
+            GoToNextPageCommand.NotifyCanExecuteChanged();
+            GoToLastPageCommand.NotifyCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 子类扩展点：CRUD/选中/忙碌状态变化时刷新本模块自定义命令的 CanExecute
+        /// （基类无法知道子类命令，故留此钩子；子类重写并调用各自 <c>XxxCommand.NotifyCanExecuteChanged()</c>）。
+        /// </summary>
+        protected virtual void OnCrudCommandStateChanged()
+        {
+        }
+
+        #endregion
 
         void IServiceEventCallback<TListItem, TDetail>.OnDetailStateChanged()
         {

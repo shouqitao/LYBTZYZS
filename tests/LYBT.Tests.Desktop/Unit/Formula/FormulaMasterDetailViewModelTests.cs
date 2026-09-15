@@ -280,7 +280,8 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
         await sut.DeleteCommand.ExecuteAsync(null);
 
         await _formulaService.Received(1).DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        await _dialogManager.Received(1).ShowConfirmAsync("确认删除", "确定要删除选中的记录吗？");
+        // 契约：IDialogManager.ShowConfirmAsync(message, title) —— 修复实参颠倒后按正确顺序断言
+        await _dialogManager.Received(1).ShowConfirmAsync("确定要删除选中的记录吗？", "确认删除");
     }
 
     [Fact]
