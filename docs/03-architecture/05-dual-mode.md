@@ -74,7 +74,7 @@
 | **认证机制** | 两端均使用 JWT Bearer Token + 相同 Claims Schema |
 | **授权策略** | 相同的 7 个 Policy（`AdminBusinessOnly` / `DoctorOnly` / `DoctorOrAdmin` / `AdminOrSuperAdmin` / `SysAdminOnly` / `DoctorOrReceptionist`（P1-6 Batch D 已扩为含 Admin/SuperAdmin） / `DoctorOrAdminOrReceptionist`，见 `PolicyConstants`）——双端 Registrations 策略已对齐（P1-29 Batch D：Create=`DoctorOrReceptionist`、StartVisit=`DoctorOnly`、Cancel=`ReceptionistOnly`，`LocalWebApiPatternTests.Should_Have_Same_Auth_Policy_As_Remote` 守卫） |
 | **EF Core 过滤器** | `IsDeleted` 软删除全局过滤器两端均生效 |
-| **异常处理** | 两端均通过 middleware/handler 统一处理，返回相同 ProblemDetails 格式 |
+| **异常处理** | Server 异常路径统一 ProblemDetails（X-3）；Local SharedHost 兜底仍 ApiResponse；控制器业务失败两端均 ApiResponse |
 
 ### 不同点（含认证/DbContext/功能限制合并）
 

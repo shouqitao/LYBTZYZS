@@ -156,7 +156,8 @@ public static class ClientErrorMessageMapper
 
     /// <summary>
     /// 获取 <see cref="ApiClientException"/> 的用户消息。
-    /// 优先使用服务端返回的面向用户消息（信封 <c>message</c>）；无则按 HTTP 状态码映射。
+    /// 优先使用服务端返回的面向用户消息（ProblemDetails <c>detail</c>/<c>title</c>，或 ApiResponse 信封 <c>message</c>）；
+    /// 无则按 HTTP 状态码映射。
     /// </summary>
     private static string GetApiClientExceptionMessage(ApiClientException exception)
     {

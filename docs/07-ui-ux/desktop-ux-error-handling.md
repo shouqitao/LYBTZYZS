@@ -188,7 +188,7 @@
 | 日志关联 | `LoggingHttpHandler`（`Shared/LYBT.Shared.Logging`）在请求/响应/异常日志中写入 `CorrelationId={CorrelationId}`；错误响应体经 `SensitiveDataMasker` 脱敏后再记录 |
 | Provider | `ICorrelationIdProvider` 单例，源自 `LoggingBootstrap.CorrelationIdProvider`（与 Serilog 同一实例） |
 | 服务端 | `CorrelationIdMiddleware` 优先取 W3C `traceparent`，回退 `X-Correlation-ID`，回写响应头并 `LogContext.PushProperty("CorrelationId", …)`；日志库表 `RequestId` / `CorrelationId` 列均为 `NVarChar(36)` |
-| 响应信封 | `ApiResponse<T>` 含 `success` / `message` / `data` / `errors` / `timestamp` / `requestId`；服务端异常响应在 `errors` 中附 `code` / `correlationId` / `traceId`，并填充 `RequestId` |
+| 响应信封 | 成功/已知业务失败：`ApiResponse<T>`（`success`/`message`/`data`/`errors`/`timestamp`/`requestId`）；Server 异常路径（X-3）：RFC 7807 ProblemDetails（`title`/`detail`/`status` + `errorCode`/`correlationId`/`traceId`）。`ApiErrorEnvelope.TryExtract` 双格式兼容 |
 | 界面展示 | **当前不在 UI 展示任何追踪码**：`ClientErrorMessageMapper.TraceIdProvider` 从未赋值、`GetShortTrackingCode()` 无调用方；XAML 中无 `RequestId` / `CorrelationId` 绑定 |
 | 审计查询 | 医案审计 `GET /api/v1/medicalcases/{id}/audit-logs`（`AuditLogView`）；安全审计（仅 SuperAdmin）→ `SecurityAuditLogView` |
 

@@ -2,6 +2,7 @@ using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Caching;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
@@ -17,6 +18,7 @@ namespace LYBT.Module.MedicalCases.Services
     /// 医案状态服务实现 - 状态管理操作
     /// Phase 3: 从MedicalCaseService拆分，遵循CQRS原则
     /// 职责：UpdateStatus, Complete, CloseCase, Suspend, Cancel等状态流转操作
+    /// ADR-0018: Complete/Cancel 的挂号联动经领域事件发布（不再直调 IRegistrationCrossModuleService）
     /// </summary>
     public class MedicalCaseStateService : BaseService<MedicalCase>, IMedicalCaseStateService
     {
@@ -28,7 +30,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IUserCrossModuleService _userCrossModule;
         private readonly ICacheInvalidationService _cacheInvalidation;
-        private readonly IRegistrationCrossModuleService _registrationCrossModule;
+        private readonly IDomainEventDispatcher _domainEventDispatcher;
         private readonly MedicalCaseStateGuard _stateGuard;
 
         public MedicalCaseStateService(
@@ -36,14 +38,14 @@ namespace LYBT.Module.MedicalCases.Services
             IUserCrossModuleService userCrossModule,
             ILogger<MedicalCaseStateService> logger,
             ICacheInvalidationService cacheInvalidation,
-            IRegistrationCrossModuleService registrationCrossModule,
+            IDomainEventDispatcher domainEventDispatcher,
             MedicalCaseStateGuard stateGuard)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _userCrossModule = userCrossModule ?? throw new ArgumentNullException(nameof(userCrossModule));
             _cacheInvalidation = cacheInvalidation ?? throw new ArgumentNullException(nameof(cacheInvalidation));
-            _registrationCrossModule = registrationCrossModule ?? throw new ArgumentNullException(nameof(registrationCrossModule));
+            _domainEventDispatcher = domainEventDispatcher ?? throw new ArgumentNullException(nameof(domainEventDispatcher));
             _stateGuard = stateGuard ?? throw new ArgumentNullException(nameof(stateGuard));
         }
 
@@ -174,9 +176,16 @@ namespace LYBT.Module.MedicalCases.Services
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
             // US-REG-005: 医案完成时联动挂号状态 → Completed
+            // ADR-0018: 发布领域事件，由 Registrations 模块 Handler 订阅处理
             if (result != null)
             {
-                await CompleteRegistrationAsync(medicalCaseId, cancellationToken);
+                await _domainEventDispatcher.DispatchAsync(new MedicalCaseCompletedEvent(
+                    MedicalCaseId: medicalCase.Id,
+                    PatientId: medicalCase.PatientId,
+                    DoctorId: medicalCase.UserId,
+                    CompletedAt: medicalCase.CompletedAt ?? DateTime.UtcNow), cancellationToken);
+                _logger.LogInformation("[SVC] MedicalCase.Complete → MedicalCaseCompletedEventPublished - MedicalCaseId={MedicalCaseId}",
+                    medicalCaseId);
             }
 
             return result;
@@ -301,7 +310,14 @@ namespace LYBT.Module.MedicalCases.Services
             await TryWriteCancelAuditAsync(medicalCase, operatorId, isAdmin, reason, cancellationToken);
 
             // G-9: 医案取消后，根据挂号来源回退挂号状态（Receptionist→Waiting / Doctor→Cancelled）
-            await RollbackRegistrationAsync(id, medicalCase.CaseNumber ?? "N/A", cancellationToken);
+            // ADR-0018: 发布领域事件，由 Registrations 模块 Handler 订阅处理
+            await _domainEventDispatcher.DispatchAsync(new MedicalCaseCancelledEvent(
+                MedicalCaseId: medicalCase.Id,
+                PatientId: medicalCase.PatientId,
+                DoctorId: medicalCase.UserId,
+                CancelledAt: DateTime.UtcNow), cancellationToken);
+            _logger.LogInformation("[SVC] MedicalCase.Cancel → MedicalCaseCancelledEventPublished - MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
+                medicalCase.Id, medicalCase.CaseNumber ?? "N/A");
 
             await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
 
@@ -343,28 +359,6 @@ namespace LYBT.Module.MedicalCases.Services
                 // 审计隔离：记录失败不影响医案取消（US-MC-017）
                 _logger.LogError(ex, "[SVC] MedicalCase.Cancel → AuditWriteFailed - MedicalCaseId={MedicalCaseId}", medicalCase.Id);
             }
-        }
-
-        /// <summary>
-        /// G-9: 医案取消后回退挂号状态
-        /// - Receptionist来源: 回退到Waiting，清除MedicalCaseId（原医案已物理删除，回来重新接诊时新建）
-        /// - Doctor来源: 设置为Cancelled（闭环）
-        /// </summary>
-        private async Task RollbackRegistrationAsync(Guid medicalCaseId, string caseNumber, CancellationToken cancellationToken = default)
-        {
-            await _registrationCrossModule.HandleMedicalCaseCancelledAsync(medicalCaseId, cancellationToken);
-            _logger.LogInformation("[SVC] MedicalCase.Cancel → RegistrationRolledBack - MedicalCaseId={MedicalCaseId} CaseNumber={CaseNumber}",
-                medicalCaseId, caseNumber);
-        }
-
-        /// <summary>
-        /// US-REG-005: 医案完成后联动挂号状态 → Completed
-        /// </summary>
-        private async Task CompleteRegistrationAsync(Guid medicalCaseId, CancellationToken cancellationToken = default)
-        {
-            await _registrationCrossModule.CompleteByMedicalCaseAsync(medicalCaseId, cancellationToken);
-            _logger.LogInformation("[SVC] MedicalCase.Complete → RegistrationCompleted - MedicalCaseId={MedicalCaseId}",
-                medicalCaseId);
         }
 
         #region 私有辅助方法

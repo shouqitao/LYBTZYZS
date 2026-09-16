@@ -1,5 +1,4 @@
 using LYBT.Shared.ExceptionHandling.Exceptions;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +9,7 @@ namespace LYBT.Shared.ExceptionHandling.Handlers;
 /// <summary>
 /// 业务异常处理器 - 处理AppException及其子类
 /// A-31-C2: 从 LYBT.Infrastructure.ExceptionHandling 迁移
+/// X-3: 异常路径统一写 ProblemDetails（RFC 7807）；ApiResponse 仅用于成功/已知业务失败响应
 /// </summary>
 public class BusinessExceptionHandler : IExceptionHandler
 {
@@ -31,15 +31,12 @@ public class BusinessExceptionHandler : IExceptionHandler
         if (exTypeName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException")
         {
             _logger.LogWarning(exception, "并发冲突 - CorrelationId: {CorrelationId}, 路径: {Path}", GetCorrelationId(httpContext), httpContext.Request.Path);
-            httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
-            httpContext.Response.ContentType = "application/json";
-            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
-            {
-                Success = false,
-                Message = "数据已被其他用户修改，请刷新后重试",
-                Errors = new { code = ErrorCode.ConcurrencyConflict.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
-                RequestId = GetCorrelationId(httpContext)
-            }, cancellationToken);
+            await WriteProblemAsync(
+                httpContext,
+                StatusCodes.Status409Conflict,
+                title: "并发冲突",
+                detail: "数据已被其他用户修改，请刷新后重试",
+                errorCode: ErrorCode.ConcurrencyConflict.ToFormattedString());
             return true;
         }
 
@@ -47,15 +44,12 @@ public class BusinessExceptionHandler : IExceptionHandler
         if (exTypeName == "System.Security.Cryptography.CryptographicException" || exception is System.Security.Cryptography.CryptographicException)
         {
             _logger.LogWarning(exception, "敏感数据解密失败 - CorrelationId: {CorrelationId}, 路径: {Path}", GetCorrelationId(httpContext), httpContext.Request.Path);
-            httpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
-            httpContext.Response.ContentType = "application/json";
-            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
-            {
-                Success = false,
-                Message = ErrorMessages.Get(ErrorCode.SensitiveDecryptFailed),
-                Errors = new { code = ErrorCode.SensitiveDecryptFailed.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
-                RequestId = GetCorrelationId(httpContext)
-            }, cancellationToken);
+            await WriteProblemAsync(
+                httpContext,
+                StatusCodes.Status422UnprocessableEntity,
+                title: "敏感数据错误",
+                detail: ErrorMessages.Get(ErrorCode.SensitiveDecryptFailed),
+                errorCode: ErrorCode.SensitiveDecryptFailed.ToFormattedString());
             return true;
         }
 
@@ -66,15 +60,12 @@ public class BusinessExceptionHandler : IExceptionHandler
             string msg = "参数校验失败";
             try { msg = dynEx.Errors[0].ErrorMessage ?? msg; } catch { }
             _logger.LogWarning(exception, "参数校验失败 - CorrelationId: {CorrelationId}", GetCorrelationId(httpContext));
-            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-            httpContext.Response.ContentType = "application/json";
-            await httpContext.Response.WriteAsJsonAsync(new ApiResponse
-            {
-                Success = false,
-                Message = msg,
-                Errors = new { code = ErrorCode.ValidationFailed.ToFormattedString(), correlationId = GetCorrelationId(httpContext), traceId = httpContext.TraceIdentifier },
-                RequestId = GetCorrelationId(httpContext)
-            }, cancellationToken);
+            await WriteProblemAsync(
+                httpContext,
+                StatusCodes.Status400BadRequest,
+                title: "参数校验失败",
+                detail: msg,
+                errorCode: ErrorCode.ValidationFailed.ToFormattedString());
             return true;
         }
 
@@ -99,24 +90,38 @@ public class BusinessExceptionHandler : IExceptionHandler
             httpContext.User?.Identity?.Name ?? "匿名用户");
 
         var statusCode = appException.GetHttpStatusCode();
-        var response = new ApiResponse
-        {
-            Success = false,
-            Message = appException.UserMessage ?? appException.Message,
-            Errors = new
-            {
-                code = appException.ErrorCode ?? appException.TypedErrorCode?.ToFormattedString(),
-                correlationId,
-                traceId = httpContext.TraceIdentifier
-            },
-            RequestId = correlationId
-        };
-
-        httpContext.Response.StatusCode = statusCode;
-        httpContext.Response.ContentType = "application/json";
-        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+        await WriteProblemAsync(
+            httpContext,
+            statusCode,
+            title: "Business Error",
+            detail: appException.UserMessage ?? appException.Message,
+            errorCode: appException.ErrorCode ?? appException.TypedErrorCode?.ToFormattedString());
 
         return true;
+    }
+
+    /// <summary>
+    /// 写 RFC 7807 ProblemDetails。经 <see cref="Results.Problem"/> 走 IProblemDetailsService，
+    /// 自动触发 ProblemDetailsConfiguration.CustomizeProblemDetails（注入 correlationId/timestamp/traceId/severity/type）。
+    /// </summary>
+    private static Task WriteProblemAsync(
+        HttpContext httpContext,
+        int statusCode,
+        string title,
+        string detail,
+        string? errorCode)
+    {
+        var extensions = new Dictionary<string, object?>();
+        if (!string.IsNullOrEmpty(errorCode))
+            extensions["errorCode"] = errorCode;
+
+        return Results.Problem(
+            statusCode: statusCode,
+            title: title,
+            detail: detail,
+            instance: httpContext.Request.Path,
+            extensions: extensions.Count > 0 ? extensions : null)
+            .ExecuteAsync(httpContext);
     }
 
     private static string GetCorrelationId(HttpContext httpContext)

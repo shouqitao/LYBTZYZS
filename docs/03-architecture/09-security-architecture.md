@@ -375,7 +375,7 @@ stateDiagram-v2
 ### 7.012 错误响应契约（P1-25，2026-08-21）
 
 - **200 禁失败**：认证/业务失败绝不返回 `200 + Success=false`——`Login/Logout/Refresh` 经 `ErrorCodeExtensions.ToHttpStatusCode` 映射为 401/422/409 等非 200；`BusinessFail` 默认 422；未知错误码默认 500（非 200）。ArchTests `P1_No_200_With_Failure_ApiResponse` 守卫
-- **双轨说明**：API 信封 `ApiResponse<T>`（Desktop Refit 消费契约，`LybtJsonContext` 源生成）与 `BusinessExceptionHandler` 的 `ProblemDetails` 并行——异常路径走 ProblemDetails，成功/已知业务失败走信封。全量统一至 ProblemDetails 需同步改 Desktop 反序列化契约，属跨端重构（见 batch C 计划），当前以「失败永非 200」为红线
+- **错误契约（X-3，2026-09-16 收口）**：异常路径（IExceptionHandler 链 + StatusCodePages）统一 RFC 7807 ProblemDetails；ApiResponse 仅用于成功响应与控制器已知业务失败（`BusinessFail` 422 等）。Desktop `ApiErrorEnvelope.TryExtract` 双格式兼容（ProblemDetails 优先）。LocalWebAPI（SharedHost）异常路径仍为 ApiResponse，独立批次对齐。红线仍为「失败永非 200」
 
 ### 7.02 患者敏感字段透明加密（P1-9，2026-08-21）
 

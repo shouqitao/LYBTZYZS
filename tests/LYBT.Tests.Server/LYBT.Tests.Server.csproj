@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -52,7 +52,7 @@
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.MedicalCases\LYBT.Module.MedicalCases.csproj" />
     
     <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Reports\LYBT.Module.Reports.csproj" />
-    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="..\..\src\Server\Modules\LYBT.Module.Registrations\LYBT.Module.Registrations.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -42,20 +42,25 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ## 全局异常处理器链
 
-注册于 `AddServerExceptionHandling()` (`LYBT.Shared.ExceptionHandling.Extensions.ServiceCollectionExtensions`)：
+注册于 `AddLybtExceptionHandling()` (`LYBT.Shared.ExceptionHandling.Handlers.ExceptionHandlingServiceCollectionExtensions`)：
 
 ```text
 请求 → CorrelationIdMiddleware → ... → Controller → Service 抛异常
                                                          ↓
                                     BusinessExceptionHandler (IExceptionHandler #1)
-                                      ├─ 匹配 AppException 及子类 → ApiResponse (Warning 日志)
+                                      ├─ 匹配 AppException 及子类 → ProblemDetails (Warning 日志)
+                                      ├─ DbUpdateConcurrencyException → 409 ProblemDetails
+                                      ├─ CryptographicException → 422 ProblemDetails
+                                      ├─ FluentValidation.ValidationException → 400 ProblemDetails
                                       └─ 不匹配 → 传递下一个
                                                          ↓
                                     SystemExceptionHandler (IExceptionHandler #2, 兜底)
-                                      └─ 处理所有其他异常 → ApiResponse (Error 日志)
-                                         开发环境: 包含 StackTrace
+                                      └─ 处理所有其他异常 → ProblemDetails (Error 日志)
+                                         开发环境: Extensions 含 stackTrace/exceptionType
                                          生产环境: 隐藏内部细节
 ```
+
+**X-3（2026-09-16）**：Server 异常路径统一 RFC 7807 ProblemDetails；ApiResponse 仅用于成功响应与已知业务失败（控制器 `BusinessFail`/`NotFoundResponse` 等）。`StatusCodePages` 与 `UseExceptionHandler` 兜底同样写 ProblemDetails。Desktop 端 `ApiErrorEnvelope.TryExtract` 双格式兼容（ProblemDetails 优先，ApiResponse 回退）。
 
 **SystemExceptionHandler** 内置异常类型映射：
 
@@ -105,9 +110,30 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ## API 响应格式
 
-### 业务异常响应 (ApiResponse)
+### 异常响应 (ProblemDetails, RFC 7807)
 
-`BusinessExceptionHandler` 返回 `ApiResponse` 格式：
+`BusinessExceptionHandler` / `SystemExceptionHandler` / `StatusCodePages` 统一返回 ProblemDetails：
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc4918#section-11.2",
+  "title": "Business Error",
+  "status": 422,
+  "detail": "该患者已有进行中的医案，请先完成现有医案",
+  "instance": "/api/v1/medical-cases",
+  "errorCode": "ERR-30103",
+  "correlationId": "a1b2c3d4e5f6",
+  "traceId": "a1b2c3d4e5f6",
+  "timestamp": "2026-09-16T00:00:00+00:00",
+  "severity": "warning"
+}
+```
+
+扩展字段由 `ProblemDetailsConfiguration.CustomizeProblemDetails` 注入：`correlationId`、`timestamp`、`traceId`、`severity`、`type`（RFC URI）。
+
+### 已知业务失败响应 (ApiResponse)
+
+控制器主动返回的已知失败（`BusinessFail` 422 / `NotFoundResponse` 404 / `Error` 400）仍用 ApiResponse 信封：
 
 ```json
 {
@@ -115,9 +141,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
   "message": "该患者已有进行中的医案，请先完成现有医案",
   "data": null,
   "errors": {
-    "code": "ERR-30103",
-    "correlationId": "a1b2c3d4e5f6",
-    "traceId": "a1b2c3d4e5f6"
+    "code": "ERR-30103"
   },
   "timestamp": 1740000000,
   "requestId": "a1b2c3d4e5f6"
@@ -126,7 +150,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ### StatusCode 错误响应 (ProblemDetails)
 
-非异常路径的 HTTP 错误 (如 401/404/429) 通过 `ProblemDetailsConfiguration` 返回 RFC 7807 格式：
+非异常路径的 HTTP 错误 (如 401/404/429) 通过 `StatusCodePages` 返回 RFC 7807 格式。
 
 ```json
 {

@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.WebAPI.HealthCheck;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
@@ -56,6 +57,9 @@ public static class DatabaseServiceCollectionExtensions
         // P-01: 原 AddOutputCache()/AddResponseCaching() 已移除——全仓 0 处 [OutputCache]/[ResponseCache] 特性，
         // 属空转基建；CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
+
+        // ADR-0018: 领域事件分发器（WebAPI 宿主；LocalWebAPI 经 SharedHost.AddSharedInfrastructure 注册）
+        services.AddDomainEventDispatcher();
 
         // unify-configuration-system: 验证关键配置
         // 验证 JWT 配置

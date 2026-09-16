@@ -1,4 +1,5 @@
 using System.Reflection;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Spi;
@@ -150,6 +151,8 @@ public static class SharedHost
         // 注：原 AddOutputCache() 已移除——全仓 0 处 [OutputCache] 特性，属空转基建；
         // CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
+        // ADR-0018: 领域事件分发器（LocalWebAPI 宿主）
+        services.AddDomainEventDispatcher();
         return services;
     }
 

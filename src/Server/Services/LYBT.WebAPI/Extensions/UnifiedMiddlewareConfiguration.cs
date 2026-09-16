@@ -21,10 +21,11 @@ public static class UnifiedMiddlewareConfiguration
     public static WebApplication ConfigureAllMiddleware(this WebApplication app)
     {
         // ===== 阶段1: 错误处理和安全 =====
-        // 1.1 统一异常处理(所有环境使用相同JSON格式)
+        // 1.1 统一异常处理(所有环境使用相同 ProblemDetails 格式)
         // X-4 管道化：Business/SystemExceptionHandler 已经 AddExceptionHandler 注册（ExceptionHandlingServiceCollectionExtensions），
-        // ExceptionHandlerMiddleware 会先遍历 IExceptionHandler 链；本委托仅作未处理异常的 ApiResponse 兜底，
+        // ExceptionHandlerMiddleware 会先遍历 IExceptionHandler 链；本委托仅作未处理异常的 ProblemDetails 兜底，
         // 不再手动 resolve/foreach Handler（避免双重处理）。
+        // X-3: 异常路径统一 ProblemDetails（RFC 7807）；ApiResponse 仅用于成功/已知业务失败响应。
         app.UseExceptionHandler(exceptionHandlerApp =>
         {
             exceptionHandlerApp.Run(async context =>
@@ -36,46 +37,32 @@ public static class UnifiedMiddlewareConfiguration
                     return;
                 }
 
-                // Fallback: No IExceptionHandler processed exception, write generic ApiResponse
-                context.Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
-                context.Response.ContentType = "application/json";
-
-                var fallbackResponse = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
-                    app.Environment.IsDevelopment()
+                // Fallback: No IExceptionHandler processed exception, write generic ProblemDetails
+                await Results.Problem(
+                    statusCode: Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError,
+                    title: "服务器内部错误",
+                    detail: app.Environment.IsDevelopment()
                         ? $"[DEV] {exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}"
-                        : "An unexpected error occurred"
-                );
-                fallbackResponse.RequestId = context.TraceIdentifier;
-
-                await context.Response.WriteAsJsonAsync(fallbackResponse);
+                        : "An unexpected error occurred",
+                    instance: context.Request.Path)
+                    .ExecuteAsync(context);
             });
         });
 
         // 1.1.1 StatusCodePages（处理非异常的HTTP错误状态码）
         // refactor-logging-system: RFC 7807标准化状态码响应
+        // X-3: 统一 ProblemDetails（与异常路径同契约）
         app.UseStatusCodePages(async context =>
         {
             var statusCode = context.HttpContext.Response.StatusCode;
             if (statusCode < 400) return;
 
-            var correlationId = context.HttpContext.Items["CorrelationId"]?.ToString() ?? context.HttpContext.TraceIdentifier;
-            var traceId = context.HttpContext.TraceIdentifier;
-
-            var errorResponse = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
-                $"请求处理失败 (HTTP {statusCode})",
-                new
-                {
-                    statusCode,
-                    path = context.HttpContext.Request.Path.Value,
-                    correlationId,
-                    traceId,
-                    timestamp = DateTime.UtcNow
-                }
-            );
-            errorResponse.RequestId = traceId;
-
-            context.HttpContext.Response.ContentType = "application/json";
-            await context.HttpContext.Response.WriteAsJsonAsync(errorResponse);
+            await Results.Problem(
+                statusCode: statusCode,
+                title: $"HTTP {statusCode}",
+                detail: $"请求处理失败 (HTTP {statusCode})",
+                instance: context.HttpContext.Request.Path)
+                .ExecuteAsync(context.HttpContext);
         });
 
         // 1.2 转发头处理（必须在 CorrelationId 之前，用于反向代理场景）

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -30,7 +30,7 @@
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Patients/LYBT.Module.Patients.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Catalog/LYBT.Module.Catalog.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.MedicalCases/LYBT.Module.MedicalCases.csproj" />
-    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Registration/LYBT.Module.Registration.csproj" />
+    <ProjectReference Include="../../../Server/Modules/LYBT.Module.Registrations/LYBT.Module.Registrations.csproj" />
     <ProjectReference Include="../../../Server/Modules/LYBT.Module.Reports/LYBT.Module.Reports.csproj" />
   </ItemGroup>
 

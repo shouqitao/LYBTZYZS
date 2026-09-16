@@ -5,7 +5,7 @@
 
 ## 模块概述
 
-异常处理采用分层架构：服务端 `IExceptionHandler` 链式处理器（`BusinessExceptionHandler` → `SystemExceptionHandler`）将异常转为 `ApiResponse` JSON；客户端 `DesktopExceptionHandler` 全局兜底 + `ClientErrorMessageMapper` 映射中文消息。`AppException` 体系含 6 种具体异常，各自映射 HTTP 状态码。
+异常处理采用分层架构：服务端 `IExceptionHandler` 链式处理器（`BusinessExceptionHandler` → `SystemExceptionHandler`）将异常转为 **RFC 7807 ProblemDetails**（X-3，2026-09-16）；ApiResponse 仅用于成功响应与控制器已知业务失败。客户端 `DesktopExceptionHandler` 全局兜底 + `ClientErrorMessageMapper` 映射中文消息（`ApiErrorEnvelope.TryExtract` 双格式兼容）。`AppException` 体系含 6 种具体异常，各自映射 HTTP 状态码。
 
 > 原 8 US，保留 **8 US**：US-ERR-001~008（含原 US-SHELL-006 全局异常处理合并到 US-ERR-001）。
 
@@ -143,7 +143,7 @@
 
 **角色**: 开发人员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（2026-09-14 E2E 实测映射校准：模型校验 → 400 **ProblemDetails**（非 ApiResponse：`SharedHost.AddSharedControllers` 的 `InvalidModelStateResponseFactory` 只在 `SharedHost.CreateBuilder` 链路生效，LocalWebAPI 自建 builder 未走该链路）；业务失败 → ApiResponse；本地模式**无 409 生产者**）
+**状态**: ⚠️ 部分实现（2026-09-16 X-3：Server 异常路径已统一 ProblemDetails；模型校验 → 400 ProblemDetails；控制器已知业务失败仍 ApiResponse；本地 SharedHost 异常兜底仍 ApiResponse；本地模式**无 409 生产者**）
 （E2E 覆盖：`Integration/E2E/ErrorFlow/ExceptionMappingE2ETests.cs`——400 字段级 errors / 404 / 401 / 403 / 422 / 成功响应 ApiResponse 规范）
 
 **作为** 开发人员，**我想要** 验证错误以统一格式返回（含字段级 errors 字典），**以便** 客户端能在表单内精确高亮错误字段。

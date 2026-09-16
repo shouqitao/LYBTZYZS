@@ -1,6 +1,8 @@
 using LYBT.Infrastructure.Constants;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.MedicalCases.Application.Commands;
+using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -46,15 +48,14 @@ public class MedicalCasesController : BaseMedicalCasesController
         if (ValidatePagination(page, pageSize) is { } error) return error;
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var result = await _medicalCaseQueryService.GetListDtoAsync(
-            status: null,
-            patientId: null,
-            page: page,
-            pageSize: pageSize,
-            currentDoctorId: operatorId,
-            isAdmin: isAdmin,
-            keyword: keyword,
-            cancellationToken: ct);
+        var result = await Sender.Send(new GetMedicalCaseListQuery(
+            Status: null,
+            PatientId: null,
+            Page: page,
+            PageSize: pageSize,
+            CurrentDoctorId: operatorId,
+            IsAdmin: isAdmin,
+            Keyword: keyword), ct);
 
         return Success(result, "查询成功");
     }
@@ -67,7 +68,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
-        var result = await _medicalCaseQueryService.GetDetailDtoAsync(id, operatorId, isAdmin, ct);
+        var result = await Sender.Send(new GetMedicalCaseQuery(id, operatorId, isAdmin), ct);
         if (!result.IsSuccess)
             return NotFound(result.Error ?? "医案不存在");
 
@@ -111,15 +112,7 @@ public class MedicalCasesController : BaseMedicalCasesController
     {
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
-        var query = new MedicalCaseQueryDto
-        {
-            QueryType = MedicalCaseQueryType.Pending,
-            PatientId = patientId,
-            IncludeAllDoctors = isAdmin
-        };
-        if (!isAdmin)
-            query.DoctorId = operatorId;
-        var result = await _medicalCaseQueryService.QueryAsync(query, ct);
+        var result = await Sender.Send(new GetPendingCasesQuery(operatorId, patientId, isAdmin), ct);
         return Success(result.Items, "查询成功");
     }
 
@@ -139,7 +132,7 @@ public class MedicalCasesController : BaseMedicalCasesController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, operatorId, isAdmin, ct);
+        var result = await Sender.Send(new UpdateMedicalCaseCommand(input, operatorId, isAdmin), ct);
 
         if (!result.IsSuccess)
         {
@@ -158,9 +151,9 @@ public class MedicalCasesController : BaseMedicalCasesController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var deleted = await _medicalCaseCommandService.DeleteAsync(id, operatorId, isAdmin, ct);
-        if (!deleted)
-            return NotFound("医案不存在");
+        var result = await Sender.Send(new DeleteMedicalCaseCommand(id, operatorId, isAdmin), ct);
+        if (!result.IsSuccess)
+            return NotFound(result.Error ?? "医案不存在");
 
         return Success(true, "医案已删除");
     }
@@ -214,8 +207,8 @@ public class MedicalCasesController : BaseMedicalCasesController
     public async Task<IActionResult> Create([FromBody] MedicalCaseInputDto input, CancellationToken ct)
     {
         var (doctorId, _, _) = GetOperator();
-        input.Id = null;
-        var result = await _medicalCaseCommandService.SaveWithDetailAsync(input, doctorId, isAdmin: false, ct);
+        var result = await Sender.Send(
+            new CreateMedicalCaseCommand(input, doctorId, IsAdmin: false), ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "创建失败");
 
@@ -236,10 +229,10 @@ public class MedicalCasesController : BaseMedicalCasesController
         if (ValidateGuid(id, "医案ID") is { } error) return error;
         var (operatorId, _, _) = GetOperator();
 
-        // 直接调用 StateService 关闭医案
-        var entity = await _medicalCaseStateService.CompleteAsync(id, operatorId, isAdmin: true, skipWorkflowValidation: true, cancellationToken: ct);
-        if (entity == null)
-            return BusinessFail("完成医案失败");
+        var result = await Sender.Send(
+            new CompleteMedicalCaseCommand(id, operatorId, IsAdmin: true, SkipWorkflowValidation: true), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "完成医案失败");
         return Success("医案已完成");
     }
 
@@ -253,12 +246,12 @@ public class MedicalCasesController : BaseMedicalCasesController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        // 直接调用 StateService 挂起医案
-        var entity = await _medicalCaseStateService.SuspendAsync(id, request, operatorId, isAdmin, ct);
-        if (entity == null)
-            return BusinessFail("挂起失败");
-                LogOperation("暂存医案", request, id);
-return Success("医案已暂存");
+        var result = await Sender.Send(
+            new SuspendMedicalCaseCommand(id, request, operatorId, isAdmin), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "挂起失败");
+        LogOperation("暂存医案", request, id);
+        return Success("医案已暂存");
     }
 
     /// <summary>
@@ -271,12 +264,12 @@ return Success("医案已暂存");
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
 
-        // 直接调用 StateService 取消医案
-        var entity = await _medicalCaseStateService.CancelAsync(id, operatorId, isAdmin, request?.Reason, ct);
-        if (entity == null)
-            return BusinessFail("取消失败");
-                LogOperation("取消医案", null, id);
-return Success("医案已取消");
+        var result = await Sender.Send(
+            new CancelMedicalCaseCommand(id, operatorId, isAdmin, request?.Reason), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "取消失败");
+        LogOperation("取消医案", null, id);
+        return Success("医案已取消");
     }
 
     /// <summary>

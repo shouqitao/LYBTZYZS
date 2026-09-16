@@ -1,6 +1,8 @@
 using FluentValidation;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.Validation;
+using LYBT.Module.MedicalCases.Application.Commands;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Module.MedicalCases.Infrastructure;
@@ -53,6 +55,13 @@ namespace LYBT.Module.MedicalCases
 
             // Mapperly映射器 - 无状态单例
             services.AddSingleton<MedicalCaseMapper>();
+
+            // 注册 MediatR（Application 层 Command/Query Handler，Handler 内部委托现有 Service）
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateMedicalCaseCommand).Assembly);
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             return services;
         }

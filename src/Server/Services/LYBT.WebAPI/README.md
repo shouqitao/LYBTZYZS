@@ -30,7 +30,7 @@ LYBT.WebAPI/
 | 组件 | 说明 |
 |------|------|
 | ServiceCollectionExtensions | 统一入口：基础设施、认证、业务模块、API文档、控制器注册 |
-| ExceptionHandlingMiddleware | 全局异常处理，统一 ApiResponse 错误返回 |
+| ExceptionHandlingMiddleware | 全局异常处理，统一 ProblemDetails（RFC 7807）错误返回 |
 | RequestLoggingMiddleware | 结构化请求日志 (Serilog) |
 | ValidateModelStateAttribute | FluentValidation 自动验证 DTO |
 | HealthChecks | 数据库连接 + 业务逻辑健康检查 |

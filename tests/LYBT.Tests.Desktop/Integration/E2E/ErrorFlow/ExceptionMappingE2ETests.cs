@@ -2,12 +2,13 @@
 // ExceptionMappingE2ETests — US-ERR-006（验证异常映射）+ US-ERR-007（异常体系）全链路
 // 真实链路：原始 HTTP → LocalWebAPI（Kestrel）→ 控制器/管道 → LocalDB
 // ---------------------------------------------------------------------------
-// 响应映射实测（本地模式，与代码一致）：
+// 响应映射实测（**本地模式 SharedHost**，与 Server 端 X-3 后契约不同）：
 //   · 模型校验失败（[ApiController] 自动校验）→ 400 ProblemDetails（RFC7807：title/status/errors）
 //   · 业务失败（NotFound/BusinessFail）        → ApiResponse { success:false, message, errors, requestId }
 //   · 认证缺失 → 401（空体）；角色不足 → 403（空体，授权中间件短路）
 //   · 业务规则违反（BusinessFail 白名单等）    → 422 + ApiResponse
-//   · 双轨分工见 ApiResponse 注释（P2-5-1）：业务失败经 ApiResponse，异常/模型校验经 ProblemDetails
+//   · 本地 SharedHost 异常兜底仍写 ApiResponse（未纳入 X-3）；
+//     Server 端（Remote WebAPI）异常路径已统一 ProblemDetails（见 ADR-0020 X-3）
 //
 // 已知缺口（本次不修，登记见 13c）：
 //   ① 本地模式**无 409 生产者**：ErrorCode 中 ConcurrencyConflict/MedicalCaseVersionConflict/

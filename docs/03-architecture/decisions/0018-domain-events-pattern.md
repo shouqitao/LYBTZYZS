@@ -1,5 +1,5 @@
 # ADR-0018: Domain Events Pattern
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-16
 
 **状态**: Accepted
 **日期**: 2026-06-29
@@ -23,6 +23,8 @@
 ### 领域事件定义
 
 所有领域事件实现 `IDomainEvent : INotification`（MediatR），包含 `EventId` 和 `OccurredOn`。每个模块在 `Domain/Events/` 下定义自己的事件。
+
+**跨模块集成事件（P07 合规，v1.1 澄清）**：当事件需被其他模块订阅时，事件契约定义于 `LYBT.Infrastructure.SharedKernel.Events`（与 `IXxxCrossModuleService` 同层）。原因：P07 禁止 Server 模块互引，若事件定义在发布方模块而 Handler 在消费方模块，消费方必须 ProjectReference 发布方才能编译。模块内私有事件仍可放模块 `Domain/Events/`。
 
 ### 事件发布时机
 
@@ -65,15 +67,25 @@
 ## 关联
 
 - [ADR-0017: Modular Monolith with CQRS](0017-modular-monolith-cqrs.md) — 模块化单体架构的基础
-- SharedKernel Events — `IDomainEvent`, `IDomainEventDispatcher`
+- SharedKernel Events — `IDomainEvent`, `IDomainEventDispatcher`, `DomainEventDispatcher`（✅ 已实现）
 - SharedKernel/Outbox — `IOutboxService`, `OutboxMessage`（🚧 目录未实现，Outbox 待 v2.0）
 - [MedicalCase 聚合根](0001-medicalcase-aggregate-root.md) — 首个使用领域事件的模块
+
+## 已落地用例
+
+| 事件 | 发布方 | 消费方 Handler | 联动 |
+|------|--------|----------------|------|
+| `MedicalCaseCompletedEvent` | `MedicalCaseStateService.CompleteAsync` | `Registrations/Application/EventHandlers/MedicalCaseCompletedEventHandler` | 挂号 → Completed（US-REG-005） |
+| `MedicalCaseCancelledEvent` | `MedicalCaseStateService.CancelAsync` | `Registrations/Application/EventHandlers/MedicalCaseCancelledEventHandler` | 挂号回退/取消（G-9 / US-MC-014） |
+
+注：`MedicalCaseCommandService.Deletion`（已完成医案软删）仍直调 `IRegistrationCrossModuleService`，待后续批次迁移。
 
 ## 变更记录
 
 | 日期 | 变更 | 原因 |
 |------|------|------|
 | 2026-06-29 | 新建 ADR-0018，记录领域事件模式决策 | 模块化单体架构迁移 |
+| 2026-09-16 | 基础框架已实现（IDomainEvent/IDomainEventDispatcher/DomainEventDispatcher + DI），首个用例 MedicalCase→Registration 已迁移；澄清跨模块集成事件契约放 Infrastructure SharedKernel（P07） | ADR-0018 落地 |
 
 ## 关联 US
 

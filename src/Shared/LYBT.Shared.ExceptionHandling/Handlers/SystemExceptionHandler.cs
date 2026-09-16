@@ -1,4 +1,3 @@
-using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +8,7 @@ namespace LYBT.Shared.ExceptionHandling.Handlers;
 /// <summary>
 /// 系统异常处理器 - 兜底处理所有未被其他处理器处理的异常
 /// A-31-C2: 从 LYBT.Infrastructure.ExceptionHandling 迁移
+/// X-3: 异常路径统一写 ProblemDetails（RFC 7807）；ApiResponse 仅用于成功/已知业务失败响应
 /// </summary>
 public class SystemExceptionHandler : IExceptionHandler
 {
@@ -43,42 +43,29 @@ public class SystemExceptionHandler : IExceptionHandler
             httpContext.User?.Identity?.Name ?? "匿名用户");
 
         var (statusCode, title, detail) = GetExceptionInfo(exception);
-        var response = new ApiResponse
-        {
-            Success = false,
-            Message = detail,
-            Errors = _environment.IsDevelopment()
-                ? new
-                {
-                    title,
-                    exceptionType = exception.GetType().FullName,
-                    stackTrace = exception.StackTrace,
-                    correlationId,
-                    traceId = httpContext.TraceIdentifier,
-                    validationErrors = exception is FluentValidation.ValidationException devValEx
-                        ? devValEx.Errors.Select(e => new { field = e.PropertyName, error = e.ErrorMessage })
-                        : null
-                }
-                : exception is FluentValidation.ValidationException valEx
-                    ? (object)new
-                    {
-                        title,
-                        correlationId,
-                        traceId = httpContext.TraceIdentifier,
-                        validationErrors = valEx.Errors.Select(e => new { field = e.PropertyName, error = e.ErrorMessage })
-                    }
-                    : (object)new
-                    {
-                        title,
-                        correlationId,
-                        traceId = httpContext.TraceIdentifier
-                    },
-            RequestId = correlationId
-        };
 
-        httpContext.Response.StatusCode = statusCode;
-        httpContext.Response.ContentType = "application/json";
-        await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+        // RFC 7807：Extensions 在 ProblemDetailsConfiguration.CustomizeProblemDetails 中
+        // 自动注入 correlationId/timestamp/traceId/severity/type；此处仅补诊断扩展。
+        var extensions = new Dictionary<string, object?>();
+        if (_environment.IsDevelopment())
+        {
+            extensions["exceptionType"] = exception.GetType().FullName;
+            extensions["stackTrace"] = exception.StackTrace;
+        }
+        if (exception is FluentValidation.ValidationException valEx)
+        {
+            extensions["validationErrors"] = valEx.Errors
+                .Select(e => new { field = e.PropertyName, error = e.ErrorMessage })
+                .ToList();
+        }
+
+        await Results.Problem(
+            statusCode: statusCode,
+            title: title,
+            detail: detail,
+            instance: httpContext.Request.Path,
+            extensions: extensions.Count > 0 ? extensions : null)
+            .ExecuteAsync(httpContext);
 
         return true; // 始终返回true，作为兜底处理器
     }

@@ -226,7 +226,7 @@ Exception
     ApiException (502/503)
 ```
 
-> **注**: 原文档声称的 Handlers/ProblemDetails/Mappers/Extensions 等目录（Server/Desktop 异常处理器、ProblemDetails 工厂、错误消息映射）**代码中不存在** — 异常处理由 [03-server.md](03-server.md) 的 `IExceptionHandler`（LYBT.Infrastructure/ExceptionHandling/）+ WebAPI 中间件统一完成。
+> **注（2026-09-16 校准）**: `LYBT.Shared.ExceptionHandling` 现含 `Handlers/`（`BusinessExceptionHandler`/`SystemExceptionHandler`/`AddLybtExceptionHandling`）——Server 端 `IExceptionHandler` 链在此实现，异常路径写 RFC 7807 ProblemDetails（X-3）。Desktop 侧解析在 `LYBT.Desktop.Foundation/Http/ApiErrorEnvelope`。
 
 **约束**: 引用 Shared.Models (ErrorCode)，禁止引用 Server/Client 具体实现。
 

@@ -171,6 +171,25 @@ public class HttpApiClientBaseTests
         ex.And.ErrorCode.Should().Be("LYBT-FORM-002");
     }
 
+    /// <summary>X-3：Server 异常路径统一 ProblemDetails（RFC 7807），Desktop 需能解析 detail + 根级 errorCode。</summary>
+    [Fact]
+    public async Task SendAsync_NonSuccessStatus_ExtractsProblemDetailsMessageAndErrorCode()
+    {
+        const string problem =
+            "{\"type\":\"https://tools.ietf.org/html/rfc4918#section-11.2\"," +
+            "\"title\":\"Business Error\",\"status\":422," +
+            "\"detail\":\"验方名称已存在\",\"instance\":\"/api/v1/formulas\"," +
+            "\"errorCode\":\"ERR-60301\",\"traceId\":\"abc\"}";
+        var (factory, _) = CreateMockFactory(problem, HttpStatusCode.UnprocessableEntity);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
+
+        var act = () => client.SendAsync("/api/v1/formulas", HttpMethod.Get);
+
+        var ex = await act.Should().ThrowAsync<ApiClientException>();
+        ex.And.ServerMessage.Should().Be("验方名称已存在");
+        ex.And.ErrorCode.Should().Be("ERR-60301");
+    }
+
     [Fact]
     public async Task SendAsync_UnsupportedMethod_ThrowsArgumentException()
     {

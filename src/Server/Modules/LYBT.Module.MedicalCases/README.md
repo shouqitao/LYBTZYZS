@@ -6,7 +6,7 @@
 
 - **层级**: Server端
 - **架构模式**: CQRS（读写分离，Service 方法级拆分，非 MediatR 请求类）
-- **跨模块通信**: IMedicalCaseCrossModuleService（供 Patients/Registration 消费）；反向消费 IPatientCrossModuleService/ICatalogCrossModuleService/IRegistrationCrossModuleService
+- **跨模块通信**: IMedicalCaseCrossModuleService（供 Patients/Registration 消费）；Complete/Cancel 挂号联动经 ADR-0018 领域事件（MedicalCaseCompletedEvent/MedicalCaseCancelledEvent）发布；Deletion 软删仍直调 IRegistrationCrossModuleService；反向消费 IPatientCrossModuleService/ICatalogCrossModuleService
 
 ## 目录结构（2026-08 实际）
 

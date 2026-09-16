@@ -103,8 +103,9 @@ internal abstract class HttpApiClientBase
 
     /// <summary>
     /// 统一非 2xx 响应 → <see cref="ApiClientException"/>（本地与远程同一领域异常形状）。
-    /// 响应体若为 <c>ApiResponse</c> 信封则解析出 <c>message</c>/<c>errors.code</c>；
-    /// 若为 ProblemDetails 则取 <c>detail</c>/<c>title</c>；解析失败时退化为原始响应体。
+    /// 响应体解析见 <see cref="ApiErrorEnvelope.TryExtract"/>：优先 ProblemDetails
+    /// （<c>detail</c>/<c>title</c> + 根级 <c>errorCode</c>），回退 ApiResponse 信封
+    /// （<c>message</c>/<c>errors.code</c>）；解析失败时退化为原始响应体。
     /// </summary>
     protected static async Task EnsureSuccessOrThrowAsync(
         HttpResponseMessage response,

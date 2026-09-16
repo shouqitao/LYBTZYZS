@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.4.11626.88
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -76,7 +76,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Server", "tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Tests.Desktop", "tests\LYBT.Tests.Desktop\LYBT.Tests.Desktop.csproj", "{87A8154C-06E6-4CAE-90F3-BCA0A5E48A97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.Registration", "src\Server\Modules\LYBT.Module.Registration\LYBT.Module.Registration.csproj", "{1F5A3EFB-1A37-414B-B688-ACA0C6928B4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Module.Registrations", "src\Server\Modules\LYBT.Module.Registrations\LYBT.Module.Registrations.csproj", "{1F5A3EFB-1A37-414B-B688-ACA0C6928B4F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Registrations", "src\Client\Desktop\Modules\LYBT.Desktop.Registrations\LYBT.Desktop.Registrations.csproj", "{EA4E9FFD-AB44-4E9A-9DD1-9CEAA073BF55}"
 EndProject

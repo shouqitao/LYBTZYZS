@@ -19,7 +19,7 @@ LYBT.Module.MedicalCases/
 |------|----------|-------|
 | Write operations | `Services/MedicalCaseCommandService.cs` | CQRS command side |
 | Read operations | `Services/MedicalCaseQueryService.cs` | CQRS query side |
-| State transitions | `Services/MedicalCaseStateService.cs` | Complete/Cancel/Suspend + Registration linkage |
+| State transitions | `Services/MedicalCaseStateService.cs` | Complete/Cancel/Suspend + 挂号联动经领域事件（ADR-0018） |
 | Facade | `Services/MedicalCaseFacade.cs` | Aggregate root operations |
 | Audit | `Services/MedicalCaseAuditService.cs` | 20-field diff tracking |
 | Interfaces | `Interfaces/` | 11 service interfaces |
