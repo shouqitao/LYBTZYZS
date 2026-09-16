@@ -70,6 +70,8 @@ public static class ErrorCodeExtensions
             ErrorCode.NotFound => 404,
             ErrorCode.UserNotFound => 404,
             ErrorCode.PatientNotFound => 404,
+            ErrorCode.FormulaBatchItemNotFound => 404,
+            ErrorCode.HerbBatchItemNotFound => 404,
             ErrorCode.MedicalCaseNotFound => 404,
             ErrorCode.McPatientNotFound => 404,
             ErrorCode.McDoctorNotFound => 404,
@@ -89,6 +91,10 @@ public static class ErrorCodeExtensions
             ErrorCode.ConcurrencyConflict => 409,
             ErrorCode.MedicalCaseVersionConflict => 409,
             ErrorCode.MedicalCaseLocked => 409,
+            ErrorCode.PatientNotDeleted => 409,
+            ErrorCode.HerbNotDeleted => 409,
+            ErrorCode.FormulaNotDeleted => 409,
+            ErrorCode.HerbBatchItemDeletedOrMissing => 409,
             // 电话唯一（US-PAT-003/004：重复返回 409——2026-08-13 由 400 改 409 对齐需求）
             ErrorCode.PatientPhoneDuplicate => 409,
 
@@ -96,6 +102,11 @@ public static class ErrorCodeExtensions
             // 422 Unprocessable Entity - 业务规则违反
             ErrorCode.InvalidMedicalCaseState => 422,
             ErrorCode.PatientHasActiveCases => 422,
+            ErrorCode.FormulaHerbItemAlreadyValidated => 422,
+            ErrorCode.FormulaSystemHerbNotFound => 422,
+            ErrorCode.FormulaPendingValidationListFailed => 422,
+            ErrorCode.FormulaBatchItemError => 422,
+            ErrorCode.HerbBatchItemError => 422,
             ErrorCode.McActiveCaseExists => 422,
             ErrorCode.McSuspendedCaseExists => 422,
             ErrorCode.McPatientDisabled => 422,

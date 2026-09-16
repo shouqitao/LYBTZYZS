@@ -121,7 +121,6 @@
 - `dotnet test tests/LYBT.Tests.Server --filter ReportsCrossRole` — 3 通过
 - `dotnet test tests/LYBT.Tests.Server --filter HerbsBatchEmpty` — 3 通过
 - `dotnet test tests/LYBT.Tests.Desktop --filter ViewModels` — 10 通过 (212 全量)
-- `dotnet test tests/LYBT.Tests.E2E` — 8 通过
 - 全量新增 48 测试 (41 + 7 补齐)，0 失败（存量 8 环境失败除外，已隔离）
 - `dotnet test` 全量新增 0 失败，覆盖率 100%
 

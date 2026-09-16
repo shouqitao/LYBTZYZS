@@ -144,10 +144,11 @@ public static class SharedHost
     public static IServiceCollection AddSharedInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMemoryCache();
-        services.AddOutputCache();
         services.AddSignalR();
         services.AddHttpContextAccessor();
-        // 缓存失效服务（MedicalCase 模块依赖 ICacheInvalidationService）
+        // 缓存失效服务（MedicalCase/Catalog 模块依赖 ICacheInvalidationService）
+        // 注：原 AddOutputCache() 已移除——全仓 0 处 [OutputCache] 特性，属空转基建；
+        // CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
         return services;
     }

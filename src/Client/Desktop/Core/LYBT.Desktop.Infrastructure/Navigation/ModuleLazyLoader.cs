@@ -16,21 +16,36 @@ public class ModuleLazyLoader : IModuleLazyLoader
     /// <summary>
     /// 视图名 → 业务模块名映射
     /// </summary>
+    // 映射按各 Module.RegisterTypes 中 RegisterForNavigation 的实际注册方对齐。
+    // ClinicalModule 注册角色台与薄包装管理视图（View 在角色台，Control 在业务模块）。
     private static readonly Dictionary<string, string> ViewToModuleMap = new(StringComparer.Ordinal)
     {
-        { ViewNames.PatientManagement, "PatientsModule" },
-        { ViewNames.PatientSelection, "PatientsModule" },
-        { ViewNames.ClinicalWorkspace, "PatientsModule" },
-        { ViewNames.HerbManagement, "CatalogModule" },
-        { ViewNames.FormulaManagement, "CatalogModule" },
-        { ViewNames.UserManagement, "UsersModule" },
-        { ViewNames.MedicalCaseManagement, "MedicalCaseModule" },
-        { ViewNames.MedicalCaseWorkspace, "MedicalCaseModule" },
-        { ViewNames.MedicalCaseMasterDetail, "MedicalCaseModule" },
-        { ViewNames.RegistrationList, "RegistrationModule" },
-        { ViewNames.ReportsHome, "ReportsModule" },
-        { ViewNames.AuditLog, "MedicalCaseModule" },
+        // ClinicalModule
+        { ViewNames.ClinicalHome, "ClinicalModule" },
+        { ViewNames.ReceptionistHome, "ClinicalModule" },
+        { ViewNames.ClinicalWorkspace, "ClinicalModule" },
+        { ViewNames.PatientSelection, "ClinicalModule" },
+        { ViewNames.MedicalCaseWorkspace, "ClinicalModule" },
+        { ViewNames.PatientManagement, "ClinicalModule" },
+        { ViewNames.MedicalCaseManagement, "ClinicalModule" },
+        { ViewNames.HerbManagement, "ClinicalModule" },
+        { ViewNames.FormulaManagement, "ClinicalModule" },
+
+        // AdminModule
+        { ViewNames.UserManagement, "AdminModule" },
         { ViewNames.SystemSettings, "AdminModule" },
+
+        // MedicalCaseModule
+        { ViewNames.MedicalCaseMasterDetail, "MedicalCaseModule" },
+        { ViewNames.AuditLog, "MedicalCaseModule" },
+
+        // RegistrationModule
+        { ViewNames.RegistrationList, "RegistrationModule" },
+
+        // ReportsModule
+        { ViewNames.ReportsHome, "ReportsModule" },
+
+        // SysadminModule
         { ViewNames.LogLevelControl, "SysadminModule" },
         { ViewNames.Deployment, "SysadminModule" },
         { ViewNames.BackupManagement, "SysadminModule" },
@@ -69,10 +84,11 @@ public class ModuleLazyLoader : IModuleLazyLoader
     {
         if (_moduleLoadingService == null) return;
 
+        // ClinicalModule 已改 OnDemand：Doctor/Receptionist 主页视图由其注册，预加载保证首屏就绪
         var modulesToPreload = role switch
         {
-            UserRole.Doctor => new[] { "PatientsModule", "CatalogModule", "MedicalCaseModule" },
-            UserRole.Receptionist => new[] { "PatientsModule", "RegistrationModule" },
+            UserRole.Doctor => new[] { "ClinicalModule", "PatientsModule", "CatalogModule", "MedicalCaseModule" },
+            UserRole.Receptionist => new[] { "ClinicalModule", "PatientsModule", "RegistrationModule" },
             UserRole.Admin => new[] { "UsersModule", "ReportsModule" },
             UserRole.SuperAdmin => new[] { "UsersModule", "ReportsModule", "SysadminModule" },
             _ => Array.Empty<string>()

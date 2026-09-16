@@ -29,7 +29,7 @@ LYBT.Desktop.Clinical/
 ## CONVENTIONS
 
 - **Control reuse** — thin-wrapper views embed business-module `Controls/` (View 在角色台，Control 在业务模块); Clinical compiles against Patients/Catalog/MedicalCase/Registrations
-- **Role-based loading** — `ClinicalModule` is loaded `WhenAvailable` in `App.ConfigureModuleCatalog`
+- **Role-based loading** — `ClinicalModule` is loaded `OnDemand` in `App.ConfigureModuleCatalog`；Doctor/Receptionist 登录后经 `ModuleLazyLoader.EnsureModuleLoadedAsync` 导航到主页时拉起，`[ModuleDependency]` 保证 Patients/MedicalCase/Registration/CardReader 先加载
 - **Workflow-driven** — layout follows patient → consultation → prescription
 - **Child VMs** — `PendingQueueViewModel` / `CardReaderViewModel` derive from `ChildViewModelBase` and talk to the host via `IWorkspaceHost`
 

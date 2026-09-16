@@ -52,21 +52,9 @@ public static class DatabaseServiceCollectionExtensions
         });
         services.AddMemoryCache(); // 添加IMemoryCache服务
 
-        // 响应缓存配置
-        services.AddResponseCaching(options =>
-        {
-            options.MaximumBodySize = 100_000_000;  // 100MB
-            options.UseCaseSensitivePaths = false;
-        });
-
-        // 输出缓存注册（P-01）：ASP.NET Core 8 默认不缓存带 [Authorize] 的响应，
-        // 原 5 个策略（HerbsCache/FormulasCache/PatientsCache/PrescriptionsCache/MedicalCaseCache/UserPermissionsCache）
-        // 标注的端点全部带 [Authorize]，缓存从未命中，策略定义已全部删除。
-        // 保留裸 AddOutputCache() 仅使 IOutputCacheStore 可解析 —— CacheInvalidationService 依赖它按 tag 驱逐
-        // （实际生效的失效走 IMemoryCache.RemoveByPrefix，见 CacheInvalidationService）。
-        services.AddOutputCache();
-
-        // 缓存失效服务
+        // 缓存失效服务（MedicalCases/Catalog 模块通过 ICacheInvalidationService.InvalidateAsync 调用）
+        // P-01: 原 AddOutputCache()/AddResponseCaching() 已移除——全仓 0 处 [OutputCache]/[ResponseCache] 特性，
+        // 属空转基建；CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
 
         // unify-configuration-system: 验证关键配置

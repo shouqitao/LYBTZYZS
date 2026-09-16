@@ -111,6 +111,79 @@ public class LocalWebApiPatternTests
     }
 
     /// <summary>
+    /// P1-29b: 双端授权策略全树一致性——所有同名控制器的类级与方法级 [Authorize] Policy 必须一致。
+    /// 反射枚举 Remote/Local 同名控制器，逐方法比对 Policy；类级 Policy 作为方法级的回退。
+    /// </summary>
+    [Fact]
+    public void All_Same_Name_Controllers_Should_Have_Matching_Auth_Policies()
+    {
+        var localAssembly = typeof(LYBT.LocalWebAPI.Controllers.HealthController).Assembly;
+        var remoteAssembly = typeof(LYBT.WebAPI.Controllers.HealthController).Assembly;
+
+        var localControllers = localAssembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == LocalWebApiNamespace)
+            .Where(t => t.Name.EndsWith("Controller"))
+            .ToDictionary(t => t.Name, t => t);
+
+        var remoteControllers = remoteAssembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == "LYBT.WebAPI.Controllers")
+            .Where(t => t.Name.EndsWith("Controller"))
+            .ToDictionary(t => t.Name, t => t);
+
+        var mismatches = new List<string>();
+
+        foreach (var (name, localType) in localControllers)
+        {
+            if (!remoteControllers.TryGetValue(name, out var remoteType)) continue; // Local-only controllers (diagnostics etc.)
+
+            var localClassPolicy = GetClassPolicy(localType);
+            var remoteClassPolicy = GetClassPolicy(remoteType);
+            if (localClassPolicy != remoteClassPolicy)
+            {
+                mismatches.Add($"{name}: class-level policy Local='{localClassPolicy}' vs Remote='{remoteClassPolicy}'");
+            }
+
+            // 比对双方都有的 public 方法（action）
+            var localMethods = localType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly)
+                .Where(m => !m.IsSpecialName)
+                .ToDictionary(m => m.Name, m => m);
+
+            var remoteMethods = remoteType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly)
+                .Where(m => !m.IsSpecialName)
+                .ToDictionary(m => m.Name, m => m);
+
+            foreach (var (methodName, localMethod) in localMethods)
+            {
+                if (!remoteMethods.TryGetValue(methodName, out var remoteMethod)) continue;
+
+                var localPolicy = GetMethodPolicy(localMethod) ?? localClassPolicy;
+                var remotePolicy = GetMethodPolicy(remoteMethod) ?? remoteClassPolicy;
+                if (localPolicy != remotePolicy)
+                {
+                    mismatches.Add($"{name}.{methodName}: Local='{localPolicy}' vs Remote='{remotePolicy}'");
+                }
+            }
+        }
+
+        Assert.True(mismatches.Count == 0,
+            $"双端授权策略不一致:\n{string.Join("\n", mismatches)}");
+
+        static string? GetClassPolicy(System.Type t)
+        {
+            var attr = t.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true)
+                .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().FirstOrDefault();
+            return attr?.Policy;
+        }
+
+        static string? GetMethodPolicy(System.Reflection.MethodInfo m)
+        {
+            var attr = m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), true)
+                .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().FirstOrDefault();
+            return attr?.Policy;
+        }
+    }
+
+    /// <summary>
     /// P22: All LocalWebAPI controllers must be decorated with [ApiController].
     /// This ensures consistent ASP.NET Core behavior: automatic model validation,
     /// binding source inference, and problem details responses.

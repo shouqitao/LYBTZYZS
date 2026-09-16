@@ -15,8 +15,8 @@
 ## 2. 模块加载规范
 
 ### 2.1 模块分类
-- **核心模块**：`WhenAvailable`（AuthenticationModule, ClinicalModule, AdminModule, SysadminModule）
-- **业务模块**：`OnDemand`（PatientsModule, CatalogModule, MedicalCaseModule, RegistrationModule）
+- **核心模块**：`WhenAvailable`（AuthenticationModule, AdminModule, SysadminModule）
+- **业务模块**：`OnDemand`（ClinicalModule, PatientsModule, CatalogModule, MedicalCaseModule, RegistrationModule, UsersModule 等）
 
 ### 2.2 模块依赖
 使用 `[ModuleDependency]` 声明模块依赖，Prism 自动处理加载顺序。

@@ -118,7 +118,7 @@ sequenceDiagram
 | `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 药材、验方（**目标态**，见 §下方 D7 待对齐注） |
 | `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表 |
 | `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
-| `DoctorOnly` | `PolicyConstants.DoctorOnly` | SuperAdmin, Admin, Doctor | 医案创建、处方打印（操作级） |
+| `DoctorOnly` | `PolicyConstants.DoctorOnly` | Doctor | 医案创建、处方打印（操作级）——SSOT 见 [04-permissions.md](../01-product/04-permissions.md)「医案创建/处方打印 = Doctor 唯一」 |
 | `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具、患者删除/禁用 |
 | `AdminBusinessOnly` | `PolicyConstants.AdminBusinessOnly` | SuperAdmin, Admin | 纯管理业务操作（不含诊断） |
 | `SysAdminOnly` | `PolicyConstants.SysAdminOnly` | SuperAdmin | 配置中心、重启等系统运维端点 |
@@ -137,7 +137,7 @@ SuperAdmin → Admin → Doctor → Receptionist
 // AuthenticationServiceCollectionExtensions.cs
 options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
 options.AddPolicy(PolicyConstants.AdminBusinessOnly,     RequireRole("SuperAdmin", "Admin"));
-options.AddPolicy(PolicyConstants.DoctorOnly,           RequireRole("SuperAdmin", "Admin", "Doctor"));
+options.AddPolicy(PolicyConstants.DoctorOnly,           RequireRole("Doctor"));
 options.AddPolicy(PolicyConstants.DoctorOrAdmin,        RequireRole("SuperAdmin", "Admin", "Doctor"));
 options.AddPolicy(PolicyConstants.AdminOrSuperAdmin,    RequireRole("SuperAdmin", "Admin"));
 options.AddPolicy(PolicyConstants.SysAdminOnly,         RequireRole("SuperAdmin"));

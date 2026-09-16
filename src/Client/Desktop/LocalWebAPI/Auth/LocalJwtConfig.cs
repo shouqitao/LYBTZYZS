@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.Models.Enums;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
@@ -66,6 +68,30 @@ public static class LocalJwtConfig
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = tokenValidationParameters;
+
+            // P3 (US-USER-010): 已禁用/已删除用户令牌拒绝（令牌有效期内的状态拦截）
+            // 与 Remote AuthenticationServiceCollectionExtensions.OnTokenValidated 对齐
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        context.Fail("令牌缺少用户标识");
+                        return;
+                    }
+
+                    var userService = context.HttpContext.RequestServices.GetService<IUserCrossModuleService>();
+                    var user = userService != null
+                        ? await userService.GetUserBasicInfoAsync(userId, context.HttpContext.RequestAborted)
+                        : null;
+                    if (user == null || user.Status != CommonStatus.Enabled)
+                    {
+                        context.Fail("用户已被禁用或不存在");
+                    }
+                }
+            };
         });
 
         services.AddAuthorization(options =>

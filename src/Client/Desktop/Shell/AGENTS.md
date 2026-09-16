@@ -36,7 +36,7 @@ Shell/
 
 - **StartupPipeline** — Step-based startup pattern, each step implements `IStartupStep`
 - **Role-based modules** — `ApplicationBootstrapper.LoadModulesForRoleAsync()` loads modules per user role
-- **Explicit ModuleCatalog** — No DirectoryModuleCatalog; modules registered manually with `InitializationMode.WhenAvailable`
+- **Explicit ModuleCatalog** — No DirectoryModuleCatalog; modules registered manually in `App.ConfigureModuleCatalog` (Authentication/Admin/Sysadmin `WhenAvailable`; Clinical and business modules `OnDemand`)
 - **Two-phase Serilog** — Bootstrap logger → final logger
 
 ## ANTI-PATTERNS

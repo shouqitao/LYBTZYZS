@@ -1,12 +1,12 @@
 namespace LYBT.Infrastructure.Caching;
 
 /// <summary>
-/// 缓存失效服务接口 -- 统一管理 OutputCache Tag 失效 + MemoryCache 前缀清理
+/// 缓存失效服务接口 -- MemoryCache 前缀清理（P-01: OutputCache 已移除，仅 IMemoryCache 生效）
 /// </summary>
 public interface ICacheInvalidationService
 {
     /// <summary>
-    /// 按 tag 使对应的 OutputCache 和 MemoryCache 条目失效
+    /// 按 tag 使对应的 MemoryCache 条目失效
     /// </summary>
     /// <param name="tag">缓存 tag (如 "herbs", "formulas", "patients", "medicalcases")</param>
     /// <param name="cancellationToken">取消令牌</param>

@@ -91,7 +91,7 @@ Shell/
 
 | 类 | 设计依据 | 职责 |
 |----|---------|------|
-| **App** | PrismApplication 单实例模式 | 单实例 Mutex 防重复启动；Serilog 日志初始化；`ConfigureModuleCatalog` 加载 Core 模块 WhenAvailable + 业务模块 OnDemand；`RegisterTypes` 注册全部服务/对话框/主题；`OnInitialized` 显示主窗口并执行 `RunStartupAsync` |
+| **App** | PrismApplication 单实例模式 | 单实例 Mutex 防重复启动；Serilog 日志初始化；`ConfigureModuleCatalog` 加载 Auth/Admin/Sysadmin 为 WhenAvailable + Clinical/业务模块 OnDemand；`RegisterTypes` 注册全部服务/对话框/主题；`OnInitialized` 显示主窗口并执行 `RunStartupAsync` |
 | **HeaderControl/HeaderViewModel** | 顶部应用栏 48 | 按 framework 7 子元素 (品牌块36+标题17+弹性+分隔1×20+用户icon26+姓名13+角色12)，用户区点击打开个人资料 |
 | **SideNavControl/SideNavViewModel** | 左侧导航 240/64 | 汉堡40+分组标题11+菜单38 r10 选中primary，收拢仅图标居中；C+矩阵 4角色×3项；深色模式+退出在底部。展开态/宽度代理 `ISidebarStateManager`（SSOT，与宿主 Ctrl+M 同源），深色模式代理 `IThemeService` |
 | **FooterControl/FooterViewModel** | 底部状态栏 32 | 暖灰顶部描边，左组 API 状态（图标/颜色/文本均绑定 `ApiStatusIcon/ApiStatusColor/ApiStatusText`——随真实健康状态，禁止硬编码）+ 连接模式 gap16，右时间；Tick 订阅已从 MainWindow 迁移 |

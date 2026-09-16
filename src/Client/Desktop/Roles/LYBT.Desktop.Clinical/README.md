@@ -187,8 +187,8 @@ NuGet：`Prism.Core` / `Prism.DryIoc` / `Prism.Wpf`、`CommunityToolkit.Mvvm`、
 
 | 消费方 | 说明 |
 |--------|------|
-| Shell `App.ConfigureModuleCatalog` | `ClinicalModule` 以 `InitializationMode.WhenAvailable` 立即加载（Doctor / Receptionist 角色台） |
-| `Roles/LYBT.Desktop.Admin` | **无编译期引用**：Admin 的卡片按视图名导航到 `PatientManagement`/`HerbManagement`/`FormulaManagement`/`MedicalCaseManagement`，这些视图由 `ClinicalModule`（`WhenAvailable` 常驻加载）注册，运行时解析 |
+| Shell `App.ConfigureModuleCatalog` | `ClinicalModule` 以 `InitializationMode.OnDemand` 按需加载（Doctor / Receptionist 角色台；导航时由 `ModuleLazyLoader` 触发） |
+| `Roles/LYBT.Desktop.Admin` | **无编译期引用**：Admin 的卡片按视图名导航到 `PatientManagement`/`HerbManagement`/`FormulaManagement`/`MedicalCaseManagement`，这些视图由 `ClinicalModule`（`OnDemand`，首次导航时懒加载）注册，运行时解析 |
 
 ## 设计决策
 
