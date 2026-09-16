@@ -25,7 +25,7 @@
     -->
 
     <!-- 视觉基线 v1：按 medical-case-management.pen + layout-framework 对齐 -->
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="{DynamicResource SurfaceLevel0Brush}">
         <!--
             ========================================
             Master区域: 医案列表

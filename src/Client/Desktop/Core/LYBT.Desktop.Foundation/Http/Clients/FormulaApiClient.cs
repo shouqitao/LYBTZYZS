@@ -31,67 +31,69 @@ internal sealed class FormulaApiClient : IApiClientFormulas
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<FormulaListDto>>> GetFormulasAsync(
-        int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
-        => _api.GetFormulasAsync(page, pageSize, keyword, category);
+        int page = 1, int pageSize = 20, string? keyword = null, string? category = null,
+        CancellationToken ct = default)
+        => _api.GetFormulasAsync(page, pageSize, keyword, category, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id)
-        => _api.GetFormulaByIdAsync(id);
+    public Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id, CancellationToken ct = default)
+        => _api.GetFormulaByIdAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync(FormulaInputDto request)
-        => _api.CreateFormulaAsync(request);
+    public Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync(FormulaInputDto request, CancellationToken ct = default)
+        => _api.CreateFormulaAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, FormulaInputDto request)
-        => _api.UpdateFormulaAsync(id, request);
+    public Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, FormulaInputDto request, CancellationToken ct = default)
+        => _api.UpdateFormulaAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> DeleteFormulaAsync(Guid id)
-        => _api.DeleteFormulaAsync(id);
+    public Task<ApiResponse> DeleteFormulaAsync(Guid id, CancellationToken ct = default)
+        => _api.DeleteFormulaAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id)
-        => _api.CloneFormulaAsync(id);
+    public Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id, CancellationToken ct = default)
+        => _api.CloneFormulaAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id)
-        => _api.ToggleStatusAsync(id);
+    public Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        => _api.ToggleStatusAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => _api.BatchDeleteAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDeleteAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request)
-        => _api.BatchImportAsync(request);
+    public Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync(FormulaBatchImportInputDto request, CancellationToken ct = default)
+        => _api.BatchImportAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportFormulasAsync(string? category = null)
-        => _api.ExportFormulasAsync(category);
+    public Task<HttpResponseMessage> ExportFormulasAsync(string? category = null, CancellationToken ct = default)
+        => _api.ExportFormulasAsync(category, ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportTemplateAsync()
-        => _api.ExportTemplateAsync();
+    public Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default)
+        => _api.ExportTemplateAsync(ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
+    public Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default)
+        => _api.RestoreAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => _api.BatchEnableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchEnableAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => _api.BatchDisableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDisableAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20)
-        => _api.GetPendingValidationAsync(page, pageSize);
+    public Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
+        => _api.GetPendingValidationAsync(page, pageSize, ct);
 
     /// <inheritdoc />
     public Task<ApiResponse> ValidateHerbAsync(
-        Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request)
-        => _api.ValidateHerbAsync(formulaId, herbItemId, request);
+        Guid formulaId, Guid herbItemId, ValidateFormulaHerbInputDto request,
+        CancellationToken ct = default)
+        => _api.ValidateHerbAsync(formulaId, herbItemId, request, ct);
 }

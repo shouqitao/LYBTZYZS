@@ -17,51 +17,54 @@ internal interface IConfigurationApi
     /// 获取安全配置项集合
     /// </summary>
     [Refit.Get("/api/v1/configuration")]
-    Task<ApiResponse<Dictionary<string, string>>> GetConfigurationAsync();
+    Task<ApiResponse<Dictionary<string, string>>> GetConfigurationAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 获取单个配置项
     /// </summary>
     /// <param name="key">配置项名称（如 App:Name）</param>
+    /// <param name="ct">取消令牌</param>
     [Refit.Get("/api/v1/configuration/{key}")]
-    Task<ApiResponse<string>> GetValueAsync(string key);
+    Task<ApiResponse<string>> GetValueAsync(string key, CancellationToken ct = default);
 
     /// <summary>
     /// 修改单个配置项（白名单校验 + 持久化 + 热更新）
     /// </summary>
     /// <param name="key">配置项名称（如 App:Name）</param>
     /// <param name="value">新值</param>
+    /// <param name="ct">取消令牌</param>
     [Refit.Put("/api/v1/configuration/{key}")]
-    Task<ApiResponse> SetValueAsync(string key, [Refit.Body] string value);
+    Task<ApiResponse> SetValueAsync(string key, [Refit.Body] string value, CancellationToken ct = default);
 
     /// <summary>
     /// 批量修改配置项（白名单校验 + 持久化 + 热更新）
     /// </summary>
     /// <param name="settings">配置项键值集合</param>
+    /// <param name="ct">取消令牌</param>
     [Refit.Put("/api/v1/configuration")]
-    Task<ApiResponse> UpdateConfigurationAsync([Refit.Body] Dictionary<string, string> settings);
+    Task<ApiResponse> UpdateConfigurationAsync([Refit.Body] Dictionary<string, string> settings, CancellationToken ct = default);
 
     /// <summary>
     /// 验证生产环境配置
     /// </summary>
     [Refit.Post("/api/v1/configuration/validate")]
-    Task<ApiResponse> ValidateProductionAsync();
+    Task<ApiResponse> ValidateProductionAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 获取单节配置（SHELL-018 Phase 1: 敏感键掩码）
     /// </summary>
     [Refit.Get("/api/v1/configuration/sections/{section}")]
-    Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section);
+    Task<ApiResponse<Dictionary<string, string>>> GetSectionAsync(string section, CancellationToken ct = default);
 
     /// <summary>
     /// 修改单节配置（SHELL-018 Phase 1: 白名单逐键 + 生效语义）
     /// </summary>
     [Refit.Put("/api/v1/configuration/sections/{section}")]
-    Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, [Refit.Body] Dictionary<string, string> values);
+    Task<ApiResponse<ConfigUpdateResultDto>> UpdateSectionAsync(string section, [Refit.Body] Dictionary<string, string> values, CancellationToken ct = default);
 
     /// <summary>
     /// 延迟重启服务（SHELL-018 Phase 1: 30 秒后 StopApplication）
     /// </summary>
     [Refit.Post("/api/v1/configuration/restart")]
-    Task<ApiResponse> RestartAsync();
+    Task<ApiResponse> RestartAsync(CancellationToken ct = default);
 }

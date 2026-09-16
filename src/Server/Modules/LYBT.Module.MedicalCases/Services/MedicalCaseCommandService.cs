@@ -199,6 +199,9 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 记录打印完成（回写打印状态 + 记录日志）
+        /// design-03 §2：同一 DbContext（MedicalCaseDbContext：MedicalCases + MedicalCasePrintLogs）内的两步写
+        /// 用显式事务包住——原两次独立 SaveChanges 各自成事务，日志写入失败会留下「打印计数已 +1 却无打印日志」的半写状态
+        /// （P3-9 双真相以 PrintLogs 为准，半写会让打印状态与日志不符）；现两写同提交、失败同回滚。
         /// </summary>
         public async Task<LYBT.Shared.Models.Contracts.Common.Result<bool>> RecordPrintAsync(
             Guid medicalCaseId,
@@ -219,8 +222,6 @@ namespace LYBT.Module.MedicalCases.Services
             medicalCase.LastPrintedAt = now;
             medicalCase.PrintVersion += 1;
 
-            await _repository.UpdateAsync(medicalCase, cancellationToken);
-
             var printLog = new MedicalCasePrintLog
             {
                 Id = Guid.NewGuid(),
@@ -236,7 +237,18 @@ namespace LYBT.Module.MedicalCases.Services
                 UpdatedAt = now
             };
 
-            await _repository.AddPrintLogAsync(printLog, cancellationToken);
+            await using var transaction = await _repository.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                await _repository.UpdateAsync(medicalCase, cancellationToken);
+                await _repository.AddPrintLogAsync(printLog, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
 
             return LYBT.Shared.Models.Contracts.Common.Result<bool>.Success(true);
         }

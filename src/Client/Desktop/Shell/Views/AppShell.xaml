@@ -33,7 +33,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- 面包屑：首页 › 当前页（设计稿对齐，13px 灰 左对齐） -->
-                <Border Grid.Row="0" Background="#FBF7F3" BorderBrush="#E7DFD7" BorderThickness="0,0,0,1" Padding="16,0">
+                <Border Grid.Row="0" Background="{DynamicResource SurfaceLevel0Brush}" BorderBrush="#E7DFD7" BorderThickness="0,0,0,1" Padding="16,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="首页" FontFamily="Noto Sans SC" FontSize="13"
                                    Foreground="#8D6E63" VerticalAlignment="Center"/>

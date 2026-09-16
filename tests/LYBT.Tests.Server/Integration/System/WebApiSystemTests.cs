@@ -129,6 +129,11 @@ public class WebApiSystemTests : IClassFixture<WebApiTestFactory>
             "POST /api/v1/auth/logout",
             "POST /api/v1/auth/refresh",
             "POST /api/v1/auth/auto-login",
+            // 2026-09-16 登记：/auth/validate 由「类级 [Authorize] 拦截」改为 [AllowAnonymous] + 方法内自解析
+            // Authorization 头（缺失/格式错/令牌无效一律 401 + ApiResponse）。原类级拦截使方法内的 401 分支
+            // 不可达，客户端拿到的是框架默认 401 体而非 ApiResponse 契约；此改动与 LocalWebAPI 的匿名
+            // validate 语义对齐（见 docs/03-architecture/09-security-architecture.md §默认安全策略）。
+            "GET /api/v1/auth/validate",
         };
 
         using var client = CreateClient();

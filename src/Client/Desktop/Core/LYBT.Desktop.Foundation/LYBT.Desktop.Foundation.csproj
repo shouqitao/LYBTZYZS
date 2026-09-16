@@ -31,6 +31,10 @@
 <PackageReference Include="FluentValidation" />
     <PackageReference Include="Refit" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <!-- 设计 05：桌面私有 IHttpClientFactory（handler 池化/生命周期）+ Polly 弹性策略。
+         Desktop 主容器为 Prism.DryIoc，故经私有 ServiceCollection 构建工厂实例后注入 DryIoc。 -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
   </ItemGroup>
 
   <!-- Prism Framework -->

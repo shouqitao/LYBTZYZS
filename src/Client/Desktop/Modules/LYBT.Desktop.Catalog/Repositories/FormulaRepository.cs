@@ -32,7 +32,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _formulas.GetFormulasAsync(1, 100, keyword, null);
+                var response = await _formulas.GetFormulasAsync(1, 100, keyword, null, ct);
                 if (response.Data == null)
                     return [];
 
@@ -50,7 +50,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _formulas.CloneFormulaAsync(formulaId);
+                var response = await _formulas.CloneFormulaAsync(formulaId, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? $"克隆验方失败，ID: {formulaId}");
 
@@ -72,7 +72,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _formulas.GetPendingValidationAsync(page, pageSize);
+                var response = await _formulas.GetPendingValidationAsync(page, pageSize, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "获取待校验验方失败");
 
@@ -92,7 +92,8 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
                 var response = await _formulas.ValidateHerbAsync(
                     formulaId,
                     herbItemId,
-                    new ValidateFormulaHerbInputDto { SelectedHerbId = selectedHerbId });
+                    new ValidateFormulaHerbInputDto { SelectedHerbId = selectedHerbId },
+                    ct);
                 if (!response.Success)
                     throw new InvalidOperationException(response.Message ?? "药材校验失败");
 
@@ -112,7 +113,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _formulas.ToggleStatusAsync(id);
+                var response = await _formulas.ToggleStatusAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换验方状态失败");
 
@@ -128,7 +129,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _formulas.RestoreAsync(id);
+                var response = await _formulas.RestoreAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复验方失败");
 
@@ -142,22 +143,24 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => _formulas.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchDelete",
             "批量删除失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     /// <summary>批量启用/禁用验方。</summary>
     public async Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => status == CommonStatus.Enabled
-                ? _formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids })
-                : _formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => status == CommonStatus.Enabled
+                ? _formulas.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids }, c)
+                : _formulas.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchSetStatus",
             status == CommonStatus.Enabled ? "批量启用失败" : "批量禁用失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     #endregion
@@ -168,7 +171,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ExecuteImportAsync(
-            () => _formulas.BatchImportAsync(request),
+            c => _formulas.BatchImportAsync(request, c),
             "BatchImport",
             request.Formulas.Count,
             ct);
@@ -181,7 +184,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         {
             Logger.LogInformation("[REPO] Formula.ExportFormulas - Category={Category}", category);
 
-            var response = await _formulas.ExportFormulasAsync(category);
+            var response = await _formulas.ExportFormulasAsync(category, ct);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogWarning("[REPO] Formula.ExportFormulas failed: StatusCode={StatusCode}", response.StatusCode);
@@ -206,7 +209,7 @@ public sealed class FormulaRepository : EntityApiClientRepositoryBase<FormulaLis
         {
             Logger.LogInformation("[REPO] Formula.ExportTemplate started");
 
-            var response = await _formulas.ExportTemplateAsync();
+            var response = await _formulas.ExportTemplateAsync(ct);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogWarning("[REPO] Formula.ExportTemplate failed: StatusCode={StatusCode}", response.StatusCode);

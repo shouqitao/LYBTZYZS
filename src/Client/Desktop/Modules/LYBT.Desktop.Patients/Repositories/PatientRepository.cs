@@ -39,7 +39,7 @@ public sealed class PatientRepository
     {
         return await ExecuteAsync(async () =>
         {
-            var response = await _patients.GetPatientsAsync(1, 100, keyword);
+            var response = await _patients.GetPatientsAsync(1, 100, keyword, ct);
             if (response.Data == null)
                 return [];
             return response.Data.Items.ToList();
@@ -58,7 +58,7 @@ public sealed class PatientRepository
         try
         {
             Logger.LogInformation("[REPO] Patient.GetByIdNumber");
-            var response = await _patients.GetPatientsAsync(1, 100, idNumber);
+            var response = await _patients.GetPatientsAsync(1, 100, idNumber, ct);
             if (response.Data == null)
                 return null;
 
@@ -85,7 +85,7 @@ public sealed class PatientRepository
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ExecuteImportAsync(
-            () => _patients.BatchImportAsync(request),
+            c => _patients.BatchImportAsync(request, c),
             "BatchImport",
             request.Patients.Count,
             ct);
@@ -95,8 +95,8 @@ public sealed class PatientRepository
     {
         try
         {
-            var response = await _patients.ExportTemplateAsync();
-            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
+            var response = await _patients.ExportTemplateAsync(ct);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync(ct) : null;
         }
         catch (Exception ex)
         {
@@ -109,8 +109,8 @@ public sealed class PatientRepository
     {
         try
         {
-            var response = await _patients.ExportPatientsAsync(keyword);
-            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : null;
+            var response = await _patients.ExportPatientsAsync(keyword, ct);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync(ct) : null;
         }
         catch (Exception ex)
         {
@@ -128,7 +128,7 @@ public sealed class PatientRepository
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _patients.RestoreAsync(id);
+                var response = await _patients.RestoreAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复患者失败");
 
@@ -146,10 +146,11 @@ public sealed class PatientRepository
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => _patients.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchDelete",
             "批量删除患者失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     #endregion

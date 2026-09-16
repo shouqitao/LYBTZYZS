@@ -55,6 +55,7 @@
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Visibility="{Binding CreateCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="新增"
+                        AutomationProperties.Name="新增"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource AddIcon}"
@@ -73,6 +74,7 @@
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding RefreshCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="刷新"
+                        AutomationProperties.Name="刷新"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource RefreshIcon}"
@@ -94,6 +96,7 @@
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding ExportCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="导出"
+                        AutomationProperties.Name="导出"
                         Margin="4,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource ExportIcon}"
@@ -116,6 +119,7 @@
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding BatchEnableCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="批量启用"
+                        AutomationProperties.Name="批量启用"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource EnableIcon}"
@@ -134,6 +138,7 @@
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding BatchDisableCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
                         ToolTip="批量禁用"
+                        AutomationProperties.Name="批量禁用"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource DisableIcon}"
@@ -151,7 +156,8 @@
                 <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
                         Style="{StaticResource MaterialDesignRaisedButton}" Background="{DynamicResource ValidationErrorBrush}" Foreground="White" BorderThickness="0"
                         Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={x:Static converters:Cvt.NullToVis}}"
-                        ToolTip="批量删除">
+                        ToolTip="批量删除"
+                        AutomationProperties.Name="批量删除">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource DeleteIcon}"
                               Fill="White"

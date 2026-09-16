@@ -32,8 +32,9 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesAsync(
-        int page = 1, int pageSize = 20, string? keyword = null, bool includeAllDoctors = false)
-        => _api.GetMedicalCasesAsync(page, pageSize, keyword, includeAllDoctors);
+        int page = 1, int pageSize = 20, string? keyword = null, bool includeAllDoctors = false,
+        CancellationToken ct = default)
+        => _api.GetMedicalCasesAsync(page, pageSize, keyword, includeAllDoctors, ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<MedicalCaseListDto>>> QueryMedicalCasesAsync(
@@ -44,16 +45,17 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
         int pageIndex = 1,
         int pageSize = 20,
         bool includeAllDoctors = false,
-        int? limit = null)
-        => _api.QueryMedicalCasesAsync(queryType, patientId, doctorId, keyword, pageIndex, pageSize, includeAllDoctors, limit);
+        int? limit = null,
+        CancellationToken ct = default)
+        => _api.QueryMedicalCasesAsync(queryType, patientId, doctorId, keyword, pageIndex, pageSize, includeAllDoctors, limit, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id)
-        => _api.GetMedicalCaseByIdAsync(id);
+    public Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id, CancellationToken ct = default)
+        => _api.GetMedicalCaseByIdAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null)
-        => _api.GetPendingCasesAsync(patientId);
+    public Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default)
+        => _api.GetPendingCasesAsync(patientId, ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> SearchMedicalCasesAsync(
@@ -62,38 +64,40 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
         DateTime? startDate = null,
         DateTime? endDate = null,
         int page = 1,
-        int pageSize = 20)
-        => _api.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize);
+        int pageSize = 20,
+        CancellationToken ct = default)
+        => _api.SearchMedicalCasesAsync(patientName, diagnosisKeyword, startDate, endDate, page, pageSize, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync(MedicalCaseInputDto request)
-        => _api.CreateMedicalCaseAsync(request);
+    public Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync(MedicalCaseInputDto request, CancellationToken ct = default)
+        => _api.CreateMedicalCaseAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> DeleteMedicalCaseAsync(Guid id)
-        => _api.DeleteMedicalCaseAsync(id);
+    public Task<ApiResponse> DeleteMedicalCaseAsync(Guid id, CancellationToken ct = default)
+        => _api.DeleteMedicalCaseAsync(id, ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(
-        Guid medicalCaseId, SetPrescriptionFlagRequest request)
-        => _api.SetPrescriptionFlagAsync(medicalCaseId, request);
+        Guid medicalCaseId, SetPrescriptionFlagRequest request,
+        CancellationToken ct = default)
+        => _api.SetPrescriptionFlagAsync(medicalCaseId, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id)
-        => _api.CloseCaseAsync(id);
+    public Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id, CancellationToken ct = default)
+        => _api.CloseCaseAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(Guid id, ConsultationInputDto? request = null)
-        => _api.SuspendAsync(id, request);
+    public Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(Guid id, ConsultationInputDto? request = null, CancellationToken ct = default)
+        => _api.SuspendAsync(id, request, ct);
 
     /// <inheritdoc />
     /// <remarks>
     /// The underlying IMedicalCaseApi returns Refit.IApiResponse; this adapter converts it
     /// to the shared ApiResponse type used by IApiClientMedicalCases.
     /// </remarks>
-    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request = null)
+    public async Task<ApiResponse> CancelMedicalCaseAsync(Guid id, CancelMedicalCaseRequest? request = null, CancellationToken ct = default)
     {
-        var refitResponse = await _api.CancelMedicalCaseAsync(id, request).ConfigureAwait(false);
+        var refitResponse = await _api.CancelMedicalCaseAsync(id, request, ct).ConfigureAwait(false);
         if (refitResponse.IsSuccessStatusCode)
             return new ApiResponse { Success = true, Message = "操作成功" };
 
@@ -101,26 +105,26 @@ internal sealed class MedicalCaseApiClient : IApiClientMedicalCases
     }
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request)
-        => _api.UpdateStatusAsync(id, request);
+    public Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(Guid id, MedicalCaseStatusInputDto request, CancellationToken ct = default)
+        => _api.UpdateStatusAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(Guid id, MedicalCaseInputDto request)
-        => _api.SaveAsync(id, request);
+    public Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(Guid id, MedicalCaseInputDto request, CancellationToken ct = default)
+        => _api.SaveAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => _api.BatchDeleteAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDeleteAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id)
-        => _api.GetPermissionsAsync(id);
+    public Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id, CancellationToken ct = default)
+        => _api.GetPermissionsAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(Guid id, RecordPrintRequest request)
-        => _api.RecordPrintAsync(id, request);
+    public Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(Guid id, RecordPrintRequest request, CancellationToken ct = default)
+        => _api.RecordPrintAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid id, int page = 1, int pageSize = 20)
-        => _api.GetAuditLogsAsync(id, page, pageSize);
+    public Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(Guid id, int page = 1, int pageSize = 20, CancellationToken ct = default)
+        => _api.GetAuditLogsAsync(id, page, pageSize, ct);
 }

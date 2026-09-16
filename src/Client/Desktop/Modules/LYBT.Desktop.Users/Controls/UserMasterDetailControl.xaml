@@ -24,7 +24,7 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="{DynamicResource SurfaceLevel0Brush}">
         <!--
             ========================================
             Master区域: 用户列表

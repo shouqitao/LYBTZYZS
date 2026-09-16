@@ -17,9 +17,9 @@ internal sealed class DeployApiClient : IApiClientDeploy
         _api = api ?? throw new ArgumentNullException(nameof(api));
     }
 
-    public Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content)
-        => _api.UploadAsync(content);
+    public Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content, CancellationToken ct = default)
+        => _api.UploadAsync(content, ct);
 
-    public Task<ApiResponse<object>> RestartAsync()
-        => _api.RestartAsync();
+    public Task<ApiResponse<object>> RestartAsync(CancellationToken ct = default)
+        => _api.RestartAsync(ct);
 }

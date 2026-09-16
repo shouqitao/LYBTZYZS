@@ -36,28 +36,28 @@ internal sealed class IdentityApiClient : IApiClientIdentity
     }
 
     /// <inheritdoc />
-    public Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest)
-        => _authApi.LoginAsync(loginRequest);
+    public Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest, CancellationToken ct = default)
+        => _authApi.LoginAsync(loginRequest, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request)
-        => _authApi.LoginWithAutoTokenAsync(request);
+    public Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request, CancellationToken ct = default)
+        => _authApi.LoginWithAutoTokenAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest)
-        => _authApi.LogoutAsync(logoutRequest);
+    public Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest, CancellationToken ct = default)
+        => _authApi.LogoutAsync(logoutRequest, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request)
-        => _authApi.RefreshTokenAsync(request);
+    public Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default)
+        => _authApi.RefreshTokenAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync()
-        => _authApi.ValidateTokenAsync();
+    public Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync(CancellationToken ct = default)
+        => _authApi.ValidateTokenAsync(ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync()
-        => _authApi.HealthCheckAsync();
+    public Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync(CancellationToken ct = default)
+        => _authApi.HealthCheckAsync(ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<SecurityAuditLogDto>>> GetSecurityAuditLogsAsync(
@@ -66,70 +66,73 @@ internal sealed class IdentityApiClient : IApiClientIdentity
         string? eventType = null,
         string? userName = null,
         DateTime? from = null,
-        DateTime? to = null)
+        DateTime? to = null,
+        CancellationToken ct = default)
         => _authApi.GetSecurityAuditLogsAsync(
             page,
             pageSize,
             eventType,
             userName,
             from?.ToString("O"),
-            to?.ToString("O"));
+            to?.ToString("O"),
+            ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(
-        int page = 1, int pageSize = 20, string? keyword = null)
-        => _userApi.GetUsersAsync(page, pageSize, keyword);
+        int page = 1, int pageSize = 20, string? keyword = null,
+        CancellationToken ct = default)
+        => _userApi.GetUsersAsync(page, pageSize, keyword, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id)
-        => _userApi.GetUserByIdAsync(id);
+    public Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id, CancellationToken ct = default)
+        => _userApi.GetUserByIdAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request)
-        => _userApi.CreateUserAsync(request);
+    public Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request, CancellationToken ct = default)
+        => _userApi.CreateUserAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request)
-        => _userApi.UpdateUserAsync(id, request);
+    public Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request, CancellationToken ct = default)
+        => _userApi.UpdateUserAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> DeleteUserAsync(Guid id)
-        => _userApi.DeleteUserAsync(id);
+    public Task<ApiResponse> DeleteUserAsync(Guid id, CancellationToken ct = default)
+        => _userApi.DeleteUserAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request)
-        => _userApi.ChangeProfileAsync(id, request);
+    public Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request, CancellationToken ct = default)
+        => _userApi.ChangeProfileAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request)
-        => _userApi.ChangePasswordAsync(id, request);
+    public Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request, CancellationToken ct = default)
+        => _userApi.ChangePasswordAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request)
-        => _userApi.ResetPasswordAsync(id, request);
+    public Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request, CancellationToken ct = default)
+        => _userApi.ResetPasswordAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id)
-        => _userApi.ToggleStatusAsync(id);
+    public Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        => _userApi.ToggleStatusAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => _userApi.BatchDeleteAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _userApi.BatchDeleteAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id)
-        => _userApi.RestoreAsync(id);
+    public Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default)
+        => _userApi.RestoreAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => _userApi.BatchEnableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _userApi.BatchEnableAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => _userApi.BatchDisableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _userApi.BatchDisableAsync(request, ct);
 
     /// <inheritdoc />
     /// <remarks>Local-only method — not available in remote Refit mode.</remarks>
-    public Task<UserDetailDto> GetCurrentUserAsync()
+    public Task<UserDetailDto> GetCurrentUserAsync(CancellationToken ct = default)
         => throw new NotSupportedException("GetCurrentUserAsync is a local-only method and is not available in remote mode.");
 }

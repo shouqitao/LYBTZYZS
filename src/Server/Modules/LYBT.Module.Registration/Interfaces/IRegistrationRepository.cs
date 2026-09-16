@@ -10,7 +10,8 @@ namespace LYBT.Module.Registrations.Interfaces;
 public interface IRegistrationRepository
 {
     /// <summary>
-    /// 开启数据库事务（接诊即建：Registration + MedicalCase 原子提交）
+    /// 开启挂号 DbContext 的事务。只覆盖挂号侧写入——医案在 MedicalCaseDbContext（另一连接），
+    /// 跨 DbContext 一致性由幂等键 + 补偿保证（design-03 §2 方案 C），本事务不构成跨库原子性。
     /// </summary>
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 

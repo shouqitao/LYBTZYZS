@@ -135,7 +135,12 @@ public static class ClientErrorMessageMapper
         {
             // 优先处理AppException及其子类（如ApiException），使用其UserMessage
             AppException appEx => GetAppExceptionMessage(appEx),
+            // 领域错误层统一：本地与远程非 2xx 均抛 ApiClientException（优先服务端消息）
+            ApiClientException apiEx => GetApiClientExceptionMessage(apiEx),
             HttpRequestException httpEx => GetHttpExceptionMessage(httpEx),
+            // HttpClient.Timeout 触发的 TaskCanceledException（InnerException 为 TimeoutException）
+            // 必须排在 TaskCanceledException 之前，否则超时被误报为「操作被取消」。
+            TaskCanceledException tce when tce.InnerException is TimeoutException => "操作超时，请稍后重试",
             TaskCanceledException => "操作被取消",
             TimeoutException => "操作超时，请稍后重试",
             SocketException => "网络连接失败，请检查网络设置",
@@ -145,10 +150,24 @@ public static class ClientErrorMessageMapper
             ArgumentException argEx => GetArgumentExceptionMessage(argEx),
             InvalidOperationException invOpEx => GetInvalidOperationExceptionMessage(invOpEx),
             FormatException => "数据格式不正确",
-            // 检查是否为Refit.ApiException（通过类型名匹配，避免直接引用Refit包）
-            _ when exception.GetType().FullName == "Refit.ApiException" => GetRefitApiExceptionMessage(exception),
             _ => DefaultErrorMessage
         };
+    }
+
+    /// <summary>
+    /// 获取 <see cref="ApiClientException"/> 的用户消息。
+    /// 优先使用服务端返回的面向用户消息（信封 <c>message</c>）；无则按 HTTP 状态码映射。
+    /// </summary>
+    private static string GetApiClientExceptionMessage(ApiClientException exception)
+    {
+        if (!string.IsNullOrWhiteSpace(exception.ServerMessage))
+        {
+            return exception.ServerMessage!;
+        }
+
+        return exception.StatusCode is { } statusCode
+            ? GetUserMessageFromStatusCode(statusCode)
+            : DefaultErrorMessage;
     }
 
     /// <summary>
@@ -168,102 +187,6 @@ public static class ClientErrorMessageMapper
         }
 
         return DefaultErrorMessage;
-    }
-
-    /// <summary>
-    /// 从Refit.ApiException中提取错误消息
-    /// 通过反射获取Content属性并解析服务器返回的错误信息
-    /// </summary>
-    private static string GetRefitApiExceptionMessage(Exception exception)
-    {
-        try
-        {
-            // 尝试获取StatusCode属性
-            var statusCodeProp = exception.GetType().GetProperty("StatusCode");
-            if (statusCodeProp != null)
-            {
-                var statusCode = (HttpStatusCode?)statusCodeProp.GetValue(exception);
-                if (statusCode.HasValue)
-                {
-                    // 尝试获取Content属性以提取服务器返回的具体错误消息
-                    var contentProp = exception.GetType().GetProperty("Content");
-                    if (contentProp != null)
-                    {
-                        var content = contentProp.GetValue(exception) as string;
-                        if (!string.IsNullOrWhiteSpace(content))
-                        {
-                            var extractedMessage = ExtractMessageFromApiResponse(content);
-                            if (!string.IsNullOrWhiteSpace(extractedMessage))
-                            {
-                                return extractedMessage;
-                            }
-                        }
-                    }
-
-                    // 如果无法从Content提取消息，使用状态码映射
-                    return GetUserMessageFromStatusCode(statusCode.Value);
-                }
-            }
-        }
-        catch
-        {
-            // 反射失败时忽略，返回默认消息
-        }
-
-        return DefaultErrorMessage;
-    }
-
-    /// <summary>
-    /// 从API响应内容中提取错误消息
-    /// 支持ApiResponse和ValidationProblemDetails格式
-    /// </summary>
-    private static string? ExtractMessageFromApiResponse(string content)
-    {
-        try
-        {
-            // 使用JsonDocument解析响应内容
-            using var doc = JsonDocument.Parse(content);
-            var root = doc.RootElement;
-
-            // 检查message字段
-            if (root.TryGetProperty("message", out var messageProp) &&
-                messageProp.ValueKind == JsonValueKind.String)
-            {
-                var message = messageProp.GetString();
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    return message;
-                }
-            }
-
-            // 检查detail字段（ProblemDetails格式）
-            if (root.TryGetProperty("detail", out var detailProp) &&
-                detailProp.ValueKind == JsonValueKind.String)
-            {
-                var detail = detailProp.GetString();
-                if (!string.IsNullOrWhiteSpace(detail))
-                {
-                    return detail;
-                }
-            }
-
-            // 检查title字段（ProblemDetails格式）
-            if (root.TryGetProperty("title", out var titleProp) &&
-                titleProp.ValueKind == JsonValueKind.String)
-            {
-                var title = titleProp.GetString();
-                if (!string.IsNullOrWhiteSpace(title))
-                {
-                    return title;
-                }
-            }
-        }
-        catch (JsonException)
-        {
-            // JSON解析失败，忽略
-        }
-
-        return null;
     }
 
     /// <summary>

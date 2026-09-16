@@ -130,14 +130,14 @@ public abstract class E2ETestBase : Integration.LocalApi.LocalWebApiTestBase, ID
     /// <summary>断言桌面客户端调用返回 403（HttpRequestException.StatusCode）。</summary>
     protected static async Task AssertForbiddenAsync(Func<Task> action)
     {
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(action);
+        var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(action);
         Assert.Equal(System.Net.HttpStatusCode.Forbidden, ex.StatusCode);
     }
 
     /// <summary>断言桌面客户端调用返回 401（HttpRequestException.StatusCode）。</summary>
     protected static async Task AssertUnauthorizedAsync(Func<Task> action)
     {
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(action);
+        var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(action);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, ex.StatusCode);
     }
     /// <summary>释放登录锁（CA1001）。</summary>

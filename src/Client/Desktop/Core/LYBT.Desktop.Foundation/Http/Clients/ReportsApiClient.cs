@@ -14,12 +14,12 @@ internal sealed class ReportsApiClient : IApiClientReports
         _api = api ?? throw new ArgumentNullException(nameof(api));
     }
 
-    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _api.GetDailyIncomeAsync(startDate, endDate);
+    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _api.GetDailyIncomeAsync(startDate, endDate, ct);
 
-    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _api.GetDailyConsultationsAsync(startDate, endDate);
+    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _api.GetDailyConsultationsAsync(startDate, endDate, ct);
 
-    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _api.GetDailyHerbUsageAsync(startDate, endDate);
+    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _api.GetDailyHerbUsageAsync(startDate, endDate, ct);
 }

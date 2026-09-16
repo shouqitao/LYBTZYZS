@@ -45,6 +45,14 @@ namespace LYBT.Module.MedicalCases.Services
             return await _referenceRepository.GetRecentAsync(patientId, count, cancellationToken);
         }
 
+        /// <summary>
+        /// 为快速看诊创建医案并关联挂号。
+        /// 幂等（design-03 §2 方案 C）：幂等键 RegistrationId 的权威关联存放在挂号侧（Registrations.MedicalCaseId），
+        /// MedicalCase 实体无 RegistrationId 列、本模块亦无按 RegistrationId 的查询，故判重不在本方法内实现——
+        /// 由调用方 StartVisitCommandHandler 在读出的挂号聚合上幂等短路（已关联即复用，不重复建案）。
+        /// 不得改用 patientId 判重：同一患者跨挂号/跨医生本就可有多条医案，按患者判重会误复用历史或他人医案。
+        /// 跨 DbContext 写入（本方法 + 挂号侧）不具备原子性，失败补偿同样由调用方负责。
+        /// </summary>
         /// <inheritdoc/>
         public async Task<Guid?> CreateMedicalCaseForRegistrationAsync(Guid patientId, Guid registrationId, Guid doctorId, CancellationToken cancellationToken = default)
         {

@@ -17,15 +17,15 @@ internal sealed class DiagnosticsHttpApiClient : HttpApiClientBase, IApiClientDi
 {
     public DiagnosticsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
-    public Task<ApiResponse<object>> GetLoggingStatusAsync()
-        => GetAndWrapAsync<object>("/api/v1/diagnostics/logging/status");
+    public Task<ApiResponse<object>> GetLoggingStatusAsync(CancellationToken ct = default)
+        => GetAndWrapAsync<object>("/api/v1/diagnostics/logging/status", ct);
 
-    public Task<ApiResponse<object>> EnableDebugModeAsync(EnableDebugModeRequest request)
-        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/enable", request);
+    public Task<ApiResponse<object>> EnableDebugModeAsync(EnableDebugModeRequest request, CancellationToken ct = default)
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/enable", request, ct);
 
-    public Task<ApiResponse<object>> DisableDebugModeAsync()
-        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/disable", new object());
+    public Task<ApiResponse<object>> DisableDebugModeAsync(CancellationToken ct = default)
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/debug/disable", new object(), ct);
 
-    public Task<ApiResponse<object>> SetLoggingLevelAsync(SetLoggingLevelRequest request)
-        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/level", request);
+    public Task<ApiResponse<object>> SetLoggingLevelAsync(SetLoggingLevelRequest request, CancellationToken ct = default)
+        => PostAndWrapAsync<object>("/api/v1/diagnostics/logging/level", request, ct);
 }

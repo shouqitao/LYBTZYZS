@@ -18,15 +18,16 @@ internal sealed class RegistrationsHttpApiClient : HttpApiClientBase, IApiClient
 {
     public RegistrationsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
-    public Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request)
-        => PostAndWrapAsync<RegistrationDetailDto>("/api/v1/registrations", request);
+    public Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<RegistrationDetailDto>("/api/v1/registrations", request, ct);
 
-    public Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id)
-        => GetAndWrapAsync<RegistrationDetailDto>($"/api/v1/registrations/{id}");
+    public Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => GetAndWrapAsync<RegistrationDetailDto>($"/api/v1/registrations/{id}", ct);
 
     public async Task<ApiResponse<PagedResult<RegistrationListDto>>> GetListAsync(
         int page, int pageSize, string? keyword, DateTime? startDate, DateTime? endDate,
-        Guid? patientId, Guid? doctorId)
+        Guid? patientId, Guid? doctorId,
+        CancellationToken ct = default)
     {
         var url = BuildPagedUrl("/api/v1/registrations", page, pageSize,
             ("keyword", keyword),
@@ -34,22 +35,22 @@ internal sealed class RegistrationsHttpApiClient : HttpApiClientBase, IApiClient
             ("endDate", endDate?.ToString("O")),
             ("patientId", patientId?.ToString()),
             ("doctorId", doctorId?.ToString()));
-        return await GetPagedAndWrapAsync<RegistrationListDto>(url);
+        return await GetPagedAndWrapAsync<RegistrationListDto>(url, ct);
     }
 
-    public async Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId)
+    public async Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId, CancellationToken ct = default)
     {
         var url = "/api/v1/registrations/queue";
         if (doctorId.HasValue) url += $"?doctorId={doctorId.Value}";
-        return await GetAndWrapAsync<List<RegistrationListDto>>(url);
+        return await GetAndWrapAsync<List<RegistrationListDto>>(url, ct);
     }
 
-    public async Task<ApiResponse<Guid>> StartVisitAsync(Guid id)
-        => await SendAndWrapAsync<Guid>($"/api/v1/registrations/{id}/start-visit", HttpMethod.Put);
+    public async Task<ApiResponse<Guid>> StartVisitAsync(Guid id, CancellationToken ct = default)
+        => await SendAndWrapAsync<Guid>($"/api/v1/registrations/{id}/start-visit", HttpMethod.Put, ct: ct);
 
-    public async Task<ApiResponse> CancelAsync(Guid id)
+    public async Task<ApiResponse> CancelAsync(Guid id, CancellationToken ct = default)
     {
-        await PutVoidAsync($"/api/v1/registrations/{id}/cancel");
+        await PutVoidAsync($"/api/v1/registrations/{id}/cancel", ct: ct);
         return WrapSuccess();
     }
 }

@@ -20,34 +20,40 @@ public interface IEntityApiSegment<TListDto, TDetailDto, TInputDto>
     /// <param name="pageSize">每页条数（默认 20）</param>
     /// <param name="keyword">搜索关键词（可选）</param>
     /// <param name="category">分类筛选（可选；无分类的实体忽略）</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<TListDto>>> GetPagedAsync(
         int page = 1,
         int pageSize = 20,
         string? keyword = null,
-        string? category = null);
+        string? category = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 按 ID 获取实体详情。
     /// </summary>
     /// <param name="id">实体 ID</param>
-    Task<ApiResponse<TDetailDto>> GetByIdAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 创建新实体。
     /// </summary>
     /// <param name="request">实体输入数据</param>
-    Task<ApiResponse<TDetailDto>> CreateAsync(TInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<TDetailDto>> CreateAsync(TInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 更新现有实体。
     /// </summary>
     /// <param name="id">实体 ID</param>
     /// <param name="request">实体输入数据</param>
-    Task<ApiResponse<TDetailDto>> UpdateAsync(Guid id, TInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<TDetailDto>> UpdateAsync(Guid id, TInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 删除实体（软删除）。
     /// </summary>
     /// <param name="id">实体 ID</param>
-    Task<ApiResponse> DeleteAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse> DeleteAsync(Guid id, CancellationToken ct = default);
 }

@@ -29,11 +29,13 @@ public interface IApiClientMedicalCases
     /// <param name="pageSize">Page size (default 20).</param>
     /// <param name="keyword">Search keyword (optional).</param>
     /// <param name="includeAllDoctors">Include cases from all doctors (admin use).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesAsync(
         int page = 1,
         int pageSize = 20,
         string? keyword = null,
-        bool includeAllDoctors = false);
+        bool includeAllDoctors = false,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 统一医案查询端点。
@@ -46,6 +48,7 @@ public interface IApiClientMedicalCases
     /// <param name="pageSize">Page size (default 20).</param>
     /// <param name="includeAllDoctors">Include cases from all doctors.</param>
     /// <param name="limit">Result limit (used with Recent query type).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<MedicalCaseListDto>>> QueryMedicalCasesAsync(
         MedicalCaseQueryType queryType = MedicalCaseQueryType.All,
         Guid? patientId = null,
@@ -54,19 +57,22 @@ public interface IApiClientMedicalCases
         int pageIndex = 1,
         int pageSize = 20,
         bool includeAllDoctors = false,
-        int? limit = null);
+        int? limit = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 按 ID 获取医案详情。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
-    Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 获取未完成医案（Status=Draft/Active）。
     /// </summary>
     /// <param name="patientId">Patient ID filter (optional).</param>
-    Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync(Guid? patientId = null, CancellationToken ct = default);
 
     /// <summary>
     /// 跨医案分页搜索。
@@ -77,26 +83,30 @@ public interface IApiClientMedicalCases
     /// <param name="endDate">End date filter (optional).</param>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<MedicalCaseDetailDto>>> SearchMedicalCasesAsync(
         string? patientName = null,
         string? diagnosisKeyword = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
         int page = 1,
-        int pageSize = 20);
+        int pageSize = 20,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 创建新医案。
     /// Epic #1961：使用统一 MedicalCaseInputDto。
     /// </summary>
     /// <param name="request">Medical case input data.</param>
-    Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync(MedicalCaseInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync(MedicalCaseInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 删除医案（软删除）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
-    Task<ApiResponse> DeleteMedicalCaseAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse> DeleteMedicalCaseAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 设置处方标志。
@@ -104,34 +114,41 @@ public interface IApiClientMedicalCases
     /// </summary>
     /// <param name="medicalCaseId">Medical case ID.</param>
     /// <param name="request">Prescription flag request.</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(
         Guid medicalCaseId,
-        SetPrescriptionFlagRequest request);
+        SetPrescriptionFlagRequest request,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 关闭医案（标记为 Completed）。
     /// Epic #1676 Phase 4 Task 4.1
     /// </summary>
     /// <param name="id">Medical case ID.</param>
-    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 挂起医案。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Consultation input data (optional).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(
         Guid id,
-        ConsultationInputDto? request = null);
+        ConsultationInputDto? request = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 取消医案（软删除 + 审计日志）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Cancel request data (optional).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse> CancelMedicalCaseAsync(
         Guid id,
-        CancelMedicalCaseRequest? request = null);
+        CancelMedicalCaseRequest? request = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 更新医案状态。
@@ -139,39 +156,47 @@ public interface IApiClientMedicalCases
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Status update data.</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(
         Guid id,
-        MedicalCaseStatusInputDto request);
+        MedicalCaseStatusInputDto request,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 聚合保存（一次调用保存诊断 + 处方）。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Unified input DTO with diagnosis and prescription data.</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(
         Guid id,
-        MedicalCaseInputDto request);
+        MedicalCaseInputDto request,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 批量删除医案。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 获取当前用户的医案权限。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
-    Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 记录医案打印完成。
     /// </summary>
     /// <param name="id">Medical case ID.</param>
     /// <param name="request">Print record request.</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(
         Guid id,
-        RecordPrintRequest request);
+        RecordPrintRequest request,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 获取医案的审计日志（分页）。
@@ -179,9 +204,11 @@ public interface IApiClientMedicalCases
     /// <param name="id">Medical case ID.</param>
     /// <param name="page">Page number (default 1).</param>
     /// <param name="pageSize">Page size (default 20).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(
         Guid id,
         int page = 1,
-        int pageSize = 20);
+        int pageSize = 20,
+        CancellationToken ct = default);
 
 }

@@ -31,54 +31,55 @@ internal sealed class HerbApiClient : IApiClientHerbs
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<HerbListDto>>> GetHerbsAsync(
-        int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
-        => _api.GetHerbsAsync(page, pageSize, keyword, category);
+        int page = 1, int pageSize = 20, string? keyword = null, string? category = null,
+        CancellationToken ct = default)
+        => _api.GetHerbsAsync(page, pageSize, keyword, category, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id)
-        => _api.GetHerbByIdAsync(id);
+    public Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id, CancellationToken ct = default)
+        => _api.GetHerbByIdAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbDetailDto>> CreateHerbAsync(HerbInputDto request)
-        => _api.CreateHerbAsync(request);
+    public Task<ApiResponse<HerbDetailDto>> CreateHerbAsync(HerbInputDto request, CancellationToken ct = default)
+        => _api.CreateHerbAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, HerbInputDto request)
-        => _api.UpdateHerbAsync(id, request);
+    public Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, HerbInputDto request, CancellationToken ct = default)
+        => _api.UpdateHerbAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> DeleteHerbAsync(Guid id)
-        => _api.DeleteHerbAsync(id);
+    public Task<ApiResponse> DeleteHerbAsync(Guid id, CancellationToken ct = default)
+        => _api.DeleteHerbAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request)
-        => _api.BatchImportAsync(request);
+    public Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
+        => _api.BatchImportAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportTemplateAsync()
-        => _api.ExportTemplateAsync();
+    public Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default)
+        => _api.ExportTemplateAsync(ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportHerbsAsync(string? keyword = null)
-        => _api.ExportHerbsAsync(keyword);
+    public Task<HttpResponseMessage> ExportHerbsAsync(string? keyword = null, CancellationToken ct = default)
+        => _api.ExportHerbsAsync(keyword, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id)
-        => _api.ToggleStatusAsync(id);
+    public Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        => _api.ToggleStatusAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => _api.BatchDeleteAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDeleteAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
+    public Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default)
+        => _api.RestoreAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => _api.BatchEnableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchEnableAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => _api.BatchDisableAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDisableAsync(request, ct);
 }

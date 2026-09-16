@@ -31,46 +31,47 @@ internal sealed class PatientApiClient : IApiClientPatients
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<PatientListDto>>> GetPatientsAsync(
-        int page = 1, int pageSize = 20, string? keyword = null)
-        => _api.GetPatientsAsync(page, pageSize, keyword);
+        int page = 1, int pageSize = 20, string? keyword = null,
+        CancellationToken ct = default)
+        => _api.GetPatientsAsync(page, pageSize, keyword, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> GetPatientByIdAsync(Guid id)
-        => _api.GetPatientByIdAsync(id);
+    public Task<ApiResponse<PatientDetailDto>> GetPatientByIdAsync(Guid id, CancellationToken ct = default)
+        => _api.GetPatientByIdAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> CreatePatientAsync(PatientInputDto request)
-        => _api.CreatePatientAsync(request);
+    public Task<ApiResponse<PatientDetailDto>> CreatePatientAsync(PatientInputDto request, CancellationToken ct = default)
+        => _api.CreatePatientAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> UpdatePatientAsync(Guid id, PatientInputDto request)
-        => _api.UpdatePatientAsync(id, request);
+    public Task<ApiResponse<PatientDetailDto>> UpdatePatientAsync(Guid id, PatientInputDto request, CancellationToken ct = default)
+        => _api.UpdatePatientAsync(id, request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse> DeletePatientAsync(Guid id)
-        => _api.DeletePatientAsync(id);
+    public Task<ApiResponse> DeletePatientAsync(Guid id, CancellationToken ct = default)
+        => _api.DeletePatientAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request)
-        => _api.BatchImportAsync(request);
+    public Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync(PatientBatchImportInputDto request, CancellationToken ct = default)
+        => _api.BatchImportAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportTemplateAsync()
-        => _api.ExportTemplateAsync();
+    public Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default)
+        => _api.ExportTemplateAsync(ct);
 
     /// <inheritdoc />
-    public Task<HttpResponseMessage> ExportPatientsAsync(string? keyword = null)
-        => _api.ExportPatientsAsync(keyword);
+    public Task<HttpResponseMessage> ExportPatientsAsync(string? keyword = null, CancellationToken ct = default)
+        => _api.ExportPatientsAsync(keyword, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => _api.BatchDeleteAsync(request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => _api.BatchDeleteAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id)
-        => _api.ToggleStatusAsync(id);
+    public Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        => _api.ToggleStatusAsync(id, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id)
-        => _api.RestoreAsync(id);
+    public Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default)
+        => _api.RestoreAsync(id, ct);
 }

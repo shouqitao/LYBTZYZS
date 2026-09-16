@@ -16,7 +16,7 @@
     d:DesignHeight="800"
     d:DesignWidth="1200"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    Background="#FBF7F3"
+    Background="{DynamicResource SurfaceLevel0Brush}"
     mc:Ignorable="d">
 
     <!-- 视觉基线 v1 -->

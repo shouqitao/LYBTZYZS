@@ -1,0 +1,21 @@
+<!--
+    ValidationStyles.xaml - 表单校验提示样式
+
+    提取自 5 个编辑控件中逐字重复的本地定义（内容完全一致）：
+    PatientEditControl / HerbEditControl / FormulaEditControl /
+    MedicalCaseEditControl / UserEditControl
+
+    引用方式：Style="{DynamicResource ValidationErrorMessageVisibleStyle}"
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 校验错误提示（绑定各编辑控件的 ErrorsSource[...]，由 Visibility 控制显隐） -->
+    <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Margin" Value="0,4,0,0"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MinHeight" Value="16"/>
+    </Style>
+</ResourceDictionary>

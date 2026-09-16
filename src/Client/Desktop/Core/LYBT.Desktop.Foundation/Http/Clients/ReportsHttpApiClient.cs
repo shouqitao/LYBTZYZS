@@ -17,12 +17,12 @@ internal sealed class ReportsHttpApiClient : HttpApiClientBase, IApiClientReport
 {
     public ReportsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
-    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate, DateTime? endDate, CancellationToken ct = default)
+        => GetAndWrapAsync<DailyIncomeDto>($"/api/v1/reports/daily/income?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}", ct);
 
-    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyConsultationDto>($"/api/v1/reports/daily/consultations?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate, DateTime? endDate, CancellationToken ct = default)
+        => GetAndWrapAsync<DailyConsultationDto>($"/api/v1/reports/daily/consultations?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}", ct);
 
-    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate, DateTime? endDate)
-        => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate, DateTime? endDate, CancellationToken ct = default)
+        => GetAndWrapAsync<DailyHerbUsageDto>($"/api/v1/reports/daily/herbs?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}", ct);
 }

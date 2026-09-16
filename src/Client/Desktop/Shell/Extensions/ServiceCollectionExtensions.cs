@@ -102,6 +102,8 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 SizeLimit = 1000, CompactionPercentage = 0.25, ExpirationScanFrequency = TimeSpan.FromMinutes(5)
             }));
+            // 键登记表：为前缀失效提供无需反射的实现（见 DesktopCacheKeyRegistry）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Caching.DesktopCacheKeyRegistry>();
             containerRegistry.RegisterSingleton<IDesktopCacheManager, LYBT.Desktop.Foundation.Caching.DesktopCacheManager>();
         }
 

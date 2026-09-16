@@ -14,7 +14,7 @@
              d:DataContext="{d:DesignInstance vm:UserMasterDetailViewModel}"
              mc:Ignorable="d">
     <!-- 视觉基线 v1：bg-warm 铺满 文字居中 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <userControls:UserMasterDetailControl x:Name="UserMasterDetailControl" />
     </Grid>
 </UserControl>

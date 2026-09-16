@@ -16,31 +16,32 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<PagedResult<PatientListDto>>> GetPatientsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
+            [Refit.Query] string? keyword = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取患者详情
         /// </summary>
         [Refit.Get("/api/v1/patients/{id}")]
-        Task<ApiResponse<PatientDetailDto>> GetPatientByIdAsync(Guid id);
+        Task<ApiResponse<PatientDetailDto>> GetPatientByIdAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 创建患者
         /// </summary>
         [Refit.Post("/api/v1/patients")]
-        Task<ApiResponse<PatientDetailDto>> CreatePatientAsync([Refit.Body] PatientInputDto request);
+        Task<ApiResponse<PatientDetailDto>> CreatePatientAsync([Refit.Body] PatientInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 更新患者
         /// </summary>
         [Refit.Put("/api/v1/patients/{id}")]
-        Task<ApiResponse<PatientDetailDto>> UpdatePatientAsync(Guid id, [Refit.Body] PatientInputDto request);
+        Task<ApiResponse<PatientDetailDto>> UpdatePatientAsync(Guid id, [Refit.Body] PatientInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
         [Refit.Delete("/api/v1/patients/{id}")]
-        Task<ApiResponse> DeletePatientAsync(Guid id);
+        Task<ApiResponse> DeletePatientAsync(Guid id, CancellationToken ct = default);
 
         // ========== Epic #1934: 批量导入/导出功能 ==========
 
@@ -50,38 +51,39 @@ namespace LYBT.Desktop.Contracts.Api
         /// Note: Server端需要实现对应的 POST /api/v1/patients/batch-import endpoint
         /// </summary>
         [Refit.Post("/api/v1/patients/batch-import")]
-        Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportInputDto request);
+        Task<ApiResponse<PatientBatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 下载患者导入模板（JSON，2026-08-13：Excel→JSON）
         /// </summary>
         /// <returns>JSON 模板文件流（包含示例数据）</returns>
         [Refit.Get("/api/v1/patients/import-template")]
-        Task<HttpResponseMessage> ExportTemplateAsync();
+        Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 导出患者数据（JSON，2026-08-13：Excel→JSON）
         /// </summary>
         /// <param name="keyword">搜索关键词（可选）</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>包含患者数据的 JSON 文件流</returns>
         [Refit.Get("/api/v1/patients/export")]
-        Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
+        Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null, CancellationToken ct = default);
         /// <summary>
         /// 批量删除患者
         /// </summary>
         [Refit.Post("/api/v1/patients/batch-delete")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 切换患者状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/patients/{id}/toggle-status")]
-        Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id);
+        Task<ApiResponse<PatientDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 恢复已删除的患者
         /// </summary>
         [Refit.Post("/api/v1/patients/{id}/restore")]
-        Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id);
+        Task<ApiResponse<PatientDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default);
     }
 }

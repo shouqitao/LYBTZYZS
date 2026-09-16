@@ -36,7 +36,7 @@ public class TokenRefreshE2ETests : E2ETestBase
     {
         await LoginAsAdminAsync();
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => IdentityApi.RefreshTokenAsync(
+        await Assert.ThrowsAnyAsync<HttpRequestException>(() => IdentityApi.RefreshTokenAsync(
             new RefreshTokenRequest { RefreshToken = "invalid-refresh-token" }));
     }
 

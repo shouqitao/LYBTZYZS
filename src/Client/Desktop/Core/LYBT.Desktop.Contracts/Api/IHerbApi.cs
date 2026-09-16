@@ -16,31 +16,32 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,
-            [Refit.Query] string? category = null);
+            [Refit.Query] string? category = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取草药详情
         /// </summary>
         [Refit.Get("/api/v1/herbs/{id}")]
-        Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id);
+        Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 创建草药
         /// </summary>
         [Refit.Post("/api/v1/herbs")]
-        Task<ApiResponse<HerbDetailDto>> CreateHerbAsync([Refit.Body] HerbInputDto request);
+        Task<ApiResponse<HerbDetailDto>> CreateHerbAsync([Refit.Body] HerbInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 更新草药
         /// </summary>
         [Refit.Put("/api/v1/herbs/{id}")]
-        Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, [Refit.Body] HerbInputDto request);
+        Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, [Refit.Body] HerbInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 删除草药
         /// </summary>
         [Refit.Delete("/api/v1/herbs/{id}")]
-        Task<ApiResponse> DeleteHerbAsync(Guid id);
+        Task<ApiResponse> DeleteHerbAsync(Guid id, CancellationToken ct = default);
 
         // ========== Epic #1962: 批量导入/导出功能（参考患者模块） ==========
 
@@ -49,46 +50,47 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/herbs/batch-import")]
         Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(
-            [Refit.Body] HerbBatchImportInputDto request);
+            [Refit.Body] HerbBatchImportInputDto request,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 下载药材导入模板
         /// </summary>
         [Refit.Get("/api/v1/herbs/import-template")]
-        Task<HttpResponseMessage> ExportTemplateAsync();
+        Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 导出药材数据（JSON，2026-08-13：Excel→JSON）
         /// </summary>
         [Refit.Get("/api/v1/herbs/export")]
-        Task<HttpResponseMessage> ExportHerbsAsync([Refit.Query] string? keyword = null);
+        Task<HttpResponseMessage> ExportHerbsAsync([Refit.Query] string? keyword = null, CancellationToken ct = default);
         /// <summary>
         /// 切换药材状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/herbs/{id}/toggle-status")]
-        Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id);
+        Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default);
         /// <summary>
         /// 批量删除药材（软删除）
         /// </summary>
         [Refit.Post("/api/v1/herbs/batch-delete")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 恢复已删除的药材
         /// </summary>
         [Refit.Post("/api/v1/herbs/{id}/restore")]
-        Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id);
+        Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 批量启用药材
         /// </summary>
         [Refit.Post("/api/v1/herbs/batch-enable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 批量禁用药材
         /// </summary>
         [Refit.Post("/api/v1/herbs/batch-disable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
     }
 }

@@ -39,7 +39,8 @@ public class DoctorLocalTests : LocalWebApiTestBase
         };
 
         var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", input);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // 2026-09-16 契约对齐：只读资源创建统一返回 201（此前 Local 为 200，与 Remote 的 CreatedAtAction 不一致）
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
         json.GetProperty("success").GetBoolean().Should().BeTrue();

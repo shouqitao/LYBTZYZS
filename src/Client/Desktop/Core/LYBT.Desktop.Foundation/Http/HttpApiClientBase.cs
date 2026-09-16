@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
@@ -100,17 +101,26 @@ internal abstract class HttpApiClientBase
         return ApiResponse<T>.CreateSuccess(raw!);
     }
 
-    protected static async Task EnsureSuccessOrThrowAsync(HttpResponseMessage response)
+    /// <summary>
+    /// 统一非 2xx 响应 → <see cref="ApiClientException"/>（本地与远程同一领域异常形状）。
+    /// 响应体若为 <c>ApiResponse</c> 信封则解析出 <c>message</c>/<c>errors.code</c>；
+    /// 若为 ProblemDetails 则取 <c>detail</c>/<c>title</c>；解析失败时退化为原始响应体。
+    /// </summary>
+    protected static async Task EnsureSuccessOrThrowAsync(
+        HttpResponseMessage response,
+        CancellationToken ct = default)
     {
         if (response.IsSuccessStatusCode)
             return;
 
-        var errorContent = await response.Content.ReadAsStringAsync();
+        var errorContent = await response.Content.ReadAsStringAsync(ct);
+        var (errorCode, serverMessage) = ApiErrorEnvelope.TryExtract(errorContent);
+
         var message = !string.IsNullOrWhiteSpace(errorContent)
             ? errorContent
             : $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}";
 
-        throw new HttpRequestException(message, null, response.StatusCode);
+        throw new ApiClientException(message, response.StatusCode, errorCode, serverMessage);
     }
 
     protected static ApiResponse WrapSuccess(string message = "操作成功")
@@ -158,7 +168,7 @@ internal abstract class HttpApiClientBase
                 _ => throw new ArgumentException($"Unsupported HTTP method: {method.Method}")
             };
         }
-        await EnsureSuccessOrThrowAsync(response);
+        await EnsureSuccessOrThrowAsync(response, ct);
         return response;
     }
 
@@ -220,7 +230,7 @@ internal abstract class HttpApiClientBase
     {
         var client = CreateClient();
         var response = await client.GetAsync(url, ct);
-        await EnsureSuccessOrThrowAsync(response);
+        await EnsureSuccessOrThrowAsync(response, ct);
         return response;
     }
 }

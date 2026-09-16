@@ -16,71 +16,72 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,
-            [Refit.Query] string? category = null);
+            [Refit.Query] string? category = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取验方详情
         /// </summary>
         [Refit.Get("/api/v1/formulas/{id}")]
-        Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> GetFormulaByIdAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 创建验方
         /// </summary>
         [Refit.Post("/api/v1/formulas")]
-        Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
+        Task<ApiResponse<FormulaDetailDto>> CreateFormulaAsync([Refit.Body] FormulaInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 更新验方
         /// </summary>
         [Refit.Put("/api/v1/formulas/{id}")]
-        Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
+        Task<ApiResponse<FormulaDetailDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 删除验方
         /// </summary>
         [Refit.Delete("/api/v1/formulas/{id}")]
-        Task<ApiResponse> DeleteFormulaAsync(Guid id);
+        Task<ApiResponse> DeleteFormulaAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 克隆验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/clone")]
-        Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> CloneFormulaAsync(Guid id, CancellationToken ct = default);
         // 原Issue #1349/#1348为FormulaValidationViewModel设计，该ViewModel已删除
         /// <summary>
         /// 切换验方状态（启用/禁用）
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
-        Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default);
         /// <summary>
         /// 批量删除验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-delete")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
         /// <summary>
         /// 批量导入验方数据
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-import")]
-        Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request);
+        Task<ApiResponse<FormulaBatchImportResultDto>> BatchImportAsync([Refit.Body] FormulaBatchImportInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 导出验方数据（JSON 含 Herbs 明细，2026-08-13：Excel→JSON；P2 category 筛选）
         /// </summary>
         [Refit.Get("/api/v1/formulas/export")]
-        Task<HttpResponseMessage> ExportFormulasAsync([Refit.Query] string? category = null);
+        Task<HttpResponseMessage> ExportFormulasAsync([Refit.Query] string? category = null, CancellationToken ct = default);
 
         /// <summary>
         /// 下载验方导入模板
         /// </summary>
         [Refit.Get("/api/v1/formulas/import-template")]
-        Task<HttpResponseMessage> ExportTemplateAsync();
+        Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 恢复已删除的验方
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/restore")]
-        Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id);
+        Task<ApiResponse<FormulaDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 获取待校验验方列表（分页——US-FORM-007，服务端返回 PagedResult&lt;FormulaDetailDto&gt;）
@@ -88,7 +89,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Get("/api/v1/formulas/pending-validation")]
         Task<ApiResponse<PagedResult<FormulaDetailDto>>> GetPendingValidationAsync(
             [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20);
+            [Refit.Query] int pageSize = 20,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 校验验方中的药材（绑定到系统药材库）
@@ -97,18 +99,19 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse> ValidateHerbAsync(
             Guid formulaId,
             Guid herbItemId,
-            [Refit.Body] ValidateFormulaHerbInputDto request);
+            [Refit.Body] ValidateFormulaHerbInputDto request,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 批量启用药方
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-enable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 批量禁用药方
         /// </summary>
         [Refit.Post("/api/v1/formulas/batch-disable")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
     }
 }

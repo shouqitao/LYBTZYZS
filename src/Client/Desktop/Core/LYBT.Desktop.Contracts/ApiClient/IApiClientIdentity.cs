@@ -29,13 +29,13 @@ public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
     /// Issue #1824
     /// </summary>
     /// <returns>Detailed validation result.</returns>
-    Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync();
+    Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync(CancellationToken ct = default);
 
     /// <summary>
     /// API 服务健康检查。
     /// </summary>
     /// <returns>Health check response.</returns>
-    Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
+    Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 分页查询安全审计日志（US-SHELL-014）。
@@ -46,7 +46,8 @@ public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
         string? eventType = null,
         string? userName = null,
         DateTime? from = null,
-        DateTime? to = null);
+        DateTime? to = null,
+        CancellationToken ct = default);
 
     // ========== 用户管理扩展端点（IUserManagementApiClient 含 CRUD/Profile/ToggleStatus） ==========
 
@@ -54,7 +55,8 @@ public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
     /// 批量删除用户。
     /// </summary>
     /// <param name="request">Batch delete input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default);
 
     // ========== Local-only methods ==========
 
@@ -62,42 +64,46 @@ public interface IApiClientIdentity : IUserManagementApiClient, IAuthApiClient
     /// 恢复软删除的用户。
     /// </summary>
     /// <param name="id">User ID.</param>
-    Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<UserDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 批量启用用户。
     /// </summary>
     /// <param name="request">Batch input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 批量禁用用户。
     /// </summary>
     /// <param name="request">Batch input with IDs.</param>
-    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request, CancellationToken ct = default);
 
     // ========== Local-only methods ==========
 
     /// <summary>
     /// 获取当前已认证用户（仅本地模式）。
     /// </summary>
-    Task<UserDetailDto> GetCurrentUserAsync();
+    Task<UserDetailDto> GetCurrentUserAsync(CancellationToken ct = default);
 
     // ========== 泛型段接口默认实现（转发到上方实体命名方法，实现类无需改动） ==========
 
     Task<ApiResponse<PagedResult<UserListDto>>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.GetPagedAsync(
-        int page, int pageSize, string? keyword, string? category)
-        => GetUsersAsync(page, pageSize, keyword);
+        int page, int pageSize, string? keyword, string? category,
+        CancellationToken ct)
+        => GetUsersAsync(page, pageSize, keyword, ct);
 
-    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.GetByIdAsync(Guid id)
-        => GetUserByIdAsync(id);
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.GetByIdAsync(Guid id, CancellationToken ct)
+        => GetUserByIdAsync(id, ct);
 
-    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.CreateAsync(UserInputDto request)
-        => CreateUserAsync(request);
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.CreateAsync(UserInputDto request, CancellationToken ct)
+        => CreateUserAsync(request, ct);
 
-    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.UpdateAsync(Guid id, UserInputDto request)
-        => UpdateUserAsync(id, request);
+    Task<ApiResponse<UserDetailDto>> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.UpdateAsync(Guid id, UserInputDto request, CancellationToken ct)
+        => UpdateUserAsync(id, request, ct);
 
-    Task<ApiResponse> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.DeleteAsync(Guid id)
-        => DeleteUserAsync(id);
+    Task<ApiResponse> IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>.DeleteAsync(Guid id, CancellationToken ct)
+        => DeleteUserAsync(id, ct);
 }

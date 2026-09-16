@@ -22,6 +22,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 用户登录认证
         /// </summary>
         /// <param name="loginRequest">登录请求信息 - 包含用户名、密码、记住我选项</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间</returns>
         /// <remarks>
         /// <para>功能: 验证用户凭据，生成JWT访问令牌和刷新令牌</para>
@@ -29,12 +30,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>安全: PBKDF2密码哈希验证、失败次数限制、IP地址记录</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/login")]
-        Task<ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest);
+        Task<ApiResponse<LoginResponse>> LoginAsync([Refit.Body] LoginRequest loginRequest, CancellationToken ct = default);
 
         /// <summary>
         /// 使用AutoLoginToken自动登录
         /// </summary>
         /// <param name="request">自动登录请求 - 包含用户名和AutoLoginToken</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>登录响应 - 包含JWT令牌、用户信息、过期时间、新的AutoLoginToken</returns>
         /// <remarks>
         /// <para>功能: 使用本地存储的AutoLoginToken进行自动登录</para>
@@ -42,12 +44,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>更新: 成功登录后返回新的AutoLoginToken（Token轮换机制）</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/auto-login")]
-        Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync([Refit.Body] AutoLoginRequest request);
+        Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync([Refit.Body] AutoLoginRequest request, CancellationToken ct = default);
 
         /// <summary>
         /// 用户登出操作
         /// </summary>
         /// <param name="logoutRequest">登出请求信息</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>登出结果确认</returns>
         /// <remarks>
         /// <para>功能: 使当前JWT令牌失效，清理服务端会话状态</para>
@@ -56,12 +59,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Post("/api/v1/auth/logout")]
         [Refit.Headers("Authorization: Bearer")]
-        Task<ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest);
+        Task<ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest, CancellationToken ct = default);
 
         /// <summary>
         /// 刷新访问令牌 - Issue #1838
         /// </summary>
         /// <param name="request">刷新令牌请求</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>新的令牌对（包含新的AccessToken和RefreshToken）</returns>
         /// <remarks>
         /// <para>功能: 使用RefreshToken获取新的AccessToken和RefreshToken</para>
@@ -69,7 +73,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>过期: AccessToken和RefreshToken过期时间由appsettings配置决定</para>
         /// </remarks>
         [Refit.Post("/api/v1/auth/refresh")]
-        Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
+        Task<ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request, CancellationToken ct = default);
 
         // Issue #1909: ChangeSysAdminPasswordAsync已移除
         // SuperAdmin密码修改现统一使用IUserApi.ChangePasswordAsync
@@ -78,6 +82,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 验证Token并返回详细信息 - Issue #1824
         /// </summary>
         /// <param name="request">Token验证请求</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>详细的验证结果</returns>
         /// <remarks>
         /// <para>功能: 验证指定的Token并返回用户信息和过期时间</para>
@@ -85,7 +90,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </remarks>
         [Refit.Get("/api/v1/auth/validate")]
         [Refit.Headers("Authorization: Bearer")]
-        Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync();
+        Task<ApiResponse<ValidateTokenResponse>> ValidateTokenAsync(CancellationToken ct = default);
 
         /// <summary>
         /// API服务健康状态检查
@@ -97,7 +102,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>响应: 返回服务状态信息，包含状态和时间戳，无需认证</para>
         /// </remarks>
         [Refit.Get("/api/v1/health")]
-        Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync();
+        Task<ApiResponse<HealthCheckResponse>> HealthCheckAsync(CancellationToken ct = default);
 
         /// <summary>
         /// 分页查询安全审计日志（US-SHELL-014，仅 SuperAdmin）
@@ -110,6 +115,7 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] string? eventType = null,
             [Refit.Query] string? userName = null,
             [Refit.Query] string? from = null,
-            [Refit.Query] string? to = null);
+            [Refit.Query] string? to = null,
+            CancellationToken ct = default);
     }
 }

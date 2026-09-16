@@ -41,7 +41,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _identity.GetUsersAsync(1, 100, keyword);
+                var response = await _identity.GetUsersAsync(1, 100, keyword, ct);
                 if (response.Data == null)
                     return [];
 
@@ -60,7 +60,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
             async () =>
             {
                 // 通过搜索找到匹配的用户
-                var response = await _identity.GetUsersAsync(1, 100, username);
+                var response = await _identity.GetUsersAsync(1, 100, username, ct);
                 if (response.Data == null)
                     throw new InvalidOperationException($"用户 {username} 不存在");
 
@@ -85,7 +85,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogDebug("[REPO] User.GetDoctors started");
 
-            var response = await _identity.GetUsersAsync(1, 100, null);
+            var response = await _identity.GetUsersAsync(1, 100, null, ct);
             if (response.Data?.Items == null)
             {
                 Logger.LogWarning("[REPO] User.GetDoctors -> Empty result");
@@ -112,7 +112,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _identity.ChangeProfileAsync(userId, dto);
+                var response = await _identity.ChangeProfileAsync(userId, dto, ct);
                 if (response.Success && response.Data != null)
                 {
                     Logger.LogInformation("[REPO] User.ChangeProfile completed - UserId={UserId}", userId);
@@ -134,7 +134,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogInformation("[REPO] User.ChangePassword - UserId={UserId}", userId);
 
-            var response = await _identity.ChangePasswordAsync(userId, request);
+            var response = await _identity.ChangePasswordAsync(userId, request, ct);
             if (response.Success)
             {
                 Logger.LogInformation("[REPO] User.ChangePassword completed - UserId={UserId}", userId);
@@ -162,7 +162,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         {
             Logger.LogDebug("[REPO] User.ResetPassword - UserId={UserId}", userId);
 
-            var apiResponse = await _identity.ResetPasswordAsync(userId, request);
+            var apiResponse = await _identity.ResetPasswordAsync(userId, request, ct);
             if (apiResponse.Success && apiResponse.Data != null)
             {
                 Logger.LogInformation("[REPO] User.ResetPassword completed - UserId={UserId}", userId);
@@ -191,7 +191,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _identity.ToggleStatusAsync(id);
+                var response = await _identity.ToggleStatusAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换用户状态失败");
 
@@ -208,7 +208,7 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _identity.RestoreAsync(id);
+                var response = await _identity.RestoreAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复用户失败");
 
@@ -222,22 +222,24 @@ public sealed class UserRepository : EntityApiClientRepositoryBase<UserListDto, 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _identity.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => _identity.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchDelete",
             "批量删除失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     /// <summary>批量启用/禁用用户（远程与本地端点均支持）。</summary>
     public async Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => status == CommonStatus.Enabled
-                ? _identity.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids })
-                : _identity.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => status == CommonStatus.Enabled
+                ? _identity.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids }, c)
+                : _identity.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchSetStatus",
             status == CommonStatus.Enabled ? "批量启用失败" : "批量禁用失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
 

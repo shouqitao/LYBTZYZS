@@ -13,12 +13,14 @@ using DryIoc;
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Configuration.Options.Client;
 using LYBT.Shared.Logging.Correlation;
 using LYBT.Shared.Logging.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Prism.DryIoc;
@@ -47,8 +49,6 @@ public static class UnifiedApiClientExtensions
         configuration
             .GetSection(LYBT.Shared.Configuration.Options.Client.ApiClientOptions.SectionName)
             .Bind(apiOptions);
-        var ignoreSslErrors = apiOptions.IgnoreSslErrors;
-        var timeoutSeconds = apiOptions.TimeoutSeconds;
 
         var refitSettings = new RefitSettings
         {
@@ -60,64 +60,42 @@ public static class UnifiedApiClientExtensions
                     Converters = { new JsonStringEnumConverter() },
                 }
             ),
+            // 领域错误层统一：远程非 2xx 与本地（HttpApiClientBase.EnsureSuccessOrThrowAsync）
+            // 抛同一 ApiClientException，上层无需再区分 Refit.ApiException / HttpRequestException。
+            ExceptionFactory = async response =>
+            {
+                var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var (errorCode, serverMessage) = ApiErrorEnvelope.TryExtract(body);
+                var message = !string.IsNullOrWhiteSpace(body)
+                    ? body
+                    : $"HTTP {(int)response.StatusCode} {response.ReasonPhrase}";
+                return new ApiClientException(message, response.StatusCode, errorCode, serverMessage);
+            },
         };
 
         // Get the underlying DryIoc container via Prism extension method
         var container = containerRegistry.GetContainer();
 
-        // Factory for Remote-mode HttpClient with full handler chain
+        // 私有 IHttpClientFactory（handler 池化/生命周期 + Polly 弹性）：桌面主容器是 DryIoc，
+        // 无法直接 AddHttpClient，故由 DesktopHttpTransportFactory 用私有 ServiceCollection 构建后
+        // 注入 DryIoc。先建 handler 提供者，再构建工厂，最后回填工厂引用（两阶段避免循环）。
+        var handlerProvider = new DryIocHttpHandlerProvider(container, apiOptions);
+        var transportProvider = DesktopHttpTransportFactory.Build(apiOptions, handlerProvider);
+        var transportFactory = transportProvider.GetRequiredService<IHttpClientFactory>();
+        handlerProvider.AttachFactory(transportFactory);
+        containerRegistry.RegisterInstance<IHttpClientFactory>(transportFactory);
+
+        // 远程：RefitApiClient 持有的单一 HttpClient（链由工厂装配，模式切换时重建客户端）
         Func<string, HttpClient> remoteHttpClientFactory = baseUrl =>
         {
-            var httpHandler = new HttpClientHandler();
-            if (ignoreSslErrors)
-                httpHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-
-            var tokenStorage = container.Resolve<ITokenStorageService>();
-            var credentialVault = container.Resolve<ICredentialVault>();
-
-            var apiClientOptions = Options.Create(apiOptions);
-            // T5.4: 优先通过 IHttpClientFactory（Polly + 15s Timeout），回退为手工链（无工厂时）
-            IHttpClientFactory? httpClientFactory = null;
-            try { if (container.IsRegistered<IHttpClientFactory>()) httpClientFactory = container.Resolve<IHttpClientFactory>(); } catch { }
-            var tokenRefreshHandler = new TokenRefreshHandler(
-                tokenStorage,
-                credentialVault,
-                httpClientFactory,
-                apiClientOptions,
-                container.Resolve<ILogger<TokenRefreshHandler>>(),
-                userActivityState: null
-            );
-            tokenRefreshHandler.InnerHandler = httpHandler;
-
-            var authHandler = new AuthorizationMessageHandler(
-                tokenStorage,
-                container.Resolve<ILogger<AuthorizationMessageHandler>>()
-            );
-            authHandler.InnerHandler = tokenRefreshHandler;
-
-            var loggingHandler = new LoggingHttpHandler(
-                container.Resolve<ILogger<LoggingHttpHandler>>(),
-                container.Resolve<ICorrelationIdProvider>()
-            );
-            loggingHandler.InnerHandler = authHandler;
-
-            return new HttpClient(loggingHandler)
-            {
-                BaseAddress = new Uri(baseUrl),
-                Timeout = TimeSpan.FromSeconds(timeoutSeconds),
-            };
+            var client = transportFactory.CreateClient(DesktopHttpTransportFactory.RemoteClientName);
+            client.BaseAddress = new Uri(baseUrl);
+            return client;
         };
 
-        // Factory for Local-mode IHttpClientFactory
-        // 本地端点同样受 [Authorize] 保护：工厂注入 AuthorizationMessageHandler，
-        // 使本地请求与远程一致携带 Bearer Token（此前缺失导致本地授权端点恒 401）。
+        // 本地：把具名客户端包装为 IHttpClientFactory（HttpApiClientBase 每次 CreateClient 取新包装）
         Func<string, IHttpClientFactory> localHttpClientFactory = baseUrl =>
-            new LocalApiHttpClientFactory(
-                new Uri(baseUrl),
-                TimeSpan.FromSeconds(timeoutSeconds),
-                container.Resolve<ITokenStorageService>(),
-                container.Resolve<ILogger<AuthorizationMessageHandler>>()
-            );
+            new NamedLocalApiClientFactory(transportFactory, new Uri(baseUrl), apiOptions);
 
         containerRegistry.RegisterSingleton<IApiClient>(resolver =>
         {

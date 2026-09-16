@@ -15,11 +15,11 @@ internal interface IDeployApi
     /// 上传更新包
     /// </summary>
     [Refit.Post("/api/v1/deploy/upload")]
-    Task<ApiResponse<object>> UploadAsync([Refit.Body] MultipartFormDataContent content);
+    Task<ApiResponse<object>> UploadAsync([Refit.Body] MultipartFormDataContent content, CancellationToken ct = default);
 
     /// <summary>
     /// 重启服务
     /// </summary>
     [Refit.Post("/api/v1/deploy/restart")]
-    Task<ApiResponse<object>> RestartAsync();
+    Task<ApiResponse<object>> RestartAsync(CancellationToken ct = default);
 }

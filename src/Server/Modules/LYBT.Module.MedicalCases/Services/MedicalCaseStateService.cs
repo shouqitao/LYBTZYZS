@@ -296,6 +296,8 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 审计记录「取消」（US-MC-014；US-MC-017 异常隔离：审计失败不影响取消结果）
+            // design-03 §2 评估：此处是同一 DbContext 的两次 SaveChanges（物理删除 + 审计），但刻意不套显式事务——
+            // 按 US-MC-017 既定语义，审计失败也必须保留删除结果，包事务只延长锁持有时间而无一致性收益。
             await TryWriteCancelAuditAsync(medicalCase, operatorId, isAdmin, reason, cancellationToken);
 
             // G-9: 医案取消后，根据挂号来源回退挂号状态（Receptionist→Waiting / Doctor→Cancelled）

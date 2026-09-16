@@ -96,17 +96,19 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
     /// <summary>
     /// 批量删除执行模板 — 统一 try/catch + 日志；失败/异常时返回失败结果 DTO（不抛异常）
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     protected async Task<BatchOperationResultDto?> ExecuteBatchDeleteAsync(
-        Func<Task<ApiResponse<BatchOperationResultDto>>> func,
+        Func<CancellationToken, Task<ApiResponse<BatchOperationResultDto>>> func,
         string operation,
         string failureMessage,
-        int totalCount)
+        int totalCount,
+        CancellationToken ct = default)
     {
         try
         {
             Logger.LogInformation("[REPO] {LogPrefix}.{Operation} - Count={Count}", LogPrefix, operation, totalCount);
 
-            var response = await func();
+            var response = await func(ct);
             if (!response.Success || response.Data == null)
             {
                 return new BatchOperationResultDto
@@ -136,8 +138,9 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
     /// <summary>
     /// 批量导入执行模板 — 统一 try/catch + 日志；业务拒绝（Success=false，422）记 Information，基础设施异常记 Error
     /// </summary>
+    /// <param name="ct">取消令牌</param>
     protected async Task<TResult?> ExecuteImportAsync<TResult>(
-        Func<Task<ApiResponse<TResult>>> func,
+        Func<CancellationToken, Task<ApiResponse<TResult>>> func,
         string operation,
         int count,
         CancellationToken ct = default)
@@ -146,7 +149,7 @@ public abstract class ApiClientRepositoryBase<TListDto, TDetailDto>
         {
             Logger.LogInformation("[REPO] {LogPrefix}.{Operation} started - Count={Count}", LogPrefix, operation, count);
 
-            var response = await func();
+            var response = await func(ct);
             if (!response.Success || response.Data == null)
             {
                 Logger.LogInformation(

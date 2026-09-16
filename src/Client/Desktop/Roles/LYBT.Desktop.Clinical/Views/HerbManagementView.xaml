@@ -18,7 +18,7 @@
              d:DataContext="{d:DesignInstance vm:HerbMasterDetailViewModel}"
              mc:Ignorable="d">
     <!-- 视觉基线 v1 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <herbControls:HerbMasterDetailControl />
     </Grid>
 </UserControl>

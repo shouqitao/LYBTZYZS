@@ -7,6 +7,7 @@ using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCases.Infrastructure
@@ -23,6 +24,12 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         public MedicalCaseRepository(MedicalCaseDbContext context, ILogger<MedicalCaseRepository> logger)
             : base(context, logger)
         {
+        }
+
+        /// <inheritdoc/>
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Database.BeginTransactionAsync(cancellationToken);
         }
 
         /// <summary>

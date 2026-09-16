@@ -10,7 +10,7 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <!-- 视觉基线 v1 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <controls:MedicalCaseMasterDetailControl DataContext="{Binding}" />
     </Grid>
 </UserControl>

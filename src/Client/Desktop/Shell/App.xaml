@@ -18,10 +18,10 @@
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Surfaces.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/TcmBrands.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Icons.xaml" />
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Spacing.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/Functions.xaml" />
                 <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/DataGridStyles.xaml" />
-                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Converters/Converters.xaml" />
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/ValidationStyles.xaml" />
+                <ResourceDictionary Source="/LYBT.Desktop.Controls;component/Themes/TcmTags.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="ValidationErrorBrush" Color="#B00020" />

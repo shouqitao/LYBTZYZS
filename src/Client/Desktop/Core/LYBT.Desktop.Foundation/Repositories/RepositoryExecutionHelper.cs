@@ -16,12 +16,12 @@ public static class RepositoryExecutionHelper
         ExceptionDispatchInfo.Capture(ex).Throw();
     }
 
-    public static async Task ExecuteAsync(ILogger logger, string logPrefix, Func<Task> action, string operation, LogLevel logLevel = LogLevel.Debug)
+    public static async Task ExecuteAsync(ILogger logger, string logPrefix, Func<CancellationToken, Task> action, string operation, LogLevel logLevel = LogLevel.Debug, CancellationToken ct = default)
     {
         try
         {
             logger.Log(logLevel, "[REPO] {LogPrefix}.{Operation}", logPrefix, operation);
-            await action();
+            await action(ct);
         }
         catch (Exception ex)
         {
@@ -29,12 +29,12 @@ public static class RepositoryExecutionHelper
         }
     }
 
-    public static async Task<TResult> ExecuteAsync<TResult>(ILogger logger, string logPrefix, Func<Task<TResult>> func, string operation, LogLevel logLevel = LogLevel.Debug)
+    public static async Task<TResult> ExecuteAsync<TResult>(ILogger logger, string logPrefix, Func<CancellationToken, Task<TResult>> func, string operation, LogLevel logLevel = LogLevel.Debug, CancellationToken ct = default)
     {
         try
         {
             logger.Log(logLevel, "[REPO] {LogPrefix}.{Operation}", logPrefix, operation);
-            return await func();
+            return await func(ct);
         }
         catch (Exception ex)
         {

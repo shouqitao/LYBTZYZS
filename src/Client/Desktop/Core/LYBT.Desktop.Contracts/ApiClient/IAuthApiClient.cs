@@ -17,14 +17,14 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IAuthApiClient
 {
     /// <summary>用户登录认证。</summary>
-    Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest);
+    Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest loginRequest, CancellationToken ct = default);
 
     /// <summary>使用存储的 AutoLoginToken 自动登录。</summary>
-    Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request);
+    Task<ApiResponse<LoginResponse>> LoginWithAutoTokenAsync(AutoLoginRequest request, CancellationToken ct = default);
 
     /// <summary>用户登出——使当前 JWT 令牌失效。</summary>
-    Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest);
+    Task<ApiResponse> LogoutAsync(LogoutRequest logoutRequest, CancellationToken ct = default);
 
     /// <summary>使用刷新令牌刷新访问令牌。</summary>
-    Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request);
+    Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken ct = default);
 }

@@ -49,7 +49,7 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
     {
         return await ExecuteAsync(async () =>
         {
-            var response = await Api.GetPagedAsync(page, pageSize, keyword, category);
+            var response = await Api.GetPagedAsync(page, pageSize, keyword, category, ct);
             if (!response.Success)
                 throw new InvalidOperationException(response.Message ?? "查询失败");
 
@@ -75,7 +75,7 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
     {
         return ExecuteAsync(async () =>
         {
-            var response = await Api.GetByIdAsync(id);
+            var response = await Api.GetByIdAsync(id, ct);
             if (!response.Success)
                 throw new InvalidOperationException(response.Message ?? "查询失败");
 
@@ -92,7 +92,7 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
 
         return ExecuteAsync(async () =>
         {
-            var response = await Api.CreateAsync(dto);
+            var response = await Api.CreateAsync(dto, ct);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "创建失败");
             return response.Data;
@@ -110,7 +110,7 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
 
         return ExecuteAsync(async () =>
         {
-            var response = await Api.UpdateAsync(dto.Id.Value, dto);
+            var response = await Api.UpdateAsync(dto.Id.Value, dto, ct);
             if (!response.Success || response.Data == null)
                 throw new InvalidOperationException(response.Message ?? "更新失败");
 
@@ -127,7 +127,7 @@ public abstract class EntityApiClientRepositoryBase<TListDto, TDetailDto, TInput
         return ExecuteAsync(
             async () =>
             {
-                var response = await Api.DeleteAsync(id);
+                var response = await Api.DeleteAsync(id, ct);
                 if (!response.Success)
                     throw new InvalidOperationException(response.Message ?? "删除失败");
 

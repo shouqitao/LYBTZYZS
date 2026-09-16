@@ -22,7 +22,7 @@
     </UserControl.Resources>
 
     <!-- 视觉基线 v1：按 clinical-workspace.pen + desktop-layout-framework 对齐：主内容 $bg-warm gap16，工具栏48/56，内容区三栏 260/fill/240，文字居中，描边可见 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260" MinWidth="240" MaxWidth="340"/>
             <ColumnDefinition Width="Auto"/>

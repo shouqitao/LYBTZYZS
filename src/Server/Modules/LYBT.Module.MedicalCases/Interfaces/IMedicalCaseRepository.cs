@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LYBT.Module.MedicalCases.Interfaces
 {
@@ -11,6 +12,12 @@ namespace LYBT.Module.MedicalCases.Interfaces
     /// </summary>
     public interface IMedicalCaseRepository : IRepository<MedicalCase>
     {
+        /// <summary>
+        /// 开启医案 DbContext 的显式事务（design-03 §2：同一 DbContext 内的多步写用显式事务包住，
+        /// 提交由调用方控制；跨 DbContext 写入不在此列，由幂等 + 补偿处理）
+        /// </summary>
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+
         /// <summary>
         /// 根据患者ID获取医疗案例
         /// </summary>

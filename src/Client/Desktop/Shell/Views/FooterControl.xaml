@@ -6,7 +6,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              Height="32">
     <!-- 底部状态栏：h32 暖灰 背景 顶部描边 #E9DFD7 1px padding[0,24] gap8 space_between -->
-    <Border Background="#FBF7F3" BorderBrush="#E9DFD7" BorderThickness="0,1,0,0" Padding="24,0" Height="32">
+    <Border Background="{DynamicResource SurfaceLevel0Brush}" BorderBrush="#E9DFD7" BorderThickness="0,1,0,0" Padding="24,0" Height="32">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>

@@ -19,27 +19,10 @@
         资源加载说明:
         - 不要在控件级别合并 UnifiedComponents.xaml，避免资源重复加载
         - 样式/转换器通过 DynamicResource 引用 App 级别已加载的资源
-        - 本地资源 CompactSectionBorderStyle 保留，仅供此控件使用
+        - 本地资源仅保留选项列表（TongueDiagnosisOptions 等 x:Array）
     -->
     <UserControl.Resources>
         <ResourceDictionary>
-            <!-- Compact模式区域边框样式 -->
-            <Style x:Key="CompactSectionBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource MaterialDesignBody}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignOutline}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="CornerRadius" Value="8"/>
-                <Setter Property="Padding" Value="16,12"/>
-            </Style>
-
-            <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="Margin" Value="0,4,0,0"/>
-                <Setter Property="TextWrapping" Value="Wrap"/>
-                <Setter Property="MinHeight" Value="16"/>
-            </Style>
-
             <!-- 舌诊选项列表 -->
             <x:Array x:Key="TongueDiagnosisOptions" Type="sys:String"
                      xmlns:sys="clr-namespace:System;assembly=mscorlib">
@@ -265,6 +248,7 @@
                             <TextBlock Text="舌诊" FontWeight="SemiBold" FontSize="13"
                                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Margin="0,0,0,4"/>
                             <ComboBox TabIndex="9"
+                                      AutomationProperties.Name="舌诊"
                                       SelectedItem="{Binding Consultation.TongueDiagnosis, Mode=TwoWay}"
                                       ItemsSource="{StaticResource TongueDiagnosisOptions}"
                                       Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
@@ -316,6 +300,7 @@
                             </Grid.ColumnDefinitions>
                             <ComboBox Grid.Column="0"
                                       TabIndex="8"
+                                      AutomationProperties.Name="现病史"
                                       IsEditable="True"
                                       Text="{Binding Consultation.PresentIllness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                       ItemsSource="{StaticResource PresentIllnessOptions}"
@@ -345,6 +330,7 @@
                             <TextBlock Text="脉诊" FontWeight="SemiBold" FontSize="13"
                                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Margin="0,0,0,4"/>
                             <ComboBox TabIndex="10"
+                                      AutomationProperties.Name="脉诊"
                                       SelectedItem="{Binding Consultation.PulseDiagnosis, Mode=TwoWay}"
                                       ItemsSource="{StaticResource PulseDiagnosisOptions}"
                                       Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
@@ -368,6 +354,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0"
                                      TabIndex="11"
+                                     AutomationProperties.Name="中医辨证"
                                      Text="{Binding Consultation.TcmDiagnosis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                      MinHeight="36"/>
@@ -379,6 +366,7 @@
                                    Style="{DynamicResource ValidationErrorMessageVisibleStyle}"
                                    Margin="0,4,0,0"/>
                         <ComboBox Margin="0,4,0,0"
+                                  AutomationProperties.Name="中医辨证选项"
                                   SelectedItem="{Binding Consultation.TcmDiagnosis, Mode=TwoWay}"
                                   ItemsSource="{StaticResource SyndromeOptions}"
                                   Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
@@ -501,6 +489,7 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="剂数:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBox Width="60" TabIndex="12"
+                                         AutomationProperties.Name="剂数"
                                          Text="{Binding Prescription.DosageCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                          MinHeight="28"
@@ -512,6 +501,7 @@
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="用法:" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <ComboBox Width="120" TabIndex="13"
+                                          AutomationProperties.Name="用法"
                                           SelectedItem="{Binding Prescription.Usage, Mode=TwoWay}"
                                           ItemsSource="{StaticResource PrescriptionUsageOptions}"
                                           Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
@@ -543,6 +533,7 @@
                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Margin="0,0,0,4"/>
                     <TextBox TabIndex="15"
                              x:Name="RemarkTextBox"
+                             AutomationProperties.Name="备注"
                              Text="{Binding Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              TextWrapping="Wrap" MinHeight="40" AcceptsReturn="True"

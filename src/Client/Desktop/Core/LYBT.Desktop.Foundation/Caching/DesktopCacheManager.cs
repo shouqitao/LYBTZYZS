@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Events;
-using LYBT.Shared.Models.Utilities.Extensions.ServiceCollection;
+using LYBT.Desktop.Foundation.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -8,86 +8,82 @@ using Prism.Events;
 namespace LYBT.Desktop.Foundation.Caching;
 
 /// <summary>
-/// Desktop 缓存管理器 -- 统一管理 ApiService GET 缓存 + 发布缓存失效事件
+/// Desktop 缓存管理器 -- 统一管理 HTTP GET 响应缓存 + 发布缓存失效事件
 /// </summary>
 /// <remarks>
-/// 职责:
-/// 1. 清理 IMemoryCache (ApiService 的 HTTP GET 响应缓存)
-/// 2. 发布 CacheEvents.InvalidatedEvent 通知各模块缓存订阅者
+/// <para>职责:</para>
+/// <para>1. 按域清理 <see cref="IMemoryCache"/> 中的 GET 响应缓存（经
+/// <see cref="DesktopCacheKeyRegistry"/> 前缀失效，**不再反射** <c>MemoryCache</c> 私有集合）</para>
+/// <para>2. 发布 <see cref="CacheEvents.InvalidatedEvent"/> 通知各模块缓存订阅者</para>
+/// <para>说明：写路径的自动失效已下沉到 <c>CachingHttpMessageHandler</c>（传输层），
+/// 本类提供的是「业务事件驱动」的补充失效入口。</para>
 /// </remarks>
 public sealed class DesktopCacheManager : IDesktopCacheManager
 {
     private readonly IMemoryCache _memoryCache;
+    private readonly DesktopCacheKeyRegistry _registry;
     private readonly IEventAggregator _eventAggregator;
     private readonly ILogger<DesktopCacheManager> _logger;
 
     public DesktopCacheManager(
         IMemoryCache memoryCache,
+        DesktopCacheKeyRegistry registry,
         IEventAggregator eventAggregator,
         ILogger<DesktopCacheManager> logger)
     {
         _memoryCache = memoryCache;
+        _registry = registry;
         _eventAggregator = eventAggregator;
         _logger = logger;
     }
 
-    public void InvalidatePatientCaches()
+    public void InvalidatePatientCaches() => Invalidate(CacheDomain.Patients, "patients", "PatientCRUD");
+
+    public void InvalidateMedicalCaseCaches() => Invalidate(CacheDomain.MedicalCases, "medicalcases", "MedicalCaseStateChange");
+
+    public void InvalidateHerbCaches() => Invalidate(CacheDomain.Herbs, "herbs", "HerbCRUD");
+
+    public void InvalidateFormulaCaches() => Invalidate(CacheDomain.Formulas, "formulas", "FormulaCRUD");
+
+    public void InvalidateUserCaches() => Invalidate(CacheDomain.Users, "users", "UserCRUD");
+
+    public void InvalidateRegistrationCaches() =>
+        Invalidate(CacheDomain.Registrations, "registrations", "RegistrationStateChange", "medicalcases");
+
+    public void InvalidateReportCaches() => Invalidate(CacheDomain.Reports, "reports", "ReportRefresh");
+
+    /// <inheritdoc />
+    public void InvalidateAll()
     {
-        _logger.LogDebug("[Cache] Desktop invalidating patient caches");
-        _memoryCache.RemoveByPrefix("GET:/api/v1/patients");
+        var removed = _registry.Clear(_memoryCache);
+        _logger.LogInformation("[Cache] InvalidateAll - removed {Count} entries", removed);
         _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
             new CacheInvalidatedPayload
             {
-                Domain = CacheDomain.Patients,
-                Reason = "PatientCRUD"
+                Domain = CacheDomain.All,
+                Reason = "InvalidateAll"
             });
     }
 
-    public void InvalidateMedicalCaseCaches()
+    /// <summary>
+    /// 失效指定域（可含跨域连带域）并发布域失效事件。
+    /// </summary>
+    /// <param name="domain">对外发布的失效域。</param>
+    /// <param name="pathDomains">需要清理缓存键的 URL 域（第一个为主动域）。</param>
+    /// <param name="reason">失效原因（事件载荷）。</param>
+    private void Invalidate(CacheDomain domain, string pathDomains, string reason, params string[] extraPathDomains)
     {
-        _logger.LogDebug("[Cache] Desktop invalidating medical case caches");
-        _memoryCache.RemoveByPrefix("GET:/api/v1/medicalcases");
-        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
-            new CacheInvalidatedPayload
-            {
-                Domain = CacheDomain.MedicalCases,
-                Reason = "MedicalCaseStateChange"
-            });
-    }
+        var removed = _registry.RemoveByPrefix(_memoryCache, $"GET:/api/v1/{pathDomains}");
+        foreach (var extra in extraPathDomains)
+            removed += _registry.RemoveByPrefix(_memoryCache, $"GET:/api/v1/{extra}");
 
-    public void InvalidateHerbCaches()
-    {
-        _logger.LogDebug("[Cache] Desktop invalidating herb caches");
-        _memoryCache.RemoveByPrefix("GET:/api/v1/herbs");
-        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
-            new CacheInvalidatedPayload
-            {
-                Domain = CacheDomain.Herbs,
-                Reason = "HerbCRUD"
-            });
-    }
+        _logger.LogDebug("[Cache] Domain {Domain} invalidated - removed {Count} entries", domain, removed);
 
-    public void InvalidateFormulaCaches()
-    {
-        _logger.LogDebug("[Cache] Desktop invalidating formula caches");
-        _memoryCache.RemoveByPrefix("GET:/api/v1/formulas");
         _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
             new CacheInvalidatedPayload
             {
-                Domain = CacheDomain.Formulas,
-                Reason = "FormulaCRUD"
-            });
-    }
-
-    public void InvalidateUserCaches()
-    {
-        _logger.LogDebug("[Cache] Desktop invalidating user caches");
-        _memoryCache.RemoveByPrefix("GET:/api/v1/users");
-        _eventAggregator.GetEvent<CacheEvents.InvalidatedEvent>().Publish(
-            new CacheInvalidatedPayload
-            {
-                Domain = CacheDomain.Users,
-                Reason = "UserCRUD"
+                Domain = domain,
+                Reason = reason
             });
     }
 }

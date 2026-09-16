@@ -18,7 +18,7 @@
              d:DataContext="{d:DesignInstance vm:FormulaMasterDetailViewModel}"
              mc:Ignorable="d">
     <!-- 视觉基线 v1 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <formulaControls:FormulaMasterDetailControl />
     </Grid>
 </UserControl>

@@ -53,7 +53,7 @@ public class UserManagementE2ETests : E2ETestBase
         duplicate.UserName = input.UserName;
 
         // 重名用户：服务端返回 4xx 错误（唯一性约束）
-        await Assert.ThrowsAsync<HttpRequestException>(() => IdentityApi.CreateUserAsync(duplicate));
+        await Assert.ThrowsAnyAsync<HttpRequestException>(() => IdentityApi.CreateUserAsync(duplicate));
     }
 
     [Fact]

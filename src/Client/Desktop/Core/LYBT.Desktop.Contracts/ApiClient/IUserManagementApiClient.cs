@@ -14,29 +14,29 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 public interface IUserManagementApiClient : IEntityApiSegment<UserListDto, UserDetailDto, UserInputDto>
 {
     /// <summary>分页获取用户列表。</summary>
-    Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(int page = 1, int pageSize = 20, string? keyword = null);
+    Task<ApiResponse<PagedResult<UserListDto>>> GetUsersAsync(int page = 1, int pageSize = 20, string? keyword = null, CancellationToken ct = default);
 
     /// <summary>按 ID 获取用户详情。</summary>
-    Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id);
+    Task<ApiResponse<UserDetailDto>> GetUserByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>创建新用户。</summary>
-    Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request);
+    Task<ApiResponse<UserDetailDto>> CreateUserAsync(UserInputDto request, CancellationToken ct = default);
 
     /// <summary>更新现有用户。</summary>
-    Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request);
+    Task<ApiResponse<UserDetailDto>> UpdateUserAsync(Guid id, UserInputDto request, CancellationToken ct = default);
 
     /// <summary>删除用户（软删除）。</summary>
-    Task<ApiResponse> DeleteUserAsync(Guid id);
+    Task<ApiResponse> DeleteUserAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>修改用户个人资料。</summary>
-    Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request);
+    Task<ApiResponse<UserDetailDto>> ChangeProfileAsync(Guid id, ChangeProfileDto request, CancellationToken ct = default);
 
     /// <summary>修改用户密码。</summary>
-    Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request);
+    Task<ApiResponse> ChangePasswordAsync(Guid id, ChangePasswordRequest request, CancellationToken ct = default);
 
     /// <summary>管理员重置用户密码。</summary>
-    Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request);
+    Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequest request, CancellationToken ct = default);
 
     /// <summary>切换用户状态（启用/禁用）。</summary>
-    Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id);
+    Task<ApiResponse<UserDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default);
 }

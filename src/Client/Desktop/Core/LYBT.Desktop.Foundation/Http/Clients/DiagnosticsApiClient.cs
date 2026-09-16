@@ -17,15 +17,15 @@ internal sealed class DiagnosticsApiClient : IApiClientDiagnostics
         _api = api ?? throw new ArgumentNullException(nameof(api));
     }
 
-    public Task<ApiResponse<object>> GetLoggingStatusAsync()
-        => _api.GetLoggingStatusAsync();
+    public Task<ApiResponse<object>> GetLoggingStatusAsync(CancellationToken ct = default)
+        => _api.GetLoggingStatusAsync(ct);
 
-    public Task<ApiResponse<object>> EnableDebugModeAsync(EnableDebugModeRequest request)
-        => _api.EnableDebugModeAsync(request);
+    public Task<ApiResponse<object>> EnableDebugModeAsync(EnableDebugModeRequest request, CancellationToken ct = default)
+        => _api.EnableDebugModeAsync(request, ct);
 
-    public Task<ApiResponse<object>> DisableDebugModeAsync()
-        => _api.DisableDebugModeAsync();
+    public Task<ApiResponse<object>> DisableDebugModeAsync(CancellationToken ct = default)
+        => _api.DisableDebugModeAsync(ct);
 
-    public Task<ApiResponse<object>> SetLoggingLevelAsync(SetLoggingLevelRequest request)
-        => _api.SetLoggingLevelAsync(request);
+    public Task<ApiResponse<object>> SetLoggingLevelAsync(SetLoggingLevelRequest request, CancellationToken ct = default)
+        => _api.SetLoggingLevelAsync(request, ct);
 }

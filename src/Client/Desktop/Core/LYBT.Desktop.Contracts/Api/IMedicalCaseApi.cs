@@ -18,7 +18,8 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null,
-            [Refit.Query] bool includeAllDoctors = false);
+            [Refit.Query] bool includeAllDoctors = false,
+            CancellationToken ct = default);
         // 原GET /list端点已删除
 
         /// <summary>
@@ -32,6 +33,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// <param name="pageSize">每页数量（默认20）</param>
         /// <param name="includeAllDoctors">是否包含所有医生（管理员用）</param>
         /// <param name="limit">限制数量（Recent查询时使用）</param>
+        /// <param name="ct">取消令牌</param>
         [Refit.Get("/api/v1/medicalcases/query")]
         Task<ApiResponse<PagedResult<MedicalCaseListDto>>> QueryMedicalCasesAsync(
             [Refit.Query] MedicalCaseQueryType queryType = MedicalCaseQueryType.All,
@@ -41,13 +43,14 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int pageIndex = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] bool includeAllDoctors = false,
-            [Refit.Query] int? limit = null);
+            [Refit.Query] int? limit = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取医疗案例详情
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id);
+        Task<ApiResponse<MedicalCaseDetailDto>> GetMedicalCaseByIdAsync(Guid id, CancellationToken ct = default);
         // 使用QueryMedicalCasesAsync(QueryType=ByPatient)
 
         /// <summary>
@@ -57,8 +60,9 @@ namespace LYBT.Desktop.Contracts.Api
         /// 返回PendingMedicalCaseDto（含Type字段），QueryMedicalCasesAsync返回MedicalCaseListDto（含CaseStatus字段）
         /// </summary>
         /// <param name="patientId">患者ID（可选）- 传入时仅返回该患者的待看诊医案</param>
+        /// <param name="ct">取消令牌</param>
         [Refit.Get("/api/v1/medicalcases/pending")]
-        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null);
+        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid? patientId = null, CancellationToken ct = default);
 
         // QueryMedicalCasesAsync 已删除 - 与 SearchMedicalCasesAsync 功能重复
 
@@ -73,13 +77,14 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] DateTime? startDate = null,
             [Refit.Query] DateTime? endDate = null,
             [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20);
+            [Refit.Query] int pageSize = 20,
+            CancellationToken ct = default);
         /// <summary>
         /// 创建医疗案例
         /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         [Refit.Post("/api/v1/medicalcases")]
-        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
+        Task<ApiResponse<MedicalCaseDetailDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request, CancellationToken ct = default);
 
         // ========== CreateMedicalCaseWithDetailsAsync 已删除==========
         // Server端点POST /api/v1/medicalcases/with-details 不存在，且无调用者
@@ -89,7 +94,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 删除医疗案例（软删除）
         /// </summary>
         [Refit.Delete("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse> DeleteMedicalCaseAsync(Guid id);
+        Task<ApiResponse> DeleteMedicalCaseAsync(Guid id, CancellationToken ct = default);
 
         // ========== SoftDeleteMedicalCaseAsync 已删除==========
         // Server端点DELETE /api/v1/medicalcases/{id}/soft 不存在，且无调用者
@@ -110,7 +115,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription-flag")]
         Task<ApiResponse<MedicalCaseDetailDto>> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
-            [Refit.Body] SetPrescriptionFlagRequest request);
+            [Refit.Body] SetPrescriptionFlagRequest request,
+            CancellationToken ct = default);
 
         // ========== Epic #1676 Phase 4 Task 4.1 - 新增专用API ==========
         // 使用QueryMedicalCasesAsync(QueryType=Unfinished)
@@ -121,7 +127,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/close")]
-        Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id);
+        Task<ApiResponse<MedicalCaseDetailDto>> CloseCaseAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 挂起医案
@@ -130,7 +136,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/suspend")]
         Task<ApiResponse<MedicalCaseDetailDto>> SuspendAsync(
             Guid id,
-            [Refit.Body] ConsultationInputDto? request = null);
+            [Refit.Body] ConsultationInputDto? request = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 取消医案（统一为软删除 + 审计日志）
@@ -138,7 +145,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/cancel")]
         Task<Refit.IApiResponse> CancelMedicalCaseAsync(
             Guid id,
-            [Refit.Body] CancelMedicalCaseRequest? request = null);
+            [Refit.Body] CancelMedicalCaseRequest? request = null,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 更新医案状态
@@ -147,7 +155,8 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/status")]
         Task<ApiResponse<MedicalCaseDetailDto>> UpdateStatusAsync(
             Guid id,
-            [Refit.Body] MedicalCaseStatusInputDto request);
+            [Refit.Body] MedicalCaseStatusInputDto request,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 聚合保存医案（诊断+处方一次性保存）
@@ -155,16 +164,18 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         /// <param name="id">医案ID</param>
         /// <param name="request">统一输入DTO（包含诊断和处方数据）</param>
+        /// <param name="ct">取消令牌</param>
         /// <returns>更新后的医案详情</returns>
         [Refit.Put("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<MedicalCaseDetailDto>> SaveAsync(
             Guid id,
-            [Refit.Body] MedicalCaseInputDto request);
+            [Refit.Body] MedicalCaseInputDto request,
+            CancellationToken ct = default);
         /// <summary>
         /// 批量删除医案
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/batch-delete")]
-        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request);
+        Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync([Refit.Body] BatchDeleteInputDto request, CancellationToken ct = default);
 
         /// <summary>
         /// 获取医案审计日志（分页）
@@ -173,13 +184,14 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<PagedResult<AuditLogDto>>> GetAuditLogsAsync(
             Guid id,
             [Refit.Query] int page = 1,
-            [Refit.Query] int pageSize = 20);
+            [Refit.Query] int pageSize = 20,
+            CancellationToken ct = default);
 
         /// <summary>
         /// 获取医案操作权限
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}/permissions")]
-        Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id);
+        Task<ApiResponse<MedicalCasePermissionsDto>> GetPermissionsAsync(Guid id, CancellationToken ct = default);
 
         /// <summary>
         /// 记录打印完成
@@ -187,6 +199,7 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Put("/api/v1/medicalcases/{id}/print-completed")]
         Task<ApiResponse<MedicalCaseDetailDto>> RecordPrintAsync(
             Guid id,
-            [Refit.Body] RecordPrintRequest request);
+            [Refit.Body] RecordPrintRequest request,
+            CancellationToken ct = default);
     }
 }

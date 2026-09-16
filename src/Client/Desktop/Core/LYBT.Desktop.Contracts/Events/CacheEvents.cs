@@ -55,6 +55,12 @@ public enum CacheDomain
     /// <summary>用户相关缓存</summary>
     Users,
 
+    /// <summary>挂号相关缓存（含跨域联动：医案）</summary>
+    Registrations,
+
+    /// <summary>报表相关缓存</summary>
+    Reports,
+
     /// <summary>全部缓存 (Sync 后使用)</summary>
     All
 }

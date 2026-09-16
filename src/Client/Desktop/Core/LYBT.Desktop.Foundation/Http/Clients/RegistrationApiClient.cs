@@ -29,12 +29,12 @@ internal sealed class RegistrationApiClient : IApiClientRegistrations
     }
 
     /// <inheritdoc />
-    public Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request)
-        => _api.CreateAsync(request);
+    public Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request, CancellationToken ct = default)
+        => _api.CreateAsync(request, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id)
-        => _api.GetByIdAsync(id);
+    public Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => _api.GetByIdAsync(id, ct);
 
     /// <inheritdoc />
     public Task<ApiResponse<PagedResult<RegistrationListDto>>> GetListAsync(
@@ -44,19 +44,20 @@ internal sealed class RegistrationApiClient : IApiClientRegistrations
         DateTime? startDate = null,
         DateTime? endDate = null,
         Guid? patientId = null,
-        Guid? doctorId = null)
-        => _api.GetListAsync(page, pageSize, keyword, startDate, endDate, patientId, doctorId);
+        Guid? doctorId = null,
+        CancellationToken ct = default)
+        => _api.GetListAsync(page, pageSize, keyword, startDate, endDate, patientId, doctorId, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId = null)
-        => _api.GetQueueAsync(doctorId);
+    public Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId = null, CancellationToken ct = default)
+        => _api.GetQueueAsync(doctorId, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<Guid>> StartVisitAsync(Guid id)
-        => _api.StartVisitAsync(id);
+    public Task<ApiResponse<Guid>> StartVisitAsync(Guid id, CancellationToken ct = default)
+        => _api.StartVisitAsync(id, ct);
 
 
     /// <inheritdoc />
-    public Task<ApiResponse> CancelAsync(Guid id)
-        => _api.CancelAsync(id);
+    public Task<ApiResponse> CancelAsync(Guid id, CancellationToken ct = default)
+        => _api.CancelAsync(id, ct);
 }

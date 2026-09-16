@@ -23,14 +23,14 @@ public sealed class ReportRepository : ApiClientRepositoryBase<object, object>, 
     }
 
     /// <inheritdoc />
-    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _apiClient.Reports.GetDailyIncomeAsync(startDate, endDate);
+    public Task<ApiResponse<DailyIncomeDto>> GetDailyIncomeAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _apiClient.Reports.GetDailyIncomeAsync(startDate, endDate, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _apiClient.Reports.GetDailyConsultationsAsync(startDate, endDate);
+    public Task<ApiResponse<DailyConsultationDto>> GetDailyConsultationsAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _apiClient.Reports.GetDailyConsultationsAsync(startDate, endDate, ct);
 
     /// <inheritdoc />
-    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate = null, DateTime? endDate = null)
-        => _apiClient.Reports.GetDailyHerbUsageAsync(startDate, endDate);
+    public Task<ApiResponse<DailyHerbUsageDto>> GetDailyHerbUsageAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken ct = default)
+        => _apiClient.Reports.GetDailyHerbUsageAsync(startDate, endDate, ct);
 }

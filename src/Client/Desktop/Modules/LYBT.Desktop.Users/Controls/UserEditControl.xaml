@@ -17,16 +17,6 @@
         - 此控件无本地资源，所有样式来自全局
     -->
 
-    <UserControl.Resources>
-        <Style x:Key="ValidationErrorMessageVisibleStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="0,4,0,0"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MinHeight" Value="16"/>
-        </Style>
-    </UserControl.Resources>
-
     <StackPanel DataContext="{Binding ElementName=Root}">
         <!-- 用户信息卡片 -->
         <controls:InfoCard Title="用户信息">
@@ -49,6 +39,7 @@
                             <Run Text="用户名"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="1" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 AutomationProperties.Name="用户名"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  IsReadOnly="{Binding IsUserNameReadOnly, ElementName=Root, Converter={x:Static converters:Cvt.InverseBool}}"
                                  MinHeight="44"
@@ -62,6 +53,7 @@
                             <Run Text="真实姓名"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <TextBox TabIndex="2" Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 AutomationProperties.Name="真实姓名"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -73,6 +65,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="拼音码（可修正）" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="3" Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.Name="拼音码（可修正）"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"
@@ -82,6 +75,7 @@
                     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,24">
                         <TextBlock Text="手机号码" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="4" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 AutomationProperties.Name="手机号码"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -93,6 +87,7 @@
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,24,24">
                         <TextBlock Text="邮箱地址" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <TextBox TabIndex="5" Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                 AutomationProperties.Name="邮箱地址"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -105,6 +100,7 @@
                             <Run Text="用户角色"/><Run Text=" *" Foreground="{DynamicResource ValidationErrorBrush}" FontWeight="Bold"/>
                         </TextBlock>
                         <ComboBox TabIndex="6" SelectedItem="{Binding Role, Mode=TwoWay}"
+                                  AutomationProperties.Name="用户角色"
                                   ItemsSource="{Binding RoleOptions, ElementName=Root}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -121,6 +117,7 @@
                                 Visibility="{Binding ShowStatus, ElementName=Root, Converter={x:Static converters:Cvt.BoolToVis}}">
                         <TextBlock Text="账户状态" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                         <ComboBox TabIndex="7" SelectedItem="{Binding Status, Mode=TwoWay}"
+                                  AutomationProperties.Name="账户状态"
                                   ItemsSource="{Binding StatusOptions, ElementName=Root}"
                                   MinHeight="44"
                                   Padding="12,10">
@@ -136,6 +133,7 @@
                         <TextBlock Text="挂号费 (元)" Style="{StaticResource MaterialDesignCaptionTextBlock}" FontWeight="SemiBold" Margin="0,0,0,6"
                                    ToolTip="医生挂号费，前台/快速看诊创建挂号时自动带出（REG-BR-009）"/>
                         <TextBox TabIndex="8" Text="{Binding RegistrationFee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.Name="挂号费 (元)"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  MinHeight="44"
                                  Padding="12,10"/>
@@ -148,6 +146,7 @@
         <controls:InfoCard Title="备注">
             <controls:InfoCard.Content>
                 <TextBox TabIndex="9" Text="{Binding User.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.Name="备注"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"

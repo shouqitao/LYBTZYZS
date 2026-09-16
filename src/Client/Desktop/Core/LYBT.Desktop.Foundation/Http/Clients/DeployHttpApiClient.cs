@@ -17,9 +17,9 @@ internal sealed class DeployHttpApiClient : HttpApiClientBase, IApiClientDeploy
 {
     public DeployHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
-    public Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content)
+    public Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<object>.CreateFail("本地模式不支持部署更新"));
 
-    public Task<ApiResponse<object>> RestartAsync()
+    public Task<ApiResponse<object>> RestartAsync(CancellationToken ct = default)
         => Task.FromResult(ApiResponse<object>.CreateFail("本地模式不支持部署更新"));
 }

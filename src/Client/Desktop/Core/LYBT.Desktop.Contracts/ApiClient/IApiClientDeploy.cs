@@ -6,6 +6,6 @@ namespace LYBT.Desktop.Contracts.ApiClient;
 /// <summary>服务器部署端点。</summary>
 public interface IApiClientDeploy
 {
-    Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content);
-    Task<ApiResponse<object>> RestartAsync();
+    Task<ApiResponse<object>> UploadAsync(MultipartFormDataContent content, CancellationToken ct = default);
+    Task<ApiResponse<object>> RestartAsync(CancellationToken ct = default);
 }

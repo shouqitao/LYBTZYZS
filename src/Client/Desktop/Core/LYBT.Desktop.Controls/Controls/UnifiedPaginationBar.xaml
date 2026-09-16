@@ -31,10 +31,12 @@
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Command="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource MaterialDesignFlatButton}" ToolTip="首页"
+                        AutomationProperties.Name="首页"
                         Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}"
                         Content="{materialDesign:PackIcon Kind=PageFirst}" />
                 <Button Command="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource MaterialDesignFlatButton}" ToolTip="上一页"
+                        AutomationProperties.Name="上一页"
                         Content="{materialDesign:PackIcon Kind=ChevronLeft}" />
                 <TextBlock VerticalAlignment="Center" Margin="8,0">
                     <Run Text="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}" />
@@ -43,9 +45,11 @@
                 </TextBlock>
                 <Button Command="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource MaterialDesignFlatButton}" ToolTip="下一页"
+                        AutomationProperties.Name="下一页"
                         Content="{materialDesign:PackIcon Kind=ChevronRight}" />
                 <Button Command="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource MaterialDesignFlatButton}" ToolTip="末页"
+                        AutomationProperties.Name="末页"
                         Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={x:Static converters:Cvt.NullToVis}}"
                         Content="{materialDesign:PackIcon Kind=PageLast}" />
             </StackPanel>

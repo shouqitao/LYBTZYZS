@@ -19,50 +19,51 @@ internal sealed class HerbsHttpApiClient : HttpApiClientBase, IApiClientHerbs
     public HerbsHttpApiClient(IHttpClientFactory httpClientFactory, ILogger logger) : base(httpClientFactory, logger) { }
 
     public async Task<ApiResponse<PagedResult<HerbListDto>>> GetHerbsAsync(
-        int page, int pageSize, string? keyword, string? category)
+        int page, int pageSize, string? keyword, string? category,
+        CancellationToken ct = default)
     {
         var url = BuildPagedUrl("/api/v1/herbs", page, pageSize, ("keyword", keyword), ("category", category));
-        return await GetPagedAndWrapAsync<HerbListDto>(url);
+        return await GetPagedAndWrapAsync<HerbListDto>(url, ct);
     }
 
-    public Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id)
-        => GetAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}");
+    public Task<ApiResponse<HerbDetailDto>> GetHerbByIdAsync(Guid id, CancellationToken ct = default)
+        => GetAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}", ct);
 
-    public Task<ApiResponse<HerbDetailDto>> CreateHerbAsync(HerbInputDto request)
-        => PostAndWrapAsync<HerbDetailDto>("/api/v1/herbs", request);
+    public Task<ApiResponse<HerbDetailDto>> CreateHerbAsync(HerbInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<HerbDetailDto>("/api/v1/herbs", request, ct);
 
-    public Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, HerbInputDto request)
-        => PutAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}", request);
+    public Task<ApiResponse<HerbDetailDto>> UpdateHerbAsync(Guid id, HerbInputDto request, CancellationToken ct = default)
+        => PutAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}", request, ct);
 
-    public Task<ApiResponse> DeleteHerbAsync(Guid id)
-        => DeleteVoidAsync($"/api/v1/herbs/{id}");
+    public Task<ApiResponse> DeleteHerbAsync(Guid id, CancellationToken ct = default)
+        => DeleteVoidAsync($"/api/v1/herbs/{id}", ct);
 
-    public Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request)
-        => PostAndWrapAsync<HerbBatchImportResultDto>("/api/v1/herbs/batch-import", request);
+    public Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(HerbBatchImportInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<HerbBatchImportResultDto>("/api/v1/herbs/batch-import", request, ct);
 
-    public Task<HttpResponseMessage> ExportTemplateAsync()
-        => GetResponseAsync("/api/v1/herbs/import-template");
+    public Task<HttpResponseMessage> ExportTemplateAsync(CancellationToken ct = default)
+        => GetResponseAsync("/api/v1/herbs/import-template", ct);
 
-    public async Task<HttpResponseMessage> ExportHerbsAsync(string? keyword)
+    public async Task<HttpResponseMessage> ExportHerbsAsync(string? keyword, CancellationToken ct = default)
     {
         var url = "/api/v1/herbs/export";
         if (!string.IsNullOrWhiteSpace(keyword))
             url += $"?keyword={Uri.EscapeDataString(keyword)}";
-        return await GetResponseAsync(url);
+        return await GetResponseAsync(url, ct);
     }
 
-    public Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id)
-        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/toggle-status");
+    public Task<ApiResponse<HerbDetailDto>> ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/toggle-status", ct: ct);
 
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-delete", request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDeleteAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-delete", request, ct);
 
-    public Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id)
-        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/restore");
+    public Task<ApiResponse<HerbDetailDto>> RestoreAsync(Guid id, CancellationToken ct = default)
+        => PostAndWrapAsync<HerbDetailDto>($"/api/v1/herbs/{id}/restore", ct: ct);
 
-    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-enable", request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchEnableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-enable", request, ct);
 
-    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request)
-        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-disable", request);
+    public Task<ApiResponse<BatchOperationResultDto>> BatchDisableAsync(BatchDeleteInputDto request, CancellationToken ct = default)
+        => PostAndWrapAsync<BatchOperationResultDto>("/api/v1/herbs/batch-disable", request, ct);
 }

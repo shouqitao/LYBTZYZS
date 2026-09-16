@@ -10,14 +10,14 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!-- 视觉基线 v1：bg-warm 铺满 文字居中 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--  工具栏: 提供保存配置和重置  -->
-        <Border Grid.Row="0" Background="#FBF7F3" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,0,0,1" Padding="12">
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceLevel0Brush}" BorderBrush="{DynamicResource MaterialDesignOutline}" BorderThickness="0,0,0,1" Padding="12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />

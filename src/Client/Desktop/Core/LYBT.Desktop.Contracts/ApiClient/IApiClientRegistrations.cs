@@ -24,13 +24,15 @@ public interface IApiClientRegistrations
     /// US-REG-001：Source=Receptionist，Status=Waiting
     /// </summary>
     /// <param name="request">Registration input data.</param>
-    Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<RegistrationDetailDto>> CreateAsync(RegistrationInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 按 ID 获取挂号详情。
     /// </summary>
     /// <param name="id">Registration ID.</param>
-    Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 分页获取挂号列表并支持筛选。
@@ -43,6 +45,7 @@ public interface IApiClientRegistrations
     /// <param name="endDate">End date filter (optional).</param>
     /// <param name="patientId">Patient ID filter (optional).</param>
     /// <param name="doctorId">Doctor ID filter (optional).</param>
+    /// <param name="ct">取消令牌</param>
     Task<ApiResponse<PagedResult<RegistrationListDto>>> GetListAsync(
         int page = 1,
         int pageSize = 20,
@@ -50,26 +53,30 @@ public interface IApiClientRegistrations
         DateTime? startDate = null,
         DateTime? endDate = null,
         Guid? patientId = null,
-        Guid? doctorId = null);
+        Guid? doctorId = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 获取候诊队列。
     /// US-REG-003：Waiting 状态，按挂号时间升序排列。
     /// </summary>
     /// <param name="doctorId">Doctor ID filter (optional).</param>
-    Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId = null);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(Guid? doctorId = null, CancellationToken ct = default);
 
     /// <summary>
     /// 开始就诊——将挂号流转为 InProgress。
     /// US-REG-003 验收标准 #4。
     /// </summary>
     /// <param name="id">Registration ID.</param>
-    Task<ApiResponse<Guid>> StartVisitAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse<Guid>> StartVisitAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 取消挂号。
     /// US-REG-004：仅 Waiting 状态可取消。
     /// </summary>
     /// <param name="id">Registration ID.</param>
-    Task<ApiResponse> CancelAsync(Guid id);
+    /// <param name="ct">取消令牌</param>
+    Task<ApiResponse> CancelAsync(Guid id, CancellationToken ct = default);
 }

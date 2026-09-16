@@ -32,7 +32,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _registrations.CreateAsync(input);
+                var response = await _registrations.CreateAsync(input, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "创建挂号失败");
 
@@ -49,7 +49,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _registrations.GetByIdAsync(id);
+                var response = await _registrations.GetByIdAsync(id, ct);
                 return response.Data;
             },
             "GetById");
@@ -61,7 +61,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _registrations.GetListAsync(page, pageSize, keyword);
+                var response = await _registrations.GetListAsync(page, pageSize, keyword, ct: ct);
                 if (response.Data == null)
                     return new PagedResult<RegistrationListDto> { Items = [], TotalCount = 0, CurrentPage = page };
 
@@ -78,7 +78,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _registrations.GetQueueAsync(doctorId);
+                var response = await _registrations.GetQueueAsync(doctorId, ct);
                 if (!response.Success || response.Data == null)
                 {
                     Logger.LogWarning("[REPO] Registration.GetWaitingQueue failed: {Message}", response.Message);
@@ -96,7 +96,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         return await ExecuteAsync<Guid?>(
             async () =>
             {
-                var response = await _registrations.StartVisitAsync(id);
+                var response = await _registrations.StartVisitAsync(id, ct);
                 if (!response.Success)
                 {
                     // 抛出服务器业务消息（如 BR-001 重开现有医案），经 Service 映射后展示给用户
@@ -118,7 +118,7 @@ public sealed class RegistrationRepository : ApiClientRepositoryBase<Registratio
         await ExecuteAsync(
             async () =>
             {
-                var response = await _registrations.CancelAsync(id);
+                var response = await _registrations.CancelAsync(id, ct);
                 if (!response.Success)
                     throw new InvalidOperationException(response.Message ?? "取消挂号失败");
 

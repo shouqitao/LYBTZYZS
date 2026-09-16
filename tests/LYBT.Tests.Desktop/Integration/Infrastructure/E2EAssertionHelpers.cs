@@ -46,21 +46,23 @@ public static class E2EAssertionHelpers
 
     public static async Task AssertUnauthorized(Func<Task> action)
     {
-        var ex = await Assert.ThrowsAsync<Refit.ApiException>(action);
+        // 领域错误层统一（2026-09-16）：远程非 2xx 经 RefitSettings.ExceptionFactory 抛
+        // ApiClientException（继承 HttpRequestException），不再是 Refit.ApiException。
+        var ex = await Assert.ThrowsAnyAsync<LYBT.Desktop.Foundation.ExceptionHandling.ApiClientException>(action);
         ex.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
 
     public static async Task AssertForbidden(Func<Task> action)
     {
-        var ex = await Assert.ThrowsAsync<Refit.ApiException>(action);
+        var ex = await Assert.ThrowsAnyAsync<LYBT.Desktop.Foundation.ExceptionHandling.ApiClientException>(action);
         ex.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
     }
 
-    public static async Task<Refit.ApiException> AssertApiException(
+    public static async Task<LYBT.Desktop.Foundation.ExceptionHandling.ApiClientException> AssertApiException(
         Func<Task> action,
         System.Net.HttpStatusCode expectedStatus)
     {
-        var ex = await Assert.ThrowsAsync<Refit.ApiException>(action);
+        var ex = await Assert.ThrowsAnyAsync<LYBT.Desktop.Foundation.ExceptionHandling.ApiClientException>(action);
         ex.StatusCode.Should().Be(expectedStatus);
         return ex;
     }

@@ -14,13 +14,13 @@ internal interface IRegistrationApi
     /// US-REG-001: Source=Receptionist, Status=Waiting
     /// </summary>
     [Refit.Post("/api/v1/registrations")]
-    Task<ApiResponse<RegistrationDetailDto>> CreateAsync([Refit.Body] RegistrationInputDto request);
+    Task<ApiResponse<RegistrationDetailDto>> CreateAsync([Refit.Body] RegistrationInputDto request, CancellationToken ct = default);
 
     /// <summary>
     /// 获取挂号详情
     /// </summary>
     [Refit.Get("/api/v1/registrations/{id}")]
-    Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id);
+    Task<ApiResponse<RegistrationDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 分页查询挂号记录
@@ -34,7 +34,8 @@ internal interface IRegistrationApi
         [Refit.Query] DateTime? startDate = null,
         [Refit.Query] DateTime? endDate = null,
         [Refit.Query] Guid? patientId = null,
-        [Refit.Query] Guid? doctorId = null);
+        [Refit.Query] Guid? doctorId = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 获取等待队列
@@ -42,19 +43,20 @@ internal interface IRegistrationApi
     /// </summary>
     [Refit.Get("/api/v1/registrations/queue")]
     Task<ApiResponse<List<RegistrationListDto>>> GetQueueAsync(
-        [Refit.Query] Guid? doctorId = null);
+        [Refit.Query] Guid? doctorId = null,
+        CancellationToken ct = default);
 
     /// <summary>
     /// 接诊: Registration -> InProgress
     /// US-REG-003 验收标准第4条
     /// </summary>
     [Refit.Put("/api/v1/registrations/{id}/start-visit")]
-    Task<ApiResponse<Guid>> StartVisitAsync(Guid id);
+    Task<ApiResponse<Guid>> StartVisitAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// 取消挂号
     /// US-REG-004: 仅 Waiting 状态可取消
     /// </summary>
     [Refit.Put("/api/v1/registrations/{id}/cancel")]
-    Task<ApiResponse> CancelAsync(Guid id);
+    Task<ApiResponse> CancelAsync(Guid id, CancellationToken ct = default);
 }

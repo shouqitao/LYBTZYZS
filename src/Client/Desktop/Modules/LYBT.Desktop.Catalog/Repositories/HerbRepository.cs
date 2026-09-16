@@ -32,7 +32,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _herbs.GetHerbsAsync(1, 100, keyword);
+                var response = await _herbs.GetHerbsAsync(1, 100, keyword, category: null, ct);
                 if (response.Data == null)
                     return [];
 
@@ -49,7 +49,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ExecuteImportAsync(
-            () => _herbs.BatchImportAsync(request),
+            c => _herbs.BatchImportAsync(request, c),
             "BatchImport",
             request.Herbs.Count,
             ct);
@@ -62,14 +62,14 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         {
             Logger.LogInformation("[REPO] Herb.ExportTemplate");
 
-            var response = await _herbs.ExportTemplateAsync();
+            var response = await _herbs.ExportTemplateAsync(ct);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("[REPO] Herb.ExportTemplate failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
-            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
             Logger.LogInformation("[REPO] Herb.ExportTemplate completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
@@ -87,14 +87,14 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         {
             Logger.LogInformation("[REPO] Herb.ExportHerbs - Keyword={Keyword}", keyword ?? "全部");
 
-            var response = await _herbs.ExportHerbsAsync(keyword);
+            var response = await _herbs.ExportHerbsAsync(keyword, ct);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("[REPO] Herb.ExportHerbs failed: {StatusCode}", response.StatusCode);
                 return null;
             }
 
-            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
             Logger.LogInformation("[REPO] Herb.ExportHerbs completed - Size={Size} bytes", bytes.Length);
             return bytes;
         }
@@ -114,7 +114,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _herbs.ToggleStatusAsync(id);
+                var response = await _herbs.ToggleStatusAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "切换药材状态失败");
 
@@ -130,7 +130,7 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
         return await ExecuteAsync(
             async () =>
             {
-                var response = await _herbs.RestoreAsync(id);
+                var response = await _herbs.RestoreAsync(id, ct);
                 if (!response.Success || response.Data == null)
                     throw new InvalidOperationException(response.Message ?? "恢复药材失败");
 
@@ -144,22 +144,24 @@ public sealed class HerbRepository : EntityApiClientRepositoryBase<HerbListDto, 
     public async Task<BatchOperationResultDto?> BatchDeleteAsync(List<Guid> ids, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => _herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => _herbs.BatchDeleteAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchDelete",
             "批量删除失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     /// <summary>批量启用/禁用药材。</summary>
     public async Task<BatchOperationResultDto?> BatchSetStatusAsync(List<Guid> ids, CommonStatus status, CancellationToken ct = default)
     {
         return await ExecuteBatchDeleteAsync(
-            () => status == CommonStatus.Enabled
-                ? _herbs.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids })
-                : _herbs.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }),
+            c => status == CommonStatus.Enabled
+                ? _herbs.BatchEnableAsync(new BatchDeleteInputDto { Ids = ids }, c)
+                : _herbs.BatchDisableAsync(new BatchDeleteInputDto { Ids = ids }, c),
             "BatchSetStatus",
             status == CommonStatus.Enabled ? "批量启用失败" : "批量禁用失败",
-            ids.Count);
+            ids.Count,
+            ct);
     }
 
     #endregion

@@ -13,7 +13,7 @@
         <Style x:Key="FunctionCardStyle" TargetType="Border">
             <Setter Property="MinWidth" Value="200" />
             <Setter Property="MinHeight" Value="180" />
-            <Setter Property="Background" Value="#FBF7F3" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceLevel0Brush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Outline}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
@@ -37,7 +37,7 @@
 
     <materialDesign:DialogHost>
         <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      Background="#FBF7F3">
+                      Background="{DynamicResource SurfaceLevel0Brush}">
             <StackPanel Margin="32" MaxWidth="800">
 
                 <!-- 标题区 -->
@@ -60,7 +60,7 @@
                         <!-- 组 1：诊所信息 -->
                         <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Text="诊所信息" Margin="0,8,0,8" />
                         <!-- 视觉基线 v1 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />

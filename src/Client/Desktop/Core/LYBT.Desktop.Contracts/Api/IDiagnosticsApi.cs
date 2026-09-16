@@ -18,25 +18,27 @@ internal interface IDiagnosticsApi
     /// 获取当前日志级别状态
     /// </summary>
     [Refit.Get("/api/v1/diagnostics/logging/status")]
-    Task<ApiResponse<object>> GetLoggingStatusAsync();
+    Task<ApiResponse<object>> GetLoggingStatusAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 启用调试模式 - 临时降低日志级别并设置自动过期
     /// </summary>
     /// <param name="request">调试模式请求（级别、持续时间）</param>
+    /// <param name="ct">取消令牌</param>
     [Refit.Post("/api/v1/diagnostics/logging/debug/enable")]
-    Task<ApiResponse<object>> EnableDebugModeAsync([Refit.Body] EnableDebugModeRequest request);
+    Task<ApiResponse<object>> EnableDebugModeAsync([Refit.Body] EnableDebugModeRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// 禁用调试模式 - 恢复默认日志级别
     /// </summary>
     [Refit.Post("/api/v1/diagnostics/logging/debug/disable")]
-    Task<ApiResponse<object>> DisableDebugModeAsync();
+    Task<ApiResponse<object>> DisableDebugModeAsync(CancellationToken ct = default);
 
     /// <summary>
     /// 手动设置日志级别（无自动过期）
     /// </summary>
     /// <param name="request">目标级别请求</param>
+    /// <param name="ct">取消令牌</param>
     [Refit.Post("/api/v1/diagnostics/logging/level")]
-    Task<ApiResponse<object>> SetLoggingLevelAsync([Refit.Body] SetLoggingLevelRequest request);
+    Task<ApiResponse<object>> SetLoggingLevelAsync([Refit.Body] SetLoggingLevelRequest request, CancellationToken ct = default);
 }

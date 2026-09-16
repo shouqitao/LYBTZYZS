@@ -24,7 +24,7 @@
     -->
 
     <!-- 视觉基线 v1：按 desktop-layout-framework + patient-list.pen 对齐：主内容 $bg-warm gap16 padding16，工具栏 56h white 12圆角 描边#E9DFD7，文字居中，输入描边可见，铺满 -->
-    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="#FBF7F3">
+    <controls:MasterDetailLayout HasSelection="{Binding ShowDetailPanel}" Background="{DynamicResource SurfaceLevel0Brush}">
         <!--
             ========================================
             面包屑导航 - Phase 2.1: Navigation Improvements

@@ -7,7 +7,7 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!-- 视觉基线 v1：bg-warm 铺满 文字居中 输入描边可见 保留绑定 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

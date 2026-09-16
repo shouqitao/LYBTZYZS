@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
@@ -141,16 +142,33 @@ public class HttpApiClientBaseTests
     #region SendAsync — Error paths
 
     [Fact]
-    public async Task SendAsync_NonSuccessStatus_ThrowsHttpRequestException()
+    public async Task SendAsync_NonSuccessStatus_ThrowsApiClientException()
     {
         var (factory, _) = CreateMockFactory("boom", HttpStatusCode.InternalServerError);
         var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
 
         var act = () => client.SendAsync("/api/v1/patients", HttpMethod.Get);
 
-        var ex = await act.Should().ThrowAsync<HttpRequestException>();
+        // 领域错误层统一：非 2xx 抛 ApiClientException（继承 HttpRequestException，向后兼容既有 catch）
+        var ex = await act.Should().ThrowAsync<ApiClientException>();
         ex.And.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         ex.And.Message.Should().Be("boom");
+    }
+
+    [Fact]
+    public async Task SendAsync_NonSuccessStatus_ExtractsEnvelopeMessageAndErrorCode()
+    {
+        const string envelope =
+            "{\"success\":false,\"message\":\"验方名称已存在\",\"data\":null," +
+            "\"errors\":{\"code\":\"LYBT-FORM-002\",\"correlationId\":\"abc\"},\"requestId\":\"abc\"}";
+        var (factory, _) = CreateMockFactory(envelope, HttpStatusCode.UnprocessableEntity);
+        var client = new TestableHttpApiClient(factory, Substitute.For<ILogger>());
+
+        var act = () => client.SendAsync("/api/v1/formulas", HttpMethod.Get);
+
+        var ex = await act.Should().ThrowAsync<ApiClientException>();
+        ex.And.ServerMessage.Should().Be("验方名称已存在");
+        ex.And.ErrorCode.Should().Be("LYBT-FORM-002");
     }
 
     [Fact]

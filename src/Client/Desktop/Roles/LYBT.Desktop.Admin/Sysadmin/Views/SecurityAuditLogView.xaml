@@ -6,7 +6,7 @@
              xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Border Margin="16" Background="#FBF7F3">
+    <Border Margin="16" Background="{DynamicResource SurfaceLevel0Brush}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

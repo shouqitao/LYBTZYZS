@@ -18,41 +18,10 @@
     x:Name="Root">
 
     <!--
-        本地资源说明:
-        - HerbTag 样式从 PreviewStyles.xaml 内联（全局已移除），供药材标签云使用
+        资源说明:
+        - HerbTag 样式已提取至全局 Themes/TcmTags.xaml
         - Detail 样式改用 MaterialDesign 内置 TextBlock 样式
     -->
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <!--  药材标签容器样式  -->
-            <Style x:Key="HerbTagStyle" TargetType="Border">
-                <Setter Property="Background" Value="#E0F7FA" />
-                <Setter Property="BorderBrush" Value="#5B8FA8" />
-                <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="4" />
-                <Setter Property="Padding" Value="8,6" />
-                <Setter Property="Margin" Value="4" />
-                <Setter Property="MinWidth" Value="100" />
-            </Style>
-
-            <!--  药材名称文字样式  -->
-            <Style x:Key="HerbTagNameStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="FontWeight" Value="Medium" />
-                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-            </Style>
-
-            <!--  药材剂量文字样式  -->
-            <Style x:Key="HerbTagDosageStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="14" />
-                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="Margin" Value="4,0,0,0" />
-            </Style>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <ScrollViewer DataContext="{Binding ElementName=Root}" VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <!--

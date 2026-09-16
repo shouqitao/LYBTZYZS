@@ -11,7 +11,7 @@
     mc:Ignorable="d">
     <!--  全屏居中布局  -->
     <!-- 视觉基线 v1：按 admin-home/receptionist-home.pen：导航网格 P-D，文字居中，bg-warm 铺满 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <StackPanel
             HorizontalAlignment="Center"
             VerticalAlignment="Center">

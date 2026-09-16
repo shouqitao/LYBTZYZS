@@ -13,7 +13,7 @@
     mc:Ignorable="d">
 
     <!-- 视觉基线 v1：按 registration.pen + layout-framework：主内容 $bg-warm gap16 padding16，工具栏56h white 12r，文字居中，铺满 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <Grid Margin="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

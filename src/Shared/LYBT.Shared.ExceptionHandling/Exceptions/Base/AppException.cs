@@ -30,10 +30,37 @@ public class AppException : Exception
     public bool ShowDetailToUser { get; set; }
 
     /// <summary>
-    /// 获取HTTP状态码（基于TypedErrorCode，默认500）
+    /// 获取HTTP状态码。
+    /// 优先按 <see cref="TypedErrorCode"/> 映射；未带类型化错误码时按 <see cref="Category"/> 兜底，
+    /// 使「只传 message」构造的子类（如 <c>NotFoundException</c>）也能映射到正确状态码。
     /// </summary>
-    public virtual int GetHttpStatusCode() =>
-        TypedErrorCode?.ToHttpStatusCode() ?? 500;
+    public virtual int GetHttpStatusCode()
+    {
+        if (TypedErrorCode is { } typed)
+            return typed.ToHttpStatusCode();
+
+        return CategoryToHttpStatusCode(Category);
+    }
+
+    /// <summary>
+    /// 错误类别 → HTTP 状态码的单点映射（<see cref="GetHttpStatusCode"/> 的兜底分支）。
+    /// </summary>
+    /// <param name="category">错误类别</param>
+    /// <returns>对应的 HTTP 状态码</returns>
+    public static int CategoryToHttpStatusCode(ErrorCategory category) => category switch
+    {
+        ErrorCategory.Validation => 400,
+        ErrorCategory.Authentication => 401,
+        ErrorCategory.Authorization => 403,
+        ErrorCategory.Resource => 404,
+        ErrorCategory.Concurrency => 409,
+        ErrorCategory.Business => 422,
+        ErrorCategory.Network => 503,
+        ErrorCategory.External => 502,
+        ErrorCategory.System => 500,
+        ErrorCategory.Configuration => 500,
+        _ => 500,
+    };
 
     /// <summary>
     /// 获取错误类别

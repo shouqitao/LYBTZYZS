@@ -17,7 +17,7 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!-- 视觉基线 v1：按 medical-case.pen 对齐：$bg-warm 铺满，标题含患者信息，底部按钮右置，输入描边可见 -->
-    <Grid Background="#FBF7F3">
+    <Grid Background="{DynamicResource SurfaceLevel0Brush}">
         <!--  BaseDetailContainer (查看/编辑)  -->
         <views:BaseDetailContainer
             Title="{Binding State.HeaderTitle}"
