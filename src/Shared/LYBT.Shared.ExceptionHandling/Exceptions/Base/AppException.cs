@@ -12,7 +12,7 @@ public class AppException : Exception
     /// <summary>
     /// 错误代码（字符串格式，向后兼容）
     /// </summary>
-    public string? ErrorCode { get; set; }
+    public string? ErrorCode { get; init; }
 
     /// <summary>
     /// 类型化错误码（枚举格式）

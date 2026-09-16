@@ -37,8 +37,10 @@ namespace LYBT.Desktop.MedicalCase
             ViewModelLocationProvider.Register(typeof(MedicalCaseMasterDetailControl).ToString(), typeof(ViewModels.MedicalCaseMasterDetailViewModel));
 
             // S7: MedicalCaseService 拆分
-            // 编辑会话单例：CommandService/LifecycleService 共同持有，保证状态一致
-            containerRegistry.RegisterSingleton<Models.Items.MedicalCaseEditContext>();
+            // D-1: EditContext 改为 Transient；共享编辑会话由 MedicalCaseEditSession（Singleton）持有，
+            // Command/Lifecycle 通过 Session 访问同一实例（导航进入 BeginEdit、离开 Clear）
+            containerRegistry.Register<Models.Items.MedicalCaseEditContext>();
+            containerRegistry.RegisterSingleton<Models.Items.MedicalCaseEditSession>();
             containerRegistry.Register<IMedicalCaseQueryService, MedicalCaseQueryService>();
             containerRegistry.Register<IMedicalCaseCommandService, MedicalCaseCommandService>();
             containerRegistry.Register<IMedicalCaseLifecycleService, MedicalCaseLifecycleService>();

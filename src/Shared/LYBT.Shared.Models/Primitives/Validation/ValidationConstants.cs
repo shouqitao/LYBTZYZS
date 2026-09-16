@@ -53,7 +53,7 @@ namespace LYBT.Shared.Models.Primitives.Validation
         /// <summary>
         /// 用户名最大长度
         /// </summary>
-        public const int UserNameMaxLength = 50;
+        public const int UserNameMaxLength = 32;
 
         /// <summary>
         /// 密码最大长度

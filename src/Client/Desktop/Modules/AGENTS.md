@@ -35,7 +35,7 @@ Business modules for the WPF desktop client. Each module encapsulates a domain a
 - **Module registration**: `public class {Domain}Module : IModule { void RegisterTypes(IContainerRegistry) {...} }`
 - **ViewModel lifecycle**: `OnNavigatedToCore` / `OnNavigatedFromCore` (override the `*Core` hooks) for Prism navigation awareness
 - **List pattern**: `MasterDetailViewModelBase<TListDto, TDetailModel>` with built-in paging, filtering, selection
-- **Aggregate pattern**: MedicalCase module orchestrates Consultation + Prescription via `IMedicalCaseService` + `MedicalCaseEditContext`（编辑会话单例）
+- **Aggregate pattern**: MedicalCase module orchestrates Consultation + Prescription via `IMedicalCaseService` + `MedicalCaseEditContext`（经 `MedicalCaseEditSession` Singleton 共享）
 
 ## Dependencies
 

@@ -25,13 +25,14 @@ internal class MedicalCaseCommandService : IMedicalCaseCommandService
 
     public MedicalCaseCommandService(
         IMedicalCaseRepository repository,
-        MedicalCaseEditContext context,
+        MedicalCaseEditSession session,
         ILogger<MedicalCaseCommandService> logger,
         MedicalCaseDetailModelMapper mapper,
         ISessionManager? sessionManager = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(session);
+        _context = session.Context;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _sessionManager = sessionManager;

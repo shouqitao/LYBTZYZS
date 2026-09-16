@@ -58,27 +58,7 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole
         // 软删除全局查询过滤器（与 AppDbContext ApplyOptimizations 保持一致）
         modelBuilder.Entity<SecurityAuditLog>().HasQueryFilter(e => !e.IsDeleted);
 
-        // ── 来自 UsersDbContext ──
-        modelBuilder.Entity<ApplicationUser>(entity =>
-        {
-            entity.ToTable("Users");
-            entity.Property(e => e.UserName).HasMaxLength(32).IsRequired();
-            entity.Property(e => e.RealName).HasMaxLength(50).IsRequired();
-            entity.Property(e => e.PinYinCode).HasMaxLength(50);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
-            entity.Property(e => e.Email).HasMaxLength(100);
-            entity.Property(e => e.Remark).HasMaxLength(500);
-            entity.Property(e => e.Role).HasConversion<int>();
-            entity.Property(e => e.Status).HasConversion<int>();
-
-            // 索引
-            entity.HasIndex(e => e.UserName).IsUnique();
-            entity.HasIndex(e => e.PinYinCode);
-            entity.HasIndex(e => e.Role);
-            entity.HasIndex(e => e.Status);
-
-            // 软删除全局查询过滤器（与 AppDbContext 保持一致）
-            entity.HasQueryFilter(e => !e.IsDeleted);
-        });
+        // ApplicationUser 业务字段/表名/软删除由 UserConfiguration 统一维护（上方已 ApplyConfiguration）；
+        // Identity 特有配置（UserName 唯一索引、Normalized* 等）由 base.OnModelCreating 提供，此处不重复覆盖。
     }
 }

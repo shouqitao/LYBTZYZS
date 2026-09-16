@@ -25,9 +25,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     private readonly ISecurityAuditService _securityAuditService;
     private readonly ISender _sender;
     private readonly ILogger<LoginCommandHandler> _logger;
-    private readonly SecurityOptions _securityOptions;
-    private readonly JwtOptions _jwtOptions;
-    private readonly LoginOptions _loginOptions;
+    private readonly IOptionsMonitor<SecurityOptions> _securityOptions;
+    private readonly IOptionsMonitor<JwtOptions> _jwtOptions;
+    private readonly IOptionsMonitor<LoginOptions> _loginOptions;
 
     public LoginCommandHandler(
         IJwtService jwtService,
@@ -36,9 +36,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         ISecurityAuditService securityAuditService,
         ISender sender,
         ILogger<LoginCommandHandler> logger,
-        IOptions<SecurityOptions> securityOptions,
-        IOptions<JwtOptions> jwtOptions,
-        IOptions<LoginOptions> loginOptions)
+        IOptionsMonitor<SecurityOptions> securityOptions,
+        IOptionsMonitor<JwtOptions> jwtOptions,
+        IOptionsMonitor<LoginOptions> loginOptions)
     {
         _jwtService = jwtService;
         _crossModuleService = crossModuleService;
@@ -46,9 +46,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
         _securityAuditService = securityAuditService;
         _sender = sender;
         _logger = logger;
-        _securityOptions = securityOptions?.Value ?? throw new ArgumentNullException(nameof(securityOptions));
-        _jwtOptions = jwtOptions?.Value ?? throw new ArgumentNullException(nameof(jwtOptions));
-        _loginOptions = loginOptions?.Value ?? throw new ArgumentNullException(nameof(loginOptions));
+        _securityOptions = securityOptions ?? throw new ArgumentNullException(nameof(securityOptions));
+        _jwtOptions = jwtOptions ?? throw new ArgumentNullException(nameof(jwtOptions));
+        _loginOptions = loginOptions ?? throw new ArgumentNullException(nameof(loginOptions));
     }
 
     public async Task<Result<LoginResponse>> Handle(
@@ -103,7 +103,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             return Result<LoginResponse>.Failure(ErrorCode.UserDisabled, ErrorMessages.Get(ErrorCode.UserDisabled));
         }
 
-        if (_loginOptions.LockoutEnabled
+        if (_loginOptions.CurrentValue.LockoutEnabled
             && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
         {
             _logger.LogWarning("[Handler] Login failed - UserName={UserName} Reason=账户已锁定至 {LockoutEnd}",
@@ -128,13 +128,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             var newFailedCount = user.FailedLoginCount + 1;
             DateTime? lockoutEnd = null;
 
-            if (_loginOptions.LockoutEnabled
-                && _securityOptions.AccountLockout.Enabled
-                && newFailedCount >= _securityOptions.AccountLockout.MaxFailedCount)
+            if (_loginOptions.CurrentValue.LockoutEnabled
+                && _securityOptions.CurrentValue.AccountLockout.Enabled
+                && newFailedCount >= _securityOptions.CurrentValue.AccountLockout.MaxFailedCount)
             {
-                lockoutEnd = DateTime.UtcNow.AddMinutes(_securityOptions.AccountLockout.LockoutMinutes);
+                lockoutEnd = DateTime.UtcNow.AddMinutes(_securityOptions.CurrentValue.AccountLockout.LockoutMinutes);
                 _logger.LogWarning("[Handler] Login account locked - UserName={UserName} FailedCount={Count} LockoutMinutes={Minutes}",
-                    input.UserName, newFailedCount, _securityOptions.AccountLockout.LockoutMinutes);
+                    input.UserName, newFailedCount, _securityOptions.CurrentValue.AccountLockout.LockoutMinutes);
             }
             else
             {
@@ -164,7 +164,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                     IpAddress = input.ClientIp,
                     UserAgent = input.UserAgent,
                     IsSuccess = false,
-                    FailureReason = $"账户因连续 {newFailedCount} 次失败登录被锁定至 {lockoutEnd}（阈值 {_securityOptions.AccountLockout.MaxFailedCount}）"
+                    FailureReason = $"账户因连续 {newFailedCount} 次失败登录被锁定至 {lockoutEnd}（阈值 {_securityOptions.CurrentValue.AccountLockout.MaxFailedCount}）"
                 }, cancellationToken);
             }
 
@@ -191,7 +191,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
                 userDetail.Role,
                 userType);
 
-        var tokenExpireMinutes = _jwtOptions.AccessTokenExpirationMinutes;
+        var tokenExpireMinutes = _jwtOptions.CurrentValue.AccessTokenExpirationMinutes;
 
         var response = new LoginResponse
         {
@@ -216,12 +216,14 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
             input.ClientIp ?? "unknown",
             input.UserAgent);
 
-        // Token 族旋转：新登录撤销该用户全部旧会话（登录踢出）
+        // X-5: Token 族旋转——撤销全部旧会话 + 新会话落库同一事务，避免撤销成功但新会话写入失败导致用户无有效会话
+        await using var transaction = await _authSessionRepository.BeginTransactionAsync(cancellationToken);
         await _sender.Send(
             new RevokeAllUserTokensCommand(user.Id, "新设备登录，旧会话已撤销"),
             cancellationToken);
 
         await _authSessionRepository.AddAsync(session, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         await RecordAuditAsync(new SecurityAuditEvent
         {
@@ -243,9 +245,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginRes
     /// </summary>
     private async Task RecordAuditAsync(SecurityAuditEvent auditEvent, CancellationToken ct)
     {
-        if (_loginOptions.AuditLevel == SecurityAuditLevel.None)
+        if (_loginOptions.CurrentValue.AuditLevel == SecurityAuditLevel.None)
             return;
-        if (_loginOptions.AuditLevel == SecurityAuditLevel.Minimal && auditEvent.IsSuccess)
+        if (_loginOptions.CurrentValue.AuditLevel == SecurityAuditLevel.Minimal && auditEvent.IsSuccess)
             return;
 
         await _securityAuditService.RecordEventAsync(auditEvent, ct);

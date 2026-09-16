@@ -1,6 +1,7 @@
 using LYBT.Entities.Auth;
 using LYBT.Module.Identity.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LYBT.Module.Identity.Infrastructure;
 
@@ -56,5 +57,11 @@ public class AuthSessionRepository : IAuthSessionRepository
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 }

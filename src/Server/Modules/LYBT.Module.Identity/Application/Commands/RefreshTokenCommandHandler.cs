@@ -93,12 +93,12 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
                 result.ErrorMessage ?? "令牌刷新失败");
         }
 
-        if (oldSession != null)
-        {
-            oldSession.Logout();
-            await _authSessionRepository.UpdateAsync(oldSession, cancellationToken);
-            _logger.LogInformation("[Handler] Old session logged out - SessionId={SessionId}", oldSession.Id);
-        }
+        // X-5: 旧会话 Logout + 新会话 Add 同一事务原子提交——避免旋转中断导致旧会话已失效但新会话未落库（用户被踢出且无有效凭据）
+        await using var transaction = await _authSessionRepository.BeginTransactionAsync(cancellationToken);
+
+        oldSession.Logout();
+        await _authSessionRepository.UpdateAsync(oldSession, cancellationToken);
+        _logger.LogInformation("[Handler] Old session logged out - SessionId={SessionId}", oldSession.Id);
 
         var newToken = result.Data!.Token;
         var newTokenHash = ComputeTokenHash(newToken);
@@ -109,6 +109,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             oldSession?.IpAddress ?? "unknown",
             oldSession?.UserAgent);
         await _authSessionRepository.AddAsync(newSession, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         await _securityAuditService.RecordEventAsync(new SecurityAuditEvent
         {

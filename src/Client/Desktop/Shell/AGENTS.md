@@ -34,7 +34,8 @@ Shell/
 
 ## CONVENTIONS
 
-- **StartupPipeline** — Step-based startup pattern, each step implements `IStartupStep`
+- **StartupPipeline** — Step-based startup pattern, each step implements `IStartupStep`; all steps registered as `IStartupStep` and collected via `IEnumerable<IStartupStep>` in `AppStartupOrchestrator`（无 IContainerProvider）
+- **Service 层无 MessageBox** — 启动管线/步骤通过 `IUserNotificationService` 通知用户，不直接调用 `System.Windows.MessageBox`
 - **Role-based modules** — `ApplicationBootstrapper.LoadModulesForRoleAsync()` loads modules per user role
 - **Explicit ModuleCatalog** — No DirectoryModuleCatalog; modules registered manually in `App.ConfigureModuleCatalog` (Authentication/Admin/Sysadmin `WhenAvailable`; Clinical and business modules `OnDemand`)
 - **Two-phase Serilog** — Bootstrap logger → final logger
@@ -42,5 +43,6 @@ Shell/
 ## ANTI-PATTERNS
 
 - **ContainerLocator** — Service locator anti-pattern (documented in Desktop README)
+- **IContainerProvider in services** — 注入具体依赖或 `IEnumerable<T>`，禁止服务内手动 Resolve
 - **Blocking startup** — All startup steps must be async; splash screen shows progress
 - **Direct module references** — Modules MUST NOT reference each other

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
@@ -90,25 +91,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>
         /// 是否已锁定(隔天不可编辑). 动态计算: CompletedAt.Date &lt; Today
-        /// P1-10: 日界 = 诊所本地时间（Asia/Shanghai），非 UTC 非服务器本地——见 LYBT.Entities.MedicalCases.MedicalCaseTime
+        /// P1-10/H-2: 日界 = 诊所本地时间（Asia/Shanghai），非 UTC 非服务器本地——统一走 ClinicTime
         /// </summary>
         public bool IsLocked => CaseStatus == MedicalCaseStatus.Completed &&
                                 CompletedAt.HasValue &&
-                                ClinicLocalDate(CompletedAt.Value) < ClinicLocalDate(DateTime.UtcNow);
-
-        private static DateTime ClinicLocalDate(DateTime utc)
-        {
-            try
-            {
-                if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Shanghai");
-                return TimeZoneInfo.ConvertTimeFromUtc(utc, tz).Date;
-            }
-            catch
-            {
-                return utc.Date;
-            }
-        }
+                                ClinicTime.ClinicLocalDate(CompletedAt.Value) < ClinicTime.ClinicLocalDate(DateTime.UtcNow);
 
         // ========== 扩展字段 ==========
 

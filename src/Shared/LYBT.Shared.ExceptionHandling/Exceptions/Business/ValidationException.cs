@@ -8,7 +8,11 @@ namespace LYBT.Shared.ExceptionHandling.Exceptions;
 /// </summary>
 public class ValidationException : AppException
 {
-    public override int GetHttpStatusCode() => 422;
+    /// <summary>
+    /// 优先按 TypedErrorCode 映射；无类型化错误码时回退 422（服务层验证语义，区别于 FluentValidation 管道的 400）。
+    /// </summary>
+    public override int GetHttpStatusCode()
+        => TypedErrorCode is { } typed ? typed.ToHttpStatusCode() : 422;
 
     public override ErrorCategory Category => ErrorCategory.Validation;
 

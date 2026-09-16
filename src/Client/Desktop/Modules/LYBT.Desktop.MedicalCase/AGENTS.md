@@ -27,7 +27,7 @@ LYBT.Desktop.MedicalCase/
 | Module registration | `MedicalCaseModule.cs` | `[ModuleDependency("PatientsModule")]` + `("CatalogModule")` (runtime order only; no cross-module ProjectReference) |
 | ViewModels | `ViewModels/` | `MasterDetailViewModelBase` derivative + `ChildViewModelBase` workspace VMs |
 | Aggregate orchestration | `Services/MedicalCaseService.cs` | Delegates to Query/Command/Lifecycle services; owns `AggregateSaveAsync` |
-| Edit session | `Models/Items/MedicalCaseEditContext.cs` | Singleton in module DI; BeginEdit/Commit/Cancel/IsDirty baseline |
+| Edit session | `Models/Items/MedicalCaseEditContext.cs` + `MedicalCaseEditSession.cs` | EditContext Transient；Session Singleton 持有唯一实例，Command/Lifecycle 共享；BeginEdit/Commit/Cancel/IsDirty baseline |
 | Edit state machine | `ViewModels/Components/EditModeStateMachine.cs` | 6 states × 10 events, transition-table driven |
 | Printing | `ViewModels/Components/PrescriptionPrintHandler.cs` | `IPrintService<PrescriptionPrintModel>`, draft watermark |
 | Prescription import | `Extensions/PrescriptionImportExtensions.cs` + `Dialogs/FormulaImportDialog*` | Import logic (Validated + Enabled formulas only) |

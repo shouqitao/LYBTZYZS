@@ -6,18 +6,22 @@ namespace LYBT.Desktop.Shell.Services.Startup.Steps;
 /// <summary>
 /// Desktop 自动更新检查步骤（US-SHELL-010: 启动后后台检查更新——非阻塞；
 /// 有更新时提示用户，确认后下载——应用重启由用户触发）
+/// D-3: MessageBox 替换为 IUserNotificationService，Service 层不直接引用 WPF MessageBox。
 /// </summary>
 public class DesktopUpdateStartupStep : IStartupStep
 {
     private readonly IDesktopUpdateService _updateService;
     private readonly ILogger<DesktopUpdateStartupStep> _logger;
+    private readonly IUserNotificationService _notificationService;
 
     public DesktopUpdateStartupStep(
         IDesktopUpdateService updateService,
-        ILogger<DesktopUpdateStartupStep> logger)
+        ILogger<DesktopUpdateStartupStep> logger,
+        IUserNotificationService notificationService)
     {
         _updateService = updateService;
         _logger = logger;
+        _notificationService = notificationService;
     }
 
     public int Order => 400;
@@ -48,29 +52,25 @@ public class DesktopUpdateStartupStep : IStartupStep
             _logger.LogInformation("[UPDATE] 发现新版本: {Version}", info.NewVersion);
 
             // 提示用户（异步——不阻塞主流程）
-            var result = System.Windows.MessageBox.Show(
+            var confirmed = await _notificationService.ShowConfirmAsync(
                 $"发现新版本 {info.NewVersion}，是否下载并更新？",
-                "软件更新",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Information);
+                "软件更新");
 
-            if (result != System.Windows.MessageBoxResult.Yes)
+            if (!confirmed)
                 return;
 
             var downloaded = await _updateService.DownloadUpdateAsync();
             if (!downloaded)
             {
-                System.Windows.MessageBox.Show("更新包下载失败，请稍后重试或联系管理员", "软件更新",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                await _notificationService.ShowWarningAsync(
+                    "更新包下载失败，请稍后重试或联系管理员", "软件更新");
                 return;
             }
 
-            var restart = System.Windows.MessageBox.Show(
+            var restart = await _notificationService.ShowConfirmAsync(
                 "更新包已下载，是否立即重启应用完成更新？（请先保存当前工作）",
-                "软件更新",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
-            if (restart == System.Windows.MessageBoxResult.Yes)
+                "软件更新");
+            if (restart)
                 await _updateService.ApplyUpdateAndRestartAsync();
         }
         catch (Exception ex)

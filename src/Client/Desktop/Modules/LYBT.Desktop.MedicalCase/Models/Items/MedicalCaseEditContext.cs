@@ -8,7 +8,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 /// <summary>
 /// 医案编辑上下文 - 完整编辑会话
 /// 承载可编辑状态（诊断字段 + 处方行集合 + 状态），支持 BeginEdit/Commit/Cancel 与脏检测。
-/// 由 CommandService 与 LifecycleService 共享（模块内单例注册），保证编辑会话状态一致。
+/// 由 CommandService 与 LifecycleService 经 MedicalCaseEditSession（Singleton 持有者）共享同一实例。
 /// </summary>
 public class MedicalCaseEditContext : ObservableObject
 {

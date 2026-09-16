@@ -44,7 +44,7 @@
 | 登录失败锁定 | 5 次/15 分钟 | 是 | 可配置，生产环境不可禁用 |
 | 登录速率限制 | 5 次/60 秒/IP | 是 | 防暴力破解 |
 | 旧会话清理 | 新登录时 | 是 | 防止 Token 泄漏后持续有效 |
-| DPAPI 加密 | Desktop 端 Token 存储 | 是 | Windows DPAPI 加密本地 Token |
+| Token 存储 | Desktop 端进程内存 | 是 | Token 不落盘，进程结束即清除（非 DPAPI；DPAPI 仅用于凭据/照片） |
 | HTTPS | 生产环境必须 | 是 | 本地模式可选 HTTP |
 
 ### 2.2 本地模式认证

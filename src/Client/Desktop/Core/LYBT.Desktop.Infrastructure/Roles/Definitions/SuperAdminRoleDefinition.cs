@@ -16,6 +16,8 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
         {
             "UsersModule",
             "SysadminModule",
+            // D-5: SysadminHome 面板依赖 AdminModule 注册的 IServerConfigurationService 等服务
+            "AdminModule",
             // DI 修复：SysadminHomeViewModel → CardReaderDiagnosticsViewModel → ICardReaderDiagnostics
             // 注册于 OnDemand 的 CardReaderModule；不含此模块则超管登录后解析 SysadminHomeView 失败
             // （An unexpected error occurred while resolving 'System.Object' ... 'SysadminHomeView'）

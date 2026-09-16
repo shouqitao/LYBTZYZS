@@ -14,38 +14,38 @@ DTO 已完成三阶段优化: 查询命名标准化、操作结果基类抽取�
 
 | 项目 | 职责 | 状态 |
 |------|------|------|
-| LYBT.Shared.Models | DTO、响应模型、枚举、常量 | 稳定 |
-| LYBT.Shared.Primitives | 核心原语（基类、接口定义） | 稳定 |
-| LYBT.Shared.Validators | FluentValidation 验证器 | 稳定 |
-| LYBT.Shared.Utilities | 扩展方法、帮助类 | 稳定 |
-| LYBT.Shared.Components | 共享 UI 组件 | 稳定 |
+| LYBT.Entities | 领域实体（聚合根、审计/软删除基类） | 稳定 |
+| LYBT.Shared.Models | DTO、响应模型、枚举、常量、验证器、工具类 | 稳定 |
 | LYBT.Shared.Configuration | 配置管理共享逻辑 | 稳定 |
 | LYBT.Shared.ExceptionHandling | 统一异常处理 | 稳定 |
 | LYBT.Shared.Logging | 日志基础设施 | 稳定 |
+
+> 历史项目 `LYBT.Shared.Primitives` / `LYBT.Shared.Validators` / `LYBT.Shared.Utilities` / `LYBT.Shared.Components` 已合并或移除，内容现由 `LYBT.Shared.Models` 承载。
 
 ## 目录结构
 
 ```
 src/Shared/
+├── LYBT.Entities/
 ├── LYBT.Shared.Models/
-├── LYBT.Shared.Primitives/
-├── LYBT.Shared.Validators/
-├── LYBT.Shared.Utilities/
-├── LYBT.Shared.Components/
 ├── LYBT.Shared.Configuration/
 ├── LYBT.Shared.ExceptionHandling/
-└── LYBT.Shared.Logging/
+├── LYBT.Shared.Logging/
+└── Documentation/
 ```
 
 ## 依赖关系
 
 ```
-Server.Modules  -> Shared.Models / Shared.Validators / Shared.Utilities
-Desktop.Modules -> Shared.Models / Shared.Components / Shared.Utilities
+LYBT.Entities              -> LYBT.Shared.Models（枚举复用例外）
+Server.Modules             -> Shared.Models / Entities
+Desktop.Modules            -> Shared.Models
+Shared.ExceptionHandling   -> Shared.Models
+Shared.Logging             -> Shared.Models
 ```
 
 - **被依赖**: Server 层和 Desktop 层均引用
-- **自身无外部层依赖**: 仅依赖 .NET BCL 和第三方库 (FluentValidation, System.Text.Json)
+- **Shared.Models 是叶子节点**: 仅依赖 .NET BCL 和第三方库 (FluentValidation, System.Text.Json)
 
 ## DTO 继承体系
 

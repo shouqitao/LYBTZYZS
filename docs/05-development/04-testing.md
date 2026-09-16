@@ -15,16 +15,21 @@
 
 ## 测试项目结构 (3 个项目, Testing Trophy 架构)
 
+> **T2-1 校正（2026-08-11）**：Server 测试实际为 EF InMemory 单元测试 + WebApplicationFactory 系统测试；原宣称的「真 SQL Server + Respawn」集成基建（`_Infrastructure/`）零消费者已删除。独立 E2E 测试项目亦已删除。
+
 ```
 tests/
-  LYBT.Tests.Server/                  # Server 端全量测试 (net8.0, 1185 tests)
-    Infrastructure/                   # ServerFixture, IntegrationTestBase, Respawn
-    Integration/                      # 真实 HTTP + SQL Server 集成测试
-      Auth/, Users/, Patients/        # 认证、用户、患者
-      Herbs/, Formulas/               # 药材、验方
-      MedicalCases/, Sync/            # 医案聚合根、数据同步
-    PureLogic/                        # 纯逻辑测试 (Entities, Validators, Utilities)
-      Entities/, Shared/, WebAPI/     # 无外部依赖的单元测试
+  LYBT.Tests.Server/                  # Server 端全量测试 (net8.0)
+    Integration/                      # WebApplicationFactory 系统测试 (WebApiTestFactory)
+      System/                         # 登录流、配置权限行为、公式校验注册
+      Permissions/                    # 角色授权、跨角色
+      P0Endpoints/                    # 关键端点 (Auth/Users/Patients/MedicalCases/Registrations/Herbs)
+      Deployment/                     # 部署配置、Swagger 暴露面
+      Data/                           # DbContext 映射烟测、公式 SQL
+    Unit/                             # 纯逻辑 + EF InMemory 单元测试 (零 mock)
+      Auth/, Catalog/, Configuration/, Entities/, HealthCheck/,
+      Identity/, Infrastructure/, MedicalCase/, Patients/, Registration/,
+      Reports/, Shell/, Utilities/, Validators/, WebAPI/
 
   LYBT.Tests.Desktop/                 # Desktop 端全量测试 (net8.0-windows, ~760 tests)
     _Infrastructure/                  # 测试基建 (测试替身/Builder/断言辅助)
@@ -46,15 +51,15 @@ tests/
         ErrorFlow/                    # 异常映射 (US-ERR-006/007，状态码 + 响应体规范)
         BoundaryFlow/                 # 并发隔离、权限边界
 
-  LYBT.Tests.Architecture/            # 架构防护测试 (net8.0, 87 tests)
+  LYBT.Tests.Architecture/            # 架构防护测试 (net8.0)
     ServerArchTests                   # 层依赖、命名规范
     CustomControlArchTests            # WPF 控件规范
-    AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock
+    AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock (NSubstitute/Moq 禁用)
 ```
 
-> **注意**: Desktop 测试使用 **SQL Server LocalDB**（`tests/LYBT.Tests.Desktop` 全部 `UseSqlServer("(localdb)\MSSQLLocalDB...")`），与生产环境一致。
+> **注意**: Desktop 集成/E2E 测试使用 **SQL Server LocalDB**；Server 单元测试使用 **EF InMemory**（不校验列映射，故另有 `DbContextMappingSmokeTests` 拦截 InMemory 盲区）。
 
-**Testing Trophy 原则**: Server 测试使用真实 SQL Server + Respawn (零 mock)，Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
+**Testing Trophy 原则**: Server 测试使用 EF InMemory + WebApplicationFactory (零 mock，AntiMockRuleTests 强制)；Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
 
 **平台分离**: Server 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
 
@@ -171,11 +176,11 @@ public void Patient_Create_WithValidData_ShouldSetDefaults()
 
 ### Mock 策略 (Testing Trophy)
 
-**Server 测试: 零 mock** -- 所有测试通过真实 HTTP 管线 + SQL Server + Respawn 执行。
+**Server 测试: 零 mock** -- 单元测试用 EF InMemory 真实实现；系统测试用 WebApplicationFactory 真实启动 Remote WebAPI（零 NSubstitute/Moq，AntiMockRuleTests 强制）。
 **Desktop 测试: 最小 mock** -- 仅限 WPF Runtime 边界接口 (IRegionManager, IDialogService 等)。
 
 ```csharp
-// Server 测试 -- 真实 HTTP 请求 (零 mock)
+// Server 集成测试 -- WebApplicationFactory 真实 HTTP 管线 (零 mock)
 var response = await Client.PostAsJsonAsync("/api/v1/patients", dto);
 response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -213,18 +218,18 @@ var vm = fixture.CreateViewModel<PatientServiceTests>();
 
 ## 完整集成测试示例
 
-### Server 集成测试 (WebApplicationFactory + 真实 HTTP)
+### Server 系统测试 (WebApplicationFactory + 真实 HTTP 管线)
 
 ```csharp
-[Collection("ClinicalData")]
-public class PatientIntegrationTests : IntegrationTestBase<ClinicalDataFixture>
+// 继承 WebApiTestFactory（注入测试 JWT 密钥/密码；DB 连接串由 TEST_DB_CONNECTION 环境变量驱动，
+// 未设置时 DB 依赖测试 Skip）。单元/仓储测试则直接用 EF InMemory:
+// options.UseInMemoryDatabase(Guid.NewGuid().ToString())
+public class PatientIntegrationTests : IClassFixture<WebApiTestFactory>
 {
-    public PatientIntegrationTests(ClinicalDataFixture fixture) : base(fixture) { }
-
     [Fact]
     public async Task CreatePatient_AsDoctor_ShouldReturn201()
     {
-        // Arrange — 真实 HTTP 客户端 + 真实 SQL Server
+        // Arrange — WebApplicationFactory 真实 HTTP 客户端
         var client = await LoginAsDoctorAsync();
         var dto = PatientBuilder.Default()
             .WithName(UniqueName("患者"))
@@ -277,24 +282,20 @@ public class PatientEndToEndTests : IClassFixture<UserJourneyFixture>
 }
 ```
 
-### Respawn 使用示例
+### Server 测试数据隔离（EF InMemory，非 Respawn）
 
-Server 测试通过 Respawn 在每个测试前重置数据库：
+原「真 SQL Server + Respawn」基建已随 T2-1 删除（`_Infrastructure/` 零消费者）。当前隔离方式：
 
 ```csharp
-// ServerFixture.InitializeAsync 中初始化
-_respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
-{
-    DbAdapter = DbAdapter.SqlServer,
-    SchemasToInclude = ["dbo"],
-    TablesToIgnore = [new Respawn.Graph.Table("__EFMigrationsHistory")]
-});
+// 单元/仓储测试 — 每测试独立 InMemory 库名，天然隔离
+options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString());
 
-// IntegrationTestBase.InitializeAsync 中调用
-await Fixture.ResetAsync();  // 按外键拓扑序 DELETE + 重新 seed
+// 系统测试 — WebApiTestFactory 真实启动 Remote WebAPI
+// 真实 SQL 依赖测试由 TEST_DB_CONNECTION 环境变量驱动，未配置则 Skip
+public class WebApiTestFactory : WebApplicationFactory<Program> { ... }
 ```
 
-Respawn 按外键依赖顺序删除数据，比 `DELETE FROM` 更安全。Desktop 测试使用 SQL Server LocalDB（每测试独立事务/连接）实现隔离。
+> InMemory 不校验列映射（上线坑 #2 根源），故有 `DbContextMappingSmokeTests` 专门拦截映射盲区。Desktop 集成测试使用 SQL Server LocalDB（每测试独立事务/连接）实现隔离。
 
 ---
 
@@ -346,7 +347,7 @@ var adminClient = await LoginAsAdminAsync();
 A: Desktop 测试项目 (`LYBT.Tests.Desktop`) 目标框架为 `net8.0-windows`，仅在 Windows 环境运行。CI 配置应使用 `--filter` 排除或使用 Windows Agent。
 
 **Q: 集成测试数据污染**
-A: Server 测试使用 Respawn 在每个测试前重置数据库 (按外键拓扑序 DELETE)。Desktop 测试使用 SQL Server LocalDB（每测试独立事务/连接）。数据隔离由 IntegrationTestBase/DesktopFixture 自动管理。
+A: Server 单元测试每测试使用独立 EF InMemory 库名天然隔离；系统测试经 WebApplicationFactory 启动（真实 SQL 依赖由 `TEST_DB_CONNECTION` 驱动，未配置则 Skip）。Desktop 集成测试使用 SQL Server LocalDB（每测试独立事务/连接）。数据隔离由各自 Fixture 自动管理。
 
 **Q: 什么时候用 Mock？**
 A: Testing Trophy 原则 -- Server 测试零 mock (通过 AntiMockRuleTests 架构测试强制)。Desktop 测试仅 mock WPF Runtime 边界接口 (IRegionManager, IDialogService, IModuleManager 等)。Repository/Service/DbContext 必须使用真实组件。
@@ -363,3 +364,4 @@ A: 架构测试 (`LYBT.Tests.Architecture`) 强制检查层间依赖方向和 mo
 | 2026-02-22 | v1.1 | 新增常见测试问题 (FAQ) 章节 |
 | 2026-03-04 | v2.0 | Testing Trophy 重构: 5 项目 -> 3 项目, Server 零 mock, Respawn 隔离 |
 | 2026-06-25 | v2.1 | 补充 Server/Desktop 集成测试完整示例和 Respawn 使用说明 |
+| 2026-09-17 | v2.2 | 同步 T2-1 实际基建: Server 改为 EF InMemory + WebApplicationFactory（Respawn/_Infrastructure 已删除）；独立 E2E 项目已删除 |

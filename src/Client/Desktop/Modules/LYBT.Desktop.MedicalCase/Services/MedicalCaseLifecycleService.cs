@@ -28,12 +28,13 @@ internal class MedicalCaseLifecycleService : IMedicalCaseLifecycleService
 
     public MedicalCaseLifecycleService(
         IMedicalCaseRepository repository,
-        MedicalCaseEditContext context,
+        MedicalCaseEditSession session,
         MedicalCaseDetailModelMapper mapper,
         ILogger<MedicalCaseLifecycleService> logger)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(session);
+        _context = session.Context;
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }

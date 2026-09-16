@@ -225,12 +225,13 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell启动流程重构 - Phase 3 新增服务
             containerRegistry.RegisterSingleton<IStartupPipeline, StartupPipeline>();
+            // D-2: 所有步骤统一注册为 IStartupStep，AppStartupOrchestrator 经 IEnumerable<IStartupStep> 自动收集
             containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
             containerRegistry.Register<IStartupStep, ModuleCoordinatorStartupStep>("ModuleCoordinator");
             containerRegistry.Register<IStartupStep, DesktopUpdateStartupStep>("DesktopUpdate");
             containerRegistry.Register<IStartupStep, LocalWebApiStartupStep>("LocalWebApi");
             // API健康检查 - 5秒超时，后台异步执行（Transient生命周期，每次解析新实例）
-            containerRegistry.Register<ApiHealthCheckStartupStep>();
+            containerRegistry.Register<IStartupStep, ApiHealthCheckStartupStep>();
 
 
             // 全局API健康监控器（断路器+订阅模式）
