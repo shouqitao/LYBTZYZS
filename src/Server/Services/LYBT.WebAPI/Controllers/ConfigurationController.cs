@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
@@ -44,8 +44,8 @@ public class ConfigurationController : BaseApiController
     {
         var result = await _configurationService.GetConfigurationAsync(cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "获取配置失败");
-        return Success(result.Data!, "查询成功");
+            return BusinessFail(result.Error ?? "获取配置失败");
+        return Success(result.Value!, "查询成功");
     }
 
     /// <summary>
@@ -57,8 +57,8 @@ public class ConfigurationController : BaseApiController
     {
         var result = await _configurationService.GetValueAsync(key, cancellationToken);
         if (!result.IsSuccess)
-            return NotFound(result.ErrorMessage ?? "配置项不存在");
-        return Success(result.Data, "查询成功");
+            return NotFound(result.Error ?? "配置项不存在");
+        return Success(result.Value, "查询成功");
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class ConfigurationController : BaseApiController
 
         var result = await _configurationService.SetValueAsync(key, value, cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "修改配置失败");
+            return BusinessFail(result.Error ?? "修改配置失败");
         return Success("配置修改成功");
     }
 
@@ -89,7 +89,7 @@ public class ConfigurationController : BaseApiController
 
         var result = await _configurationService.UpdateConfigurationAsync(settings, cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "批量修改配置失败");
+            return BusinessFail(result.Error ?? "批量修改配置失败");
         return Success($"批量修改 {settings.Count} 项配置成功");
     }
 
@@ -102,9 +102,9 @@ public class ConfigurationController : BaseApiController
     {
         var result = await _configurationService.GetSectionAsync(section, ct);
         if (!result.IsSuccess)
-            return NotFound(result.ErrorMessage ?? "配置节不存在");
-        await RecordAuditAsync("ConfigGet", $"{section}（{result.Data!.Count} 键）");
-        return Success(result.Data, "查询成功");
+            return NotFound(result.Error ?? "配置节不存在");
+        await RecordAuditAsync("ConfigGet", $"{section}（{result.Value!.Count} 键）");
+        return Success(result.Value, "查询成功");
     }
 
     /// <summary>
@@ -119,10 +119,10 @@ public class ConfigurationController : BaseApiController
 
         var result = await _configurationService.UpdateSectionAsync(section, values, ct);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "修改配置失败");
+            return BusinessFail(result.Error ?? "修改配置失败");
 
-        await RecordAuditAsync("ConfigUpdate", $"{section}（{result.Data!.UpdatedCount} 键，{result.Data.EffectiveMode} 生效）");
-        return Success(result.Data, "配置修改成功");
+        await RecordAuditAsync("ConfigUpdate", $"{section}（{result.Value!.UpdatedCount} 键，{result.Value.EffectiveMode} 生效）");
+        return Success(result.Value, "配置修改成功");
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public class ConfigurationController : BaseApiController
     {
         var result = await _configurationService.ScheduleRestartAsync(lifetime, ct);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "重启调度失败");
+            return BusinessFail(result.Error ?? "重启调度失败");
 
         await RecordAuditAsync("ConfigRestart", "延迟重启已调度（30 秒后停止）");
         return Success("重启已调度，将在 30 秒后生效");
@@ -150,7 +150,7 @@ public class ConfigurationController : BaseApiController
     {
         var result = await _configurationService.ValidateProductionConfigAsync(cancellationToken);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "配置验证失败");
+            return BusinessFail(result.Error ?? "配置验证失败");
         return Success("配置验证通过");
     }
 

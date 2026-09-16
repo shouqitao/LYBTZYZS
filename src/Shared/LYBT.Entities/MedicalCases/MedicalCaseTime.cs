@@ -7,6 +7,7 @@ namespace LYBT.Entities.MedicalCases;
 /// 实现已下沉到 <see cref="ClinicTime"/>（Shared.Models），本类型保留实体域入口，供实体/服务调用。
 /// 运营日界 = 诊所本地时间（默认 Asia/Shanghai），非 UTC——避免北京 00-08 时经 UTC 跨日误锁 Completed 医案。
 /// 时区可通过环境变量 LYBT_CLINIC_TIMEZONE 覆盖（如 "Asia/Shanghai"）。
+/// H-11: ClinicTime 已改为调用时解析环境变量（缓存可失效），本入口无需额外静态初始化。
 /// </summary>
 public static class MedicalCaseTime
 {

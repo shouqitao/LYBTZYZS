@@ -25,12 +25,12 @@ namespace LYBT.Entities.Herbs
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// &lt;summary&gt;拼音码（用于快速搜索）&lt;/summary&gt;
+        /// <summary>拼音码（用于快速搜索）</summary>
         [StringLength(50)]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// &lt;summary&gt;分类（用于分组管理，如：补血药、补气药）&lt;/summary&gt;
+        /// <summary>分类（用于分组管理，如：补血药、补气药）</summary>
         [StringLength(100)]
         [DisplayName("分类")]
         public string? Category { get; set; }

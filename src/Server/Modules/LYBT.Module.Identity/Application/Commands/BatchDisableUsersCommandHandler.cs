@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.BatchOperations;
@@ -52,7 +52,7 @@ public class BatchDisableUsersCommandHandler
         var guardResult = UserHierarchyGuard.Validate<object>(
             operatorId, id, _operatorRole, user.IsSysAdmin, user.Role);
         if (guardResult != null)
-            return Task.FromResult<string?>(guardResult.ErrorMessage ?? "无权限禁用");
+            return Task.FromResult<string?>(guardResult.Error ?? "无权限禁用");
         return Task.FromResult<string?>(null);
     }
 }

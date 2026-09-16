@@ -92,7 +92,7 @@
 - `03-architecture/11-business-flows.md` — 关键业务流程
 - `03-architecture/12-permissions-matrix.md` — 权限矩阵
 - `06-operations/09-variables-secrets.md` — 配置与密钥
-- `05-development/13-test-coverage-map.md` — 测试覆盖地图
+- `05-development/04-testing.md` — 测试策略与覆盖
 - ~~`docs/compose/specs/2026-06-28-shell-phase2-design.md`~~（已归档）— Shell Phase2 设计，见 [11a-shell.md](../02-requirements/11a-shell.md)
 - ~~`docs/compose/specs/2026-06-28-prd-code-reconciliation.md`~~（已归档）— PRD-代码对账，见 [13-traceability-matrix.md](../02-requirements/13-traceability-matrix.md)
 

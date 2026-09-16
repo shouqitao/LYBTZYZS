@@ -8,20 +8,38 @@ namespace LYBT.Shared.Models.Primitives;
 /// </summary>
 public static class ClinicTime
 {
-    private static readonly TimeZoneInfo ClinicTz = ResolveTimezone();
+    // H-11: 缓存支持失效——每次调用解析环境变量，id 变化时重建缓存（避免 static readonly 永久固化）
+    private static readonly object TzLock = new();
+    private static TimeZoneInfo? _cachedTz;
+    private static string? _cachedTzId;
 
     private static TimeZoneInfo ResolveTimezone()
     {
-        try
+        var id = Environment.GetEnvironmentVariable("LYBT_CLINIC_TIMEZONE");
+        if (string.IsNullOrWhiteSpace(id))
+            id = "Asia/Shanghai";
+
+        lock (TzLock)
         {
-            var id = Environment.GetEnvironmentVariable("LYBT_CLINIC_TIMEZONE");
-            if (string.IsNullOrWhiteSpace(id))
-                id = "Asia/Shanghai";
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(id);
-            if (tz != null) return tz;
+            if (_cachedTz != null && string.Equals(_cachedTzId, id, StringComparison.Ordinal))
+                return _cachedTz;
+
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById(id);
+                if (tz != null)
+                {
+                    _cachedTz = tz;
+                    _cachedTzId = id;
+                    return tz;
+                }
+            }
+            catch { }
+
+            _cachedTz = TimeZoneInfo.Utc;
+            _cachedTzId = id;
+            return _cachedTz;
         }
-        catch { }
-        return TimeZoneInfo.Utc;
     }
 
     /// <summary>UTC 时间 → 诊所本地日期</summary>
@@ -29,7 +47,7 @@ public static class ClinicTime
     {
         if (utc.Kind == DateTimeKind.Unspecified)
             utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
-        var local = TimeZoneInfo.ConvertTimeFromUtc(utc, ClinicTz);
+        var local = TimeZoneInfo.ConvertTimeFromUtc(utc, ResolveTimezone());
         return local.Date;
     }
 }

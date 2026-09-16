@@ -25,6 +25,8 @@ public static class LocalJwtConfig
 {
     private const int TokenExpirationDays = 365;
     private static string _secret = string.Empty;
+    private static string _issuer = "LYBT-LocalWebAPI";
+    private static string _audience = "LYBT-Desktop";
 
     /// <summary>
     /// 令牌过期时间（天数）
@@ -32,11 +34,13 @@ public static class LocalJwtConfig
     public static int ExpirationDays => TokenExpirationDays;
 
     /// <summary>
-    /// 初始化密钥（从 Options 读取）
+    /// 初始化密钥与 Issuer/Audience（从 Options 读取）
     /// </summary>
     public static void Initialize(LocalJwtOptions options)
     {
         _secret = options.SecretKey;
+        _issuer = string.IsNullOrWhiteSpace(options.Issuer) ? "LYBT-LocalWebAPI" : options.Issuer;
+        _audience = string.IsNullOrWhiteSpace(options.Audience) ? "LYBT-Desktop" : options.Audience;
     }
 
     /// <summary>获取签名密钥（T4: 供令牌验签使用——本地 refresh 原只解析不验签，任意伪造 JWT 可换令牌）</summary>
@@ -52,10 +56,13 @@ public static class LocalJwtConfig
         var key = Encoding.UTF8.GetBytes(_secret);
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            // X-2: 与 Remote JWT 对齐，校验 Issuer/Audience
+            ValidateIssuer = true,
+            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            ValidIssuer = _issuer,
+            ValidAudience = _audience,
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
 
@@ -167,6 +174,8 @@ public static class LocalJwtConfig
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
             claims: claims,
             notBefore: DateTime.UtcNow,
             expires: DateTime.UtcNow.AddDays(TokenExpirationDays),

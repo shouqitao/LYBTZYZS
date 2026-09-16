@@ -83,7 +83,8 @@ public class LoggingLevelManager : IDisposable
 
             // 设置新级别
             var previousLevel = LevelSwitch.MinimumLevel;
-            LevelSwitch.MinimumLevel = level;            DebugModeStartedAt = DateTime.UtcNow;
+            LevelSwitch.MinimumLevel = level;
+            DebugModeStartedAt = DateTime.UtcNow;
 
             if (durationMinutes.HasValue && durationMinutes > 0)
             {

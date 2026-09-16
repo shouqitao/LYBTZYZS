@@ -11,6 +11,8 @@ namespace LYBT.Module.Reports.Infrastructure;
 /// </summary>
 public partial class ReportRepository : IReportRepository
 {
+    // 架构测试 P18 显式豁免：报表需要跨模块聚合查询（Registrations + MedicalCases + Prescriptions + PrescriptionItems），
+    // 注入统一 AppDbContext 是有意设计，不是违规。模块级 DbContext 仅做单模块逻辑隔离，无法支撑报表的跨模块 JOIN。
     private readonly AppDbContext _context;
 
     public ReportRepository(AppDbContext context)

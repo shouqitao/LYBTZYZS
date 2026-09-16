@@ -223,6 +223,9 @@ public static class LocalWebApiProgram
         });
 
         // Register DefaultPasswordOptions from configuration (required by IdentitySeedData)
+        // H-7: 校验未展开 ${} 占位符
+        builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<DefaultPasswordOptions>,
+            LYBT.Shared.Configuration.Validation.DefaultPasswordOptionsValidator>();
         builder
             .Services.AddOptions<DefaultPasswordOptions>()
             .Bind(builder.Configuration.GetSection(DefaultPasswordOptions.SectionName))

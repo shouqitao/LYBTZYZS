@@ -1,4 +1,4 @@
-using LYBT.Module.Identity.Application.Commands;
+﻿using LYBT.Module.Identity.Application.Commands;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Tests.Server.Unit.Identity;
@@ -15,7 +15,7 @@ public class BatchDeleteHierarchyTests
         var targetAdminId = Guid.NewGuid();
         var result = UserHierarchyGuard.Validate<object>(adminId, targetAdminId, UserRole.Admin, false, UserRole.Admin);
         Assert.NotNull(result);
-        Assert.Equal("仅超级管理员可管理管理员账号", result!.ErrorMessage);
+        Assert.Equal("仅超级管理员可管理管理员账号", result!.Error);
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public class BatchDeleteHierarchyTests
         var targetId = Guid.NewGuid();
         var result = UserHierarchyGuard.Validate<object>(doctorId, targetId, UserRole.Doctor, false, UserRole.Receptionist);
         Assert.NotNull(result);
-        Assert.Equal("无权管理用户", result!.ErrorMessage);
+        Assert.Equal("无权管理用户", result!.Error);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class BatchDeleteHierarchyTests
         var sysAdminTarget = Guid.NewGuid();
         var result = UserHierarchyGuard.Validate<object>(adminId, sysAdminTarget, UserRole.SuperAdmin, true, UserRole.SuperAdmin);
         Assert.NotNull(result);
-        Assert.Contains("系统管理员", result!.ErrorMessage);
+        Assert.Contains("系统管理员", result!.Error);
     }
 
     [Fact]
@@ -53,6 +53,6 @@ public class BatchDeleteHierarchyTests
         var adminId = Guid.NewGuid();
         var result = UserHierarchyGuard.Validate<object>(adminId, adminId, UserRole.Admin, false, UserRole.Admin);
         Assert.NotNull(result);
-        Assert.Contains("不能操作自己", result!.ErrorMessage);
+        Assert.Contains("不能操作自己", result!.Error);
     }
 }

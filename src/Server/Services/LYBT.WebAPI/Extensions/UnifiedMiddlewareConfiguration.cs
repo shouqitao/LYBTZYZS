@@ -22,6 +22,9 @@ public static class UnifiedMiddlewareConfiguration
     {
         // ===== 阶段1: 错误处理和安全 =====
         // 1.1 统一异常处理(所有环境使用相同JSON格式)
+        // X-4 管道化：Business/SystemExceptionHandler 已经 AddExceptionHandler 注册（ExceptionHandlingServiceCollectionExtensions），
+        // ExceptionHandlerMiddleware 会先遍历 IExceptionHandler 链；本委托仅作未处理异常的 ApiResponse 兜底，
+        // 不再手动 resolve/foreach Handler（避免双重处理）。
         app.UseExceptionHandler(exceptionHandlerApp =>
         {
             exceptionHandlerApp.Run(async context =>
@@ -33,30 +36,17 @@ public static class UnifiedMiddlewareConfiguration
                     return;
                 }
 
-                // Resolve and invoke IExceptionHandler chain (BusinessExceptionHandler → SystemExceptionHandler)
-                // CRITICAL: Use Microsoft.AspNetCore.Diagnostics.IExceptionHandler (NOT LYBT.Shared.ExceptionHandling.Handlers.IExceptionHandler)
-                var handlers = context.RequestServices.GetServices<Microsoft.AspNetCore.Diagnostics.IExceptionHandler>();
-                
-                foreach (var handler in handlers)
-                {
-                    var handled = await handler.TryHandleAsync(context, exception, context.RequestAborted);
-                    if (handled)
-                    {
-                        return; // Handler wrote ApiResponse to response stream
-                    }
-                }
-
-                // Fallback: No handler processed exception, write generic ApiResponse
+                // Fallback: No IExceptionHandler processed exception, write generic ApiResponse
                 context.Response.StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
-                
+
                 var fallbackResponse = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(
-                    app.Environment.IsDevelopment() 
-                        ? $"[DEV] {exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}" 
+                    app.Environment.IsDevelopment()
+                        ? $"[DEV] {exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}"
                         : "An unexpected error occurred"
                 );
                 fallbackResponse.RequestId = context.TraceIdentifier;
-                
+
                 await context.Response.WriteAsJsonAsync(fallbackResponse);
             });
         });

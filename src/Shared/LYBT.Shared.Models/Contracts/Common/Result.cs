@@ -16,15 +16,18 @@ public class Result<T>
     public T? Value { get; }
 
     /// <summary>数据别名（兼容 Shared.Models.Result）</summary>
+    [Obsolete("Use Value instead")]
     public T? Data => Value;
 
     /// <summary>错误信息</summary>
     public string? Error { get; }
 
     /// <summary>错误信息别名（兼容 Shared.Models.Result）</summary>
+    [Obsolete("Use Error instead")]
     public string? ErrorMessage => Error;
 
     /// <summary>消息别名（兼容 ServiceResult）</summary>
+    [Obsolete("Use Error instead")]
     public string? Message => Error;
 
     /// <summary>错误列表（支持多个验证错误）</summary>
@@ -96,9 +99,11 @@ public class Result
     public string? Error { get; }
 
     /// <summary>错误信息别名（兼容 Shared.Models.Result）</summary>
+    [Obsolete("Use Error instead")]
     public string? ErrorMessage => Error;
 
     /// <summary>消息别名（兼容 ServiceResult）</summary>
+    [Obsolete("Use Error instead")]
     public string? Message => Error;
 
     /// <summary>错误列表（支持多个验证错误）</summary>

@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Module.Identity.Services;
@@ -45,12 +45,12 @@ public class RefreshTokenIssuanceTests
         var result = _sut.RefreshToken(token);
 
         result.IsSuccess.Should().BeTrue();
-        result.Data.Should().NotBeNull();
-        result.Data!.Token.Should().NotBeNullOrWhiteSpace();
+        result.Value.Should().NotBeNull();
+        result.Value!.Token.Should().NotBeNullOrWhiteSpace();
         // P0#2 核心断言：刷新响应必须携带刷新凭据（access token 即刷新凭据——客户端 TokenRefreshHandler 依赖）
-        result.Data.RefreshToken.Should().Be(result.Data.Token);
-        result.Data.User.Should().NotBeNull();
-        result.Data.User!.Id.ToString().Should().Be(userId);
+        result.Value.RefreshToken.Should().Be(result.Value.Token);
+        result.Value.User.Should().NotBeNull();
+        result.Value.User!.Id.ToString().Should().Be(userId);
     }
 
     [Fact]
@@ -60,9 +60,9 @@ public class RefreshTokenIssuanceTests
 
         var result = _sut.RefreshToken(token);
 
-        var claims = new JwtSecurityTokenHandler().ReadJwtToken(result.Data!.Token);
+        var claims = new JwtSecurityTokenHandler().ReadJwtToken(result.Value!.Token);
         // JWT 输出短 claim 名（nameid/role）——从完整 URI 反查
-        var principal = new JwtSecurityTokenHandler().ValidateToken(result.Data!.Token,
+        var principal = new JwtSecurityTokenHandler().ValidateToken(result.Value!.Token,
             new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -84,7 +84,7 @@ public class RefreshTokenIssuanceTests
         var result = _sut.RefreshToken(string.Empty);
 
         result.IsSuccess.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("令牌不能为空");
+        result.Error.Should().Contain("令牌不能为空");
     }
 
     [Fact]
@@ -102,6 +102,6 @@ public class RefreshTokenIssuanceTests
 
         var result = _sut.RefreshToken(token);
 
-        result.Data!.Token.Should().NotBe(token); // 旋转——旧令牌不可复用
+        result.Value!.Token.Should().NotBe(token); // 旋转——旧令牌不可复用
     }
 }

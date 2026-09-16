@@ -59,6 +59,8 @@ public class ApplicationUser : IdentityUser<Guid>, IAuditableEntity, ISoftDeleta
     public string? Remark { get; set; }
 
     // ==== 审计字段（IAuditableEntity）====
+    // 与 BaseEntity 同步维护 — 新增审计字段时必须同步更新此处
+    // （ApplicationUser 继承 IdentityUser<Guid>，无法继承 BaseEntity，故手抄）
 
     /// <summary>创建时间 (UTC)</summary>
     [DisplayName("创建时间")]

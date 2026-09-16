@@ -4,6 +4,7 @@ namespace LYBT.Shared.Configuration.Options.Server;
 
 /// <summary>
 /// 默认密码配置
+/// H-7: 配套 <see cref="Validation.DefaultPasswordOptionsValidator"/> 校验未展开 ${} 占位符
 /// </summary>
 public sealed class DefaultPasswordOptions
 {

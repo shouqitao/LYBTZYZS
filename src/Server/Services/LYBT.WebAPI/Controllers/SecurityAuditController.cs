@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Identity.Interfaces;
@@ -52,8 +52,8 @@ public class SecurityAuditController : BaseApiController
         }, ct);
 
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "查询安全审计日志失败");
+            return BusinessFail(result.Error ?? "查询安全审计日志失败");
 
-        return SuccessPaged(result.Data!, "查询成功");
+        return SuccessPaged(result.Value!, "查询成功");
     }
 }

@@ -69,9 +69,9 @@ namespace LYBT.Entities.Prescriptions
         public decimal UnitPrice { get; set; } = 0;
 
         /// <summary>
-        /// 小计金额（单价 × 用量）
+        /// 小计金额（单价 × 用量）——只读计算属性，不映射到数据库
         /// </summary>
-        [Column(TypeName = "decimal(18,2)")]
+        [NotMapped]
         [DisplayName("小计")]
         public decimal Amount => UnitPrice * Dosage;
 

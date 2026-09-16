@@ -37,22 +37,33 @@ public class ArchTests
     [Fact]
     public void P01b_UI_Should_Not_Depend_On_Entities()
     {
-        // 暂时排除的控制器（计划后续重构移除Entities依赖）
+        // ═══════════════════════════════════════════════════════════════════════
+        // P01b 白名单治理说明（X-7）
+        // 每个排除项应标注：① 排除原因  ② 目标移除批次/条件
+        // 新增排除项必须同步补充这两项信息，禁止无注释裸加白名单。
+        // ═══════════════════════════════════════════════════════════════════════
         var excludedControllers = new[]
         {
-            "PatientsController",        // 患者控制器因枚举类型需要Entities引用
-            "MedicalCasesController",    // 医案CRUD控制器
-            "MedicalCaseProcessingController",  // 医案工作流控制器
-            "MedicalCaseAuditController",       // 医案审计控制器
-            "MedicalCasePrintController",       // 医案打印控制器
-            "RegistrationsController",   // 挂号控制器（快速看诊功能）
-            "AuthController",            // LocalWebAPI — UserManager<ApplicationUser>
-            "UsersController",           // LocalWebAPI — UserManager<ApplicationUser>
-            "CatalogController",          // A-31-C3b 合并后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等），仅在方法体构造
-            "HerbsController",             // P1-24 拆分后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Herb> 等）
-            "FormulasController",          // P1-24 拆分后——泛型命令的实体幻影类型参数（DeleteEntityCommand<Formula> 等）
-            "DiagnosticsController",     // LocalWebAPI — 诊断需 Entities（Health/Logs）
-            "HealthController"           // 基础设施 — 健康检查需 Entities/DB
+            // ── 枚举/实体类型引用 ──
+            "PatientsController",              // 原因: 枚举类型需 Entities 引用 | 目标: DTO 化枚举后移除
+            "MedicalCasesController",          // 原因: 医案 CRUD 实体直引 | 目标: 医案 DTO 化后移除
+            "MedicalCaseProcessingController", // 原因: 医案工作流实体直引 | 目标: 同上
+            "MedicalCaseAuditController",      // 原因: 审计日志实体直引 | 目标: 同上
+            "MedicalCasePrintController",      // 原因: 打印日志实体直引 | 目标: 同上
+            "RegistrationsController",         // 原因: 快速看诊需实体 | 目标: DTO 化后移除
+
+            // ── Identity UserManager<ApplicationUser> 硬依赖 ──
+            "AuthController",                  // 原因: LocalWebAPI — UserManager<ApplicationUser> | 目标: 无（Identity 框架约束，长期豁免）
+            "UsersController",                 // 原因: LocalWebAPI — UserManager<ApplicationUser> | 目标: 无（同上）
+
+            // ── 泛型命令实体幻影类型参数（仅方法体构造，不泄漏到公共 API）──
+            "CatalogController",               // 原因: A-31-C3b 合并后 DeleteEntityCommand<Herb> 等 | 目标: 泛型命令改用 ID 后移除
+            "HerbsController",                 // 原因: P1-24 拆分后同上 | 目标: 同上
+            "FormulasController",              // 原因: P1-24 拆分后同上 | 目标: 同上
+
+            // ── 基础设施 ──
+            "DiagnosticsController",           // 原因: LocalWebAPI 诊断需 Entities (Health/Logs) | 目标: 诊断 DTO 化后移除
+            "HealthController"                 // 原因: 健康检查需 Entities/DB | 目标: 无（基础设施层，长期豁免）
         };
 
         var result = Types.InAssemblies(Assemblies)

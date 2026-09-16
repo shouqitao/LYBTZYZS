@@ -98,10 +98,14 @@ public enum ErrorCode
     /// </summary>
     UserNameExists = 10002,
 
+    // 10003 — 有意跳号：旧码已废弃，不复用
+
     /// <summary>
     /// 密码不正确
     /// </summary>
     InvalidPassword = 10004,
+
+    // 10005 — 有意跳号：旧码已废弃，不复用
 
     /// <summary>
     /// 用户已被禁用
@@ -113,10 +117,14 @@ public enum ErrorCode
     /// </summary>
     UserLocked = 10007,
 
+    // 10008 — 有意跳号：旧码已废弃，不复用
+
     /// <summary>
     /// 刷新令牌无效或过期
     /// </summary>
     InvalidRefreshToken = 10009,
+
+    // 10010 — 有意跳号：旧码已废弃，不复用
 
     /// <summary>
     /// 无法删除系统管理员

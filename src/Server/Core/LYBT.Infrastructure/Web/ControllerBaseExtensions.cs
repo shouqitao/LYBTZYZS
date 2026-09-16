@@ -127,9 +127,9 @@ public static class ControllerBaseExtensions
     )
     {
         if (result.IsSuccess)
-            return controller.Success(result.Data!, successMessage);
+            return controller.Success(result.Value!, successMessage);
 
-        var message = result.ErrorMessage ?? "操作失败";
+        var message = result.Error ?? "操作失败";
 
         // PATIENT-PHONE-409-FIX: ModuleErrorCode 为空时回退 ErrorCode（原仅认 ModuleErrorCode →
         // Result.Failure(ErrorCode) 落入 BusinessFail 恒 422——电话唯一 409 等语义丢失）
@@ -179,7 +179,7 @@ public static class ControllerBaseExtensions
         if (result.IsSuccess)
             return controller.Success(successMessage);
 
-        var message = result.ErrorMessage ?? "操作失败";
+        var message = result.Error ?? "操作失败";
 
         var code = result.ModuleErrorCode ?? (result.ErrorCode == default ? (ErrorCode?)null : result.ErrorCode);
         if (code.HasValue)

@@ -28,6 +28,8 @@ public static class ServerConfigurationExtensions
         // IConfiguration 时退化为默认构造（_configuration=null，仅保留 Base64/长度校验）。
         services.AddSingleton<IValidateOptions<LocalJwtOptions>>(sp =>
             new LocalJwtOptionsValidator(sp.GetService<IConfiguration>()!));
+        // H-7: 默认密码未展开占位符校验
+        services.AddSingleton<IValidateOptions<DefaultPasswordOptions>, DefaultPasswordOptionsValidator>();
 
         // JWT 配置
         services.AddOptions<JwtOptions>()

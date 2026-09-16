@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Configuration.Validation;
@@ -77,7 +77,7 @@ public class SystemConfigurationServiceTests : IDisposable
         // Assert
         setResult.IsSuccess.Should().BeTrue();
         getResult.IsSuccess.Should().BeTrue();
-        getResult.Data.Should().Be("60");
+        getResult.Value.Should().Be("60");
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class SystemConfigurationServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("白名单");
+        result.Error.Should().Contain("白名单");
     }
 
     [Fact]
@@ -162,8 +162,8 @@ public class SystemConfigurationServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        (await service.GetValueAsync("Session:TimeoutMinutes")).Data.Should().Be("45");
-        (await service.GetValueAsync("App:Environment")).Data.Should().Be("Production");
+        (await service.GetValueAsync("Session:TimeoutMinutes")).Value.Should().Be("45");
+        (await service.GetValueAsync("App:Environment")).Value.Should().Be("Production");
     }
 
     [Fact]
@@ -215,8 +215,8 @@ public class SystemConfigurationServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("Jwt:SecretKey");
+        result.Error.Should().Contain("Jwt:SecretKey");
         // 批量失败时不应有任何键被写入
-        (await service.GetValueAsync("Session:TimeoutMinutes")).Data.Should().Be("120");
+        (await service.GetValueAsync("Session:TimeoutMinutes")).Value.Should().Be("120");
     }
 }

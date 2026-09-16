@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Constants;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Web;
@@ -45,10 +45,10 @@ public class DeployController : BaseApiController
         await using var stream = file.OpenReadStream();
         var result = await _deployService.SaveUpdatePackageAsync(stream, file.FileName, ct);
         if (!result.IsSuccess)
-            return BusinessFail(result.ErrorMessage ?? "上传失败");
+            return BusinessFail(result.Error ?? "上传失败");
 
         return Success(
-            new { fileName = result.Data!.FileName, size = result.Data.Size },
+            new { fileName = result.Value!.FileName, size = result.Value.Size },
             "更新包上传成功");
     }
 

@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using MediatR;
 using LYBT.Entities.Auth;
@@ -81,16 +81,16 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         var result = _jwtService.RefreshToken(request.Token);
         if (!result.IsSuccess)
         {
-            _logger.LogWarning("[Handler] Token refresh failed - {Error}", result.ErrorMessage);
+            _logger.LogWarning("[Handler] Token refresh failed - {Error}", result.Error);
             await _securityAuditService.RecordEventAsync(new SecurityAuditEvent
             {
                 EventType = "TokenRefresh",
                 IsSuccess = false,
-                FailureReason = result.ErrorMessage
+                FailureReason = result.Error
             }, cancellationToken);
             return Result<LoginResponse>.Failure(
                 result.ModuleErrorCode ?? ErrorCode.AuthInvalidCredentials,
-                result.ErrorMessage ?? "令牌刷新失败");
+                result.Error ?? "令牌刷新失败");
         }
 
         // X-5: 旧会话 Logout + 新会话 Add 同一事务原子提交——避免旋转中断导致旧会话已失效但新会话未落库（用户被踢出且无有效凭据）
@@ -100,12 +100,12 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         await _authSessionRepository.UpdateAsync(oldSession, cancellationToken);
         _logger.LogInformation("[Handler] Old session logged out - SessionId={SessionId}", oldSession.Id);
 
-        var newToken = result.Data!.Token;
+        var newToken = result.Value!.Token;
         var newTokenHash = ComputeTokenHash(newToken);
         var newSession = AuthSession.Create(
             oldSession!.UserId,
             newTokenHash,
-            result.Data.ExpiresAt,
+            result.Value.ExpiresAt,
             oldSession?.IpAddress ?? "unknown",
             oldSession?.UserAgent);
         await _authSessionRepository.AddAsync(newSession, cancellationToken);
@@ -119,7 +119,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
 
         _logger.LogInformation("[Handler] Token refreshed successfully - OldSessionId={OldSessionId} NewSessionId={NewSessionId}",
             oldSession?.Id, newSession.Id);
-        return Result<LoginResponse>.Success(result.Data);
+        return Result<LoginResponse>.Success(result.Value);
     }
 
     private static string ComputeTokenHash(string token)

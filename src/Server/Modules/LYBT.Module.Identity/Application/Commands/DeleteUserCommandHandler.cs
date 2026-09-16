@@ -1,4 +1,4 @@
-using LYBT.Module.Identity.Interfaces;
+﻿using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
@@ -43,7 +43,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         if (guardResult != null)
             return Result.Failure(
                 guardResult.ErrorCode,
-                guardResult.ErrorMessage ?? "无权删除用户"
+                guardResult.Error ?? "无权删除用户"
             );
 
         user.SoftDelete(request.CurrentUserId);

@@ -132,47 +132,12 @@ namespace LYBT.Infrastructure.Data
         }
 
         /// <summary>
-        /// 设置审计字段
+        /// 设置审计字段 — 委托给 DbContextAuditExtensions.SetAuditFields（S-5 提取，供模块 DbContext 复用）
         /// </summary>
         private void SetAuditFields()
         {
             // 同时处理 BaseEntity 实体（业务实体）与 ApplicationUser（Identity 实体）
-            var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is IAuditableEntity &&
-                            (e.State == EntityState.Added || e.State == EntityState.Modified));
-
-            var userId = GetCurrentUserId();
-            var timestamp = DateTime.UtcNow;
-
-            foreach (var entry in entries)
-            {
-                var entity = (IAuditableEntity)entry.Entity;
-
-                if (entry.State == EntityState.Added)
-                {
-                    // 强制设置 CreatedAt 和 UpdatedAt（统一由 DbContext 负责）
-                    entity.CreatedAt = timestamp;
-                    entity.UpdatedAt = timestamp;
-
-                    // 只在有用户上下文时设置 CreatedBy
-                    if (userId.HasValue)
-                    {
-                        entity.CreatedBy = userId;
-                    }
-                }
-
-                if (entry.State == EntityState.Modified)
-                {
-                    // 强制设置 UpdatedAt
-                    entity.UpdatedAt = timestamp;
-
-                    // 只在有用户上下文时设置 UpdatedBy
-                    if (userId.HasValue)
-                    {
-                        entity.UpdatedBy = userId;
-                    }
-                }
-            }
+            this.SetAuditFields(GetCurrentUserId());
         }
 
         /// <summary>

@@ -58,10 +58,6 @@ namespace LYBT.Shared.Models.Contracts.Common
         [JsonPropertyName("hasNextPage")]
         public bool HasNextPage => CurrentPage < TotalPages;
 
-        /// <summary>错误信息（用于传递API错误）</summary>
-        [JsonPropertyName("errorMessage")]
-        public string? ErrorMessage { get; set; }
-
         // UltraThink兼容性别名 - 确保架构统一
 
         /// <summary>数据兼容性别名</summary>

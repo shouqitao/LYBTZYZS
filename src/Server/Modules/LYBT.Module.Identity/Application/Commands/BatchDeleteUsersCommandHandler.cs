@@ -1,4 +1,4 @@
-using LYBT.Entities.Users;
+﻿using LYBT.Entities.Users;
 using LYBT.Infrastructure.BatchOperations;
 using LYBT.Module.Identity.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
@@ -77,7 +77,7 @@ public class BatchDeleteUsersCommandHandler
             user.Role
         );
         if (guardResult != null)
-            return Task.FromResult<string?>(guardResult.ErrorMessage ?? "无权限删除");
+            return Task.FromResult<string?>(guardResult.Error ?? "无权限删除");
         return Task.FromResult<string?>(null);
     }
 }

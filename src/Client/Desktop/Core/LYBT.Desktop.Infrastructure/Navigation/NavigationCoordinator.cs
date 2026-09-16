@@ -25,6 +25,29 @@ public class NavigationCoordinator : INavigationCoordinator
     private const int NavigationDebounceMs = 300;
     private const int NavigationTimeoutSeconds = 10;
 
+    /// <summary>
+    /// D-4: 视图 → 允许角色映射（未列出的视图不限制角色）。
+    /// 仅做客户端守卫；服务端仍有策略授权兜底。
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, UserRole[]> ViewRoleAccess = new Dictionary<string, UserRole[]>
+    {
+        [ViewNames.AdminHome] = [UserRole.Admin],
+        [ViewNames.SysadminHome] = [UserRole.SuperAdmin],
+        [ViewNames.ClinicalHome] = [UserRole.Doctor],
+        [ViewNames.ReceptionistHome] = [UserRole.Receptionist],
+        [ViewNames.ClinicalWorkspace] = [UserRole.Doctor],
+        [ViewNames.UserManagement] = [UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.LogLevelControl] = [UserRole.SuperAdmin],
+        [ViewNames.Deployment] = [UserRole.SuperAdmin],
+        [ViewNames.BackupManagement] = [UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.SecurityAuditLog] = [UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.SystemSettings] = [UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.MedicalCaseWorkspace] = [UserRole.Doctor],
+        [ViewNames.MedicalCaseMasterDetail] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.PatientSelection] = [UserRole.Doctor, UserRole.Receptionist],
+        [ViewNames.RegistrationList] = [UserRole.Doctor, UserRole.Receptionist],
+    };
+
     public NavigationCoordinator(
         INavigationServices services,
         ILogger<NavigationCoordinator> logger)
@@ -92,6 +115,14 @@ public class NavigationCoordinator : INavigationCoordinator
     {
         try
         {
+            // D-4: 角色守卫 — 导航前校验当前用户角色是否有权访问目标视图
+            if (!IsViewAllowedForCurrentUser(viewName))
+            {
+                _logger.LogWarning("角色无权访问视图 {ViewName}，已拦截导航", viewName);
+                _services.UserNotificationService?.ShowWarningAsync("当前角色无权访问该页面");
+                return;
+            }
+
             // 防抖：300ms 内不重复导航到同一视图
             if (viewName == _lastNavigationView &&
                 viewName == CurrentView &&
@@ -276,6 +307,27 @@ public class NavigationCoordinator : INavigationCoordinator
     #endregion
 
     #region 辅助方法
+
+    /// <summary>D-4: 检查当前用户角色是否允许导航到目标视图</summary>
+    private bool IsViewAllowedForCurrentUser(string viewName)
+    {
+        if (!ViewRoleAccess.TryGetValue(viewName, out var allowedRoles))
+            return true; // 未列入映射的视图不限制
+
+        // 登录页等匿名入口：无当前用户时放行
+        var role = _services.SessionManager.CurrentUser?.Role;
+        if (role == null)
+            return true;
+
+        var allowed = allowedRoles.Contains(role.Value);
+        if (!allowed)
+        {
+            _logger.LogWarning(
+                "导航守卫拒绝：视图 {ViewName} 不允许角色 {Role}（允许: {Allowed}）",
+                viewName, role.Value, string.Join(",", allowedRoles));
+        }
+        return allowed;
+    }
 
     private static NavigationParameters? ConvertToNavigationParameters(IDictionary<string, object>? parameters)
     {
