@@ -1,8 +1,8 @@
 # ADR-0020: Desktop Service Layer Error Contract
-> 版本: v1.1 | 日期: 2026-09-16
+> 版本: v1.2 | 日期: 2026-09-17
 
 ## 状态
-**已接受** — 2026-09-16（X-3 Server 异常双轨收口落地；Desktop Service 层契约本体按批次推进）
+**已接受** — 2026-09-16（X-3 Server 异常双轨收口落地）；2026-09-17（R-2 Local SharedHost 对齐）；Desktop Service 层契约本体按批次推进
 
 ## 背景
 
@@ -61,12 +61,12 @@ Desktop 端 `ApiErrorEnvelope.TryExtract` 双格式兼容：优先 ProblemDetail
 | Batch 3 | 逐个 Service 对齐契约（throw → CommandResult / return null） |
 | Batch 4 | 测试验证（错误场景覆盖） |
 | X-3（已完成） | Server 异常路径收口为 ProblemDetails；Desktop 解析双格式兼容 |
+| R-2（已完成） | Local SharedHost 异常路径对齐 ProblemDetails（与 Server 同构） |
 
 ## 后果
 
 - ✅ 消除调用方对错误语义的三态猜测
 - ✅ 统一 UI 错误反馈模式
-- ✅ Server 异常路径单一 RFC 7807 契约，消除 ApiResponse/ProblemDetails 双轨
+- ✅ Server 与 Local 异常路径均为 RFC 7807 契约，消除 ApiResponse/ProblemDetails 双轨
 - ⚠️ 需要逐个 Service 迁移（改动面中等）
 - ⚠️ 部分 ViewModel 需要适配新的错误返回格式
-- ⚠️ LocalWebAPI（SharedHost）异常路径仍为 ApiResponse，与 Server 异常路径契约不一致（独立批次对齐）

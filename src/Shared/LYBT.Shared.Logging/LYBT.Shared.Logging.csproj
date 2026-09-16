@@ -22,11 +22,10 @@
     <PackageReference Include="Serilog.Enrichers.Thread" />
   </ItemGroup>
 
-  <!-- ASP.NET Core 依赖（A-31-C1 技术引入治理：承载 CorrelationIdMiddleware/ApiLoggingFilter，P05b 豁免清单唯一例外） -->
-  <ItemGroup Label="ASP.NET Core Abstractions">
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
+  <!-- ASP.NET Core 依赖（A-31-C1 技术引入治理：承载 CorrelationIdMiddleware/ApiLoggingFilter，P05b 豁免清单唯一例外）
+       R-8: 使用 FrameworkReference 替代遗留 2.3.9 包引用，与 ASP.NET Core 8 共享框架对齐 -->
+  <ItemGroup Label="ASP.NET Core">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <!-- Microsoft扩展 -->

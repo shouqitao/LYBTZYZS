@@ -98,6 +98,10 @@ namespace LYBT.Module.MedicalCases.Services
                         continue;
                     }
 
+                    // D2 FIX: 与单删 DeleteAsync 一致，软删除前回滚关联挂号（Completed 医案走直调，不经 Cancelled 领域事件，无重复回滚风险）
+                    await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
+                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete → RegistrationRolledBack - MedicalCaseId={MedicalCaseId}", id);
+
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity, cancellationToken);

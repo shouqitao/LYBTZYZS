@@ -48,6 +48,14 @@ namespace LYBT.Entities.Patients
         [SensitiveData(SensitiveDataType.IdentityInfo, MaskingMode = MaskingMode.Partial)]
         public string? IdNumber { get; set; }
 
+        /// <summary>
+        /// 身份证号 HMAC-SHA256 盲索引（R-6）。
+        /// IdNumber 经 AES-GCM 非确定性加密，SQL 等值查询无法命中；本列存确定性 HMAC 供索引精确匹配。
+        /// 由 PatientRepository 在 Add/Update 时自动计算，业务层不读写。
+        /// </summary>
+        [StringLength(64)]
+        public string? IdCardHash { get; set; }
+
         /// <summary>手机号码 - Epic 05-P0-03: 敏感数据，需加密存储</summary>
         [StringLength(20)]
         [DisplayName("手机号码")]

@@ -25,9 +25,20 @@ public sealed class MedicalCaseCancelledEventHandler
 
     public async Task Handle(MedicalCaseCancelledEvent notification, CancellationToken cancellationToken)
     {
-        await _registrationCrossModule.HandleMedicalCaseCancelledAsync(notification.MedicalCaseId, cancellationToken);
-        _logger.LogInformation(
-            "[EVT] MedicalCaseCancelledEvent → RegistrationRolledBack - EventId={EventId} MedicalCaseId={MedicalCaseId}",
-            notification.EventId, notification.MedicalCaseId);
+        // 事件处理失败不应回滚已提交的主事务：医案取消已落库，此处失败不应导致客户端 500。
+        // Outbox 模式（v2.0）将提供可靠投递与重试；当前阶段仅隔离失败并记录日志。
+        try
+        {
+            await _registrationCrossModule.HandleMedicalCaseCancelledAsync(notification.MedicalCaseId, cancellationToken);
+            _logger.LogInformation(
+                "[EVT] MedicalCaseCancelledEvent → RegistrationRolledBack - EventId={EventId} MedicalCaseId={MedicalCaseId}",
+                notification.EventId, notification.MedicalCaseId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "[EVT] MedicalCaseCancelledEvent → HandlerFailed（主事务已提交，不回滚） - EventId={EventId} MedicalCaseId={MedicalCaseId}",
+                notification.EventId, notification.MedicalCaseId);
+        }
     }
 }

@@ -220,7 +220,7 @@
 | US-ERR-003 | Should | — | — | DesktopExceptionHandler | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 | US-ERR-004 | Should | ADR-0004 | — | AsyncLocalCorrelationIdProvider | CorrelationIdEnricher | S3 | ✅ 已实现 | ✅ | ✅ |
 | US-ERR-005 | Must | — | — | Business/SystemExceptionHandler | BusinessExceptionHandler | — | ✅ 已实现 | ✅ | N/A |
-| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（2026-09-16 X-3：Server 异常路径统一 ProblemDetails；模型校验 400 ProblemDetails 含 errors 字段字典；控制器已知业务失败仍 ApiResponse；本地 SharedHost 兜底仍 ApiResponse；本地无 409 生产者。E2E `ExceptionMappingE2ETests`） | ⚠️ | N/A |
+| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（2026-09-17 R-2：Server+Local 异常路径均统一 ProblemDetails；模型校验 400 ProblemDetails 含 errors 字段字典；控制器已知业务失败仍 ApiResponse；本地无 409 生产者。E2E `ExceptionMappingE2ETests`） | ⚠️ | N/A |
 | US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失；409 分支无生产者——电话唯一查重因 AES-GCM 非确定性加密恒不命中。E2E `ExceptionMappingE2ETests`） | ⚠️ | ⚠️ |
 | US-ERR-008 | Should | — | — | ErrorSeverity/ErrorCategory | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 

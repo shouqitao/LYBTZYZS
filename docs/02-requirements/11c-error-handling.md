@@ -143,7 +143,7 @@
 
 **角色**: 开发人员
 **优先级**: Should
-**状态**: ⚠️ 部分实现（2026-09-16 X-3：Server 异常路径已统一 ProblemDetails；模型校验 → 400 ProblemDetails；控制器已知业务失败仍 ApiResponse；本地 SharedHost 异常兜底仍 ApiResponse；本地模式**无 409 生产者**）
+**状态**: ⚠️ 部分实现（2026-09-17 R-2：Server+Local 异常路径均统一 ProblemDetails；模型校验 → 400 ProblemDetails；控制器已知业务失败仍 ApiResponse；本地模式**无 409 生产者**）
 （E2E 覆盖：`Integration/E2E/ErrorFlow/ExceptionMappingE2ETests.cs`——400 字段级 errors / 404 / 401 / 403 / 422 / 成功响应 ApiResponse 规范）
 
 **作为** 开发人员，**我想要** 验证错误以统一格式返回（含字段级 errors 字典），**以便** 客户端能在表单内精确高亮错误字段。

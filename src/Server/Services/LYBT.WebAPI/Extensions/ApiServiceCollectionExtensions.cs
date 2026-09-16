@@ -161,18 +161,21 @@ public static class ApiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 配置速率限制（仅Login端点防暴力攻击）
+    /// 配置速率限制（Login 端点防暴力攻击 + 全局 API 调用限流）
     /// Issue #1732 Phase 2: 简化为单层Login限流（MVP合规）
-    /// Issue #1761 Phase 2.1: 使用硬编码默认值，移除配置依赖（MVP简化）
+    /// R-4: 从 SecurityOptions.RateLimiting 配置节读取限流参数，不再硬编码
     /// </summary>
     public static IServiceCollection ConfigureRateLimiting(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        // Sprint3-Batch3: 读取配置项，测试环境可通过 Security:RateLimiting:Enabled=false 禁用限流
-        var rateLimitingEnabled = configuration.GetValue("Security:RateLimiting:Enabled", true);
-        if (!rateLimitingEnabled)
+        // R-4: 读取 SecurityOptions.RateLimiting 强类型配置节
+        var securityOptions = new SecurityOptions();
+        configuration.GetSection(SecurityOptions.SectionName).Bind(securityOptions);
+        var rateLimiting = securityOptions.RateLimiting;
+
+        if (!rateLimiting.Enabled)
         {
             // 注册无操作 RateLimiter，包含所有策略名以兼容 [EnableRateLimiting("xxx")]
             services.AddRateLimiter(options =>
@@ -185,8 +188,6 @@ public static class ApiServiceCollectionExtensions
             return services;
         }
 
-        // MVP阶段：仅启用Login限流防止暴力破解，使用硬编码默认值
-        // 默认配置：5次尝试/60秒（合理的防暴力破解策略）
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -210,7 +211,8 @@ public static class ApiServiceCollectionExtensions
                 await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
             };
 
-            // 登录端点速率限制：基于IP的固定窗口限流器
+            // R-4: 登录端点速率限制——从 SecurityOptions.RateLimiting.LoginLimit 读取
+            var loginLimit = rateLimiting.LoginLimit;
             options.AddPolicy("Login", httpContext =>
             {
                 var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -218,13 +220,14 @@ public static class ApiServiceCollectionExtensions
                     partitionKey: ipAddress,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 5,        // 每个窗口允许5次尝试
-                        Window = TimeSpan.FromSeconds(60),  // 60秒窗口
-                        QueueLimit = 0          // 不排队
+                        PermitLimit = loginLimit.PermitLimit,
+                        Window = TimeSpan.FromSeconds(loginLimit.WindowSeconds),
+                        QueueLimit = loginLimit.QueueLimit
                     });
             });
 
-            // Issue 2.3: 全局API调用速率限制：100次请求/分钟
+            // R-4: 全局API调用速率限制——从 SecurityOptions.RateLimiting.ApiLimit 读取
+            var apiLimit = rateLimiting.ApiLimit;
             options.AddPolicy("ApiCalls", httpContext =>
             {
                 var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -232,9 +235,9 @@ public static class ApiServiceCollectionExtensions
                     partitionKey: ipAddress,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,      // 每个窗口允许100次请求
-                        Window = TimeSpan.FromMinutes(1),  // 1分钟窗口
-                        QueueLimit = 0          // 不排队
+                        PermitLimit = apiLimit.PermitLimit,
+                        Window = TimeSpan.FromSeconds(apiLimit.WindowSeconds),
+                        QueueLimit = apiLimit.QueueLimit
                     });
             });
         });

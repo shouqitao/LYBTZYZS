@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using LYBT.Entities.Common;
@@ -7,6 +8,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Entities.Formulas;
 using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Serialization;
 
 namespace LYBT.LocalWebAPI.Data;
 
@@ -50,6 +52,27 @@ public static class LocalWebApiSeedData
                 Gender = LYBT.Shared.Models.Enums.Gender.Unknown,
                 Status = CommonStatus.Enabled
             });
+        }
+
+        await context.SaveChangesAsync();
+
+        // R-6: 存量患者 IdCardHash 回填（迁移后一次性；新数据经 PatientRepository 写入时已带 hash）
+        await BackfillPatientIdCardHashesAsync(context);
+    }
+
+    private static async Task BackfillPatientIdCardHashesAsync(AppDbContext context)
+    {
+        var candidates = await context.Patients
+            .Where(p => p.IdCardHash == null && p.IdNumber != null)
+            .ToListAsync();
+        if (candidates.Count == 0)
+            return;
+
+        foreach (var patient in candidates)
+        {
+            var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
+            if (hash != null)
+                patient.IdCardHash = hash;
         }
 
         await context.SaveChangesAsync();

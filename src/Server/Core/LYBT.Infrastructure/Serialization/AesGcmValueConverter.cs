@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -9,13 +10,21 @@ namespace LYBT.Infrastructure.Serialization;
 /// 透明解密：非 Base64 / 密文长度不足 / 认证失败 → 抛 CryptographicException（T1.4 fail-closed，
 /// 4d58c5464：禁止静默回退明文——密钥不匹配时防敏感数据以明文泄漏；EF 读取抛错由
 /// BusinessExceptionHandler 映射 ERR-00013 422）
-/// 密钥来源：SecurityOptions.AesKey (Base64 32B) 或环境变量 Security__AesKey，否则回退测试固定密钥（仅开发/测试）
+/// 密钥来源：SecurityOptions.AesKey (Base64 32B) 或环境变量 Security__AesKey
+/// R-5: 非 Development 环境密钥缺失时 fail-fast 抛异常；Development 环境回退测试密钥并 LogWarning
 /// </summary>
 public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
 {
     private static readonly byte[] FallbackKey = Convert.FromBase64String("MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE="); // 32B test key
 
-    private static byte[] ResolveKey()
+    private static bool IsDevelopment()
+    {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+               ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        return string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static byte[] ResolveKey()
     {
         try
         {
@@ -28,6 +37,15 @@ public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
             }
         }
         catch { }
+
+        // R-5: 非 Development 环境密钥缺失 fail-fast，防止生产环境静默使用测试密钥
+        if (!IsDevelopment())
+            throw new InvalidOperationException(
+                "AES-GCM 密钥缺失：必须通过环境变量 Security__AesKey 或 Security:AesKey 提供 Base64 编码的 32 字节密钥。" +
+                "非 Development 环境禁止回退到内置测试密钥。");
+
+        Trace.TraceWarning(
+            "[AesGcmValueConverter] AES-GCM 环境变量密钥缺失，Development 环境回退到内置测试密钥。生产部署必须配置 Security__AesKey。");
         return FallbackKey;
     }
 

@@ -45,6 +45,8 @@
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<!-- unify-logging-system: 统一日志系统 -->
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Logging\LYBT.Shared.Logging.csproj" />
+		<!-- R-2: Local 异常路径统一 ProblemDetails（Business/SystemExceptionHandler 链） -->
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.ExceptionHandling\LYBT.Shared.ExceptionHandling.csproj" />
 	</ItemGroup>
 
 </Project>

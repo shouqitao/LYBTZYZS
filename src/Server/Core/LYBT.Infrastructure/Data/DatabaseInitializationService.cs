@@ -1,4 +1,5 @@
 using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Serialization;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -103,11 +104,55 @@ public class DatabaseInitializationService
             {
                 _logger.LogInformation("AutoCreateOnStartup = false，跳过系统管理员自动创建");
             }
+
+            // R-6: 存量患者 IdCardHash 回填（幂等——仅处理 null hash）
+            await BackfillPatientIdCardHashesAsync();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据库初始化失败");
             throw; // P2-7-5 已确认：异常直接 throw 不吞没 ProductionConfigurationException，Program 层将 Fatal 退出，健康探针不误导为 200。
+        }
+    }
+
+    /// <summary>
+    /// 回填存量患者 IdCardHash（R-6 盲索引）。
+    /// 迁移仅加列；密文 IdNumber 无法在 SQL 内计算 HMAC，需应用层解密后回填。
+    /// </summary>
+    private async Task BackfillPatientIdCardHashesAsync()
+    {
+        try
+        {
+            if (!_context.Database.IsRelational())
+                return;
+
+            var candidates = await _context.Patients
+                .Where(p => p.IdCardHash == null && p.IdNumber != null)
+                .ToListAsync();
+
+            if (candidates.Count == 0)
+                return;
+
+            var updated = 0;
+            foreach (var patient in candidates)
+            {
+                var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
+                if (hash == null)
+                    continue;
+                patient.IdCardHash = hash;
+                updated++;
+            }
+
+            if (updated > 0)
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("R-6: 已回填 {Count} 条患者 IdCardHash 盲索引", updated);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 回填失败不阻断启动——GetByIdNumberAsync 对 null-hash 行仍有回退扫描
+            _logger.LogWarning(ex, "R-6: 患者 IdCardHash 回填失败（查询将回退内存比对，直至回填成功）");
         }
     }
 

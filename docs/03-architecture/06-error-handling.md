@@ -60,7 +60,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
                                          生产环境: 隐藏内部细节
 ```
 
-**X-3（2026-09-16）**：Server 异常路径统一 RFC 7807 ProblemDetails；ApiResponse 仅用于成功响应与已知业务失败（控制器 `BusinessFail`/`NotFoundResponse` 等）。`StatusCodePages` 与 `UseExceptionHandler` 兜底同样写 ProblemDetails。Desktop 端 `ApiErrorEnvelope.TryExtract` 双格式兼容（ProblemDetails 优先，ApiResponse 回退）。
+**X-3（2026-09-16）/ R-2（2026-09-17）**：Server 与 Local（SharedHost）异常路径均统一 RFC 7807 ProblemDetails；ApiResponse 仅用于成功响应与已知业务失败（控制器 `BusinessFail`/`NotFoundResponse` 等）。`StatusCodePages` 与 `UseExceptionHandler` 兜底同样写 ProblemDetails。Desktop 端 `ApiErrorEnvelope.TryExtract` 双格式兼容（ProblemDetails 优先，ApiResponse 回退）。
 
 **SystemExceptionHandler** 内置异常类型映射：
 

@@ -186,6 +186,7 @@ graph TB
 | Gender | Gender | 是 | 性别 |
 | BirthDate | DateTime? | 否 | 出生日期 |
 | IdNumber | string(50) | 否 | 身份证号 (敏感, `[SensitiveData(IdentityInfo, Partial)]`) |
+| IdCardHash | string(64) | 否 | 身份证号 HMAC-SHA256 盲索引（R-6，`IX_Patients_IdCardHash`；由仓储写入） |
 | PhoneNumber | string(20) | 否 | 手机号 (敏感, `[SensitiveData(ContactInfo, Partial)]`) |
 | Status | CommonStatus | 是 | 状态 (PAT-D05: 禁用主要场景为患者已故; 禁用后禁止创建新医案) |
 
@@ -419,6 +420,7 @@ graph TB
 | IX_Herbs_Name | Herbs | Name | **筛选唯一索引** | 名称过滤唯一 `[IsDeleted]=0`，允许软删后重建 |
 | IX_Formulas_Name | Formulas | Name | **筛选唯一索引** | P1-8 补，过滤唯一 `[IsDeleted]=0`（同 Herb） |
 | IX_Patients_IdNumber | Patients | IdNumber | **筛选唯一索引** | P1-20 补，`[IsDeleted]=0 AND [IdNumber] IS NOT NULL` |
+| IX_Patients_IdCardHash | Patients | IdCardHash | **筛选唯一索引** | R-6 盲索引，`[IsDeleted]=0 AND [IdCardHash] IS NOT NULL` |
 
 ## 实体验证约束
 
@@ -488,6 +490,7 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-08-20 | v2.2 | **P0-7 Patient 简化对齐**：Patient 20+ 字段裁剪为 7 字段（Name/PinYinCode/Gender/BirthDate/IdNumber/PhoneNumber/Status + BaseEntity），与 `PatientModel.cs` 代码 SSOT 对齐；敏感数据 Address/AllergyHistory/MedicalHistory 等延期至 v2.0。 |
+| 2026-09-17 | v2.3 | **R-6 盲索引**：Patient 增 `IdCardHash`（HMAC-SHA256 of IdNumber，`IX_Patients_IdCardHash`），`GetByIdNumberAsync` 由全表内存比对改为索引精确匹配；启动回填存量。 |
 | 2026-06-28 | v2.1 | **spec S3 批次2 提炼（542→~420 行）**：MedicalCase 业务生命周期状态转换表/Registration 联动/打印保护覆盖层改链接到 07-medical-cases.md（留状态枚举）；辅助实体重复段（MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 重复描述）合并为概览表；RefreshToken 字段表（🧲 代码不存在）压成 D3 spec 引用。变更历史见 git log。 |
 | 2026-06-28 | v2.0 | **D1/D2/D3 对齐**: RefreshToken 与 MedicalCasePrintLog 实体表保留但整段标 🧲 v1.0 待实现; User 实体描述改为 `ApplicationUser : IdentityUser<Guid>` 并补 IsSysAdmin 字段 |
 

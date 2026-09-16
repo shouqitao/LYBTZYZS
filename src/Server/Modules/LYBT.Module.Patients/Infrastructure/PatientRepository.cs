@@ -4,6 +4,7 @@ using LYBT.Shared.Models.Enums;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
+using LYBT.Infrastructure.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +19,28 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     public PatientRepository(PatientsDbContext context, ILogger<PatientRepository> logger)
         : base(context, logger)
     {
+    }
+
+    /// <inheritdoc/>
+    public override async Task<Patient> AddAsync(Patient entity, CancellationToken cancellationToken = default)
+    {
+        EnsureIdCardHash(entity);
+        return await base.AddAsync(entity, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override async Task<Patient> UpdateAsync(Patient entity, CancellationToken cancellationToken = default)
+    {
+        EnsureIdCardHash(entity);
+        return await base.UpdateAsync(entity, cancellationToken);
+    }
+
+    /// <summary>
+    /// 计算并写入 IdCardHash（R-6 盲索引）。IdNumber 为空时清空 hash。
+    /// </summary>
+    private static void EnsureIdCardHash(Patient entity)
+    {
+        entity.IdCardHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(entity.IdNumber);
     }
 
     /// <inheritdoc/>
@@ -82,11 +105,51 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     /// <inheritdoc/>
     public async Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken cancellationToken = default)
     {
-        // IdNumber 经 AesGcmValueConverter 非确定性加密（随机 nonce），SQL 层等值查询因密文不同而无法命中，需内存解密后比对
-        var candidates = await _context.Patients
+        if (string.IsNullOrWhiteSpace(idNumber))
+            return null;
+
+        // R-6: IdNumber 经 AesGcmValueConverter 非确定性加密（随机 nonce），SQL 等值无法命中。
+        // 按 HMAC 盲索引精确匹配；存量 IdCardHash 为空的记录仅回退内存比对（回填完成后可移除）。
+        var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(idNumber);
+        if (hash == null)
+            return null;
+
+        var byHash = await _context.Patients
             .AsNoTracking()
-            .Where(p => !p.IsDeleted)
+            .FirstOrDefaultAsync(p => !p.IsDeleted && p.IdCardHash == hash, cancellationToken);
+        if (byHash != null)
+            return byHash;
+
+        var legacyWithoutHash = await _context.Patients
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.IdCardHash == null)
             .ToListAsync(cancellationToken);
-        return candidates.FirstOrDefault(p => p.IdNumber == idNumber);
+        return legacyWithoutHash.FirstOrDefault(p => p.IdNumber == idNumber);
+    }
+
+    /// <summary>
+    /// 回填存量患者的 IdCardHash（R-6 迁移后一次性执行）。
+    /// 逐条解密 IdNumber 再计算 HMAC；完成前 GetByIdNumberAsync 对 null-hash 行有回退扫描。
+    /// </summary>
+    public async Task<int> BackfillIdCardHashesAsync(CancellationToken cancellationToken = default)
+    {
+        var candidates = await _context.Patients
+            .Where(p => p.IdCardHash == null && p.IdNumber != null)
+            .ToListAsync(cancellationToken);
+
+        var updated = 0;
+        foreach (var patient in candidates)
+        {
+            var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
+            if (hash == null)
+                continue;
+            patient.IdCardHash = hash;
+            updated++;
+        }
+
+        if (updated > 0)
+            await _context.SaveChangesAsync(cancellationToken);
+
+        return updated;
     }
 }

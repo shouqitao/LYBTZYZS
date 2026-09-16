@@ -1,9 +1,15 @@
 using System.Reflection;
+using LYBT.Infrastructure.Constants;
+using LYBT.Infrastructure.ExceptionHandling;
 using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
+using LYBT.Shared.ExceptionHandling.Handlers;
+using LYBT.Shared.Logging.Http;
+using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Spi;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -41,6 +47,7 @@ public static class SharedHost
 
         // 5. 控制器 + JSON/Validation
         builder.Services.AddSharedControllers();
+        // ProblemDetails + IExceptionHandler 链经 AddSharedInfrastructure 注册（R-2）
 
         return builder;
     }
@@ -52,31 +59,42 @@ public static class SharedHost
     /// </summary>
     public static WebApplication ConfigurePipeline(this WebApplication app, bool isLocal = false)
     {
-        // 异常处理 — 内联 lambda（无需 /error 端点），包含 InnerException 以定位 EF SaveChanges 失败等根因
+        // R-2/X-3: 异常路径统一 ProblemDetails（RFC 7807）；ApiResponse 仅用于成功/已知业务失败响应。
+        // Business/SystemExceptionHandler 经 AddLybtExceptionHandling 注册（IExceptionHandler 链先于本委托执行）；
+        // 本委托仅作未处理异常的 ProblemDetails 兜底，与 Server UnifiedMiddlewareConfiguration 同构。
         app.UseExceptionHandler(exceptionHandlerApp =>
         {
             exceptionHandlerApp.Run(async context =>
             {
-                context.Response.StatusCode = 500;
-                context.Response.ContentType = "application/json";
-                var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
-                var innerMessage = error?.InnerException?.Message;
-                var message = innerMessage != null
-                    ? $"{error!.Message} | Inner: {innerMessage}"
-                    : error?.Message ?? "Internal server error";
-                // 若 InnerException 还有 InnerException（SqlException 常见多层），追加第二层
-                var innerInner = error?.InnerException?.InnerException?.Message;
-                if (innerInner != null && innerInner != innerMessage) message += $" | Inner2: {innerInner}";
-                var response = LYBT.Shared.Models.Contracts.Common.ApiResponse.CreateFail(message);
-                response.RequestId = context.TraceIdentifier;
-                await System.Text.Json.JsonSerializer.SerializeAsync(
-                    context.Response.Body, response,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-                    });
+                var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+                if (exception == null)
+                {
+                    return;
+                }
+
+                await Results.Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "服务器内部错误",
+                    detail: app.Environment.IsDevelopment()
+                        ? $"[DEV] {exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}"
+                        : "An unexpected error occurred",
+                    instance: context.Request.Path)
+                    .ExecuteAsync(context);
             });
+        });
+
+        // 非异常 HTTP 错误状态码同样写 ProblemDetails（与异常路径同契约）
+        app.UseStatusCodePages(async context =>
+        {
+            var statusCode = context.HttpContext.Response.StatusCode;
+            if (statusCode < 400) return;
+
+            await Results.Problem(
+                statusCode: statusCode,
+                title: $"HTTP {statusCode}",
+                detail: $"请求处理失败 (HTTP {statusCode})",
+                instance: context.HttpContext.Request.Path)
+                .ExecuteAsync(context.HttpContext);
         });
 
         if (!isLocal)
@@ -153,8 +171,51 @@ public static class SharedHost
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
         // ADR-0018: 领域事件分发器（LocalWebAPI 宿主）
         services.AddDomainEventDispatcher();
+        // R-2: Local 异常路径统一 ProblemDetails（LocalWebAPI 经本方法注册；Server 走自身 ApiServiceCollectionExtensions）
+        services.AddSharedProblemDetails();
         return services;
     }
+
+    /// <summary>
+    /// 注册 RFC 7807 ProblemDetails + IExceptionHandler 链（R-2）。
+    /// 与 Server 的 ProblemDetailsConfiguration + AddLybtExceptionHandling 同构，
+    /// CustomizeProblemDetails 注入 correlationId/timestamp/traceId/severity/type。
+    /// </summary>
+    public static IServiceCollection AddSharedProblemDetails(this IServiceCollection services)
+    {
+        services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = context =>
+            {
+                var correlationId = context.HttpContext.GetCorrelationId();
+                context.ProblemDetails.Extensions["correlationId"] = correlationId;
+                context.ProblemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+                context.ProblemDetails.Extensions[HttpHeaderConstants.TraceIdKey] = context.HttpContext.TraceIdentifier;
+
+                if (!context.ProblemDetails.Extensions.ContainsKey("severity"))
+                {
+                    var statusCode2 = context.ProblemDetails.Status ?? context.HttpContext.Response.StatusCode;
+                    context.ProblemDetails.Extensions["severity"] = MapStatusCodeToSeverity(statusCode2);
+                }
+
+                context.ProblemDetails.Instance ??= context.HttpContext.Request.Path;
+
+                var statusCode = context.ProblemDetails.Status ?? context.HttpContext.Response.StatusCode;
+                context.ProblemDetails.Type ??= ProblemTypeUris.GetByStatusCode(statusCode);
+            };
+        });
+
+        // Business 先 System 后（Shared.ExceptionHandling 统一入口）
+        services.AddLybtExceptionHandling();
+        return services;
+    }
+
+    private static string MapStatusCodeToSeverity(int statusCode) => (statusCode switch
+    {
+        >= 500 => ErrorSeverity.Critical,
+        >= 400 => ErrorSeverity.Warning,
+        _ => ErrorSeverity.Info
+    }).ToString().ToLowerInvariant();
 
     /// <summary>
     /// 注册认证授权（差异化）。
