@@ -203,10 +203,17 @@ Swagger__Enabled=true
 
 ### 打包
 
-```bash
-dotnet publish src/Client/Desktop -c Release -r win-x64 --self-contained true -o ./publish-desktop
-vpk pack --packId lybt-desktop --packDir ./publish-desktop --version <版本>
+完整发布流程见 **[12-desktop-release.md](12-desktop-release.md)**（Velopack 打包/更新源/用户数据/排障）。速览：
+
+```powershell
+dotnet tool install -g vpk            # 一次性
+pwsh scripts/velopack-pack.ps1 -Version 1.0.1
+# 产物：dist/releases/ 下 Setup.exe + releases.win.json + *-full/-delta.nupkg + SHA256SUMS.txt
 ```
+
+> **旧写法已失效**：`dotnet publish src/Client/Desktop`（目录非项目）与 `vpk pack --version`
+> （无此参数，实为 `--packVersion`；输出目录参数为 `--outputDir`）均不可用；
+> 且**不得**使用 `PublishSingleFile`——会使增量包退化为全量包。详见 12-desktop-release.md。
 
 ### 服务器目录
 

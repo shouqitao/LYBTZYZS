@@ -171,6 +171,18 @@
 **角色**: sysadmin
 **优先级**: Must
 **状态**: ✅ 已实现（2026-08-12：决策 A 下载页 + /releases/ 静态服务 + VELOPACK 框架——velopack-pack.ps1 打包脚本 + sync-to-server.ps1 + 客户端 UpdateManager 检查（Velopack 1.2.0）+ 部署文档更新；Setup.exe 实机打包由运维执行脚本产出）
+>
+> **2026-09-16 复评（B-08）**：上述「已实现」经复核**不成立**——`scripts/velopack-pack.ps1` 与 `sync-to-server.ps1`
+> 已在 `eb8612658`（改 FlashFXP SFTP 部署）中被删除，且原脚本使用 `vpk pack --releaseDir`（**非有效参数**，
+> 实际为 `--outputDir`），从未成功产出过安装包。本批次重建：
+> 重建 `scripts/velopack-pack.ps1`（正确的 vpk 参数；**刻意不用 `PublishSingleFile`** 以保留增量差分；
+> 版本经 `-p:Version` 与程序集同源；产出 Setup.exe + `releases.<channel>.json` + full/delta nupkg + SHA256SUMS；
+> 末尾做馈源自检）；修复**发布阻塞缺陷** `NETSDK1152`（Shell 与 LocalWebAPI 各有一份 `appsettings.json`
+> 在发布输出中同相对路径冲突）；用户数据（连接设置、数据库备份）自安装目录
+> `%LOCALAPPDATA%\LYBTZYZS`（= Velopack 安装根）迁出至 `%LOCALAPPDATA%\LYBT\Desktop` 并带一次性迁移；
+> 接入 `VelopackApp.Build().Run()`（生命周期钩子 + `--veloapp-*`，置于单实例互斥量之前）。
+> 实测：v1.0.0/v1.0.1/v1.0.2/v1.0.3 连续打包成功，增量包 1.5–1.6 MB（全量 118 MB），
+> 馈源经 `SimpleFileSource` 验证可被 Velopack 消费。发布流程见 `docs/06-operations/12-desktop-release.md`。
 
 **作为** sysadmin，**我想要** 一键安装 Desktop 应用，**以便** 不需懂 .NET/SQL Server 技术也能完成部署。
 
@@ -230,7 +242,7 @@
 
 **角色**: 所有用户
 **优先级**: Should
-**状态**: 📋 已设计（v2.0 规划，不在 v1.0 范围）
+**状态**: ✅ 已实现（2026-09-16，B-09：原标「v2.0 规划」，实际随 B-08 一并落地——`DesktopUpdateService`（Velopack 1.2.0 UpdateManager）+ `DesktopUpdateStartupStep`（Order 400 后台检查，非阻塞）+ `VelopackApp.Build().Run()` 生命周期接入 + 更新源可配置为自建静态目录或 Gitee Releases（`GiteeReleaseSource`）；开发态默认关闭不触网；未通过 Velopack 安装时自动降级为不可用且不影响启动）
 
 **作为** 用户，**我想要** Desktop 自动检查更新并一键升级，**以便** 始终使用最新版本而不需手动操作。
 

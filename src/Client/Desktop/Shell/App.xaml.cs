@@ -11,6 +11,7 @@ using LYBT.Desktop.MedicalCase.Reports;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
+using LYBT.Desktop.Shell.Services.Startup;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Admin.Sysadmin;
@@ -22,6 +23,7 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
 using Serilog;
+using Velopack;
 
 namespace LYBT.Desktop.Shell;
 
@@ -35,19 +37,36 @@ public partial class App : PrismApplication
     /// <summary>应用程序启动入口</summary>
     protected override void OnStartup(StartupEventArgs e)
     {
+        SetConsoleEncoding();
+        LoggingBootstrap.Initialize();
+
+        // Velopack 生命周期入口必须在**单实例互斥量之前**运行：
+        //   ① 安装/更新/卸载期间，安装器会以 --veloapp-* 参数拉起本进程；若先抢互斥量，
+        //      第二个实例会被立刻 Shutdown，安装器等待超时（更新卡住）。
+        //   ② 首次运行/更新完成后的收尾（快捷方式与卸载登记）由 Velopack 在本调用内执行。
+        // 未通过 Velopack 安装（开发/绿色运行）时 Run() 为空操作。
+        VelopackApp.Build()
+            .SetArgs(e.Args)
+            .SetAutoApplyOnStartup(false) // 更新由 DesktopUpdateService 显式驱动（下载→提示→重启）
+            .SetLogger(new SerilogVelopackLogger())
+            .OnFirstRun(_ => Log.Information("[Velopack] 首次运行初始化完成"))
+            .OnAfterUpdateFastCallback(previousVersion =>
+                Log.Information("[Velopack] 更新已应用（旧版本 {PreviousVersion}）", previousVersion))
+            .OnBeforeUninstallFastCallback(version =>
+                Log.Information("[Velopack] 开始卸载（版本 {Version}）", version))
+            .Run();
+
+        // US-LOG-008（2026-08-13）: 启动首条日志含版本/commit/pid（Desktop——env 由窗口标题区分）
+        var informationalVersion = LoggingBootstrap.GetInformationalVersion();
+        Log.Information("[启动] LYBT.Desktop v{InformationalVersion} (commit {Commit}) pid={Pid}",
+            informationalVersion, LoggingBootstrap.GetCommitSha() ?? "unknown", Environment.ProcessId);
+
         if (!TryAcquireSingleInstance())
         {
             NativeMethods.ActivateExistingWindow(MainWindowTitle);
             Shutdown();
             return;
         }
-
-        SetConsoleEncoding();
-        LoggingBootstrap.Initialize();
-        // US-LOG-008（2026-08-13）: 启动首条日志含版本/commit/pid（Desktop——env 由窗口标题区分）
-        var informationalVersion = LoggingBootstrap.GetInformationalVersion();
-        Log.Information("[启动] LYBT.Desktop v{InformationalVersion} (commit {Commit}) pid={Pid}",
-            informationalVersion, LoggingBootstrap.GetCommitSha() ?? "unknown", Environment.ProcessId);
 
         base.OnStartup(e);
     }

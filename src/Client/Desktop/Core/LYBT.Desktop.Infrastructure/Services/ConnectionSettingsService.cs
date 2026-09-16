@@ -5,6 +5,7 @@
 using System.IO;
 using System.Text.Json.Nodes;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,14 +26,47 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
     /// <summary>用户设置文件名（与 appsettings.json 分离，构建不覆盖）。</summary>
     public const string SettingsFileName = "user-settings.json";
 
-    /// <summary>默认用户设置目录（%LOCALAPPDATA%/LYBTZYZS）。</summary>
-    public static string DefaultUserSettingsDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "LYBTZYZS");
+    /// <summary>用户设置目录（%LOCALAPPDATA%\LYBT\Desktop——**安装目录之外**，见 UserDataDirectory 说明）。</summary>
+    public static string DefaultUserSettingsDirectory => SystemConstants.UserDataDirectory;
 
     /// <summary>默认用户设置文件路径。</summary>
     public static string DefaultUserSettingsPath => Path.Combine(
         DefaultUserSettingsDirectory, SettingsFileName);
+
+    /// <summary>
+    /// 历史遗留的用户设置路径（%LOCALAPPDATA%\LYBTZYZS\user-settings.json）。
+    /// </summary>
+    /// <remarks>
+    /// 该目录与 Velopack 的安装根（%LOCALAPPDATA%\LYBTZYZS）重合，已在 2026-09-16 迁出；
+    /// 保留此路径仅用于一次性迁移既有开发机/早期安装的数据。
+    /// </remarks>
+    public static string LegacyUserSettingsPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "LYBTZYZS",
+        SettingsFileName);
+
+    /// <summary>
+    /// 把遗留位置的用户设置迁移到新目录（幂等；新文件已存在或旧文件不存在时不动作）。
+    /// </summary>
+    /// <param name="logger">日志器（可为 null）。</param>
+    public static void MigrateLegacyUserSettings(ILogger? logger = null)
+    {
+        try
+        {
+            if (File.Exists(DefaultUserSettingsPath) || !File.Exists(LegacyUserSettingsPath))
+                return;
+
+            Directory.CreateDirectory(DefaultUserSettingsDirectory);
+            File.Move(LegacyUserSettingsPath, DefaultUserSettingsPath);
+            logger?.LogInformation("[Settings] 用户设置已迁移出安装目录: {From} → {To}",
+                LegacyUserSettingsPath, DefaultUserSettingsPath);
+        }
+        catch (Exception ex)
+        {
+            // 迁移失败不阻塞启动——后续按默认值运行并重新保存
+            logger?.LogWarning(ex, "[Settings] 用户设置迁移失败（继续使用默认值）");
+        }
+    }
 
     private readonly ILogger<ConnectionSettingsService> _logger;
     private readonly string _settingsFilePath;
@@ -47,6 +81,11 @@ public sealed class ConnectionSettingsService : IConnectionSettingsService
         string? settingsFilePath = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // 未显式指定路径时使用用户数据目录（安装目录之外）；先做一次遗留位置迁移
+        if (settingsFilePath is null)
+            MigrateLegacyUserSettings(logger);
+
         _settingsFilePath = settingsFilePath ?? DefaultUserSettingsPath;
 
         LoadInitialValues(apiOptions?.Value ?? new ApiClientOptions());

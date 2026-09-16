@@ -17,6 +17,9 @@ out/
 publish/
 publish-webapi/
 artifacts/
+# Velopack 发布产物（scripts/velopack-pack.ps1 输出：Setup.exe / *.nupkg / 馈源清单）
+dist/
+releases/
 packages/
 deploy-start-test.sh
 

@@ -88,8 +88,8 @@
 | B-05 | 配置中心 UI | SystemSettingsView 增强（服务器配置区域） | B-02 | ✅ `c518318ed` | 1d |
 | B-06 | 数据备份/恢复 | SQL Server 备份+恢复 | 无 | ⬜ | 1.5d |
 | B-07 | 初始化向导完善 | FirstRunSetupView 增强 | 无 | ⬜ | 1d |
-| B-08 | Desktop 发布包 | 打包+依赖裁剪+安装器 | 无 | ⬜ | 2d |
-| B-09 | 自动更新 | Velopack 集成 | B-08 | ⬜ | 2d |
+| B-08 | Desktop 发布包 | 打包+依赖裁剪+安装器 | 无 | ✅ | 2d |
+| B-09 | 自动更新 | Velopack 集成 | B-08 | ✅ | 2d |
 | B-10 | SignalR 实时通知 | Hub+客户端+协议设计 | A-03 | ✅ | 3d |
 | B-11 | 药材/验方模板 | 导入模板下载（**2026-09-09 结案：JSON 模板**——原「Excel 模板下载」为 B-03 Excel 时代表述，`#112` 用户决策后模板=JSON、ExcelService/NPOI 已全仓移除，见 §九 2026-09-09 行） | f5e0b4236/#129/#130 | ✅ | 0.5d |
 | B-12 | 患者导入导出 | Excel 模板+导出（**2026-09-13 结案：Desktop 前端 Excel 化**——用户操作 .xlsx，后端保持 JSON 契约；ClosedXML 0.102.3 引入，见 §九） | B-03 | ✅ | 0.5d |
@@ -258,8 +258,8 @@
 | B-05 配置中心 UI | ✅ | 2026-08-07 | `c518318ed` — 新增 `IConfigurationApi` Refit 接口（GET/PUT/validate）；`SystemSettingsViewModel` 新增服务器配置属性（ServerAppName/ServerAppVersion/ServerEnvironment）+ LoadServerConfig/SaveServerConfig/ValidateConfig 三个命令；`SystemSettingsView.xaml` 新增「服务器配置」Border 区域（应用名称可编辑、版本号/环境只读、保存/验证/刷新按钮）；`UnifiedApiClientExtensions` 注册 IConfigurationApi |
 | B-06 数据备份/恢复 | ⬜ | — | — |
 | B-07 初始化向导 | ⬜ | — | — |
-| B-08 Desktop 发布包 | ⬜ | — | — |
-| B-09 自动更新 | ⬜ | — | — |
+| B-08 Desktop 发布包 | ✅ | 2026-09-16 | 重建 `scripts/velopack-pack.ps1`（正确 vpk 参数 `--outputDir`；**不用 `PublishSingleFile`** 以保留增量差分；`-p:Version` 与程序集同源；末尾馈源自检）；修复**发布阻塞缺陷** `NETSDK1152`（Shell 与 LocalWebAPI 各有 `appsettings.json` 同相对路径冲突 → LocalWebAPI 独立宿主配置改名 `appsettings.localwebapi.json` 且不参与发布）；用户数据（连接设置/数据库备份）自安装目录 `%LOCALAPPDATA%\LYBTZYZS`（= Velopack 安装根）迁出至 `%LOCALAPPDATA%\LYBT\Desktop` + 一次性迁移（满足「更新不丢用户数据」）；发布流程文档 `06-operations/12-desktop-release.md`。实测连续打包 1.0.0→1.0.3 成功，delta 1.5–1.6 MB（全量 118 MB），馈源经 `SimpleFileSource` 验证可被 Velopack 消费；build 0/0 | |
+| B-09 自动更新 | ✅ | 2026-09-16 | `VelopackApp.Build().Run()` 接入 `App.OnStartup`（生命周期钩子 + `--veloapp-*` 处理；**置于单实例互斥量之前**，否则安装/卸载期第二个进程被互斥量关闭导致安装器超时）；`DesktopUpdateOptions` 扩展 `SourceKind`/Gitee 三项；新增 `GiteeReleaseSource`（Gitee OpenAPI v5 基地址，Velopack 无内置 Gitee 源）+ `IUpdateSourceFactory`（源选择可测）；`DesktopUpdateService` 缓存待应用更新（避免三次馈源往返）、管理器初始化失败降级为不可用（`No VelopackLocator has been set` 不再冒泡）；双端配置落地（开发默认关闭）。单测 9+6 全过 | |
 | B-10 SignalR | ✅ | 2026-08-06 | `0d8aabb90` — US-REG-008 医生工作台待诊列表实时更新：服务端新增 `RegistrationHub`（`[Authorize(DoctorOrAdmin)]`，按 doctorId 分组）+ `RegistrationConnectionManager`（ConnectionId↔DoctorId）+ `INotificationService`/`NotificationService`（`IHubContext` 推送 `NewRegistration`/`RegistrationStatusChanged` 到 `doctor-{id}` 分组，空 doctorId 跳过）；Create/StartVisit/Cancel 三个 CommandHandler 在业务成功后触发推送（推送失败仅日志，不影响主流程）；`Program.cs` 注册 `AddSignalR` + `MapHub("/hubs/registration")`；Desktop 新增 `SignalRClient`（`Microsoft.AspNetCore.SignalR.Client` 8.0.26，JWT access_token 连接、自动重连 2/10/30s、断线降级 15s 轮询复用候诊队列接口）发布 `RegistrationRefreshedEvent`，`RegistrationListViewModel` 订阅实时刷新（Doctor 角色导航时启动/停止）；新增 9 单测（NotificationService 分组过滤 + ConnectionManager 映射，EF/手写 fake 零 mock）；build --no-incremental 0 错误 0 警告，架构测试 92/92 | |
 | B-11 药材/验方模板 | ✅ | 2026-09-09 | `f5e0b4236`（Desktop 模板/导入/导出 UI）+ `850c601a0`（后端 JSON 化 #112）+ `c26fe08ad`（双端路由对齐 #129）+ 本文档 commit —— 药材/验方页面「模板」按钮（Herb/FormulaMasterDetailControl）双端落地：Remote+Local `GET import-template` 返回 **JSON 模板**（字段说明+示例+必填标注，2026-08-13 #112 用户决策——后端不涉及 Excel）；Desktop SaveFileDialog 保存 `药材导入模板.json`/`验方导入模板.json`，模板字段与 `batch-import` DTO 对齐（HerbInputDto/FormulaImportItemDto）；导入复用 `POST batch-import`；守卫复验（2026-09-09）：ImportExportJsonTests 6/6 + ImportExportRouteParityTests/LocalImportExportJsonTests 7/7 + build --no-incremental 0 错误 0 警告 |
 | B-12 患者导入导出 | ✅ | 2026-09-13 | `fa3eb27df` —— 见 §九 2026-09-13：Desktop 前端 Excel 化（ClosedXML 0.102.3）+ PatientExcelService（GenerateTemplate/ParseImportFile/GenerateExportFile）+ VM 三命令改 .xlsx + 模块注册 + 9 单测；后端零改动（JSON 契约/接口不变）；构建 0/0、Desktop 单测 836/836、架构 96/97（1 存量 DP-M1） |

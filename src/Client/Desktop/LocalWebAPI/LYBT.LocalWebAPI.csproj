@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 独立宿主（LocalWebApiHost.Main）专用配置：仅调试期随本项目的构建输出使用；
+         桌面发布包由 Shell 的 appsettings.json 提供配置，本文件不得进入发布产物
+         （避免运维误改「未被加载」的配置）。 -->
+    <Content Update="appsettings.localwebapi.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../../Shared/LYBT.Shared.Models/LYBT.Shared.Models.csproj" />
     <ProjectReference Include="../Core/LYBT.Desktop.Contracts/LYBT.Desktop.Contracts.csproj" />
     <ProjectReference Include="../../../Shared/LYBT.Shared.Logging/LYBT.Shared.Logging.csproj" />

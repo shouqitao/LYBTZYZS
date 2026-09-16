@@ -12,6 +12,12 @@ internal static class LocalWebApiHost
     {
         var builder = LocalWebApiProgram.CreateBuilder(args);
 
+        // 独立宿主专用配置（appsettings.localwebapi.json）。
+        // 刻意不命名为 appsettings.json：桌面进程内嵌 LocalWebAPI 与 Shell 共用同一发布目录，
+        // 两份 appsettings.json 会导致发布期 NETSDK1152（同相对路径冲突）并在构建期不確定地互相覆盖
+        // ——内嵌场景应使用 Shell 的 appsettings.json（含完整 Jwt 节）。本文件仅供本独立宿主（调试）使用。
+        builder.Configuration.AddJsonFile("appsettings.localwebapi.json", optional: true, reloadOnChange: false);
+
         builder.WebHost.UseUrls("http://127.0.0.1:5290");
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")

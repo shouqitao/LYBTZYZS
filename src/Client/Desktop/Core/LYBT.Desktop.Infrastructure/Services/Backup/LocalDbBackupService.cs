@@ -28,17 +28,50 @@ public class LocalDbBackupService : ILocalDbBackupService, IDisposable
     {
         _embeddedWebApi = embeddedWebApi ?? throw new ArgumentNullException(nameof(embeddedWebApi));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // 既有安装的备份位于安装目录内（%LOCALAPPDATA%\LYBTZYZS\Backup），迁移到安装目录之外
+        MigrateLegacyBackups();
     }
 
     /// <inheritdoc />
     public void Dispose() => _backupLock.Dispose();
 
-    /// <summary>备份目录：%AppData%/LYBTZYZS/Backup/</summary>
+    /// <summary>
+    /// 备份目录：<c>%LOCALAPPDATA%\LYBT\Desktop\Backup</c>（**安装目录之外**——
+    /// 经 Velopack 安装时安装根为 <c>%LOCALAPPDATA%\LYBTZYZS</c>，把备份放其中会在更新/卸载时丢失）。
+    /// </summary>
     private static string BackupDirectoryPath
+        => Path.Combine(
+            SystemConstants.UserDataDirectory,
+            SystemConstants.FilePaths.BackupDirectory);
+
+    /// <summary>
+    /// 遗留备份目录（<c>%LOCALAPPDATA%\LYBTZYZS\Backup</c>）——一次性迁移既有备份。
+    /// </summary>
+    private static string LegacyBackupDirectoryPath
         => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "LYBTZYZS",
             SystemConstants.FilePaths.BackupDirectory);
+
+    /// <summary>把遗留目录中的备份移到新目录（幂等；新目录已存在时不动）。</summary>
+    private void MigrateLegacyBackups()
+    {
+        try
+        {
+            if (Directory.Exists(BackupDirectoryPath) || !Directory.Exists(LegacyBackupDirectoryPath))
+                return;
+
+            Directory.CreateDirectory(SystemConstants.UserDataDirectory);
+            Directory.Move(LegacyBackupDirectoryPath, BackupDirectoryPath);
+            _logger.LogInformation("[Backup] 备份目录已迁移出安装目录: {From} → {To}",
+                LegacyBackupDirectoryPath, BackupDirectoryPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[Backup] 备份目录迁移失败（保留原位置继续可用）");
+        }
+    }
 
     /// <summary>数据库名（从连接串解析，当前固定 LYBTDesktop）</summary>
     private static string DatabaseName => "LYBTDesktop";

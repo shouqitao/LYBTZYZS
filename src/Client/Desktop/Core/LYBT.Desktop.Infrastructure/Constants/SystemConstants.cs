@@ -1,3 +1,4 @@
+using System.IO;
 using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Desktop.Infrastructure.Constants
@@ -105,6 +106,23 @@ namespace LYBT.Desktop.Infrastructure.Constants
             public const string BackupDirectory = "Backup";
             public const string ExportDirectory = "Export";
         }
+
+        /// <summary>
+        /// 用户数据根目录（<c>%LOCALAPPDATA%\LYBT\Desktop</c>）。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>必须位于应用安装目录之外</b>：经 Velopack 安装时，安装根为
+        /// <c>%LOCALAPPDATA%\{packId}</c>（即 <c>%LOCALAPPDATA%\LYBTZYZS</c>），
+        /// 更新/卸载会管理该目录内容——把用户设置或备份放在其中会在更新或卸载时丢失。</para>
+        /// <para>本目录同时是凭据、照片、系统设置、首次运行标记的既有约定目录
+        /// （<c>CredentialStorage</c>/<c>DpapiPhotoStorageService</c>/<c>UsernameStorageService</c>/
+        /// <c>LoginViewModel</c>/<c>SystemSettingsService</c>），此处收敛为单一常量。</para>
+        /// </remarks>
+        public static string UserDataDirectory => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LYBT",
+            "Desktop");
+
 
         /// <summary>
         /// 文件扩展名

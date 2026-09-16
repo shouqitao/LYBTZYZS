@@ -177,6 +177,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
 
             containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Services.IUpdateSourceFactory,
+                LYBT.Desktop.Foundation.Services.UpdateSourceFactory>();
             containerRegistry.RegisterSingleton<IDesktopUpdateService, DesktopUpdateService>();
             containerRegistry.RegisterSingleton<IClientConfigurationStore, ClientConfigurationStore>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
