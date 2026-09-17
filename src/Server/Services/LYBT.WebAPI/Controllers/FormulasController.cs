@@ -275,6 +275,7 @@ public class FormulasController : BaseCrudController
         /// 切换验方启用/禁用状态
         /// </summary>
         [HttpPost("/api/v{version:apiVersion}/formulas/{id}/toggle-status")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
@@ -303,6 +304,7 @@ public class FormulasController : BaseCrudController
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
         [HttpPost("/api/v{version:apiVersion}/formulas/{id}/restore")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
@@ -412,6 +414,7 @@ public class FormulasController : BaseCrudController
         /// 校验验方药材匹配
         /// </summary>
         [HttpPost("/api/v{version:apiVersion}/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> ValidateHerb(
@@ -457,6 +460,7 @@ public class FormulasController : BaseCrudController
         /// </summary>
         [HttpPost("/api/v{version:apiVersion}/formulas/batch-enable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnableFormulas(
             [FromBody] BatchDeleteInputDto dto,
@@ -479,6 +483,7 @@ public class FormulasController : BaseCrudController
         /// </summary>
         [HttpPost("/api/v{version:apiVersion}/formulas/batch-disable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisableFormulas(
             [FromBody] BatchDeleteInputDto dto,

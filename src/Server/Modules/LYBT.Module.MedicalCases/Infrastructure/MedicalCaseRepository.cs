@@ -59,6 +59,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId, CancellationToken cancellationToken = default)
         {
             return await GetBaseQuery()
+                .AsNoTracking()
                 .Where(m => m.PatientId == patientId)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync(cancellationToken);
@@ -70,6 +71,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
         public async Task<PagedResult<MedicalCase>> GetByPatientIdPagedAsync(Guid patientId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var query = GetBaseQuery()
+                .AsNoTracking()
                 .Where(m => m.PatientId == patientId)
                 .OrderByDescending(m => m.CreatedAt);
 
@@ -107,7 +109,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
             MedicalCaseStatus? status, Guid? patientId, Guid? doctorId,
             bool isAdmin, string? keyword = null, CancellationToken cancellationToken = default)
         {
-            var query = GetDetailQuery();
+            var query = GetDetailQuery().AsNoTracking();
 
             // 状态筛选
             if (status.HasValue)
@@ -158,7 +160,7 @@ namespace LYBT.Module.MedicalCases.Infrastructure
             bool isAdmin = false,
             CancellationToken cancellationToken = default)
         {
-            var query = GetDetailQuery();
+            var query = GetDetailQuery().AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(patientName))
                 query = query.Where(m => m.PatientName.Contains(patientName));

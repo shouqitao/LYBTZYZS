@@ -45,24 +45,21 @@ public partial class ReportRepository : IReportRepository
         CancellationToken cancellationToken = default
     )
     {
-        var caseIds = await _context
-            .MedicalCases.Where(mc =>
+        // R-25: 单次 JOIN 查询（对齐 GetMedicineFeeByDayAsync 模式）——原两段式先取 caseIds
+        // 再 IN 子句，大时间范围下 ID 列表巨大（可能触及 SQL 参数上限）且多一次往返。
+        return await (
+            from mc in _context.MedicalCases
+            where
                 !mc.IsDeleted
                 && mc.CreatedAt >= startDate
                 && mc.CreatedAt < endDate.AddDays(1)
                 && mc.CaseStatus == MedicalCaseStatus.Completed
                 && (!doctorIdFilter.HasValue || mc.UserId == doctorIdFilter.Value)
-            )
-            .Select(mc => mc.Id)
-            .ToListAsync(cancellationToken);
-
-        if (caseIds.Count == 0)
-            return 0;
-
-        return await _context
-            .Prescriptions.Where(p => caseIds.Contains(p.MedicalCaseId) && !p.IsDeleted)
-            .SelectMany(p => p.Items)
-            .SumAsync(pi => pi.UnitPrice * pi.Dosage, cancellationToken);
+            join p in _context.Prescriptions on mc.Id equals p.MedicalCaseId
+            where !p.IsDeleted
+            join pi in _context.PrescriptionItems on p.Id equals pi.PrescriptionId
+            select (decimal?)(pi.UnitPrice * pi.Dosage)
+        ).SumAsync(x => x, cancellationToken) ?? 0m;
     }
 
     /// <inheritdoc/>

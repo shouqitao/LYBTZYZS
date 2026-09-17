@@ -84,6 +84,7 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
         CancellationToken cancellationToken = default, bool includeChildren = false)
     {
         var query = _context.Formulas
+            .AsNoTracking()
             .Where(f => !f.IsDeleted)
             .AsQueryable();
 

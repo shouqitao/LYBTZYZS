@@ -41,6 +41,7 @@ public class RegistrationRepository : IRegistrationRepository
         CancellationToken cancellationToken = default)
     {
         var query = _context.Registrations
+            .AsNoTracking()
             .Where(r => !r.IsDeleted)
             .AsQueryable();
 

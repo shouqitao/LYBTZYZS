@@ -19,19 +19,19 @@ namespace LYBT.LocalWebAPI.Auth;
 
 /// <summary>
 /// 嵌入式 Web API 的本地 JWT 配置。
-/// 简化为固定 HMAC-SHA256 密钥和 1 年有效期。
+/// 简化为固定 HMAC-SHA256 密钥和 12 小时有效期（R-19：单机本地模式一个工作日足够，原 365 天过长）。
 /// </summary>
 public static class LocalJwtConfig
 {
-    private const int TokenExpirationDays = 365;
+    private const int TokenExpirationHours = 12;
     private static string _secret = string.Empty;
     private static string _issuer = "LYBT-LocalWebAPI";
     private static string _audience = "LYBT-Desktop";
 
     /// <summary>
-    /// 令牌过期时间（天数）
+    /// 令牌过期时间（小时）
     /// </summary>
-    public static int ExpirationDays => TokenExpirationDays;
+    public static int ExpirationHours => TokenExpirationHours;
 
     /// <summary>
     /// 初始化密钥与 Issuer/Audience（从 Options 读取）
@@ -152,7 +152,7 @@ public static class LocalJwtConfig
 
     /// <summary>
     /// 为给定 Identity 用户生成 JWT。
-    /// Subject：user.Id，Role 声明（第一个 Identity 角色），365 天有效期。
+    /// Subject：user.Id，Role 声明（第一个 Identity 角色），12 小时有效期。
     /// </summary>
     public static string GenerateToken(ApplicationUser user, IList<string> roles)
     {
@@ -178,7 +178,7 @@ public static class LocalJwtConfig
             audience: _audience,
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddDays(TokenExpirationDays),
+            expires: DateTime.UtcNow.AddHours(TokenExpirationHours),
             signingCredentials: creds
         );
 

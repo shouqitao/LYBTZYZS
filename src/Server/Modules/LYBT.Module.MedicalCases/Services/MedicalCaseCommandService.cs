@@ -7,6 +7,7 @@ using LYBT.Infrastructure.Caching;
 using LYBT.Shared.Models.Validators.Consultation;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Services.CrossModule;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -40,6 +41,7 @@ namespace LYBT.Module.MedicalCases.Services
         private readonly IValidator<ConsultationInputDto> _consultationValidator;
         private readonly IMedicalCaseTimeService _timeService;
         private readonly MedicalCaseStateGuard _stateGuard;
+        private readonly IDomainEventDispatcher _domainEventDispatcher;
 
         public MedicalCaseCommandService(
             IMedicalCaseRepository repository,
@@ -54,7 +56,8 @@ namespace LYBT.Module.MedicalCases.Services
             IValidator<MedicalCaseInputDto> inputValidator,
             IValidator<ConsultationInputDto> consultationValidator,
             IMedicalCaseTimeService timeService,
-            MedicalCaseStateGuard stateGuard)
+            MedicalCaseStateGuard stateGuard,
+            IDomainEventDispatcher domainEventDispatcher)
             : base(logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -69,6 +72,7 @@ namespace LYBT.Module.MedicalCases.Services
             _consultationValidator = consultationValidator ?? throw new ArgumentNullException(nameof(consultationValidator));
             _timeService = timeService ?? throw new ArgumentNullException(nameof(timeService));
             _stateGuard = stateGuard ?? throw new ArgumentNullException(nameof(stateGuard));
+            _domainEventDispatcher = domainEventDispatcher ?? throw new ArgumentNullException(nameof(domainEventDispatcher));
         }
 
 

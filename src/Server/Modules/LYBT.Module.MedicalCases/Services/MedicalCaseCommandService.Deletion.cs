@@ -1,5 +1,6 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.SharedKernel.Events;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Enums;
@@ -42,13 +43,17 @@ namespace LYBT.Module.MedicalCases.Services
                 throw new BusinessException(ErrorCode.McOnlyCompletedCanDelete, ErrorMessages.Get(ErrorCode.McOnlyCompletedCanDelete));
             }
 
-            // D2 FIX: 删除前回滚关联的挂号记录
-            await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
-            _logger.LogInformation("[SVC] MedicalCase.Delete → RegistrationRolledBack - MedicalCaseId={MedicalCaseId}", id);
-
+            // R-10: 软删除成功后发布领域事件，由 Registrations 模块 Handler 回滚挂号（不再直调）
             var result = await _repository.SoftDeleteAsync(id, cancellationToken);
             if (result)
             {
+                await _domainEventDispatcher.DispatchAsync(new MedicalCaseDeletedEvent(
+                    MedicalCaseId: medicalCase.Id,
+                    PatientId: medicalCase.PatientId,
+                    DoctorId: medicalCase.UserId,
+                    DeletedAt: DateTime.UtcNow), cancellationToken);
+                _logger.LogInformation("[SVC] MedicalCase.Delete → MedicalCaseDeletedEventPublished - MedicalCaseId={MedicalCaseId}", id);
+
                 await _cacheInvalidation.InvalidateAsync("medicalcases", cancellationToken);
             }
             return result;
@@ -98,13 +103,17 @@ namespace LYBT.Module.MedicalCases.Services
                         continue;
                     }
 
-                    // D2 FIX: 与单删 DeleteAsync 一致，软删除前回滚关联挂号（Completed 医案走直调，不经 Cancelled 领域事件，无重复回滚风险）
-                    await _registrationCrossModule.HandleMedicalCaseCancelledAsync(id, cancellationToken);
-                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete → RegistrationRolledBack - MedicalCaseId={MedicalCaseId}", id);
-
+                    // R-10: 与单删 DeleteAsync 一致，软删除成功后发布领域事件回滚挂号（不再直调）
                     entity.IsDeleted = true;
                     entity.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(entity, cancellationToken);
+
+                    await _domainEventDispatcher.DispatchAsync(new MedicalCaseDeletedEvent(
+                        MedicalCaseId: entity.Id,
+                        PatientId: entity.PatientId,
+                        DoctorId: entity.UserId,
+                        DeletedAt: DateTime.UtcNow), cancellationToken);
+                    _logger.LogInformation("[SVC] MedicalCase.BatchDelete → MedicalCaseDeletedEventPublished - MedicalCaseId={MedicalCaseId}", id);
 
                     result.SuccessCount++;
                     result.SuccessfulIds.Add(id);

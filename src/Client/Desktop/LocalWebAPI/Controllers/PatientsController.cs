@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LYBT.LocalWebAPI.Controllers;
 
@@ -85,6 +86,7 @@ public class PatientsController : BaseCrudController
     /// 新增患者
     /// </summary>
     [HttpPost]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> Create([FromBody] PatientInputDto input, CancellationToken ct)
     {
         var (operatorId, _, _) = GetOperator();
@@ -107,6 +109,7 @@ public class PatientsController : BaseCrudController
     /// 更新患者信息
     /// </summary>
     [HttpPut("{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> Update(
         Guid id,
         [FromBody] PatientInputDto input,
@@ -249,6 +252,7 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpDelete("{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -271,6 +275,7 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("{id}/toggle-status")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -293,6 +298,7 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
     [HttpPost("{id}/restore")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "患者ID") is { } error)
@@ -310,6 +316,7 @@ public class PatientsController : BaseCrudController
     /// 批量检查引用关系
     /// </summary>
     [HttpPost("batch-check-reference")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchCheckReference(
         [FromBody] PatientBatchCheckReferenceInputDto dto,
         CancellationToken ct
@@ -328,6 +335,7 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-delete")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -345,6 +353,7 @@ public class PatientsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-import")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchImport(
         [FromBody] PatientBatchImportInputDto request,
         CancellationToken ct

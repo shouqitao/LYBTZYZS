@@ -26,7 +26,7 @@ public class ApiHealthCheckStartupStep : IStartupStep
     }
 
     /// <inheritdoc />
-    public string Name => "API健康检查";
+    public string Name => "ApiHealthCheck";
 
     /// <inheritdoc />
     public int Order => 40;

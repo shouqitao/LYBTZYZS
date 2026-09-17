@@ -64,7 +64,15 @@ public class RateLimitOptions
 /// </summary>
 public sealed class LoginRateLimitOptions : RateLimitOptions
 {
+    /// <summary>
+    /// 内网/可信源登录限流阈值（预留：当前 ConfigureRateLimiting 仅消费 PermitLimit，
+    /// 未按 IP 分区内网放宽；启用分区策略时再接入）
+    /// </summary>
     public int InternalPermitLimit { get; set; } = 20;
+
+    /// <summary>
+    /// 内网登录排队上限（预留，同 InternalPermitLimit）
+    /// </summary>
     public int InternalQueueLimit { get; set; } = 0;
 
     public LoginRateLimitOptions()
@@ -78,6 +86,10 @@ public sealed class LoginRateLimitOptions : RateLimitOptions
 /// </summary>
 public sealed class ApiRateLimitOptions : RateLimitOptions
 {
+    /// <summary>
+    /// 管理员角色 API 限流阈值（预留：当前策略按 IP 分区，未按角色区分；
+    /// 启用角色分区策略时再接入）
+    /// </summary>
     public int AdminPermitLimit { get; set; } = 200;
 }
 

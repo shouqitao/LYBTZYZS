@@ -11,7 +11,7 @@
 ```
 LYBT.LocalWebAPI/
 ├── Auth/
-│   └── LocalJwtConfig.cs           # 简化 JWT 配置（HMAC-SHA256，365天过期）
+│   └── LocalJwtConfig.cs           # 简化 JWT 配置（HMAC-SHA256，12小时过期）
 ├── Commands/                       # MediatR CQRS Commands（本地登录/刷新）
 ├── Controllers/
 │   ├── AuthController.cs           # 登录/登出/刷新/自动登录/验证
@@ -47,7 +47,7 @@ LYBT.LocalWebAPI/
 
 | 类 | 设计依据 |
 |---|---|
-| **LocalJwtConfig** (static) — JWT 配置 | HMAC-SHA256 签名，365天过期，5 个授权策略 |
+| **LocalJwtConfig** (static) — JWT 配置 | HMAC-SHA256 签名，12小时过期，5 个授权策略 |
 
 | 策略 | 角色 |
 |------|------|
@@ -103,7 +103,7 @@ LYBT.LocalWebAPI
 ## 设计决策
 
 1. **统一服务层 (ADR-0010)** — LocalWebAPI 复用远程 WebAPI 的 Service/Repository 层，Controller 委托 `I*Service`，零平行实现。这是 Client → Server 唯一的跨层引用路径，有意设计。
-2. **简化 JWT** — 本地模式使用 HMAC-SHA256 + 365天过期，无 Token 刷新机制（`LocalJwtConfig`），比远程 JWT 策略更宽松。
+2. **简化 JWT** — 本地模式使用 HMAC-SHA256 + 12小时过期，无 Token 刷新机制（`LocalJwtConfig`），单机一个工作日足够。
 3. **Identity 统一** — 使用 `AppDbContext` + ASP.NET Core Identity，密码哈希由 Identity 管理（BCrypt/PBKDF2），禁止在 SeedData 中直接创建用户。
 4. **RateLimiter** — 登录端点限流：固定窗口 5次/分钟，无队列。
 5. **条件种子数据** — `LocalWebApiSeedData.SeedAsync` 仅在表为空时插入，幂等安全。

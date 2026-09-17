@@ -268,6 +268,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id}/toggle-status")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
@@ -298,6 +299,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
         [HttpPost("{id}/restore")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<PatientDetailDto>), 200)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
         {
@@ -408,6 +410,7 @@ namespace LYBT.WebAPI.Controllers
         /// 批量检查多个患者的引用关系
         /// </summary>
         [HttpPost("batch-check-reference")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<List<PatientReferenceCheckDto>>), 200)]
         public async Task<IActionResult> BatchCheckReference(
             [FromBody] PatientBatchCheckReferenceInputDto dto,

@@ -24,13 +24,13 @@ public class ModuleCoordinatorStartupStep : IStartupStep
     }
 
     /// <inheritdoc />
-    public string Name => "模块协调器初始化";
+    public string Name => "ModuleCoordinator";
 
     /// <inheritdoc />
     public int Order => 20;
 
     /// <inheritdoc />
-    public string? ParallelGroup => "CoreInit";
+    public string? ParallelGroup => null; // 单成员并行组无意义，按顺序执行
 
     /// <inheritdoc />
     public bool IsRequired => false; // 模块协调器失败不应阻塞启动

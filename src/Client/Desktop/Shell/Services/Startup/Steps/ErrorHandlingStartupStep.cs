@@ -24,7 +24,7 @@ public class ErrorHandlingStartupStep : IStartupStep
     }
 
     /// <inheritdoc />
-    public string Name => "错误处理初始化";
+    public string Name => "ErrorHandling";
 
     /// <inheritdoc />
     public int Order => 10;

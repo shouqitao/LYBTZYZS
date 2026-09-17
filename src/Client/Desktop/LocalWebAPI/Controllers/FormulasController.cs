@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
@@ -181,6 +182,7 @@ public class FormulasController : BaseCrudController
     /// 新增验方
     /// </summary>
     [HttpPost("/api/v1/formulas")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> CreateFormula(
         [FromBody] FormulaInputDto input,
         CancellationToken ct
@@ -208,6 +210,7 @@ public class FormulasController : BaseCrudController
     /// 更新验方信息
     /// </summary>
     [HttpPut("/api/v1/formulas/{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> UpdateFormula(
         Guid id,
         [FromBody] FormulaInputDto input,
@@ -234,6 +237,7 @@ public class FormulasController : BaseCrudController
     /// 删除验方（软删除）
     /// </summary>
     [HttpDelete("/api/v1/formulas/{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -256,6 +260,7 @@ public class FormulasController : BaseCrudController
     /// 切换验方启用/禁用状态
     /// </summary>
     [HttpPost("/api/v1/formulas/{id}/toggle-status")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -282,6 +287,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-delete")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -298,6 +304,7 @@ public class FormulasController : BaseCrudController
     /// 复制验方
     /// </summary>
     [HttpPost("/api/v1/formulas/{id}/clone")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> CloneFormula(Guid id, CancellationToken ct)
     {
         var source = await _formulaService.GetByIdAsync(id, ct);
@@ -344,6 +351,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-import")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchImportFormulas(
         [FromBody] List<FormulaImportItemDto> formulas,
         CancellationToken ct
@@ -377,6 +385,7 @@ public class FormulasController : BaseCrudController
     /// 校验验方药材匹配
     /// </summary>
     [HttpPost("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> ValidateHerb(
         Guid formulaId,
         Guid herbItemId,
@@ -398,6 +407,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
     [HttpPost("/api/v1/formulas/{id}/restore")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "验方ID") is { } error)
@@ -423,6 +433,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [HttpPost("/api/v1/formulas/batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchEnableFormulas(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -443,6 +454,7 @@ public class FormulasController : BaseCrudController
     /// </summary>
     [HttpPost("/api/v1/formulas/batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchDisableFormulas(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct

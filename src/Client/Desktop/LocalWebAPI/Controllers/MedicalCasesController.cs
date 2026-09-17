@@ -172,7 +172,8 @@ public class MedicalCasesController : BaseMedicalCasesController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-        var result = await _medicalCaseCommandService.BatchDeleteAsync(dto.Ids, operatorId, isAdmin, ct);
+        var result = await Sender.Send(
+            new BatchDeleteMedicalCaseCommand(dto.Ids, operatorId, isAdmin), ct);
         if (!result.IsSuccess || result.Value == null)
         {
             return BusinessFail(result.Error ?? "批量删除失败");
@@ -273,7 +274,47 @@ public class MedicalCasesController : BaseMedicalCasesController
     }
 
     /// <summary>
-    /// 更新医案状态（P1-10 2026-08-14: Completed 分支路由移入 StateService.UpdateStatus 统一处理——双端同步）
+    /// 标记是否需要开处方（R-9: 迁移至 ISender）
+    /// </summary>
+    [HttpPut("{id}/prescription-flag")]
+    public override async Task<IActionResult> SetPrescriptionFlag(
+        Guid id,
+        [FromBody] SetPrescriptionFlagRequest request, CancellationToken ct)
+    {
+        var (operatorId, _, operatorRole) = GetOperator();
+        var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+        var result = await Sender.Send(
+            new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
+
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "处方标记更新失败");
+
+        return Success(result.Value!, "处方标记更新成功");
+    }
+
+    /// <summary>
+    /// 记录打印完成 — 仅 Doctor（R-9: 迁移至 ISender）
+    /// </summary>
+    [Authorize(Policy = PolicyConstants.DoctorOnly)]
+    [HttpPut("{id}/print-completed")]
+    public override async Task<IActionResult> RecordPrint(
+        Guid id,
+        [FromBody] RecordPrintRequest request, CancellationToken ct)
+    {
+        var (operatorId, operatorName, _) = GetOperator();
+        var result = await Sender.Send(
+            new RecordPrintCommand(id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
+
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "打印记录写入失败");
+
+        return Success(true, "打印记录已写入");
+    }
+
+    /// <summary>
+    /// 更新医案状态（P1-10 2026-08-14: Completed 分支路由移入 StateService.UpdateStatus 统一处理——
+    /// R-9/R-14: 迁移至 ISender 并返回 DTO，与 Remote 契约一致）
     /// </summary>
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] MedicalCaseStatusInputDto request, CancellationToken ct = default)
@@ -282,13 +323,13 @@ public class MedicalCasesController : BaseMedicalCasesController
         var (operatorId, _, operatorRole) = GetOperator();
         var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
 
-        // P1-10: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
-        var entity = await _medicalCaseStateService.UpdateStatusAsync(
-            id, request.Status, operatorId, isAdmin, ct);
-        if (entity == null)
-            return BusinessFail("状态更新失败");
+        // P1-10 + R-9: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
+        var result = await Sender.Send(
+            new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
+        if (!result.IsSuccess)
+            return BusinessFail(result.Error ?? "状态更新失败");
 
         LogOperation("更新医案状态", request, id);
-        return Success("状态更新成功");
+        return Success(result.Value!, "状态更新成功");
     }
 }

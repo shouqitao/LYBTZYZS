@@ -5,12 +5,10 @@ using LYBT.Module.MedicalCases.Application.Queries;
 using LYBT.Module.MedicalCases.Controllers;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Configuration.Options.Common;
-using LYBT.Module.MedicalCases.Mappers;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,18 +26,14 @@ namespace LYBT.WebAPI.Controllers
     [Authorize(Policy = PolicyConstants.DoctorOrAdmin)]
     public class MedicalCasesController : BaseMedicalCasesController
     {
-        private readonly MedicalCaseMapper _medicalCaseMapper;
-
         public MedicalCasesController(
             ISender sender,
             ILogger<MedicalCasesController> logger,
             IMedicalCaseCommandService medicalCaseCommandService,
             IMedicalCaseQueryService medicalCaseQueryService,
-            IMedicalCaseStateService medicalCaseStateService,
-            MedicalCaseMapper medicalCaseMapper)
+            IMedicalCaseStateService medicalCaseStateService)
             : base(sender, logger, medicalCaseCommandService, medicalCaseQueryService, medicalCaseStateService)
         {
-            _medicalCaseMapper = medicalCaseMapper ?? throw new ArgumentNullException(nameof(medicalCaseMapper));
         }
 
         /// <summary>
@@ -221,7 +215,8 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _medicalCaseCommandService.BatchDeleteAsync(dto.Ids, operatorId, isAdmin, ct);
+            var result = await Sender.Send(
+                new BatchDeleteMedicalCaseCommand(dto.Ids, operatorId, isAdmin), ct);
             if (!result.IsSuccess || result.Value == null)
             {
                 return BusinessFail(result.Error ?? "批量删除失败");
@@ -243,8 +238,8 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            var result = await _medicalCaseCommandService.SetPrescriptionFlagWithDetailAsync(
-                id, request.NeedsPrescription, operatorId, isAdmin, ct);
+            var result = await Sender.Send(
+                new SetPrescriptionFlagCommand(id, request.NeedsPrescription, operatorId, isAdmin), ct);
 
             if (!result.IsSuccess)
                 return HandleResult(result, useAuthMapping: true);
@@ -264,8 +259,8 @@ namespace LYBT.WebAPI.Controllers
             [FromBody] RecordPrintRequest request, CancellationToken ct)
         {
             var (operatorId, operatorName, _) = GetOperator();
-            var result = await _medicalCaseCommandService.RecordPrintAsync(
-                id, request.PrintType, request.PrinterName, operatorId, operatorName, ct);
+            var result = await Sender.Send(
+                new RecordPrintCommand(id, request.PrintType, request.PrinterName, operatorId, operatorName), ct);
 
             if (!result.IsSuccess)
                 return HandleResult(result, useAuthMapping: true);
@@ -292,15 +287,14 @@ namespace LYBT.WebAPI.Controllers
             var (operatorId, _, operatorRole) = GetOperator();
             var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-            // T4-B9 + P1-10: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
-            var entity = await _medicalCaseStateService.UpdateStatusAsync(
-                id, request.Status, operatorId, isAdmin, ct);
-            if (entity == null)
-                return HandleResult(Result<MedicalCaseDetailDto>.Failure(ErrorCode.MedicalCaseNotFound, "医案不存在"), useAuthMapping: true);
+            // T4-B9 + P1-10 + R-9: 统一走 StateService 状态机校验（含 Completed→CompleteAsync 统一分派）
+            var result = await Sender.Send(
+                new UpdateMedicalCaseStatusCommand(id, request.Status, operatorId, isAdmin), ct);
+            if (!result.IsSuccess)
+                return HandleResult(result, useAuthMapping: true);
 
-            var dto = _medicalCaseMapper.MapToMedicalCaseDetailDto(entity);
             LogOperation("更新医案状态", request, id);
-            return Success(dto, "状态更新成功");
+            return Success(result.Value!, "状态更新成功");
         }
 
         /// <summary>

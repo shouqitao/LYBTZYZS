@@ -37,7 +37,7 @@ public class StartupStepsTests
         [Fact]
         public void Properties_ShouldHaveCorrectValues()
         {
-            _sut.Name.Should().Be("错误处理初始化");
+            _sut.Name.Should().Be("ErrorHandling");
             _sut.Order.Should().Be(10);
             _sut.IsRequired.Should().BeTrue();
         }
@@ -106,7 +106,7 @@ public class StartupStepsTests
         [Fact]
         public void Properties_ShouldHaveCorrectValues()
         {
-            _sut.Name.Should().Be("模块协调器初始化");
+            _sut.Name.Should().Be("ModuleCoordinator");
             _sut.Order.Should().Be(20);
             _sut.IsRequired.Should().BeFalse();
         }
@@ -174,7 +174,7 @@ public class StartupStepsTests
         [Fact]
         public void Properties_ShouldHaveCorrectValues()
         {
-            _sut.Name.Should().Be("API健康检查");
+            _sut.Name.Should().Be("ApiHealthCheck");
             _sut.Order.Should().Be(40);
             // OpenSpec: implement-local-mode - API健康检查为非必需，支持离线模式
             _sut.IsRequired.Should().BeFalse();

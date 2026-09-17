@@ -13,6 +13,7 @@ using LYBT.Shared.Models.Primitives.ErrorCodes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.LocalWebAPI.Controllers;
 
 /// <summary>
@@ -79,6 +80,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> Create([FromBody] HerbInputDto input, CancellationToken ct)
     {
         var (operatorId, _, _) = GetOperator();
@@ -104,6 +106,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPut("{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> Update(
         Guid id,
         [FromBody] HerbInputDto input,
@@ -131,6 +134,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpDelete("{id}")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "药材ID") is { } error)
@@ -154,6 +158,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("{id}/toggle-status")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "药材ID") is { } error)
@@ -180,6 +185,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("{id}/restore")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
     {
         if (ValidateGuid(id, "药材ID") is { } error)
@@ -202,6 +208,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-delete")]
+    [EnableRateLimiting("ApiCalls")]
     public override async Task<IActionResult> BatchDelete(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -219,6 +226,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("batch-import")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchImport(
         [FromBody] HerbBatchImportInputDto request,
         CancellationToken ct
@@ -252,6 +260,7 @@ public class HerbsController : BaseCrudController
     /// 批量检查引用关系
     /// </summary>
     [HttpPost("batch-check-reference")]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchCheckReference(
         [FromBody] HerbBatchCheckReferenceInputDto dto,
         CancellationToken ct
@@ -270,6 +279,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [HttpPost("batch-enable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchEnable(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct
@@ -290,6 +300,7 @@ public class HerbsController : BaseCrudController
     /// </summary>
     [HttpPost("batch-disable")]
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+    [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchDisable(
         [FromBody] BatchDeleteInputDto dto,
         CancellationToken ct

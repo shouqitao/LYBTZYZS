@@ -292,6 +292,7 @@ public class HerbsController : BaseCrudController
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id}/toggle-status")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> ToggleStatus(Guid id, CancellationToken ct)
@@ -317,6 +318,7 @@ public class HerbsController : BaseCrudController
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [HttpPost("{id}/restore")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<HerbDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
         public override async Task<IActionResult> Restore(Guid id, CancellationToken ct)
@@ -412,6 +414,7 @@ public class HerbsController : BaseCrudController
         /// 批量检查药材引用关系
         /// </summary>
         [HttpPost("batch-check-reference")]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
         public async Task<IActionResult> BatchCheckReference(
@@ -432,6 +435,7 @@ public class HerbsController : BaseCrudController
         /// </summary>
         [HttpPost("batch-enable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchEnable(
             [FromBody] BatchDeleteInputDto dto,
@@ -454,6 +458,7 @@ public class HerbsController : BaseCrudController
         /// </summary>
         [HttpPost("batch-disable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
+        [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         public async Task<IActionResult> BatchDisable(
             [FromBody] BatchDeleteInputDto dto,

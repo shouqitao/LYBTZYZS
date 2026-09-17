@@ -77,7 +77,7 @@ public class LocalRefreshTokenCommandHandler : IRequestHandler<LocalRefreshToken
                     Status = CommonStatus.Enabled,
                     PhoneNumber = user.PhoneNumber,
                 },
-                ExpiresAt = DateTime.UtcNow.AddDays(LocalJwtConfig.ExpirationDays)
+                ExpiresAt = DateTime.UtcNow.AddHours(LocalJwtConfig.ExpirationHours)
             }, "Token刷新成功");
         }
         catch (Exception)

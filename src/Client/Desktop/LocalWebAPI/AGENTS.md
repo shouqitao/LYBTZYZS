@@ -41,7 +41,7 @@ Desktop Shell
 |------|-------------|
 | `LocalWebApiProgram.cs` | Entry point: AppDbContext + IHttpContextAccessor + 6 AddXxxModule() registrations + LocalJwtConfig |
 | `LYBT.LocalWebAPI.csproj` | ASP.NET Core SDK; references Server Core + 6 Server Modules |
-| `Auth/LocalJwtConfig.cs` | Simplified JWT (1-year token, no refresh) |
+| `Auth/LocalJwtConfig.cs` | Simplified JWT (12-hour token, no refresh) |
 | `Data/LocalWebApiSeedData.cs` | Seed data initialization (accepts AppDbContext) |
 
 ## Architecture (Unified Service Layer)

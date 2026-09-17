@@ -145,9 +145,9 @@ public class JwtOptions
 
 **RateLimitOptions** | 速率限制基类: PermitLimit/WindowSeconds/QueueLimit
 
-**LoginRateLimitOptions** : RateLimitOptions | 登录速率限制，增加 InternalPermitLimit(20)，默认 PermitLimit=5
+**LoginRateLimitOptions** : RateLimitOptions | 登录速率限制；InternalPermitLimit(20)/InternalQueueLimit 为预留字段（当前限流策略仅消费 PermitLimit/WindowSeconds/QueueLimit）
 
-**ApiRateLimitOptions** : RateLimitOptions | API 速率限制，增加 AdminPermitLimit(200)
+**ApiRateLimitOptions** : RateLimitOptions | API 速率限制；AdminPermitLimit(200) 为预留字段（当前未按角色区分限流）
 
 ### Options/Server/SessionOptions.cs
 **SessionOptions** | 服务端会话配置: TimeoutMinutes(120)/AllowConcurrentSessions(false)/SlidingExpiration(true)

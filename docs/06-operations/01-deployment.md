@@ -165,7 +165,7 @@ ss -tlnp | grep 5000                        # 端口
 | 1 | 环境变量键名必须双下划线 | ASP.NET Core `__` 覆盖机制 | start.sh 统一用双下划线 |
 | 2 | JWT 密钥必须 Base64 | JwtOptions 校验器要求 | `python3 -c "import base64,os; print(base64.b64encode(os.urandom(48)).decode())"` |
 | 3 | 缺默认密码环境变量 | 校验器要求小写+数字 | start.sh 同时设两个密码 |
-| 4 | DB 连接串 Encrypt 兼容 | SQL Server 不支持强制加密 | `Encrypt=False;TrustServerCertificate=True` |
+| 4 | DB 连接串 Encrypt 兼容 | 默认模板已 `Encrypt=True`；目标 SQL Server 不支持强制加密时连接失败 | 回退 `Encrypt=False;TrustServerCertificate=True`（仅限该环境） |
 | 5 | 路由模板重复 version | 动作级和类级都写前缀 | 动作级写绝对路径 |
 | 6 | 模块 DbContext 漏映射 | ApplyConfiguration 遗漏 | 新增模块必须注册实体配置 |
 | 7 | 健康检查连接串 fallback | 只读一个配置键 | DatabaseConnectionResolver fallback 链 |

@@ -232,7 +232,7 @@ ApiHealthStatus { Checking, Healthy, Unhealthy }
 | 5 | `DesktopUpdateStartupStep` | 400 | ❌ | 无 UI；更新检查在后台 |
 | — | `AppStartupOrchestrator` 异常兜底 | — | — | `LogCritical` + `MessageBox`「启动失败」 |
 
-- 可选步骤失败仅 `LogWarning` 并继续；`ModuleCoordinator` 的 `ParallelGroup="CoreInit"` 在本 5 步集合中无相邻同组项，故仍顺序执行。用户可感知的启动反馈只有：主窗口立即出现 + 登录页 `BackgroundInitAsync`（100ms 延迟后依次：首运行向导 → 凭据恢复 → API 状态 → 连接模式）+ 底栏徽标三态。
+- 可选步骤失败仅 `LogWarning` 并继续；各步骤 `ParallelGroup=null`，严格按 `Order` 顺序执行。用户可感知的启动反馈只有：主窗口立即出现 + 登录页 `BackgroundInitAsync`（100ms 延迟后依次：首运行向导 → 凭据恢复 → API 状态 → 连接模式）+ 底栏徽标三态。
 
 ---
 

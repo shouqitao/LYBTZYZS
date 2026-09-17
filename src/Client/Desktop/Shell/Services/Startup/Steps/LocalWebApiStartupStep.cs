@@ -21,7 +21,7 @@ public class LocalWebApiStartupStep : IStartupStep
         _logger = logger;
     }
 
-    public string Name => "本地 API 服务";
+    public string Name => "LocalWebApi";
     public int Order => 250;
     public bool IsRequired => false;
     public string? ParallelGroup => null;

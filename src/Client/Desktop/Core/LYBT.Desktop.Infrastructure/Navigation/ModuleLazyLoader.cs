@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Roles;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
@@ -11,6 +12,7 @@ namespace LYBT.Desktop.Infrastructure.Navigation;
 public class ModuleLazyLoader : IModuleLazyLoader
 {
     private readonly IModuleLoadingService? _moduleLoadingService;
+    private readonly IRoleRegistry? _roleRegistry;
     private readonly ILogger<ModuleLazyLoader> _logger;
 
     /// <summary>
@@ -54,9 +56,11 @@ public class ModuleLazyLoader : IModuleLazyLoader
 
     public ModuleLazyLoader(
         IModuleLoadingService? moduleLoadingService,
+        IRoleRegistry? roleRegistry,
         ILogger<ModuleLazyLoader> logger)
     {
         _moduleLoadingService = moduleLoadingService;
+        _roleRegistry = roleRegistry;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -83,16 +87,12 @@ public class ModuleLazyLoader : IModuleLazyLoader
     public async Task PreloadModulesAsync(UserRole role)
     {
         if (_moduleLoadingService == null) return;
+        if (_roleRegistry == null) return;
 
-        // ClinicalModule 已改 OnDemand：Doctor/Receptionist 主页视图由其注册，预加载保证首屏就绪
-        var modulesToPreload = role switch
-        {
-            UserRole.Doctor => new[] { "ClinicalModule", "PatientsModule", "CatalogModule", "MedicalCaseModule" },
-            UserRole.Receptionist => new[] { "ClinicalModule", "PatientsModule", "RegistrationModule" },
-            UserRole.Admin => new[] { "UsersModule", "ReportsModule" },
-            UserRole.SuperAdmin => new[] { "UsersModule", "ReportsModule", "SysadminModule" },
-            _ => Array.Empty<string>()
-        };
+        // SSOT：与 RoleDefinition.RequiredModules 对齐，消除硬编码列表漂移。
+        // ClinicalModule 等 OnDemand 模块由 EnsureModuleLoadedAsync 在导航时拉起，无需在此硬编码。
+        var modulesToPreload = _roleRegistry.GetDefinition(role)?.RequiredModules
+            ?? (IReadOnlyList<string>)Array.Empty<string>();
 
         foreach (var moduleName in modulesToPreload)
         {

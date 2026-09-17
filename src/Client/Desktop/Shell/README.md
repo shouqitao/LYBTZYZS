@@ -114,10 +114,10 @@ Shell/
 | **ApiHealthMonitor** | IApiHealthMonitor，断路器模式 | 定时健康检查：10s 间隔 / 5s 超时 / 3 次失败触发断路 / 30s 恢复窗口 |
 | **ApplicationBootstrapper** | IApplicationBootstrapper | 注册 IRoleRegistry → IModuleManager、IPerformanceMonitor，完成框架级初始化 |
 | **StartupPipeline** | Order 排序 + 并行分组 | 步骤按 Order 排序执行，相同 ParallelGroup 的步骤并行；Required 步骤失败则终止启动 |
-| **ErrorHandlingStartupStep** | Order=10, Required | 全局异常处理初始化，启动管道第一步 |
-| **ModuleCoordinatorStartupStep** | Order=20, ParallelGroup=CoreInit | 模块协调器初始化，与 CoreInit 组内其他步骤并行 |
-| **LocalWebApiStartupStep** | Order=250 | 内嵌 LocalWebAPI 启动，依赖前置步骤完成 |
-| **ApiHealthCheckStartupStep** | Order=40 | API 健康检查，验证远程/本地 API 可达性 |
+| **ErrorHandlingStartupStep** | Name=`ErrorHandling`, Order=10, Required | 全局异常处理初始化，启动管道第一步 |
+| **ModuleCoordinatorStartupStep** | Name=`ModuleCoordinator`, Order=20, ParallelGroup=null | 模块协调器初始化（顺序执行） |
+| **LocalWebApiStartupStep** | Name=`LocalWebApi`, Order=250 | 内嵌 LocalWebAPI 启动，依赖前置步骤完成 |
+| **ApiHealthCheckStartupStep** | Name=`ApiHealthCheck`, Order=40 | API 健康检查，验证远程/本地 API 可达性 |
 | **WarmupStartupStep** | Order=50 | 预热缓存/资源，提升首次使用体验 |
 | **ServiceCollectionExtensions** | 链式注册，单一入口 | `RegisterAllServices` 链：Config → Logging → Cache → Repos → HTTP → UnifiedApi → Foundation → Presentation → Infrastructure → Commands → Application → ViewModelServices |
 | **HttpServiceRegistrationExtensions** | Handler 链 + Refit 客户端 | 配置 HTTP 消息处理链（Auth/Retry/Logging）+ 注册 Refit 接口客户端 |

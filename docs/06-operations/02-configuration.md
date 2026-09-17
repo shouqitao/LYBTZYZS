@@ -215,6 +215,8 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 }
 ```
 
+> 注：`InternalPermitLimit` / `InternalQueueLimit` / `AdminPermitLimit` 为预留字段——当前 `ConfigureRateLimiting` 仅消费 `PermitLimit`/`WindowSeconds`/`QueueLimit`（按 IP 分区固定窗口），未按内网/角色区分限流。
+
 ---
 
 ## 数据库配置

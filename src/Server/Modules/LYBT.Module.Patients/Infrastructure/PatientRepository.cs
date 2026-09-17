@@ -49,6 +49,7 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
         CancellationToken cancellationToken = default)
     {
         var query = _context.Patients
+            .AsNoTracking()
             .Where(p => !p.IsDeleted)
             .AsQueryable();
 

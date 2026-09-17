@@ -40,6 +40,7 @@ public class UserRepository : IUserRepository
         CancellationToken cancellationToken = default)
     {
         var query = _context.Users
+            .AsNoTracking()
             .Where(u => !u.IsDeleted)
             .AsQueryable();
 

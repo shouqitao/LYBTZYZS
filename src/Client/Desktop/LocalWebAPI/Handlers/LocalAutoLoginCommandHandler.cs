@@ -91,7 +91,7 @@ public class LocalAutoLoginCommandHandler : IRequestHandler<LocalAutoLoginComman
                     Status = CommonStatus.Enabled,
                     PhoneNumber = user.PhoneNumber,
                 },
-                ExpiresAt = DateTime.UtcNow.AddDays(LocalJwtConfig.ExpirationDays)
+                ExpiresAt = DateTime.UtcNow.AddHours(LocalJwtConfig.ExpirationHours)
             }, "自动登录成功");
         }
         catch (Exception)

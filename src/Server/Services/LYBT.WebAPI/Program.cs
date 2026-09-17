@@ -409,7 +409,7 @@ public class Program
     private static readonly string AppSettingsTemplate = """
         {
           "ConnectionStrings": {
-            "DefaultConnection": "Server=${ConnectionStrings__DefaultConnection};Database=LYBTDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=False;TrustServerCertificate=True;"
+            "DefaultConnection": "Server=${ConnectionStrings__DefaultConnection};Database=LYBTDB;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
           },
           "Jwt": {
             "SecretKey": "${Jwt__SecretKey}",

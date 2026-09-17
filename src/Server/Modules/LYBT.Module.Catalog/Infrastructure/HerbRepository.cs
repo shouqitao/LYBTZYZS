@@ -23,6 +23,7 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
         CancellationToken cancellationToken = default, bool includeChildren = false)
     {
         var query = _context.Herbs
+            .AsNoTracking()
             .Where(h => !h.IsDeleted)
             .AsQueryable();
 
