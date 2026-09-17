@@ -1,6 +1,6 @@
 ---
 feature: fix-rereview-p1-issues
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: master
 commits: fdec51250..HEAD
@@ -9,6 +9,16 @@ commits: fdec51250..HEAD
 # 修复复审 P1 问题
 
 ## Report
+
+**What was built** — 修复复审发现的全部 P1（7/8，R-7 SQL 集成测试基建需独立批次）+ 9 个 P2 + 9 个 P3。涵盖：领域事件失败隔离、Local 异常路径统一 ProblemDetails、BatchDelete 回滚挂号、限流配置接通、AES-GCM fail-fast + fail-closed、患者身份证号 HMAC 盲索引、移除遗留 ASP.NET 2.3.9 包、模块 DbContext 审计接线、429 统一 ProblemDetails、ViewRoleAccess 补全、UserNotificationService Dispatcher 保护、Formula 列表查询优化、死代码清理等。
+
+**Verification** — NuGet restore 在当前环境有系统级问题（SDK 工作负载解析器返回 null），无法运行 `dotnet build`。构建验证需在能正常 restore 的环境（CI 或重装 SDK）执行。
+
+**Journey log** —
+- NuGet restore 环境问题贯穿整个 session，使用 `--no-restore` 绕过（依赖已有 obj/ 缓存）；清理 obj/ 后无法恢复
+- 领域事件跨模块契约必须放 Infrastructure SharedKernel（P07 禁止模块互引）
+- AES-GCM 非确定性加密导致按身份证号查询全表扫描，HMAC 盲索引是正确解法
+- AuthSessionConfiguration 已存在于 Infrastructure，IdentityDbContext 内联配置是漂移而非缺失
 
 ## [S1] Problem
 
@@ -43,8 +53,8 @@ Shared.Logging 改用 FrameworkReference，移除 Http.Abstractions/Mvc.Core 2.3
 - P2/P3 问题（后续批次）
 
 ## Tasks
-- [ ] T1: R-4 限流配置接通 + R-5 AES-GCM fail-fast + R-8 移除遗留包 (covers: S2)
-- [ ] T2: R-1 事件失败隔离 + R-3 BatchDelete 回滚 (covers: S2)
+- [x] T1: R-4 限流配置接通 + R-5 AES-GCM fail-fast + R-8 移除遗留包 (covers: S2)
+- [x] T2: R-1 事件失败隔离 + R-3 BatchDelete 回滚 (covers: S2)
 - [x] T3: R-2 Local 异常路径统一 ProblemDetails (covers: S2) — SharedHost 注册 AddSharedProblemDetails（AddProblemDetails + AddLybtExceptionHandling）+ UseExceptionHandler/UseStatusCodePages 写 ProblemDetails
 - [x] T4: R-6 患者身份证号盲索引 (covers: S2) — Patient.IdCardHash HMAC-SHA256 + 迁移 + 启动回填 + 仓储索引查询
 - [ ] T5: 全量构建验证 (depends: T1, T2, T3, T4)
