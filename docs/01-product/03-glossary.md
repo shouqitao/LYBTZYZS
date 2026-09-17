@@ -71,7 +71,11 @@
 | MVVM | Model-View-ViewModel | WPF 桌面端架构模式 |
 | Prism | Prism 框架 | WPF MVVM 框架，负责模块注册、导航、依赖注入 |
 | QueryFilter | 全局查询过滤器 | EF Core 功能，自动过滤 `IsDeleted=true` 的记录 |
-| Status / State | 状态枚举语义边界 | **Status** = 域内持久化状态（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`）；**State** = 客户端 UI/会话状态（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止混用（2026-08-08 A-26 定案）|
+| Status / State | 状态枚举语义边界 | **Status** = 域内持久化状态（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaValidationStatus`/`CommonStatus`）；**State** = 客户端 UI/会话状态（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止混用（2026-08-08 A-26 定案）|
+| Dual-Mode | 双模式 | 产品运行形态：远程（WebAPI + SQL Server）+ 本地（LocalWebAPI + LocalDB）。**不要**与「双轨」混用 |
+| 双轨 | Dual-track | 实现层并行路径（如历史上的 Service/Handler 双实现），**不是**产品双模式 |
+| LocalWebAPI | 本地模式嵌入式 API | Desktop 内嵌 Kestrel，端口 5300；远程 WebAPI 默认 5000/5001 |
+| 接诊 / 看诊 / 完成 | 就诊流程动词 | **接诊** = StartVisit（原子创建 Registration+MedicalCase）；**看诊** = 医生诊疗过程；**完成** = Complete 医案。禁止用「问诊」指代 Consultation 实体 |
 
 ---
 
@@ -80,6 +84,15 @@
 ### UserRole (用户角色)
 
 > 角色定义、层级、权限矩阵详见 [02-personas.md](02-personas.md) 和 [04-permissions.md](04-permissions.md)。
+
+| 概念 | 定义 | 说明 |
+|------|------|------|
+| **SuperAdmin** | 业务角色枚举（值 100） | 用户角色表中的一级；授权策略常用 `AdminOrSuperAdmin` / `SysAdminOnly` |
+| **sysadmin** | 系统运维用户（非独立角色体系） | 用户名 `sysadmin`，`ApplicationUser.IsSysAdmin=true`；安装自动创建、不可删/禁/改；负责配置/部署/备份，**不碰业务数据** |
+| **Admin** | 业务管理员角色（值 10） | 运营管理者；与 sysadmin 是两个独立用户，不可混淆 |
+| **SysAdminOnly** | 授权策略名 | 仅 SuperAdmin（sysadmin）可访问的端点（配置/部署等运维操作） |
+
+> **铁律**：sysadmin ≠ Admin。叙述中优先写 `sysadmin（系统运维）`；策略名固定为 `SysAdminOnly`。
 
 ### MedicalCaseStatus (医案状态)
 
@@ -100,7 +113,9 @@
 | 2 | Completed | 已完成 |
 | 3 | Cancelled | 已取消 |
 
-### FormulaStatus (验方状态)
+### FormulaValidationStatus (验方验证状态)
+
+> 代码枚举名以 [04-data-model.md](../03-architecture/04-data-model.md) 为准：`FormulaValidationStatus`（字段 `Formula.ValidationStatus`）。历史文档中的 `FormulaStatus` 为同一概念的旧称，**新文档一律用 `FormulaValidationStatus`**。
 
 | 值 | 英文 | 中文 | 说明 |
 |----|------|------|------|

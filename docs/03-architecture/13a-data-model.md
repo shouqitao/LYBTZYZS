@@ -1,9 +1,11 @@
-# LYBTZYZS 数据模型
-> 版本: v1.0 | 日期: 2026-08-20
+# 数据模型（视图层速查）
+> 版本: v1.1 | 日期: 2026-09-17
 
-> 由 [13-project-master-plan.md §二](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03），内容原样迁移，不改变定义。
+> **用户速览**：核心实体 + 状态枚举的一屏压缩表，**不是权威定义**。
 >
-> **权威定义**：实体字段/状态机/计算属性等详细定义见 [04-data-model.md](04-data-model.md)。
+> **权威定义**：实体字段/状态机/计算属性等详细定义见 [04-data-model.md](04-data-model.md)（SSOT，见 [02-ssot-architecture.md](../00-governance/02-ssot-architecture.md)）。
+>
+> 由 [13-project-master-plan.md §二](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03）。
 
 ## 2.1 核心实体（Shared/LYBT.Entities）
 

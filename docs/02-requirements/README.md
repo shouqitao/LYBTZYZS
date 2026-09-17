@@ -39,7 +39,7 @@
 | 管理药材库（增删改、批量导入） | [05-herbs.md](05-herbs.md) | US-HERB-001~013 |
 | 管理验方库（创建、验证、共享） | [06-formulas.md](06-formulas.md) | US-FORM-001~013 |
 | 管理用户（增删改、重置密码） | [03-users.md](03-users.md) | US-USER-001~012 |
-| 看报表（收入、问诊量、药材消耗） | [10-reports.md](10-reports.md) | US-REPORT-001~003 |
+| 看报表（收入、就诊量、药材消耗） | [10-reports.md](10-reports.md) | US-REPORT-001~003 |
 | 系统配置 | [11b-configuration.md](11b-configuration.md) | US-CFG-001~004 |
 
 ### 🔐 所有人
@@ -63,7 +63,7 @@
 | 6 | [医案管理](07-medical-cases.md) | ⭐ 核心——诊断+处方+状态流转 | 19 | ✅ 核心完成 |
 | 7 | [挂号管理](08-registration.md) | 挂号排队、接诊、退号 | 8 | ✅ 全部完成 |
 | 8 | [处方打印](09-printing.md) | A5/A4 打印、PDF 导出 | 4 | ✅ 核心完成 |
-| 9 | [报表管理](10-reports.md) | 收入/问诊/药材统计 | 3 | ✅ 全部完成 |
+| 9 | [报表管理](10-reports.md) | 收入/就诊/药材统计 | 3 | ✅ 全部完成 |
 | 10 | [Shell 平台](11a-shell.md) | 启动、导航、模块加载 | 14 | ✅ 核心完成 |
 | 11 | [配置管理](11b-configuration.md) | 系统配置读写 | 4 | ✅ 全部完成 |
 | 12 | [错误处理](11c-error-handling.md) | 友好错误提示 | 8 | ✅ 全部完成 |

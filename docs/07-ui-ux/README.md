@@ -21,6 +21,20 @@
 
 > 计数口径（新增 4 份 UX 文档统一声明）：View **30** / Control **33** / Dialog **7** / Root 1（`Shell/App.xaml`）；ViewModel **55**；XAML 合计 **82** = 视图 71 + 资源/模板 11。
 
+## 阅读顺序（职责边界）
+
+| 你要… | 先读 | 再读 |
+|-------|------|------|
+| 改视觉/主题/布局 | [desktop-design-spec.md](desktop-design-spec.md) + [desktop-design-tokens.md](desktop-design-tokens.md) | [desktop-layout-framework.md](desktop-layout-framework.md) |
+| 改页面功能/权限入口 | [desktop-ui-requirements.md](desktop-ui-requirements.md) | [desktop-ui-detailed-design.md](desktop-ui-detailed-design.md)（页面规格/API 映射） |
+| 改交互/键盘/对话框 | [desktop-ux-interaction-spec.md](desktop-ux-interaction-spec.md) | design-spec §6/§9 |
+| 改错误提示 | [desktop-ux-error-handling.md](desktop-ux-error-handling.md) | — |
+| 改加载/防重入 | [desktop-ux-loading-states.md](desktop-ux-loading-states.md) | — |
+| 改 ViewModel 分层 | [viewmodel-layer-design.md](viewmodel-layer-design.md) | 架构侧 [03-architecture/02-desktop.md](../03-architecture/02-desktop.md) |
+| 理解角色旅程 | [desktop-ux-user-journeys.md](desktop-ux-user-journeys.md) | — |
+
+> **SSOT 规则**：同一视觉/交互定义只在一处维护；spec 与 ux-* 重叠时以更专的文件为准并在 spec 标注链接，不复制正文。
+
 ---
 
-*文档版本: v1.2 | 最后更新: 2026-09-14*
+*文档版本: v1.3 | 最后更新: 2026-09-17*

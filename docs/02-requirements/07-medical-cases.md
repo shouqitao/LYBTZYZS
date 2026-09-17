@@ -1,5 +1,7 @@
 # 医案管理 (MedicalCase Management)
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-17
+
+> **TL;DR**：医案 = 系统唯一聚合根（Consultation 中医诊断 + Prescription 处方）。医生接诊时**原子创建** MedicalCase(Active)+Registration(InProgress)；同一患者仅一个 Active/Suspended 医案；取消 = 物理删除；完成次日锁定编辑。**权威**：本文业务规则 SSOT；实体字段见 [04-data-model.md](../03-architecture/04-data-model.md)；API 见 [04-api-reference/06-medical-cases.md](../04-api-reference/06-medical-cases.md)。
 
 > 医案（MedicalCase）是中医诊疗的完整记录，涵盖一次就诊从创建到归档的完整生命周期，是**系统唯一的聚合根**：聚合 Consultation（中医诊断）和 Prescription（处方），所有写操作通过聚合根统一入口完成。一个医案包含患者信息、主治医生、中医诊断（含四诊结果与辨证分析）和处方（含药材列表与价格计算）。
 >

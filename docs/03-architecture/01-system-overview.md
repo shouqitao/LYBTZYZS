@@ -149,7 +149,7 @@ docs/                                # 文档
 4. **映射单一**（见 [ADR-0011](decisions/0011-mapperly-migration.md) + A-18 P1-4）：Mapperly 编译期映射，Target 策略
 5. **共享单源**：公共类型只在 Shared 定义一次（Gender 样板），禁止两端重复
 6. **拒绝屎山**（用户红线）：发现错误直接重写，不做兼容层
-7. **Status vs State 语义边界**（2026-08-08 A-26 定案）：**域内持久化状态用 `Status` 枚举**（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaStatus`/`CommonStatus`，存于 `Shared.Models/Enums/`）；**客户端 UI/会话状态用 `State` 枚举**（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止域状态用 State、会话状态用 Status 的混用
+7. **Status vs State 语义边界**（2026-08-08 A-26 定案）：**域内持久化状态用 `Status` 枚举**（`MedicalCaseStatus`/`RegistrationStatus`/`FormulaValidationStatus`/`CommonStatus`，存于 `Shared.Models/Enums/`）；**客户端 UI/会话状态用 `State` 枚举**（`WorkspaceEditState`/`EditState`/`AuthState`/`SessionState`/`TokenLifecycleState`）。禁止域状态用 State、会话状态用 Status 的混用
 
 ## 技术栈全景
 

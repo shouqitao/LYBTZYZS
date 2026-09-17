@@ -1,9 +1,11 @@
 # 报表管理 (Reports)
 > 版本: v1.0 | 日期: 2026-08-20
 
-> 报表模块为诊所经营提供数据统计能力，基于现有业务数据（`MedicalCase` / `Registration` / `Prescription` / `Herb`）聚合计算，不引入独立数据采集链路。v1.0 范围聚焦三大主题：收入汇总（挂号费 / 药费 / 总收入）、就诊统计（总问诊数 + 按医生分组）、药材使用排行（使用次数 / 总用量）。
+> 报表模块为诊所经营提供数据统计能力，基于现有业务数据（`MedicalCase` / `Registration` / `Prescription` / `Herb`）聚合计算，不引入独立数据采集链路。v1.0 范围聚焦三大主题：收入汇总（挂号费 / 药费 / 总收入）、就诊统计（总就诊数 + 按医生分组）、药材使用排行（使用次数 / 总用量）。
 >
 > **权限权威**：完整权限矩阵以 [04-permissions.md](../01-product/04-permissions.md) 为准，本模块 US 中策略名为摘要（`DoctorOrAdmin`）。
+>
+> **术语**：统计口径为**就诊/接诊次数**（聚合 Registration/MedicalCase），**不是** Consultation 实体（中医诊断）。API 字段名 `consultations` 保留英文契约；中文叙述用「就诊」。（见 [03-glossary.md](../01-product/03-glossary.md) 铁律）
 >
 > | 我是… | 我能… |
 > |-------|-------|
@@ -15,7 +17,7 @@
 
 **时间维度**：每个端点接受可选 `startDate` / `endDate`（ISO 日期，默认当日），向后兼容现有调用，支持日 / 周 / 月 / 任意区间查询。复用同一聚合逻辑，不新增端点、不新增主题。
 
-**医生工作量**：由 US-REPORT-002 的 `byDoctor`（医生姓名 + 问诊数）覆盖，不单列「医生工作量报表」。
+**医生工作量**：由 US-REPORT-002 的 `byDoctor`（医生姓名 + 就诊数）覆盖，不单列「医生工作量报表」。
 
 **v1.0 克制范围（不做）**：趋势分析、可视化仪表盘、库存周转、跨期对比、导出报表文件。这些属后续版本演进项，v1.0 维持 3 端点 + 时间范围参数的最简形态。（注：趋势/绩效分析已被代码超越实现——见 US-REPORT-004）
 
@@ -80,20 +82,20 @@
 **优先级**: Must
 **状态**: ✅ 已实现（startDate>endDate→400）
 
-**作为** 管理员，**我想要** 按时间范围查询就诊统计（总问诊数 + 各医生问诊数），**以便** 掌握诊所流量与医生工作量。
+**作为** 管理员，**我想要** 按时间范围查询就诊统计（总就诊数 + 各医生就诊数），**以便** 掌握诊所流量与医生工作量。
 
 **验收标准**:
 
 - [ ] 支持可选查询参数 `startDate`、`endDate`（ISO 日期，缺省默认当日）
-- [ ] 返回 `totalCount`（区间内问诊总数）
-- [ ] 返回 `byDoctor` 数组：每项含 `doctorName`（医生姓名）+ `count`（问诊数）
+- [ ] 返回 `totalCount`（区间内就诊总数）
+- [ ] 返回 `byDoctor` 数组：每项含 `doctorName`（医生姓名）+ `count`（就诊数）
 - [ ] `byDoctor` 按 `count` 降序排列
 - [ ] 权限策略 `DoctorOrAdmin`
 - [ ] 不传参数时行为与历史完全一致（向后兼容）
 
 **业务规则**:
 
-1. 问诊数来源：`Registration` / `MedicalCase` 就诊记录聚合。
+1. 就诊数来源：`Registration` / `MedicalCase` 就诊记录聚合。
 2. **医生工作量覆盖**：本 US 的 `byDoctor` 即满足医生工作量统计需求，不单列独立报表。
 3. 时间范围参数已实现（缺省默认当日）。
 
@@ -133,12 +135,12 @@
 **优先级**: Could
 **状态**: 🧲 v2.0 推迟（B4 决策 I-3：趋势/绩效 5 端点推迟到 v2.0；`ReportsHomeView` 仅消费 3/8 日统计，核心诊疗完整，属锦上添花）
 
-**作为** 管理者，**我想要** 查看收入/问诊趋势、医生绩效、热门药材与患者流量分析，**以便** 了解业务变化趋势并优化资源配置。
+**作为** 管理者，**我想要** 查看收入/就诊趋势、医生绩效、热门药材与患者流量分析，**以便** 了解业务变化趋势并优化资源配置。
 
 **验收标准**:
 
 - [ ] GET `/api/v1/reports/trend/income`（收入趋势，默认最近 30 天）
-- [ ] GET `/api/v1/reports/trend/consultations`（问诊趋势）
+- [ ] GET `/api/v1/reports/trend/consultations`（就诊趋势，字段名 `consultations`=就诊次数）
 - [ ] GET `/api/v1/reports/doctor-performance`（医生绩效）
 - [ ] GET `/api/v1/reports/herbs/ranking`（热门药材排行）
 - [ ] GET `/api/v1/reports/patient-flow`（患者流量）

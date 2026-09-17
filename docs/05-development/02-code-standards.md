@@ -263,7 +263,7 @@ if (ownershipError != null) return ownershipError;
 
 ## 常见违规与陷阱
 
-> 完整的常见陷阱清单见 `AGENTS.md` 中的 "Common Pitfalls" 章节。以下列出最关键的几项。
+> 完整的常见陷阱清单见项目 skill：`.mimocode/skills/lybtzys-coder-rules/SKILL.md` 的 **Common Pitfalls** 章节（`AGENTS.md` 仅作入口索引，不承载完整清单）。以下列出最关键的几项。
 
 **1. `FindAsync` 与软删除过滤器冲突**
 `FindAsync` 在实体不在 ChangeTracker 中时会应用全局查询过滤器 (`IsDeleted`)，导致查不到已软删除的记录。恢复操作需使用 `IgnoreQueryFilters()`:

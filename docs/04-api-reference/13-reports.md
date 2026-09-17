@@ -14,7 +14,7 @@
 | 方法 | 路径 | 权限 | 说明 |
 |------|------|------|------|
 | GET | `/reports/daily/income` | Doctor, Admin, SuperAdmin | 收入汇总（支持时间范围，默认当日） |
-| GET | `/reports/daily/consultations` | Doctor, Admin, SuperAdmin | 问诊统计（支持时间范围，默认当日） |
+| GET | `/reports/daily/consultations` | Doctor, Admin, SuperAdmin | 就诊统计（支持时间范围，默认当日；字段 `consultations`=就诊次数，非 Consultation 实体） |
 | GET | `/reports/daily/herbs` | Doctor, Admin, SuperAdmin | 药材使用排行（支持时间范围，默认当日） |
 
 > **公共查询参数**：三个端点均接受可选 `startDate` / `endDate`（ISO 日期，如 `2026-06-01`），缺省默认当日，向后兼容。区间为闭区间，`startDate > endDate` 返回 400。
@@ -71,7 +71,7 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/income?startDate=2026-06
 
 ## GET /reports/daily/consultations
 
-查询问诊统计（支持时间范围，默认当日），包括总问诊数和按医生分组的统计。
+查询就诊统计（支持时间范围，默认当日），包括总就诊数和按医生分组的统计。
 
 - **权限**: Doctor / Admin / SuperAdmin
 - **查询参数**: 同 [`/reports/daily/income`](#get-reportsdailyincome)（`startDate` / `endDate`，可选，默认当日）
@@ -98,10 +98,10 @@ curl -X GET "http://localhost:5000/api/v1/reports/daily/income?startDate=2026-06
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `totalCount` | int | 问诊总数 |
-| `byDoctor` | `DoctorCountDto[]` | 按医生分组的问诊统计 |
+| `totalCount` | int | 就诊总数 |
+| `byDoctor` | `DoctorCountDto[]` | 按医生分组的就诊统计 |
 | `byDoctor[].doctorName` | string | 医生姓名 |
-| `byDoctor[].count` | int | 该医生问诊数 |
+| `byDoctor[].count` | int | 该医生就诊数 |
 
 **curl 示例：**
 

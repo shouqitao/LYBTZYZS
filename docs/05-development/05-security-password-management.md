@@ -172,7 +172,7 @@ $2a$11$0IviQQSC517yFyWB47YDh.P.mHetOQwFkvgdMtl8UFWn6v4iKKJ8e
 
 ## Identity 集成约束（铁律）
 
-> 以下约束源自 ASP.NET Core Identity 集成层，违反将导致运行时错误或安全漏洞。根 `AGENTS.md`「Common Pitfalls」同步。
+> 以下约束源自 ASP.NET Core Identity 集成层，违反将导致运行时错误或安全漏洞。与项目 skill `.mimocode/skills/lybtzys-coder-rules/SKILL.md`「Common Pitfalls → Identity/Auth」同步。
 
 ### 1. DI 注册顺序：`AddIdentity()` 必须在 `AddAuthentication()` 前
 

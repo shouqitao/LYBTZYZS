@@ -1,7 +1,9 @@
 # MedicalCase 模块设计
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-17
 
-> 复杂度: 8/10 | 状态: 草稿
+> **定位**：架构侧**摘要**（模块内服务拆分/端点/违规项）。**业务规则 SSOT 不在本文**——权威见 [02-requirements/07-medical-cases.md](../../02-requirements/07-medical-cases.md)；实体/状态机见 [04-data-model.md](../04-data-model.md)；API 契约见 [04-api-reference/06-medical-cases.md](../../04-api-reference/06-medical-cases.md)。
+>
+> 复杂度: 8/10 | 状态: 摘要（业务细则以需求文档为准）
 
 ## 概述
 

@@ -1,5 +1,5 @@
 # Architecture
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-17
 
 ## Product Overview
 
@@ -41,7 +41,7 @@
 ├─────────────────────────────────────────────────┤
 │  Database (SQL Server / LocalDB)                │
 └─────────────────────────────────────────────────┘
-```text
+```
 
 **依赖方向**: Shell → Roles → Modules → Infrastructure → Foundation → Contracts
 
@@ -78,10 +78,11 @@
 
 ## Known Risks / Assumptions
 
-1. **C1 双轨模块加载** — LoginCoordinator 硬编码旁路已确认为 bug，待修复（见 Shell Phase2 Design）
-2. **Token 本地 1 年** — 本地模式 JWT 有效期 1 年，无撤销机制（内网风险低）
-3. **Sync 延期** — v1.0 本地→远程数据同步被延期到 v2.0，本地为数据孤岛
-4. **审计日志缺失** — 医疗审计日志实体已删，待补回（D1 决策）
+> **唯一权威**：当前 Build/测试/已知问题见 [13c-current-status.md](13c-current-status.md)。本节仅列架构级长期假设，不复制问题清单。
+
+1. **Token 本地有效期** — 本地模式 JWT 有效期较长、撤销机制有限（内网风险低，见 [09-security-architecture.md](09-security-architecture.md)）
+2. **Sync 延期** — v1.0 本地→远程数据同步推迟至 v2.0，本地为数据孤岛（见 [17-sync-protocol.md](17-sync-protocol.md)）
+3. **公网 HTTPS** — 部署若暴露公网需 HTTPS（见 [00-governance/tech-debt.md](../00-governance/tech-debt.md) TD-004）
 
 ## Related Documents
 
@@ -93,21 +94,10 @@
 - `03-architecture/12-permissions-matrix.md` — 权限矩阵
 - `06-operations/09-variables-secrets.md` — 配置与密钥
 - `05-development/04-testing.md` — 测试策略与覆盖
-- ~~`docs/compose/specs/2026-06-28-shell-phase2-design.md`~~（已归档）— Shell Phase2 设计，见 [11a-shell.md](../02-requirements/11a-shell.md)
-- ~~`docs/compose/specs/2026-06-28-prd-code-reconciliation.md`~~（已归档）— PRD-代码对账，见 [13-traceability-matrix.md](../02-requirements/13-traceability-matrix.md)
+- `02-requirements/11a-shell.md` — Shell/平台壳（历史 Shell Phase2 设计已归档）
+- `02-requirements/13-traceability-matrix.md` — 需求追溯矩阵
+- `03-architecture/decisions/README.md` — ADR 索引
 
-<!-- P3-1 29 vs 30：sln 29业务+1 Tools=30概念项目，文档29不含Tools，已在13c-current-status标注 -->
+---
 
-<!-- P3-10 双真相互补等28项已归档 Good First Issues，见 architecture-deep-review P3全表 -->
-
-<!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
-
-<!-- F4 P3 batch: P3-3-8/3-9/4-6/4-9/5-2 已评估 -->
-
-<!-- F5 P3 batch: P3-5-5/5-6/6-2/6-6/6-7 已评估 -->
-
-<!-- F6 P3 batch: P3-7-... 已评估 -->
-
-<!-- F7 P3 batch: remaining P3 已评估 -->
-
-<!-- F8 P3 final 3 已评估，P2+P3 103项全部闭环 -->
+*文档版本: v1.1 | 最后更新: 2026-09-17 | 可读性审查：修复代码围栏、风险列表指向 13c、清理过程注释*

@@ -39,7 +39,7 @@
 
 | 目录 | 内容 |
 |------|------|
-| [decisions/README.md](decisions/README.md) | ADR 架构决策记录（17 条，0001~0015 + 0017~0018；0016 预留跳号） |
+| [decisions/README.md](decisions/README.md) | ADR 架构决策索引（编号 0001–0030，0016/0025 跳号 + 命名 ADR 2 份） |
 | [modules/README.md](modules/README.md) | 模块设计文档索引（10 个模块） |
 | [modules/auth.md](modules/auth.md) | 认证授权模块 |
 | [modules/users.md](modules/users.md) | 用户管理模块 |

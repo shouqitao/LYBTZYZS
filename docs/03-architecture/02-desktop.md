@@ -1,7 +1,7 @@
 # 桌面端架构
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-17
 
-> ⚠️ 本文档超 400 行（857 行），建议拆分。
+> ⚠️ 本文档超 400 行（约 870 行）。**TL;DR**：WPF + Prism.DryIoc + CommunityToolkit.Mvvm；Shell→Roles→Modules→Core 四层；双模式经 `SwitchingApiClient` 切 Remote Refit / Local HttpClient。**权威**：本文为 Desktop 架构当前态；业务规则见 `02-requirements/`，进程级 ViewModel 设计见 `07-ui-ux/viewmodel-layer-design.md`。建议优先阅读「概述 + 架构图 + 层结构」，细节按需检索。
 
 ## 概述
 

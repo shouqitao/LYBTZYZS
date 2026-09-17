@@ -51,12 +51,14 @@ FirstRunSetup 向导 → 配置远程 URL 或选择本地模式
 
 ## 快速开始
 
+> 详细步骤（LocalDB/密码注入/端口/FAQ）见 **[docs/05-development/01-setup.md](docs/05-development/01-setup.md)**。需 **Windows** + VS 2022「.NET 桌面开发」工作负载。
+
 ```bash
 git clone https://gitee.com/shouqitao/LYBTZYZS.git
 cd LYBTZYZS
-dotnet build LYBTZYZS.sln
+dotnet build LYBTZYZS.sln --no-incremental   # 门禁：0 错误 0 警告
 
-# 数据库迁移
+# 数据库迁移（远程模式）
 dotnet ef database update --project src/Server/Core/LYBT.Infrastructure --startup-project src/Server/Services/LYBT.WebAPI
 
 # 运行测试
@@ -64,6 +66,8 @@ dotnet test tests/LYBT.Tests.Server/
 dotnet test tests/LYBT.Tests.Desktop/
 dotnet test tests/LYBT.Tests.Architecture/
 ```
+
+本地模式首启需注入默认密码（见 setup 文档）：`DefaultPasswords__SysAdminPassword` / `DefaultPasswords__NewUserPassword`。
 
 ## 技术栈
 
@@ -81,46 +85,45 @@ dotnet test tests/LYBT.Tests.Architecture/
 
 ## 架构
 
-**模块化单体 + MediatR CQRS**：每个业务模块（Patients、Herbs、MedicalCase 等）是自包含的垂直切片，包含 Domain / Application / Infrastructure 三层。模块间通过领域事件（`IDomainEvent`）或 SharedKernel 接口（`ICrossModuleService`）通信，编译时强制隔离。
+**模块化单体 + 分层**（当前态权威见 [docs/03-architecture/00-architecture-summary.md](docs/03-architecture/00-architecture-summary.md)）：
+
+- **Server**：Controller → Service → Repository → DbContext（3-Layer）；部分模块写操作走 MediatR Command/Handler，读操作 Service 直查
+- **Desktop**：WPF + Prism（Shell → Roles → Modules → Core）+ CommunityToolkit.Mvvm
+- **双模式**：远程 WebAPI（SQL Server）+ 本地嵌入式 LocalWebAPI（LocalDB）；切换 = URL 变更
+- **DDD**：`MedicalCase` 为唯一聚合根（Consultation + Prescription）
+- **模块隔离**：P07 模块间禁止直接引用；P08 跨模块走接口；LocalWebAPI 为唯一白名单例外（ADR-0010/0023）
 
 ```
 src/
 ├── Server/
-│   ├── Core/
-│   │   ├── SharedKernel/    # IDomainEvent, IOutboxService, IAggregateRoot, ICrossModuleService
-│   │   ├── Infrastructure/  # AppDbContext, BaseRepository<T>, migrations
-│   │   └── Entities/        # 共享实体
-│   ├── Modules/
-│   │   ├── LYBT.Module.Patients/
-│   │   │   ├── Domain/      # Patient (IAggregateRoot), Domain Events
-│   │   │   ├── Application/ # Commands/, Queries/, Validators/, Mappers/
-│   │   │   ├── Infrastructure/ # PatientsDbContext, PatientRepository
-│   │   │   └── PatientsModule.cs
-│   │   ├── LYBT.Module.Herbs/   # 同上结构
-│   │   ├── LYBT.Module.MedicalCase/ # DDD 聚合根，CQRS
-│   │   └── ... (Auth, Users, Formula, Registration, Sync, Reports)
-│   └── Services/            # WebAPI (Controllers, Program.cs)
-├── Client/
-│   └── Desktop/
-│       ├── Core/       # Contracts, Foundation, Infrastructure, LocalData, Printing, CardReader
-│       ├── Modules/    # Auth, Patients, Herbs, Formula, MedicalCase, Registration, Users, Reports
-│       ├── Roles/      # Admin, Clinical, Receptionist workspaces
-│       ├── Shell/      # App entry, MainWindow, Login, Navigation
-│       └── LocalWebAPI/# Embedded ASP.NET Core for local mode
-├── Shared/             # DTOs, Validators, Configuration, ExceptionHandling
-└── Tests/              # Server, Desktop, Architecture
+│   ├── Core/                 # Entities, Infrastructure (DbContext, BaseRepository, migrations)
+│   ├── Modules/              # LYBT.Module.*（业务模块，模块间零直接引用）
+│   └── Services/LYBT.WebAPI/ # ASP.NET Core Controllers
+├── Client/Desktop/
+│   ├── Core/                 # Contracts, Foundation, Infrastructure, Controls, Printing, ...
+│   ├── Modules/              # Auth, Users, Patients, Catalog, MedicalCase, Registration, Reports
+│   ├── Roles/                # Admin, Clinical 工作台
+│   ├── Shell/                # 应用入口 / MainWindow / 登录 / 导航
+│   └── LocalWebAPI/          # 本地模式嵌入式 API（:5300）
+├── Shared/                   # Entities, Models/DTO, Configuration, Logging, ExceptionHandling
+└── tests/                    # Server / Desktop / Architecture
 ```
+
+> 模块内目录结构与历史演进详见 [docs/03-architecture/](docs/03-architecture/README.md)。源码树中的 `Domain/Application/Infrastructure` 垂直切片为部分模块内部组织方式，**不以本 README 为架构 SSOT**。
 
 ## 文档
 
 | 文档 | 内容 |
 |------|------|
-| [产品文档](docs/01-product/) | 愿景、角色画像、术语表 |
-| [需求文档](docs/02-requirements/) | PRD + 10 模块 141 User Stories |
-| [架构文档](docs/03-architecture/) | 系统架构、数据模型、双模式设计 |
+| **[文档中心](docs/README.md)** | 总入口：AI 查询指南、按角色导航、目录索引 |
+| [产品文档](docs/01-product/) | 愿景、角色画像、术语表、权限矩阵 |
+| [需求文档](docs/02-requirements/) | PRD + 模块 User Stories（数量以 [docs/02-requirements/README.md](docs/02-requirements/README.md) 为准） |
+| [架构文档](docs/03-architecture/) | 系统架构、数据模型、双模式、ADR、项目总账 |
 | [API 参考](docs/04-api-reference/) | 远程 + 本地端点文档 |
-| [开发指南](docs/05-development/) | 编码规范、测试标准 |
-| [运维文档](docs/06-operations/) | 部署、配置、监控 |
+| [开发指南](docs/05-development/) | 环境搭建、编码规范、测试 |
+| [运维文档](docs/06-operations/) | 部署、配置、监控、备份 |
+| [UI/UX](docs/07-ui-ux/) | 桌面端设计规范与 UX 约定 |
+| [治理规范](docs/00-governance/) | 命名、SSOT、技术引入治理 |
 
 ## Git
 

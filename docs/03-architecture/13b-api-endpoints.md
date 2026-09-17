@@ -130,11 +130,11 @@
 | 方法 | 端点 | 功能 | 权限 |
 |------|------|------|------|
 | GET | /daily/income | 日收入统计 | Doctor/Admin |
-| GET | /daily/consultations | 日问诊统计 | Doctor/Admin |
+| GET | /daily/consultations | 日就诊统计（字段名保留 `consultations`） | Doctor/Admin |
 | GET | /daily/herbs | 日药材使用统计 | Doctor/Admin |
 | GET | /trend/income | 收入趋势（granularity=day/week/month，默认最近 30 天） | Doctor/Admin |
-| GET | /trend/consultations | 问诊趋势（granularity=day/week/month，默认最近 30 天） | Doctor/Admin |
-| GET | /doctor-performance | 医生绩效（问诊数/挂号费/药费/平均处方金额） | Doctor/Admin |
+| GET | /trend/consultations | 就诊趋势（granularity=day/week/month，默认最近 30 天） | Doctor/Admin |
+| GET | /doctor-performance | 医生绩效（就诊数/挂号费/药费/平均处方金额） | Doctor/Admin |
 | GET | /herbs/ranking | 热门药材排行（top 默认 10） | Doctor/Admin |
 | GET | /patient-flow | 患者流量（新/回头患者，granularity=day/week/month，默认最近 30 天） | Doctor/Admin |
 
