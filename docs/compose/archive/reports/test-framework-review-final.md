@@ -1,17 +1,23 @@
-# 测试框架 30 轮审查 — 最终报告
+# 测试框架 30 轮审查 — 最终报告（已归档）
 
-> 30 轮精华汇总 + 改进路线图 + 优先级排序
-> 报告集: docs/compose/reports/test-framework-review-R*.md (30 份)
+> **归档说明**: 本报告已于 2026-09-17 归档。原始文件路径: `docs/compose/reports/test-framework-review-final.md`
+> **归档原因**: 测试框架已重建（`rebuild-sql-integration-tests.md`），结论已落地为 `docs/05-development/04-testing.md`
+> **原始日期**: 2026-08-21 | **审查轮次**: 30 轮
 
-## 执行摘要
+## 归档内容摘要
+
+### 执行摘要
+
 **结论: 测试框架合理** — 三层清晰、工具得当、约束即文档、失败非设计、差距 <5%。
 
-## 全景
+### 全景
+
 - **规模**: Architecture 97 用例全绿，Desktop 82 文件 ~25K LOC (5 失败 STA/环境)，Server 737 用例 (8 失败环境)。
 - **结构**: Unit 85% / Integration 10% / Architecture 5% 金字塔健康。
 - **工具**: xUnit + FluentAssertions + NSubstitute + NetArchTest + Kestrel Fake + EF InMemory — 业界主流且平衡。
 
-## 30 轮精华
+### 30 轮精华
+
 | 阶段 | 轮 | 核心发现 |
 |------|----|----------|
 | 摸底 R1-R6 | R1 地图清晰；R2/R3 Mock 适中；R4 Integration 模式标准；R5 Architecture 97 约束；R6 6 问题 |
@@ -20,7 +26,8 @@
 | 方案 R19-R24 | R19 差距 <5%；R20 Fake 优化；R21 Builder；R22 CI 并行；R23 分层纯化；R24 4 方向 |
 | 结论 R25-R30 | R25 2高4中；R26 短期3.5h；R27 中期3.5d；R28 长期 Q1-Q3；R29 合理；R30 路线图 |
 
-## 问题清单（按严重度）
+### 问题清单（按严重度）
+
 | # | 问题 | 级 |
 |---|------|----|
 | P1-01 | Workflow STA 4 失败 | 高 |
@@ -28,20 +35,10 @@
 | P2-01 | Local/Remote 重复 4 文件 | 中 |
 | P2-02 | Mock 过重 1 文件 | 中 |
 | P2-03 | Shell/Registration 盲区 | 中 |
-| P3-01 | 命名单文件 | 低 |
 
-## 改进路线图
-**短期 (1 周, 3.5h)**: S-01 [StaFact] + S-02 环境 + S-03 迁移
-**中期 (1-2 月, 3.5d)**: M-01 合并 8→4 + M-02 Fake + M-03 Builder + M-04 覆盖
-**长期 (季度)**: Q1 CI 并行，Q2 Testcontainers，Q3 约束 2.0
+## 后续替代文档
 
-## 优先级排序
-1. S-01 STA (0.5h)
-2. S-02 环境 (2h)
-3. M-01 合并 (1d)
-4. M-02 Fake (0.5d)
-
-## 最终结论
-> **测试框架是否合理？ — 合理。** 设计成熟，质量高，短期即可全绿，中期可再提 30% 可维护性。建议保留现有三层与工具链，按路线图演进。
-
-*30 份独立报告已按 test-framework-review-RXX.md 产出，本文件为最终汇总。*
+- **测试指南**: [`docs/05-development/04-testing.md`](../../05-development/04-testing.md)
+- **SQL 集成测试基建重建**: [`rebuild-sql-integration-tests.md`](../specs/rebuild-sql-integration-tests.md)
+- **测试覆盖计划**: [`test-coverage-plan.md`](../plans/test-coverage-plan.md)
+- **E2E 集成测试计划**: [`e2e-integration-test-plan.md`](../plans/e2e-integration-test-plan.md)

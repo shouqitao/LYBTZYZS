@@ -42,5 +42,5 @@
 
 ## 关联
 
-- `docs/compose/reports/td003-architecture-review.md`（完整 Server/Local 14 维度差异与 A/A′/C/D 评估，推荐 D）
+- `docs/compose/archive/reports/td003-architecture-review.md`（完整 Server/Local 14 维度差异与 A/A′/C/D 评估，推荐 D）
 - `phase2-migration-sequencing.md` `健康度 A-(88) → A(90+)`（SharedHost 收敛后）

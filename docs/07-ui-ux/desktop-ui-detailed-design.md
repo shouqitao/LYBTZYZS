@@ -543,7 +543,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
 
 ## 附录 A：登录后统一框架（已确认）
 
-> 决策依据：`docs/compose/reports/ui-layout-framework-decision.md`（12项功能需求对照，方案2得...[truncated]
+> 决策依据：`docs/compose/archive/reports/ui-layout-framework-decision.md`（12项功能需求对照，方案2得...[truncated]
 分11/12，方案1=8/12，方案3=8/12）
 
 ### A.1 框架结构

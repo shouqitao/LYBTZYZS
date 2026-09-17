@@ -1,6 +1,6 @@
 # LYBTZYZS 设计优化执行计划
 
-> **来源**: `docs/compose/reports/design-review-2026-08-21.md` 1383 行（R1-R58 全部 304 项去重）+ `design-review-summary-2026-08-21.md` + `src/AGENTS.md` + `docs/03-architecture/13-project-master-plan.md` v2.1  
+> **来源**: `docs/compose/archive/reports/design-review-2026-08-21.md` 1383 行（R1-R58 全部 304 项去重）+ `design-review-summary-2026-08-21.md` + `src/AGENTS.md` + `docs/03-architecture/13-project-master-plan.md` v2.1  
 > **生成时间**: 2026-08-21 Phase2 后  
 > **原则**: 先统一后优化 · 先安全后功能 · 每 Sprint 可发布 · 测试先行 · ADR 先行  
 > **门禁**: 每 Sprint 结束 `dotnet build LYBTZYZS.sln --no-incremental` 0 错误 0 警告 + `dotnet test tests/LYBT.Tests.Architecture --no-build` 91/91 + `tests/LYBT.Tests.Server` 已知 8 失败不阻塞
