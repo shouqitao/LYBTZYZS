@@ -1,5 +1,8 @@
+using System.Security.Claims;
 using LYBT.Entities.Registrations;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Data.Configurations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Registrations.Infrastructure;
@@ -10,11 +13,53 @@ namespace LYBT.Module.Registrations.Infrastructure;
 /// </summary>
 public class RegistrationDbContext : DbContext
 {
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+
     /// <summary>挂号集</summary>
     public DbSet<Registration> Registrations { get; set; } = null!;
 
     public RegistrationDbContext(DbContextOptions<RegistrationDbContext> options) : base(options)
     {
+    }
+
+    public RegistrationDbContext(
+        DbContextOptions<RegistrationDbContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    /// <summary>
+    /// R-12：模块级 DbContext 接入审计扩展（S-5）——与 AppDbContext 同构。
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc cref="SaveChangesAsync(CancellationToken)"/>
+    public override int SaveChanges()
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return base.SaveChanges();
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        try
+        {
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+                return userId;
+        }
+        catch
+        {
+            // 非 HTTP 上下文（后台/测试）无用户归属
+        }
+        return null;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,7 +69,7 @@ public class RegistrationDbContext : DbContext
         // 复用 Infrastructure 的实体配置类（与 AppDbContext 保持一致）
         modelBuilder.ApplyConfiguration(new RegistrationConfiguration());
 
-        // 软删除全局查询过滤器（与 AppDbContext ApplyOptimizations 保持一致）
-        modelBuilder.Entity<Registration>().HasQueryFilter(e => !e.IsDeleted);
+        // 软删除全局查询过滤器（统一走 Infrastructure 扩展，与 AppDbContext ApplyOptimizations 保持一致）
+        modelBuilder.ApplySoftDeleteFilters<Registration>();
     }
 }

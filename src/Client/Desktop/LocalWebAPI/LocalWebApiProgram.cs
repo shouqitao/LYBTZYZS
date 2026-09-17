@@ -23,7 +23,6 @@ using LYBT.Module.Reports;
 using LYBT.Shared.Configuration.Options.Common;
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.Logging.Management;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Utilities.Security;
 using MediatR;
@@ -166,25 +165,29 @@ public static class LocalWebApiProgram
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            // 结构化 429（与 Remote ApiServiceCollectionExtensions.OnRejected 同构）
+            // R-15: 429 统一 ProblemDetails（RFC 7807 / X-3）——与 Remote OnRejected 同构
             options.OnRejected = async (context, cancellationToken) =>
             {
-                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                context.HttpContext.Response.ContentType = "application/json";
+                var httpContext = context.HttpContext;
+                var retryAfter = context.Lease.TryGetMetadata(
+                    System.Threading.RateLimiting.MetadataName.RetryAfter, out var ra)
+                    ? ra.TotalSeconds
+                    : 60;
 
-                var response = ApiResponse.CreateFail(
-                    ErrorMessages.Get(ErrorCode.RateLimitExceeded),
-                    new
+                httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                httpContext.Response.Headers.RetryAfter = ((int)retryAfter).ToString();
+
+                await Results.Problem(
+                    statusCode: StatusCodes.Status429TooManyRequests,
+                    title: "Too Many Requests",
+                    detail: ErrorMessages.Get(ErrorCode.RateLimitExceeded),
+                    instance: httpContext.Request.Path,
+                    extensions: new Dictionary<string, object?>
                     {
-                        errorCode = ErrorCode.RateLimitExceeded.ToFormattedString(),
-                        retryAfter = context.Lease.TryGetMetadata(
-                            System.Threading.RateLimiting.MetadataName.RetryAfter, out var retryAfter)
-                            ? retryAfter.TotalSeconds
-                            : 60
-                    });
-                response.RequestId = context.HttpContext.TraceIdentifier;
-
-                await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+                        ["errorCode"] = ErrorCode.RateLimitExceeded.ToFormattedString(),
+                        ["retryAfter"] = retryAfter
+                    })
+                    .ExecuteAsync(httpContext, cancellationToken);
             };
 
             // 登录/刷新：按来源 IP 分区，5 次/分钟（与 Remote 的 Login 策略同维度）

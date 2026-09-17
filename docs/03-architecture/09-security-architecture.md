@@ -438,7 +438,7 @@ stateDiagram-v2
 
 - Remote 经 `Security:RateLimiting:Enabled` 配置项控制（开发/测试可设 `false` 禁用）；Local 恒启用。
 - Local 必须注册与共享控制器标注同名的 `ApiCalls` 策略——共享 `BaseUsersController` 的 `[EnableRateLimiting("ApiCalls")]` 在缺失策略时由限流中间件抛异常（500），2026-09-16 补齐。
-- 被限制时双端均返回 429 + 结构化 `ApiResponse`（`ErrorCode.RateLimitExceeded` + `retryAfter`）；Local 的 `OnRejected` 于 2026-09-16 补齐（此前为空体 429）。
+- 被限制时双端均返回 429 + RFC 7807 `ProblemDetails`（`errorCode=RateLimitExceeded` + `retryAfter`，R-15 统一）；Local 的 `OnRejected` 于 2026-09-16 补齐（此前为空体 429），2026-09-17 起与异常路径同契约写 ProblemDetails。
 
 ### 7.6 JWT 密钥安全
 

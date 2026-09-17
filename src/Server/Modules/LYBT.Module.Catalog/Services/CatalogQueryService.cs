@@ -37,7 +37,8 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
 
     public async Task<Result<PagedResult<TListDto>>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId, bool isAdmin, CancellationToken ct)
     {
-        var result = await _repository.GetPagedAsync(page, pageSize, keyword, category, operatorId, isAdmin, ct);
+        // R-20: 列表页不加载子集合导航
+        var result = await _repository.GetPagedAsync(page, pageSize, keyword, category, operatorId, isAdmin, ct, includeChildren: false);
         var dtos = result.Items.Select(_toList).ToList();
         var pagedResult = new PagedResult<TListDto>
         {
@@ -51,7 +52,8 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
 
     public async Task<Result<List<TDetailDto>>> ExportDetailsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
     {
-        var result = await _repository.GetPagedAsync(1, 10000, keyword, category, operatorId, isAdmin, ct);
+        // R-20: 导出明细需要子集合导航（验方 Herbs）
+        var result = await _repository.GetPagedAsync(1, 10000, keyword, category, operatorId, isAdmin, ct, includeChildren: true);
         var dtos = result.Items.Select(_toDetail).ToList();
         return Result<List<TDetailDto>>.Success(dtos);
     }

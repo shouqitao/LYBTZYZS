@@ -76,15 +76,19 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
     }
 
     /// <inheritdoc/>
+    /// R-20: 列表页不 Include(Herbs)（避免子集合过度加载）；HerbCount 走 COUNT 投影。
+    /// includeChildren=true（导出明细）时才 Include。
     public override async Task<PagedResult<Formula>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         Guid? operatorId = null, bool isAdmin = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeChildren = false)
     {
         var query = _context.Formulas
-            .Include(f => f.Herbs)
             .Where(f => !f.IsDeleted)
             .AsQueryable();
+
+        if (includeChildren)
+            query = query.Include(f => f.Herbs);
 
         // P1 (US-FORM-001): Doctor 仅可见本人 + 共享验方（Admin/SuperAdmin 全量）
         if (!isAdmin && operatorId.HasValue)
@@ -107,11 +111,29 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var items = await query
-            .OrderByDescending(f => f.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        List<Formula> items;
+        if (includeChildren)
+        {
+            items = await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            // 列表路径：COUNT 投影填充 HerbCount，不加载 Herbs 集合
+            var rows = await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(f => new { Entity = f, HerbCount = f.Herbs.Count })
+                .ToListAsync(cancellationToken);
+
+            foreach (var row in rows)
+                row.Entity.LoadedHerbCount = row.HerbCount;
+            items = rows.Select(r => r.Entity).ToList();
+        }
 
         return new PagedResult<Formula>
         {

@@ -19,8 +19,9 @@ public interface ICatalogRepository<TEntity> : IRepository<TEntity>
 
     /// <summary>
     /// 分页查询实体（支持关键字 + 分类筛选）。
+    /// includeChildren=true 时加载子集合导航（验方 Herbs，供导出明细）；列表页应传 false（R-20）。
     /// </summary>
-    Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
+    Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
 
     /// <summary>
     /// 检查实体名称是否已存在。

@@ -21,7 +21,7 @@ public abstract class CatalogRepositoryBase<TEntity> : BaseRepository<TEntity, C
 
     /// <inheritdoc/>
     public abstract Task<PagedResult<TEntity>> GetPagedAsync(
-        int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
+        int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
 
     /// <inheritdoc/>
     public abstract Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);

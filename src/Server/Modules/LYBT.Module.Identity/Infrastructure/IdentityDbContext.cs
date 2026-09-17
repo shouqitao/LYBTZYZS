@@ -1,7 +1,10 @@
+using System.Security.Claims;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Data.Configurations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +18,8 @@ namespace LYBT.Module.Identity.Infrastructure;
 /// </summary>
 public class IdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+
     /// <summary>认证会话集</summary>
     public DbSet<AuthSession> AuthSessions { get; set; } = null!;
 
@@ -28,24 +33,53 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, IdentityRole
     {
     }
 
+    public IdentityDbContext(
+        DbContextOptions<IdentityDbContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    /// <summary>
+    /// R-12：模块级 DbContext 接入审计扩展（S-5）——与 AppDbContext 同构。
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc cref="SaveChangesAsync(CancellationToken)"/>
+    public override int SaveChanges()
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return base.SaveChanges();
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        try
+        {
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+                return userId;
+        }
+        catch
+        {
+            // 非 HTTP 上下文（后台/测试）无用户归属
+        }
+        return null;
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // ── 来自 AuthDbContext ──
-        modelBuilder.Entity<AuthSession>(entity =>
-        {
-            entity.ToTable("AuthSessions");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.TokenHash).HasMaxLength(256).IsRequired();
-            entity.Property(e => e.IpAddress).HasMaxLength(45).IsRequired();
-            entity.Property(e => e.UserAgent).HasMaxLength(500);
-            entity.Property(e => e.Status);
-
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.TokenHash);
-            entity.HasIndex(e => e.ExpiryTime);
-        });
+        // 复用 Infrastructure 的 AuthSession 配置类（与 AppDbContext 保持一致；StringLength 由实体特性定义）
+        modelBuilder.ApplyConfiguration(new AuthSessionConfiguration());
 
         // 复用 Infrastructure 的审计日志/系统日志配置类（与 AppDbContext 保持一致）
         modelBuilder.ApplyConfiguration(new SecurityAuditLogConfiguration());

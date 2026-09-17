@@ -1,5 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Entities.MedicalCases;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using MediatR;
 
 namespace LYBT.Module.MedicalCases.Application.Commands;
@@ -14,4 +14,4 @@ public sealed record CompleteMedicalCaseCommand(
     Guid OperatorId,
     bool IsAdmin = false,
     bool SkipWorkflowValidation = false
-) : IRequest<Result<MedicalCase>>;
+) : IRequest<Result<MedicalCaseDetailDto>>;

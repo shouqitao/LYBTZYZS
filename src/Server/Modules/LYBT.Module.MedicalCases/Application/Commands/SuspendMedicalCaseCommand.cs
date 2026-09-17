@@ -1,6 +1,6 @@
-using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using MediatR;
 
 namespace LYBT.Module.MedicalCases.Application.Commands;
@@ -13,4 +13,4 @@ public sealed record SuspendMedicalCaseCommand(
     ConsultationInputDto? Request,
     Guid OperatorId,
     bool IsAdmin = false
-) : IRequest<Result<MedicalCase>>;
+) : IRequest<Result<MedicalCaseDetailDto>>;

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Hosting;
 
@@ -99,9 +100,9 @@ public static class SharedHost
 
         if (!isLocal)
         {
-            // Server 专属 — 反向代理 / HSTS / 关联追踪 / 安全头 / 压缩 / Swagger
-            // 为避免对 Local 的无谓依赖，此处仅在 isLocal==false 时经反射调用 Server 的完整管线
-            TryInvokeServerPipeline(app);
+            // Server 专属管线（ForwardedHeaders/Hsts/Correlation/Security/Compression/Swagger）
+            // 由 Server Program 自行调用 app.ConfigureAllMiddleware()，此处不重复调用，
+            // 避免双重 UseRouting 等；保留 isLocal 分支仅为语义占位。
         }
 
         // 共享管道 — 双宿主必经
@@ -110,13 +111,20 @@ public static class SharedHost
         try { app.UseCors(); } catch { /* Local 未配 CORS 时忽略 */ }
         app.UseRateLimiter();
         app.UseAuthentication();
-        // Claims 标准化（Server 的 UseClaimsNormalization）— 经反射按需调用
-        TryInvokeClaimsNormalization(app);
+        // Claims 标准化由 Server 的 ConfigureAllMiddleware 按序调用；
+        // Local 无需 Claims 标准化，此处不重复挂载。
         app.UseAuthorization();
         app.MapControllers();
 
         return app;
     }
+
+    /// <summary>
+    /// 启动期诊断日志（反射注册发生在 app 构建前，尚无 DI 容器中的 ILogger，故自建 Console logger）。
+    /// </summary>
+    private static readonly ILogger StartupLogger = LoggerFactory
+        .Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Warning))
+        .CreateLogger("LYBT.Infrastructure.Hosting.SharedHost");
 
     /// <summary>
     /// 注册业务模块（6 个 + SPI）。
@@ -146,9 +154,12 @@ public static class SharedHost
                 var method = type?.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
                 method?.Invoke(null, new object[] { services, configuration });
             }
-            catch
+            catch (Exception ex)
             {
-                // 模块缺失时（如测试仅加载部分模块）忽略，单测侧按需注册
+                // 模块缺失时（如测试仅加载部分模块）允许继续，单测侧按需注册；记录警告便于排查
+                StartupLogger.LogWarning(ex,
+                    "反射注册业务模块失败: Assembly={AssemblyName}, Type={TypeName}, Method={MethodName}",
+                    assemblyName, typeName, methodName);
             }
         }
 
@@ -296,25 +307,5 @@ public static class SharedHost
         });
 
         return services;
-    }
-
-    private static void TryInvokeServerPipeline(WebApplication app)
-    {
-        // Server 的完整管线已在 UnifiedMiddlewareConfiguration.ConfigureAllMiddleware 中，
-        // 此处不重复调用，仅为 isLocal==false 时的占位，避免双重 UseRouting 等。
-        // 实际 Server Program 仍直接调用 app.ConfigureAllMiddleware()，此分支保留为空以兼容模板调用。
-    }
-
-    private static void TryInvokeClaimsNormalization(WebApplication app)
-    {
-        try
-        {
-            var webApiAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(a => a.GetName().Name == "LYBT.WebAPI")
-                ?? Assembly.Load("LYBT.WebAPI");
-            var type = webApiAssembly.GetType("LYBT.WebAPI.Middleware.ClaimsNormalizationMiddleware");
-            // 仅检查类型存在性，实际中间件已在 Server 的 ConfigureAllMiddleware 中按序调用
-        }
-        catch { }
     }
 }

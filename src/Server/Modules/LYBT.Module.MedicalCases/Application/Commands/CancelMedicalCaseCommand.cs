@@ -1,5 +1,5 @@
-using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using MediatR;
 
 namespace LYBT.Module.MedicalCases.Application.Commands;
@@ -12,4 +12,4 @@ public sealed record CancelMedicalCaseCommand(
     Guid OperatorId,
     bool IsAdmin = false,
     string? Reason = null
-) : IRequest<Result<MedicalCase>>;
+) : IRequest<Result<MedicalCaseDetailDto>>;

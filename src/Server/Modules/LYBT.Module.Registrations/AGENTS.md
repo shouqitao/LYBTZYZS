@@ -1,7 +1,7 @@
 <!-- Parent: ../AGENTS.md -->
 <!-- Generated: 2026-05-04 | Updated: 2026-05-04 -->
 
-# LYBT.Module.Registration
+# LYBT.Module.Registrations
 
 ## Purpose
 
@@ -12,7 +12,7 @@ Server-side registration (appointment/queue) module. Manages patient registratio
 | File | Description |
 |------|-------------|
 | `RegistrationModule.cs` | Static extension method `AddRegistrationModule()` for DI service registration |
-| `LYBT.Module.Registration.csproj` | Project file; net8.0, Riok.Mapperly, EF Core; InternalsVisibleTo LYBT.Tests.Server |
+| `LYBT.Module.Registrations.csproj` | Project file; net8.0, Riok.Mapperly, EF Core; InternalsVisibleTo LYBT.Tests.Server |
 
 ## Subdirectories
 

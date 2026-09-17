@@ -46,6 +46,13 @@ public class NavigationCoordinator : INavigationCoordinator
         [ViewNames.MedicalCaseMasterDetail] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.PatientSelection] = [UserRole.Doctor, UserRole.Receptionist],
         [ViewNames.RegistrationList] = [UserRole.Doctor, UserRole.Receptionist],
+        // R-17: 补全遗漏视图的角色映射
+        [ViewNames.PatientManagement] = [UserRole.Doctor, UserRole.Receptionist, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.MedicalCaseManagement] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.HerbManagement] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.FormulaManagement] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.ReportsHome] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
+        [ViewNames.AuditLog] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
     };
 
     public NavigationCoordinator(

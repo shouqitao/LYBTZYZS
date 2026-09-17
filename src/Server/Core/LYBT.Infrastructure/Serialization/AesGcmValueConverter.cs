@@ -6,7 +6,7 @@ namespace LYBT.Infrastructure.Serialization;
 
 /// <summary>
 /// AES-GCM 透明加解密 ValueConverter（P1-9）
-/// 透明加密：明文 → Base64(nonce(12) + tag(16) + ciphertext)
+/// 透明加密：明文 → Base64(nonce(12) + tag(16) + ciphertext)；加密失败抛 CryptographicException（R-18 fail-closed，禁止静默返回明文）
 /// 透明解密：非 Base64 / 密文长度不足 / 认证失败 → 抛 CryptographicException（T1.4 fail-closed，
 /// 4d58c5464：禁止静默回退明文——密钥不匹配时防敏感数据以明文泄漏；EF 读取抛错由
 /// BusinessExceptionHandler 映射 ERR-00013 422）
@@ -67,9 +67,14 @@ public sealed class AesGcmValueConverter : ValueConverter<string?, string?>
             Buffer.BlockCopy(cipher, 0, combined, nonce.Length + tag.Length, cipher.Length);
             return Convert.ToBase64String(combined);
         }
-        catch
+        catch (CryptographicException)
         {
-            return plain;
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // R-18: 加密失败必须 fail-closed 抛异常，禁止静默返回明文（防敏感数据落库明文）
+            throw new CryptographicException("敏感数据加密失败", ex);
         }
     }
 

@@ -79,6 +79,7 @@ public static class ErrorCodeExtensions
             ErrorCode.HerbNotFound => 404,
             ErrorCode.FormulaNotFound => 404,
             ErrorCode.FormulaDeleteFailed => 404,
+            ErrorCode.FormulaHerbItemNotFound => 404,
             ErrorCode.RegistrationNotFound => 404,
 
             // 400 Bad Request - 客户端输入验证错误

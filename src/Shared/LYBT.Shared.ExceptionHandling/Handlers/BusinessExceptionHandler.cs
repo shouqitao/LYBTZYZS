@@ -1,3 +1,4 @@
+using System.Linq;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.AspNetCore.Diagnostics;
@@ -53,12 +54,10 @@ public class BusinessExceptionHandler : IExceptionHandler
             return true;
         }
 
-        // FluentValidation 校验异常转 400（与 ValidationBehavior 管道互补，无直接引用用全名匹配）
-        if (exTypeName == "FluentValidation.ValidationException")
+        // FluentValidation 校验异常转 400（与 ValidationBehavior 管道互补）
+        if (exception is FluentValidation.ValidationException validationException)
         {
-            dynamic dynEx = exception;
-            string msg = "参数校验失败";
-            try { msg = dynEx.Errors[0].ErrorMessage ?? msg; } catch { }
+            var msg = validationException.Errors.FirstOrDefault()?.ErrorMessage ?? "参数校验失败";
             _logger.LogWarning(exception, "参数校验失败 - CorrelationId: {CorrelationId}", GetCorrelationId(httpContext));
             await WriteProblemAsync(
                 httpContext,

@@ -14,6 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- BusinessExceptionHandler 强类型访问 FluentValidation.ValidationException.Errors -->
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
       A-31-C2 技术引入治理：承载 IExceptionHandler 处理器（SystemExceptionHandler/BusinessExceptionHandler）
       与 AddLybtExceptionHandling 注册扩展；P05b 豁免清单已同步（参照 Shared.Logging C-1 先例）

@@ -1,8 +1,11 @@
+using System.Security.Claims;
 using LYBT.Entities.Consultations;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Data.Configurations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.MedicalCases.Infrastructure;
@@ -13,6 +16,8 @@ namespace LYBT.Module.MedicalCases.Infrastructure;
 /// </summary>
 public class MedicalCaseDbContext : DbContext
 {
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+
     /// <summary>医案集</summary>
     public DbSet<MedicalCase> MedicalCases { get; set; } = null!;
 
@@ -35,6 +40,46 @@ public class MedicalCaseDbContext : DbContext
     {
     }
 
+    public MedicalCaseDbContext(
+        DbContextOptions<MedicalCaseDbContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    /// <summary>
+    /// R-12：模块级 DbContext 接入审计扩展（S-5）——与 AppDbContext 同构。
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc cref="SaveChangesAsync(CancellationToken)"/>
+    public override int SaveChanges()
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return base.SaveChanges();
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        try
+        {
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+                return userId;
+        }
+        catch
+        {
+            // 非 HTTP 上下文（后台/测试）无用户归属
+        }
+        return null;
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -51,12 +96,13 @@ public class MedicalCaseDbContext : DbContext
         modelBuilder.ApplyConfiguration(new PatientConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
 
-        // 软删除全局查询过滤器（与 AppDbContext ApplyOptimizations 保持一致）
-        modelBuilder.Entity<MedicalCase>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Consultation>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Prescription>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<MedicalCasePrintLog>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<MedicalCaseAuditLog>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Patient>().HasQueryFilter(e => !e.IsDeleted);
+        // 软删除全局查询过滤器（统一走 Infrastructure 扩展，与 AppDbContext ApplyOptimizations 保持一致）
+        modelBuilder
+            .ApplySoftDeleteFilters<MedicalCase>()
+            .ApplySoftDeleteFilters<Consultation>()
+            .ApplySoftDeleteFilters<Prescription>()
+            .ApplySoftDeleteFilters<MedicalCasePrintLog>()
+            .ApplySoftDeleteFilters<MedicalCaseAuditLog>()
+            .ApplySoftDeleteFilters<Patient>();
     }
 }

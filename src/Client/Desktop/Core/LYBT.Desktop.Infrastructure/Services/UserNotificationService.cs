@@ -8,9 +8,17 @@ namespace LYBT.Desktop.Infrastructure.Services
     /// 用户通知服务实现 - UltraThink架构
     /// 提供基于 WPF MessageBox 的简单用户通知功能
     /// Issue #840: 替代 ErrorHandlingServiceStub,提供真实实现
+    /// R-16: 所有 MessageBox.Show 经 IUiThreadDispatcher.Invoke 调度到 UI 线程，避免跨线程调用崩溃
     /// </summary>
     public class UserNotificationService : IUserNotificationService
     {
+        private readonly IUiThreadDispatcher _dispatcher;
+
+        public UserNotificationService(IUiThreadDispatcher dispatcher)
+        {
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        }
+
         /// <summary>
         /// 处理异常并显示给用户
         /// </summary>
@@ -28,11 +36,14 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task ShowErrorAsync(string message, string? title = null)
         {
-            MessageBox.Show(
-                message,
-                title ?? "错误",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            _dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(
+                    message,
+                    title ?? "错误",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            });
             return Task.CompletedTask;
         }
 
@@ -41,11 +52,14 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task ShowSuccessAsync(string message, string? title = null)
         {
-            MessageBox.Show(
-                message,
-                title ?? "成功",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            _dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(
+                    message,
+                    title ?? "成功",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            });
             return Task.CompletedTask;
         }
 
@@ -54,11 +68,14 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task ShowWarningAsync(string message, string? title = null)
         {
-            MessageBox.Show(
-                message,
-                title ?? "警告",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            _dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(
+                    message,
+                    title ?? "警告",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            });
             return Task.CompletedTask;
         }
 
@@ -67,11 +84,14 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// </summary>
         public Task<bool> ShowConfirmAsync(string message, string? title = null)
         {
-            var result = MessageBox.Show(
-                message,
-                title ?? "确认",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            var result = _dispatcher.Invoke(() =>
+            {
+                return MessageBox.Show(
+                    message,
+                    title ?? "确认",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+            });
 
             return Task.FromResult(result == MessageBoxResult.Yes);
         }

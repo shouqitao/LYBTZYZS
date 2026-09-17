@@ -6,11 +6,15 @@
 
 ```
 LYBT.Module.MedicalCases/
-├── Interfaces/          # 11 interface definitions
-├── Services/            # 10 files: MedicalCaseCommandService, MedicalCaseQueryService, MedicalCaseStateService, MedicalCaseFacade, MedicalCaseAuditService, MedicalCasePermissionService, MedicalCasePrintService, MedicalCaseReferenceService, MedicalCaseRules, MedicalCaseServiceHelper
-├── Repositories/        # 3 repository files
-├── Mapping/             # MedicalCaseMapper (Riok.Mapperly)
-└── MedicalCaseModule.cs # Module registration
+├── Application/           # MediatR CQRS — Commands/ + Queries/
+│   ├── Commands/          # Create/Update/Complete/Cancel/Suspend/Delete handlers
+│   └── Queries/           # GetMedicalCase / GetMedicalCaseList / GetPendingCases
+├── Domain/                # 领域模型（MedicalCase 聚合根等）
+├── Interfaces/            # 11 interface definitions
+├── Services/              # 10 files: MedicalCaseCommandService, MedicalCaseQueryService, MedicalCaseStateService, MedicalCaseFacade, MedicalCaseAuditService, MedicalCasePermissionService, MedicalCasePrintService, MedicalCaseReferenceService, MedicalCaseRules, MedicalCaseServiceHelper
+├── Repositories/          # 3 repository files
+├── Mapping/               # MedicalCaseMapper (Riok.Mapperly)
+└── MedicalCaseModule.cs   # Module registration
 ```
 
 ## WHERE TO LOOK

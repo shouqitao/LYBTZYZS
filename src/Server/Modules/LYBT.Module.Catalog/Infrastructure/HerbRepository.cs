@@ -20,7 +20,7 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
     public override async Task<PagedResult<Herb>> GetPagedAsync(
         int page, int pageSize, string? keyword, string? category,
         Guid? operatorId = null, bool isAdmin = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeChildren = false)
     {
         var query = _context.Herbs
             .Where(h => !h.IsDeleted)

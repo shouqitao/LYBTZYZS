@@ -1,9 +1,12 @@
+using System.Security.Claims;
 using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Data.Configurations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Catalog.Infrastructure;
@@ -17,6 +20,8 @@ namespace LYBT.Module.Catalog.Infrastructure;
 /// </summary>
 public class CatalogDbContext : DbContext
 {
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+
     /// <summary>药材集</summary>
     public DbSet<Herb> Herbs { get; set; } = null!;
 
@@ -43,6 +48,46 @@ public class CatalogDbContext : DbContext
     {
     }
 
+    public CatalogDbContext(
+        DbContextOptions<CatalogDbContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    /// <summary>
+    /// R-12：模块级 DbContext 接入审计扩展（S-5）——与 AppDbContext 同构。
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc cref="SaveChangesAsync(CancellationToken)"/>
+    public override int SaveChanges()
+    {
+        this.SetAuditFields(GetCurrentUserId());
+        return base.SaveChanges();
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        try
+        {
+            var userIdClaim = _httpContextAccessor?.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+                return userId;
+        }
+        catch
+        {
+            // 非 HTTP 上下文（后台/测试）无用户归属
+        }
+        return null;
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -57,12 +102,15 @@ public class CatalogDbContext : DbContext
         modelBuilder.ApplyConfiguration(new FormulaConfiguration());
         modelBuilder.ApplyConfiguration(new FormulaHerbItemConfiguration());
 
-        // 软删除全局查询过滤器（与 AppDbContext ApplyOptimizations 保持一致）
-        modelBuilder.Entity<Herb>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Prescription>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<MedicalCase>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Patient>().HasQueryFilter(e => !e.IsDeleted);
-        modelBuilder.Entity<Formula>().HasQueryFilter(e => !e.IsDeleted);
+        // 软删除全局查询过滤器（统一走 Infrastructure 扩展，与 AppDbContext ApplyOptimizations 保持一致）
+        modelBuilder
+            .ApplySoftDeleteFilters<Herb>()
+            .ApplySoftDeleteFilters<Prescription>()
+            .ApplySoftDeleteFilters<MedicalCase>()
+            .ApplySoftDeleteFilters<Patient>()
+            .ApplySoftDeleteFilters<Formula>();
+
+        // FormulaHerbItem 为弱实体（无 IsDeleted），过滤基于关联 Formula.IsDeleted
         modelBuilder.Entity<FormulaHerbItem>().HasQueryFilter(fh => fh.Formula == null || !fh.Formula.IsDeleted);
     }
 }

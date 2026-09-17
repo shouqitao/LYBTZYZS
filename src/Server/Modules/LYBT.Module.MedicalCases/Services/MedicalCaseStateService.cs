@@ -360,10 +360,6 @@ namespace LYBT.Module.MedicalCases.Services
                 _logger.LogError(ex, "[SVC] MedicalCase.Cancel → AuditWriteFailed - MedicalCaseId={MedicalCaseId}", medicalCase.Id);
             }
         }
-
-        #region 私有辅助方法
-
-        #endregion
     }
 }
 

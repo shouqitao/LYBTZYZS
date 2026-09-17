@@ -81,8 +81,15 @@ namespace LYBT.Entities.Formulas
         [DisplayName("药材组成")]
         public virtual ICollection<FormulaHerbItem> Herbs { get; set; } = new List<FormulaHerbItem>();
 
+        /// <summary>
+        /// 列表查询投影填充的药材数（R-20：避免 Include 整集合过度加载）。
+        /// 有 Herbs 导航时优先用 Count；否则回落投影值。
+        /// </summary>
+        [NotMapped]
+        public int LoadedHerbCount { get; set; }
+
         /// <summary>药材数量</summary>
-        public int HerbCount => Herbs?.Count ?? 0;
+        public int HerbCount => Herbs is { Count: > 0 } ? Herbs.Count : LoadedHerbCount;
 
         public static Formula Create(
             string name,

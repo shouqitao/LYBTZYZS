@@ -1,6 +1,5 @@
 using LYBT.Shared.Configuration.Options.Server;
 using LYBT.Shared.ExceptionHandling.Handlers;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.WebAPI.Configuration;
 
@@ -192,23 +191,30 @@ public static class ApiServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            // Sprint3-X6: 返回结构化 ApiResponse + ErrorCode.RateLimitExceeded
+            // R-15: 429 统一 ProblemDetails（RFC 7807 / X-3）——与异常路径同契约，
+            // Desktop ApiErrorEnvelope 优先解析 ProblemDetails
             options.OnRejected = async (context, cancellationToken) =>
             {
-                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                context.HttpContext.Response.ContentType = "application/json";
+                var httpContext = context.HttpContext;
+                var retryAfter = context.Lease.TryGetMetadata(
+                    System.Threading.RateLimiting.MetadataName.RetryAfter, out var ra)
+                    ? ra.TotalSeconds
+                    : 60;
 
-                var message = ErrorMessages.Get(ErrorCode.RateLimitExceeded);
-                var response = ApiResponse.CreateFail(message, new
-                {
-                    errorCode = ErrorCode.RateLimitExceeded.ToFormattedString(),
-                    retryAfter = context.Lease.TryGetMetadata(
-                        System.Threading.RateLimiting.MetadataName.RetryAfter, out var retryAfter)
-                        ? retryAfter.TotalSeconds
-                        : 60
-                });
+                httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                httpContext.Response.Headers.RetryAfter = ((int)retryAfter).ToString();
 
-                await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+                await Results.Problem(
+                    statusCode: StatusCodes.Status429TooManyRequests,
+                    title: "Too Many Requests",
+                    detail: ErrorMessages.Get(ErrorCode.RateLimitExceeded),
+                    instance: httpContext.Request.Path,
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["errorCode"] = ErrorCode.RateLimitExceeded.ToFormattedString(),
+                        ["retryAfter"] = retryAfter
+                    })
+                    .ExecuteAsync(httpContext, cancellationToken);
             };
 
             // R-4: 登录端点速率限制——从 SecurityOptions.RateLimiting.LoginLimit 读取

@@ -9,13 +9,12 @@ Business modules for the ASP.NET Core backend. Each module is a **self-contained
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Module.Auth/ | Authentication — JWT token generation, login/logout, password hashing |
-| LYBT.Module.Users/ | User account management — CRUD, role assignment, profile |
+| LYBT.Module.Identity/ | Authentication + user management — JWT login/logout, AuthSession, user CRUD, role assignment |
 | LYBT.Module.Patients/ | Patient management — CRUD, search, medical history |
-| LYBT.Module.Herbs/ | Herb (TCM medicine) catalog — CRUD, categories, properties |
-| LYBT.Module.Formula/ | Formula (empirical recipe) management — CRUD, herb composition |
+| LYBT.Module.Catalog/ | Herb (TCM medicine) + Formula (empirical recipe) catalog — CRUD, categories, composition |
 | LYBT.Module.MedicalCases/ | Medical case (DDD aggregate) — consultations, prescriptions, CQRS commands |
-| LYBT.Module.Registration/ | Patient registration and appointment scheduling |
+| LYBT.Module.Registrations/ | Patient registration and appointment scheduling |
+| LYBT.Module.Reports/ | Reporting — aggregated clinic metrics and read-only queries |
 
 ## For AI Agents
 
