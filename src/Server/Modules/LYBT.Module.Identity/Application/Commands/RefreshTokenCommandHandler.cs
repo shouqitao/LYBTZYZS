@@ -1,8 +1,7 @@
-﻿using System.Security.Cryptography;
-using System.Text;
 using MediatR;
 using LYBT.Entities.Auth;
 using LYBT.Module.Identity.Interfaces;
+using LYBT.Module.Identity.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
@@ -32,7 +31,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
     public async Task<Result<LoginResponse>> Handle(
         RefreshTokenCommand request, CancellationToken cancellationToken)
     {
-        var oldTokenHash = ComputeTokenHash(request.Token);
+        var oldTokenHash = TokenHashHelper.ComputeTokenHash(request.Token);
         var oldSession = await _authSessionRepository.GetByTokenHashAsync(oldTokenHash, cancellationToken);
 
         if (oldSession != null && !oldSession.IsValid())
@@ -101,7 +100,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         _logger.LogInformation("[Handler] Old session logged out - SessionId={SessionId}", oldSession.Id);
 
         var newToken = result.Value!.Token;
-        var newTokenHash = ComputeTokenHash(newToken);
+        var newTokenHash = TokenHashHelper.ComputeTokenHash(newToken);
         var newSession = AuthSession.Create(
             oldSession!.UserId,
             newTokenHash,
@@ -120,11 +119,5 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         _logger.LogInformation("[Handler] Token refreshed successfully - OldSessionId={OldSessionId} NewSessionId={NewSessionId}",
             oldSession?.Id, newSession.Id);
         return Result<LoginResponse>.Success(result.Value);
-    }
-
-    private static string ComputeTokenHash(string token)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

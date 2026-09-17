@@ -404,7 +404,8 @@ public class HerbsController : BaseCrudController
     }
 
     /// <summary>
-    /// 导出药材为 JSON 数组（按筛选条件，US-HERB-013——Desktop 契约 GET /herbs/export）
+    /// 导出药材为 JSON 数组（P2-12: 合并 export-all，专用导出查询——不分页直接 ToListAsync）
+    /// US-HERB-013 Desktop 契约 GET /herbs/export
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpGet("export")]
@@ -413,30 +414,12 @@ public class HerbsController : BaseCrudController
         CancellationToken ct = default
     )
     {
-        var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
+        var result = await _herbService.ExportListsAsync(keyword, category: null, operatorId: null, isAdmin: true, ct: ct);
         if (!result.IsSuccess)
             return BusinessFail(result.Error ?? "导出失败");
 
         // JSON 数组
-        return Success(result.Value!.Items, "药材导出（JSON）");
-    }
-
-    /// <summary>
-    /// 导出全部药材为 JSON 数组（2026-08-13：Excel→JSON；US-HERB-007 全量导出——双端对齐 Remote）
-    /// </summary>
-    [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-    [HttpGet("export-all")]
-    public async Task<IActionResult> HerbExportAll(
-        [FromQuery] string? keyword = null,
-        CancellationToken ct = default
-    )
-    {
-        var result = await _herbService.GetPagedAsync(1, 10000, keyword, null, false, ct);
-        if (!result.IsSuccess)
-            return BusinessFail(result.Error ?? "导出失败");
-
-        // JSON 数组
-        return Success(result.Value!.Items, "药材导出（JSON）");
+        return Success(result.Value!, "药材导出（JSON）");
     }
 
     #endregion

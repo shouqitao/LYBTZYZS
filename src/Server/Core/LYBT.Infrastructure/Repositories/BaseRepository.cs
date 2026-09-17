@@ -135,12 +135,12 @@ namespace LYBT.Infrastructure.Repositories
             {
                 await SaveChangesAsync(cancellationToken);
             }
-            catch (InvalidOperationException ex) when (ex.InnerException is DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 // 并发重试（2026-08-13 第 2 层根因——ReplaceHerbs 子集合替换后 RowVersion 过期时序）:
-                // SaveChangesAsync 将 DbUpdateConcurrencyException 包装为 InvalidOperationException——
-                // 匹配包装链；重新加载最新 RowVersion 并重试一次——吸收批处理/关系操作导致的 RowVersion 过期；
+                // 重新加载最新 RowVersion 并重试一次——吸收批处理/关系操作导致的 RowVersion 过期；
                 // 真并发（另一用户真实修改）重试后仍冲突——正常抛（乐观并发语义保持）。
+                // P2-1: SaveChangesAsync 不再包装为 InvalidOperationException，直接抛出类型化并发异常。
                 _logger.LogWarning(ex, "[REPO] {EntityType}.Update({Id}) 并发冲突——重试一次", typeof(TEntity).Name, entity.Id);
                 _context.Entry(entity).Reload();
                 await SaveChangesAsync(cancellationToken);
@@ -247,8 +247,9 @@ namespace LYBT.Infrastructure.Repositories
             }
             catch (DbUpdateConcurrencyException ex)
             {
+                // P2-1: 直接抛出类型化并发异常（原包装为 InvalidOperationException 致调用方只能靠 message.Contains 匹配）
                 _logger.LogError(ex, "[REPO] {EntityType}.SaveChanges 并发冲突（期望 1 行，实际 0 行）", typeof(TEntity).Name);
-                throw new InvalidOperationException("数据已被其他用户修改，请刷新后重试", ex);
+                throw;
             }
             catch (DbUpdateException ex)
             {

@@ -29,10 +29,11 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            var kw = keyword.ToLower();
+            // P2-7: 前缀匹配走索引（EF.Functions.Like → SQL LIKE 'kw%'；SQL Server 默认 CI 排序不区分大小写）
+            var kw = keyword.Trim();
             query = query.Where(h =>
-                h.Name.ToLower().Contains(kw) ||
-                (h.PinYinCode != null && h.PinYinCode.ToLower().Contains(kw)));
+                EF.Functions.Like(h.Name, $"{kw}%") ||
+                (h.PinYinCode != null && EF.Functions.Like(h.PinYinCode, $"{kw}%")));
         }
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -60,6 +61,35 @@ public class HerbRepository : CatalogRepositoryBase<Herb>, IHerbRepository
     /// <inheritdoc/>
     public override Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
         => ExistsAsync(e => e.Name == name, excludeId, cancellationToken);
+
+    /// <inheritdoc/>
+    /// P2-12: 导出专用查询——不分页，直接 ToListAsync
+    public override async Task<List<Herb>> GetAllForExportAsync(
+        string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false,
+        CancellationToken ct = default, bool includeChildren = false)
+    {
+        var query = _context.Herbs
+            .AsNoTracking()
+            .Where(h => !h.IsDeleted)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var kw = keyword.Trim();
+            query = query.Where(h =>
+                EF.Functions.Like(h.Name, $"{kw}%") ||
+                (h.PinYinCode != null && EF.Functions.Like(h.PinYinCode, $"{kw}%")));
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            query = query.Where(h => h.Category != null && h.Category.Contains(category));
+        }
+
+        return await query
+            .OrderBy(h => h.PinYinCode ?? h.Name)
+            .ToListAsync(ct);
+    }
 
     /// <inheritdoc/>
     public async Task<Herb?> GetByNameAsync(string name, CancellationToken cancellationToken = default)

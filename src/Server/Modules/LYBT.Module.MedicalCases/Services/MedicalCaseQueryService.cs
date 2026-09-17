@@ -310,24 +310,8 @@ namespace LYBT.Module.MedicalCases.Services
             var count = query.Limit ?? 5;
             var recentCases = await GetPatientRecentMedicalCasesAsync(query.PatientId.Value, count, cancellationToken);
 
-            // 从DetailDto手动映射为ListDto（DetailDto包含ListDto的所有字段）
-            var listDtos = recentCases.Select(detail => new MedicalCaseListDto
-            {
-                Id = detail.Id,
-                CaseNumber = detail.CaseNumber,
-                PatientId = detail.PatientId,
-                PatientName = detail.PatientName,
-                PatientGender = detail.PatientGender,
-                PatientAge = detail.PatientAge,
-                UserId = detail.UserId,
-                DoctorName = detail.DoctorName,
-                CompletedAt = detail.CompletedAt,
-                CaseStatus = detail.CaseStatus,
-                Diagnosis = detail.Diagnosis,
-                HasConsultation = detail.HasConsultation,
-                HasPrescription = detail.HasPrescription,
-                CreatedAt = detail.CreatedAt
-            }).ToList();
+            // P2-6: 走 Mapperly（DetailDto→ListDto 同名自动映射，原 14 行手动字段拷贝）
+            var listDtos = _mapper.DetailToListDtos(recentCases);
 
             return new PagedResult<MedicalCaseListDto>(listDtos, listDtos.Count, 1, listDtos.Count);
         }
@@ -373,11 +357,11 @@ namespace LYBT.Module.MedicalCases.Services
             Guid caseId, int page, int pageSize, Guid? operatorId = null, bool isAdmin = false, CancellationToken cancellationToken = default)
         {
             var medicalCase = await _repository.GetByIdWithDetailsAsync(caseId, cancellationToken);
+            if (medicalCase == null)
+                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
             // T5-1 #8 (US-MC-017): Doctor 仅可查看本人医案审计（Admin/SuperAdmin 全量）
             if (!isAdmin && operatorId.HasValue && medicalCase.CreatedBy != operatorId.Value)
                 return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.Forbidden, "无权限查看该医案审计日志");
-            if (medicalCase == null)
-                return Result<PagedResult<AuditLogDto>>.Failure(ErrorCode.NotFound, ErrorMessages.Get(ErrorCode.McCaseNotFound));
 
             var totalCount = await _repository.CountAuditLogsAsync(caseId, cancellationToken);
             var logs = await _repository.GetAuditLogsAsync(caseId, page, pageSize, cancellationToken);

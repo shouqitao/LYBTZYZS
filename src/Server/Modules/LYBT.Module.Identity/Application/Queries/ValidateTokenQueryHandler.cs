@@ -1,8 +1,7 @@
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using MediatR;
 using LYBT.Module.Identity.Interfaces;
+using LYBT.Module.Identity.Services;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
@@ -35,7 +34,7 @@ public class ValidateTokenQueryHandler : IRequestHandler<ValidateTokenQuery, Res
             return Result<ValidateTokenResult>.Success(new ValidateTokenResult(false, null, null, null));
         }
 
-        var tokenHash = ComputeTokenHash(request.Token);
+        var tokenHash = TokenHashHelper.ComputeTokenHash(request.Token);
         var session = await _authSessionRepository.GetByTokenHashAsync(tokenHash, cancellationToken);
 
         if (session == null)
@@ -62,11 +61,5 @@ public class ValidateTokenQueryHandler : IRequestHandler<ValidateTokenQuery, Res
 
         _logger.LogDebug("[Handler] Token validation - Valid=True SessionId={SessionId}", session.Id);
         return Result<ValidateTokenResult>.Success(new ValidateTokenResult(true, userId, userName, role));
-    }
-
-    private static string ComputeTokenHash(string token)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

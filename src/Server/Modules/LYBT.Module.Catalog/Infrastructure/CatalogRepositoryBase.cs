@@ -24,5 +24,9 @@ public abstract class CatalogRepositoryBase<TEntity> : BaseRepository<TEntity, C
         int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
 
     /// <inheritdoc/>
+    public abstract Task<List<TEntity>> GetAllForExportAsync(
+        string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
+
+    /// <inheritdoc/>
     public abstract Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
 }

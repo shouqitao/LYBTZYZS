@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace LYBT.WebAPI.Controllers;
 
 /// <summary>
-/// 验方目录 API（P1-24 自 CatalogController 拆出，绝对路由 /api/v1/formulas/*）。
+/// 验方目录 API（P1-24 自 CatalogController 拆出；P2-9 相对路由，类级 Route 前缀 api/v{version}/formulas）。
 /// </summary>
 [ApiController]
 [Route("api/v{version:apiVersion}/formulas")]
@@ -37,12 +37,12 @@ public class FormulasController : BaseCrudController
         _formulaService = formulaService;
     }
 
-        #region 验方端点（原 FormulasController，绝对路由 /api/v1/formulas/*）
+        #region 验方端点（原 FormulasController，相对路由）
 
         /// <summary>
         /// 获取验方分页列表
         /// </summary>
-        [HttpGet("/api/v{version:apiVersion}/formulas")]
+        [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaListDto>>), 200)]
         public override async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
@@ -79,7 +79,7 @@ public class FormulasController : BaseCrudController
         /// 下载验方导入 JSON 模板（2026-08-13：Excel→JSON——后端不涉及 Excel 格式，保持通用性）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpGet("/api/v{version:apiVersion}/formulas/import-template")]
+        [HttpGet("import-template")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
         public IActionResult FormulaImportTemplate()
         {
@@ -142,7 +142,7 @@ public class FormulasController : BaseCrudController
         /// 导出验方为 JSON 数组（含药材组成明细，2026-08-13：Excel→JSON；P2：按分类筛选，对齐客户端 category）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpGet("/api/v{version:apiVersion}/formulas/export")]
+        [HttpGet("export")]
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> FormulaExport(
             [FromQuery] string? category = null,
@@ -168,7 +168,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 获取验方详情
         /// </summary>
-        [HttpGet("/api/v{version:apiVersion}/formulas/{id}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public override async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
@@ -193,7 +193,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 新增验方
         /// </summary>
-        [HttpPost("/api/v{version:apiVersion}/formulas")]
+        [HttpPost]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateFormula(
@@ -222,7 +222,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 更新验方信息
         /// </summary>
-        [HttpPut("/api/v{version:apiVersion}/formulas/{id}")]
+        [HttpPut("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         public async Task<IActionResult> UpdateFormula(
@@ -250,7 +250,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 删除验方（软删除）
         /// </summary>
-        [HttpDelete("/api/v{version:apiVersion}/formulas/{id}")]
+        [HttpDelete("{id}")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
         public override async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -274,7 +274,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 切换验方启用/禁用状态
         /// </summary>
-        [HttpPost("/api/v{version:apiVersion}/formulas/{id}/toggle-status")]
+        [HttpPost("{id}/toggle-status")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -303,7 +303,7 @@ public class FormulasController : BaseCrudController
         /// 恢复已删除的验方 — 仅 Admin（业务管理）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminBusinessOnly)]
-        [HttpPost("/api/v{version:apiVersion}/formulas/{id}/restore")]
+        [HttpPost("{id}/restore")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
@@ -332,7 +332,7 @@ public class FormulasController : BaseCrudController
         /// 批量删除验方
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpPost("/api/v{version:apiVersion}/formulas/batch-delete")]
+        [HttpPost("batch-delete")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse), 400)]
@@ -352,7 +352,7 @@ public class FormulasController : BaseCrudController
         /// 批量导入验方（JSON）
         /// </summary>
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
-        [HttpPost("/api/v{version:apiVersion}/formulas/batch-import")]
+        [HttpPost("batch-import")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<FormulaBatchImportResultDto>), 200)]
         public async Task<IActionResult> ImportFormulas(
@@ -392,7 +392,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 获取待校验验方列表
         /// </summary>
-        [HttpGet("/api/v{version:apiVersion}/formulas/pending-validation")]
+        [HttpGet("pending-validation")]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<FormulaDetailDto>>), 200)]
         public async Task<IActionResult> GetPendingValidation(
             [FromQuery] int page = 1,
@@ -413,7 +413,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 校验验方药材匹配
         /// </summary>
-        [HttpPost("/api/v{version:apiVersion}/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+        [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
@@ -458,7 +458,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 批量启用药方
         /// </summary>
-        [HttpPost("/api/v{version:apiVersion}/formulas/batch-enable")]
+        [HttpPost("batch-enable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
@@ -481,7 +481,7 @@ public class FormulasController : BaseCrudController
         /// <summary>
         /// 批量禁用药方
         /// </summary>
-        [HttpPost("/api/v{version:apiVersion}/formulas/batch-disable")]
+        [HttpPost("batch-disable")]
         [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
         [EnableRateLimiting("ApiCalls")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]

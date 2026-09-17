@@ -5,6 +5,11 @@ namespace LYBT.Module.MedicalCases.Services;
 
 public partial class MedicalCaseCommandService
 {
+    /// <summary>
+    /// 审计操作类型：0=创建 1=更新 2=状态变更 3=删除 4=取消（对齐 MedicalCaseStateService.AuditOperationCancel）
+    /// </summary>
+    private const int AuditOperationUpdate = 1;
+
     private void ValidateEditReason(MedicalCase medicalCase, MedicalCaseInputDto request, Guid currentUserId)
         => _stateGuard.EnsureCanEdit(medicalCase, request.EditReason, currentUserId);
 
@@ -47,7 +52,7 @@ public partial class MedicalCaseCommandService
             OperatorId = currentUserId,
             OperatorName = operatorInfo?.UserName ?? string.Empty,
             OperatorRole = operatorInfo?.Role != null ? (int)operatorInfo.Role : 0,
-            OperationType = 1,
+            OperationType = AuditOperationUpdate,
             Reason = request.EditReason,
             ChangedFields = string.Join(",", changed.Keys),
             OldValues = System.Text.Json.JsonSerializer.Serialize(changed.ToDictionary(k => k.Key, v => v.Value.Old)),
@@ -57,7 +62,7 @@ public partial class MedicalCaseCommandService
     }
 
     private void ValidateEditPermission(MedicalCase medicalCase, Guid currentUserId, bool isAdmin)
-        => MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "Save", _logger);
+        => MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, currentUserId, isAdmin, "Save", _logger);
 
     private static void UpdateMedicalCaseBasicFields(MedicalCase medicalCase, MedicalCaseInputDto request)
     {

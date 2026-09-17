@@ -80,6 +80,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
             _medicalCaseRepository,
             _sessionManager,
             _clinicSettingsService,
+            Substitute.For<IFileDialogService>(),
             _loggerFactory,
             _printService);
 

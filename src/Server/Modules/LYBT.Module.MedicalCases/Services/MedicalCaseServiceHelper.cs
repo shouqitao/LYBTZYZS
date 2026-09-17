@@ -126,15 +126,9 @@ namespace LYBT.Module.MedicalCases.Services
                 catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
                 {
                     // P1-17: 最后一次不再重试，跳出循环走下方 409 转换（原 when-filter 会让原始异常逃逸成 500）
+                    // P2-1: Repository 层已改为直接抛出 DbUpdateConcurrencyException（不再包装 InvalidOperationException + message.Contains）
                     if (attempt >= maxRetries) break;
                     logger.LogWarning(ex, "[SVC] MedicalCase.{Operation} -> ConcurrencyRetry - Attempt={Attempt}",
-                        operationName, attempt);
-                    await Task.Delay(100 * attempt);
-                }
-                catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改"))
-                {
-                    if (attempt >= maxRetries) break;
-                    logger.LogWarning("[SVC] MedicalCase.{Operation} -> ConcurrencyRetry - Attempt={Attempt}",
                         operationName, attempt);
                     await Task.Delay(100 * attempt);
                 }
@@ -147,9 +141,10 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
-        /// 编辑权限验证: Admin可编辑所有，非Admin只能编辑自己创建的进行中医案
+        /// 操作权限验证: Admin可操作所有，非Admin只能操作自己创建的未完成医案
+        /// 合并原 EnsureCanEdit / EnsureCanDelete（核心逻辑相同，仅日志与异常文案不同）
         /// </summary>
-        public static void EnsureCanEdit(
+        public static void EnsureCanOperate(
             MedicalCase medicalCase,
             Guid userId,
             bool isAdmin,
@@ -164,7 +159,7 @@ namespace LYBT.Module.MedicalCases.Services
             var reason = medicalCase.UserId != userId ? "非创建医生" : $"医案状态为{medicalCase.CaseStatus}";
             logger.LogWarning("[SVC] MedicalCase.{Operation} -> PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId} Reason={Reason}",
                 operation, medicalCase.Id, userId, reason);
-            throw new UnauthorizedAccessException($"无权限编辑此医案：{reason}");
+            throw new UnauthorizedAccessException($"无权限执行此操作：{reason}");
         }
 
         /// <summary>
@@ -177,26 +172,6 @@ namespace LYBT.Module.MedicalCases.Services
 
             medicalCase.IsPrinted = false;
             medicalCase.PrintVersion += 1;
-        }
-
-        /// <summary>
-        /// 删除权限验证: Admin可删除所有，非Admin只能删除自己创建的进行中医案
-        /// </summary>
-        public static void EnsureCanDelete(
-            MedicalCase medicalCase,
-            Guid userId,
-            bool isAdmin,
-            string operation,
-            ILogger logger)
-        {
-            if (isAdmin) return;
-            if (medicalCase.UserId == userId &&
-                medicalCase.CaseStatus != MedicalCaseStatus.Completed)
-                return;
-
-            logger.LogWarning("[SVC] MedicalCase.{Operation} -> PermissionDenied - MedicalCaseId={MedicalCaseId} UserId={UserId}",
-                operation, medicalCase.Id, userId);
-            throw new UnauthorizedAccessException($"无权限执行此操作");
         }
     }
 }

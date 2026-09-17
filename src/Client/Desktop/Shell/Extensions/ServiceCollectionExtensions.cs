@@ -182,6 +182,9 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IDesktopUpdateService, DesktopUpdateService>();
             containerRegistry.RegisterSingleton<IClientConfigurationStore, ClientConfigurationStore>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
+            // P2-4: 文件对话框抽象（PrescriptionPrintHandler.ExportPdfAsync 解耦 Microsoft.Win32.SaveFileDialog）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Services.IFileDialogService,
+                LYBT.Desktop.Infrastructure.Services.FileDialogService>();
 
             // refactor-auth-role-system Phase 2.1: 可扩展角色注册表
             containerRegistry.RegisterSingleton<IRoleRegistry>(resolver =>

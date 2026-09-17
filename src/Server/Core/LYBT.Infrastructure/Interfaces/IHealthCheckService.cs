@@ -11,8 +11,9 @@ namespace LYBT.Infrastructure.Interfaces
         /// <summary>
         /// 执行数据库连接健康检查
         /// </summary>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>数据库健康检查结果</returns>
-        Task<DatabaseHealthCheckResult> CheckDatabaseAsync();
+        Task<DatabaseHealthCheckResult> CheckDatabaseAsync(CancellationToken cancellationToken = default);
     }
 }
 

@@ -46,12 +46,13 @@ public class UserRepository : IUserRepository
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            var kw = keyword.ToLower();
+            // P2-7: 前缀匹配走索引（UserName/RealName/Email）；手机号保留 Contains（用户常按尾号/片段搜索）
+            var kw = keyword.Trim();
             query = query.Where(u =>
-                (u.UserName != null && u.UserName.ToLower().Contains(kw)) ||
-                (u.RealName != null && u.RealName.ToLower().Contains(kw)) ||
+                (u.UserName != null && EF.Functions.Like(u.UserName, $"{kw}%")) ||
+                (u.RealName != null && EF.Functions.Like(u.RealName, $"{kw}%")) ||
                 (u.PhoneNumber != null && u.PhoneNumber.Contains(kw)) ||
-                (u.Email != null && u.Email.ToLower().Contains(kw)));
+                (u.Email != null && EF.Functions.Like(u.Email, $"{kw}%")));
         }
 
         if (role.HasValue)

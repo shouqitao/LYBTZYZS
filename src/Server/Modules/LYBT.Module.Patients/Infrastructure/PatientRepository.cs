@@ -58,10 +58,11 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            var kw = keyword.ToLower();
+            // P2-7: 前缀匹配走索引（Name/PinYinCode）；手机号保留 Contains（用户常按尾号/片段搜索）
+            var kw = keyword.Trim();
             query = query.Where(p =>
-                p.Name.ToLower().Contains(kw) ||
-                (p.PinYinCode != null && p.PinYinCode.ToLower().Contains(kw)) ||
+                EF.Functions.Like(p.Name, $"{kw}%") ||
+                (p.PinYinCode != null && EF.Functions.Like(p.PinYinCode, $"{kw}%")) ||
                 (p.PhoneNumber != null && p.PhoneNumber.Contains(kw)));
         }
 

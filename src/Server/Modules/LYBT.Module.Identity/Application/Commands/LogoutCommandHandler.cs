@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using MediatR;
 using LYBT.Module.Identity.Interfaces;
+using LYBT.Module.Identity.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
@@ -31,7 +30,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result<bool>>
 
         if (!string.IsNullOrEmpty(input.RefreshToken))
         {
-            var tokenHash = ComputeTokenHash(input.RefreshToken);
+            var tokenHash = TokenHashHelper.ComputeTokenHash(input.RefreshToken);
             var session = await _authSessionRepository.GetByTokenHashAsync(tokenHash, cancellationToken);
             if (session != null && session.IsValid())
             {
@@ -51,11 +50,5 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result<bool>>
 
         _logger.LogInformation("[Handler] Logout completed - UserName={UserName}", input.UserName ?? "(unknown)");
         return Result<bool>.Success(true);
-    }
-
-    private static string ComputeTokenHash(string token)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

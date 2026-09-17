@@ -100,10 +100,10 @@ public class MedicalCaseServiceHelperTests
 
     #endregion
 
-    #region EnsureCanEdit 测试
+    #region EnsureCanOperate 测试
 
     [Fact]
-    public void EnsureCanEdit_OwnerWithActiveCase_ShouldNotThrow()
+    public void EnsureCanOperate_OwnerWithActiveCase_ShouldNotThrow()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
@@ -111,7 +111,7 @@ public class MedicalCaseServiceHelperTests
         var logger = NullLogger.Instance;
 
         // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
+        var act = () => MedicalCaseServiceHelper.EnsureCanOperate(
             medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
@@ -119,7 +119,7 @@ public class MedicalCaseServiceHelperTests
     }
 
     [Fact]
-    public void EnsureCanEdit_NonOwner_ShouldThrowUnauthorizedAccessException()
+    public void EnsureCanOperate_NonOwner_ShouldThrowUnauthorizedAccessException()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
@@ -127,60 +127,7 @@ public class MedicalCaseServiceHelperTests
         var logger = NullLogger.Instance;
 
         // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
-            medicalCase, userId, false, "TestOperation", logger);
-
-        // Assert
-        act.Should().Throw<UnauthorizedAccessException>()
-            .WithMessage("*无权限编辑此医案*");
-    }
-
-    [Fact]
-    public void EnsureCanEdit_Admin_ShouldNotThrow()
-    {
-        // Arrange
-        var medicalCase = CreateTestMedicalCase();
-        var userId = Guid.NewGuid();
-        var logger = NullLogger.Instance;
-
-        // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanEdit(
-            medicalCase, userId, true, "TestOperation", logger);
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
-    #endregion
-
-    #region EnsureCanDelete 测试
-
-    [Fact]
-    public void EnsureCanDelete_OwnerWithActiveCase_ShouldNotThrow()
-    {
-        // Arrange
-        var medicalCase = CreateTestMedicalCase();
-        var userId = medicalCase.UserId;
-        var logger = NullLogger.Instance;
-
-        // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
-            medicalCase, userId, false, "TestOperation", logger);
-
-        // Assert
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void EnsureCanDelete_NonOwner_ShouldThrowUnauthorizedAccessException()
-    {
-        // Arrange
-        var medicalCase = CreateTestMedicalCase();
-        var userId = Guid.NewGuid(); // 不同的用户
-        var logger = NullLogger.Instance;
-
-        // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
+        var act = () => MedicalCaseServiceHelper.EnsureCanOperate(
             medicalCase, userId, false, "TestOperation", logger);
 
         // Assert
@@ -189,7 +136,7 @@ public class MedicalCaseServiceHelperTests
     }
 
     [Fact]
-    public void EnsureCanDelete_Admin_ShouldNotThrow()
+    public void EnsureCanOperate_Admin_ShouldNotThrow()
     {
         // Arrange
         var medicalCase = CreateTestMedicalCase();
@@ -197,11 +144,29 @@ public class MedicalCaseServiceHelperTests
         var logger = NullLogger.Instance;
 
         // Act
-        var act = () => MedicalCaseServiceHelper.EnsureCanDelete(
+        var act = () => MedicalCaseServiceHelper.EnsureCanOperate(
             medicalCase, userId, true, "TestOperation", logger);
 
         // Assert
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureCanOperate_OwnerWithCompletedCase_ShouldThrow()
+    {
+        // Arrange
+        var medicalCase = CreateTestMedicalCase();
+        medicalCase.CaseStatus = MedicalCaseStatus.Completed;
+        var userId = medicalCase.UserId;
+        var logger = NullLogger.Instance;
+
+        // Act
+        var act = () => MedicalCaseServiceHelper.EnsureCanOperate(
+            medicalCase, userId, false, "TestOperation", logger);
+
+        // Assert
+        act.Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("*无权限执行此操作*");
     }
 
     #endregion

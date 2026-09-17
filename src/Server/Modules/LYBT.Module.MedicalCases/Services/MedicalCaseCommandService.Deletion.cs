@@ -33,7 +33,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查: 确保操作者有权删除此医案
-            MedicalCaseServiceHelper.EnsureCanDelete(medicalCase, operatorId, isAdmin, "Delete", _logger);
+            MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, operatorId, isAdmin, "Delete", _logger);
 
             // US-MC-015: 软删除仅限已完成医案，未完成医案应使用「取消」（物理删除）
             if (medicalCase.CaseStatus != MedicalCaseStatus.Completed)
@@ -87,7 +87,7 @@ namespace LYBT.Module.MedicalCases.Services
                     }
 
                     // 权限检查: 确保操作者有权删除此医案
-                    MedicalCaseServiceHelper.EnsureCanDelete(entity, operatorId, isAdmin, "BatchDelete", _logger);
+                    MedicalCaseServiceHelper.EnsureCanOperate(entity, operatorId, isAdmin, "BatchDelete", _logger);
 
                     // US-MC-015: 软删除仅限已完成医案，未完成医案应使用「取消」（物理删除）
                     if (entity.CaseStatus != MedicalCaseStatus.Completed)

@@ -41,7 +41,7 @@ public class LocalImportExportJsonTests
     [Fact]
     public void LocalHerbTemplateAndExport_ReturnJson_NotFile()
     {
-        // P1 修复：Local 补药材 export/import-template/export-all 端点（此前缺失 404——测试盲区）
+        // P2-12: export-all 已合并入 export（专用导出查询，不分页）
         var type = typeof(LYBT.LocalWebAPI.Controllers.HerbsController); // P1-24 拆分后
         AssertJsonResponse(
             type.GetMethod("HerbImportTemplate")!,
@@ -49,12 +49,10 @@ public class LocalImportExportJsonTests
         );
         AssertJsonResponse(
             type.GetMethod("HerbExport")!,
-            "药材筛选导出端点（US-HERB-013）必须返回 ApiResponse（JSON 数组）"
+            "药材导出端点（US-HERB-013，P2-12 合并 export-all）必须返回 ApiResponse（JSON 数组）"
         );
-        AssertJsonResponse(
-            type.GetMethod("HerbExportAll")!,
-            "药材全量导出端点（US-HERB-007）必须返回 ApiResponse（JSON 数组）"
-        );
+        type.GetMethod("HerbExportAll")
+            .Should().BeNull("export-all 已合并入 export（P2-12）");
     }
 
     [Fact]

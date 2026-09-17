@@ -22,7 +22,7 @@ namespace LYBT.Infrastructure.Services
         }
 
         /// <inheritdoc/>
-        public async Task<DatabaseHealthCheckResult> CheckDatabaseAsync()
+        public async Task<DatabaseHealthCheckResult> CheckDatabaseAsync(CancellationToken cancellationToken = default)
         {
             var result = new DatabaseHealthCheckResult("db", "Database Connectivity");
 
@@ -30,7 +30,7 @@ namespace LYBT.Infrastructure.Services
 
             try
             {
-                var canConnect = await _dbContext.Database.CanConnectAsync();
+                var canConnect = await _dbContext.Database.CanConnectAsync(cancellationToken);
                 if (!canConnect)
                 {
                     result.Status = HealthStatus.Unhealthy;
@@ -61,7 +61,7 @@ namespace LYBT.Infrastructure.Services
                     }
 
                     // 仅在关系型数据库上检查迁移
-                    var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
+                    var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
                     var pendingCount = pendingMigrations.Count();
                     result.PendingMigrationCount = pendingCount;
 
@@ -72,6 +72,10 @@ namespace LYBT.Infrastructure.Services
                     // InMemory 或其他非关系型数据库
                     result.Status = HealthStatus.Healthy;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

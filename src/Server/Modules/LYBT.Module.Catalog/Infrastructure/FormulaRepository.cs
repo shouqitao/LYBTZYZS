@@ -150,6 +150,43 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
         => ExistsAsync(f => f.Name == name, excludeId, ct);
 
     /// <inheritdoc/>
+    /// P2-12: 导出专用查询——不分页，直接 ToListAsync（可选 Include Herbs 供明细导出）
+    public override async Task<List<Formula>> GetAllForExportAsync(
+        string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false,
+        CancellationToken ct = default, bool includeChildren = false)
+    {
+        var query = _context.Formulas
+            .AsNoTracking()
+            .Where(f => !f.IsDeleted)
+            .AsQueryable();
+
+        if (includeChildren)
+            query = query.Include(f => f.Herbs);
+
+        if (!isAdmin && operatorId.HasValue)
+        {
+            query = query.Where(f => f.UserId == operatorId.Value || f.IsShared);
+        }
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var kw = keyword.ToLower();
+            query = query.Where(f =>
+                f.Name.ToLower().Contains(kw) ||
+                (f.Effect != null && f.Effect.ToLower().Contains(kw)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            query = query.Where(f => f.Category != null && f.Category.Contains(category));
+        }
+
+        return await query
+            .OrderByDescending(f => f.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    /// <inheritdoc/>
     public async Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate,
         CancellationToken cancellationToken = default)

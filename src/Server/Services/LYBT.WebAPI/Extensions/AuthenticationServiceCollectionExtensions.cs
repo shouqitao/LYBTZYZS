@@ -27,9 +27,11 @@ public static class AuthenticationServiceCollectionExtensions
         if (!services.Any(sd => sd.ServiceType == typeof(Microsoft.AspNetCore.Identity.UserManager<LYBT.Entities.Users.ApplicationUser>)))
             throw new InvalidOperationException("AddIdentity must be called before RegisterAuthenticationServices (see Program.cs 325-330)");
 
-        // unify-configuration-system: 使用强类型 JwtOptions
-        var jwtOptions = new JwtOptions();
-        configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+        // P2-3: 标准 Options 链（AddLybtServerConfiguration 已注册 DI 侧；此处注册/读取本地实例用于本方法内联消费）
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateDataAnnotations();
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
         // JWT 认证 - 从统一配置读取
         try

@@ -51,7 +51,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
+            MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, currentUserId, isAdmin, "SetPrescriptionFlag", _logger);
 
             // 更新NeedsPrescription标志
             medicalCase.NeedsPrescription = needsPrescription;

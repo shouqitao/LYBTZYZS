@@ -18,6 +18,9 @@ public interface ICatalogQueryService<TListDto, TDetailDto>
     /// <summary>按ID获取详情。</summary>
     Task<Result<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct);
 
-    /// <summary>导出详情列表（含关联明细，如验方 Herbs；上限 10000）。</summary>
+    /// <summary>导出详情列表（含关联明细，如验方 Herbs；P2-12 专用导出查询，不分页）。</summary>
     Task<Result<List<TDetailDto>>> ExportDetailsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
+
+    /// <summary>导出列表（无子集合导航；P2-12 专用导出查询，不分页）。</summary>
+    Task<Result<List<TListDto>>> ExportListsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default);
 }

@@ -62,6 +62,17 @@ public partial class MedicalCaseMapper
     /// </summary>
     public partial List<MedicalCaseDetailDto> ToDetailDtos(List<MedicalCase> entities);
 
+    /// <summary>
+    /// MedicalCaseDetailDto 转换为 MedicalCaseListDto（QueryRecent——Detail 含 List 全部字段，同名自动映射）
+    /// P2-6: 替代 QueryRecentAsync 中 14 行手动字段拷贝
+    /// </summary>
+    public partial MedicalCaseListDto DetailToListDto(MedicalCaseDetailDto detail);
+
+    /// <summary>
+    /// MedicalCaseDetailDto 列表转换为 MedicalCaseListDto 列表
+    /// </summary>
+    public partial List<MedicalCaseListDto> DetailToListDtos(List<MedicalCaseDetailDto> details);
+
     // ========== Consultation映射（聚合内使用） ==========
 
     /// <summary>

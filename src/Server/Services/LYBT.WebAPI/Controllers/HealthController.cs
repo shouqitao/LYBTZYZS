@@ -74,10 +74,11 @@ public class HealthController : BaseApiController
     [HttpGet("details")]
     [Authorize]  // 详细健康检查需要认证
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDetailedHealth()
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> GetDetailedHealth(CancellationToken ct = default)
     {
         // Architecture Fix: 使用IHealthCheckService执行健康检查
-        var dbCheck = await _healthCheckService.CheckDatabaseAsync();
+        var dbCheck = await _healthCheckService.CheckDatabaseAsync(ct);
 
         var overallStatus = dbCheck.Status;
         var statusString = overallStatus switch
@@ -95,8 +96,16 @@ public class HealthController : BaseApiController
             Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)
         };
 
-        var statusCode = overallStatus == HealthStatus.Healthy ? 200 : 503;
-        return StatusCode(statusCode, ApiResponse<object>.CreateSuccess(response));
+        // P2-8: 503 时 body 的 success 必须为 false（原恒 CreateSuccess 致探针误判）
+        var isHealthy = overallStatus == HealthStatus.Healthy;
+        var statusCode = isHealthy ? 200 : 503;
+        var body = new ApiResponse<object>
+        {
+            Success = isHealthy,
+            Message = isHealthy ? "操作成功" : $"健康检查失败：{statusString}",
+            Data = response
+        };
+        return StatusCode(statusCode, body);
     }
 }
 

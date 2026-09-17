@@ -46,8 +46,8 @@ public static class OperatorAccessor
     {
         if (string.IsNullOrWhiteSpace(roleStr))
         {
-            logger.LogWarning("角色值为空，默认使用Doctor");
-            return UserRole.Doctor;
+            logger.LogWarning("角色值为空，拒绝访问");
+            throw new UnauthorizedAccessException("无法解析用户角色：角色声明缺失");
         }
 
         if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
@@ -56,7 +56,7 @@ public static class OperatorAccessor
         if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
             return role;
 
-        logger.LogWarning("无效的角色值: {RoleString}，默认使用Doctor", roleStr);
-        return UserRole.Doctor;
+        logger.LogWarning("无效的角色值: {RoleString}，拒绝访问", roleStr);
+        throw new UnauthorizedAccessException($"无法解析用户角色：无效的角色值 '{roleStr}'");
     }
 }

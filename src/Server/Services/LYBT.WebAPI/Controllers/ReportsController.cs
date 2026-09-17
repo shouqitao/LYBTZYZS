@@ -51,7 +51,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
-            return BadRequest("开始日期不能晚于结束日期");
+            return ValidationFail("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyIncomeAsync(start, end, GetDoctorFilter(), cancellationToken);
 
@@ -72,7 +72,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
-            return BadRequest("开始日期不能晚于结束日期");
+            return ValidationFail("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyConsultationsAsync(start, end, GetDoctorFilter(), cancellationToken);
 
@@ -93,7 +93,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
-            return BadRequest("开始日期不能晚于结束日期");
+            return ValidationFail("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDailyHerbUsageAsync(start, end, GetDoctorFilter(), cancellationToken);
 
@@ -152,7 +152,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
-            return BadRequest("开始日期不能晚于结束日期");
+            return ValidationFail("开始日期不能晚于结束日期");
 
         var dto = await _reportService.GetDoctorPerformanceAsync(start, end, GetDoctorFilter(), cancellationToken);
 
@@ -174,7 +174,7 @@ public class ReportsController : BaseApiController
         var start = startDate ?? DateTime.Today;
         var end = endDate ?? start;
         if (start > end)
-            return BadRequest("开始日期不能晚于结束日期");
+            return ValidationFail("开始日期不能晚于结束日期");
 
         if (top <= 0 || top > ReportOptions.MaxTopConst)
             return ValidationFail($"top 必须在 1-{ReportOptions.MaxTopConst} 之间");

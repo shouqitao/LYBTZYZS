@@ -27,6 +27,7 @@ public class PrescriptionPrintHandler
     private readonly IMedicalCaseRepository _repository;
     private readonly ISessionManager _sessionManager;
     private readonly IClinicSettingsService _clinicSettingsService;
+    private readonly IFileDialogService _fileDialogService;
     private readonly ILogger<PrescriptionPrintHandler> _logger;
 
     #endregion
@@ -38,6 +39,7 @@ public class PrescriptionPrintHandler
         IMedicalCaseRepository repository,
         ISessionManager sessionManager,
         IClinicSettingsService clinicSettingsService,
+        IFileDialogService fileDialogService,
         ILoggerFactory loggerFactory,
         IPrintService<PrescriptionPrintModel>? printService = null)
     {
@@ -45,6 +47,7 @@ public class PrescriptionPrintHandler
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
+        _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
         _logger = loggerFactory.CreateLogger<PrescriptionPrintHandler>();
         _printService = printService;
     }
@@ -143,20 +146,18 @@ public class PrescriptionPrintHandler
 
             var printModel = BuildPrintModel(prescription, currentPatient, consultationData);
 
-            // 弹出保存对话框
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "PDF 文件 (*.pdf)|*.pdf",
-                DefaultExt = ".pdf",
-                FileName = $"处方笺_{currentPatient?.Name}_{DateTime.Now:yyyyMMdd}"
-            };
+            // P2-4: 通过 IFileDialogService 抽象弹出保存对话框（解耦 Microsoft.Win32.SaveFileDialog）
+            var filePath = _fileDialogService.ShowSaveFileDialog(
+                filter: "PDF 文件 (*.pdf)|*.pdf",
+                defaultExt: ".pdf",
+                fileName: $"处方笺_{currentPatient?.Name}_{DateTime.Now:yyyyMMdd}");
 
-            if (dialog.ShowDialog() != true)
+            if (filePath == null)
                 return PrintResult.Success(); // 用户取消，非错误
 
-            await _printService.ExportAsync(printModel, dialog.FileName, Printing.Interfaces.ExportFormat.Pdf);
+            await _printService.ExportAsync(printModel, filePath, Printing.Interfaces.ExportFormat.Pdf);
 
-            _logger.LogInformation("PDF导出成功: {FilePath}", dialog.FileName);
+            _logger.LogInformation("PDF导出成功: {FilePath}", filePath);
             return PrintResult.Success();
         }
         catch (Exception ex)

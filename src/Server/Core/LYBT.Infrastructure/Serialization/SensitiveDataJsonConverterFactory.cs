@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,10 +14,9 @@ namespace LYBT.Infrastructure.Serialization;
 public class SensitiveDataJsonConverterFactory : JsonConverterFactory
 {
     /// <summary>
-    /// 缓存类型是否包含敏感属性的检查结果
+    /// 缓存类型是否包含敏感属性的检查结果（P2-11: ConcurrentDictionary.GetOrAdd 取代手写 lock）
     /// </summary>
-    private static readonly Dictionary<Type, bool> _hasSensitivePropertiesCache = new();
-    private static readonly object _cacheLock = new();
+    private static readonly ConcurrentDictionary<Type, bool> _hasSensitivePropertiesCache = new();
 
     /// <summary>
     /// 判断是否可以转换指定类型
@@ -46,19 +46,9 @@ public class SensitiveDataJsonConverterFactory : JsonConverterFactory
     /// </summary>
     private static bool HasSensitiveProperties(Type type)
     {
-        lock (_cacheLock)
-        {
-            if (_hasSensitivePropertiesCache.TryGetValue(type, out var cached))
-            {
-                return cached;
-            }
-
-            var hasSensitive = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Any(p => SensitiveDataMasker.GetSensitiveDataAttribute(p) != null);
-
-            _hasSensitivePropertiesCache[type] = hasSensitive;
-            return hasSensitive;
-        }
+        return _hasSensitivePropertiesCache.GetOrAdd(type, static t =>
+            t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Any(p => SensitiveDataMasker.GetSensitiveDataAttribute(p) != null));
     }
 
     /// <summary>

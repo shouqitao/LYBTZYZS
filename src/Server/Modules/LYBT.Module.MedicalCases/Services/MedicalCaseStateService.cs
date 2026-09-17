@@ -213,7 +213,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, operatorId, isAdmin, "Suspend", _logger);
+            MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, operatorId, isAdmin, "Suspend", _logger);
 
             // 业务规则验证：只有Suspended/Active状态可以挂起
             if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
@@ -270,7 +270,7 @@ namespace LYBT.Module.MedicalCases.Services
             }
 
             // 权限检查
-            MedicalCaseServiceHelper.EnsureCanEdit(medicalCase, operatorId, isAdmin, "Cancel", _logger);
+            MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, operatorId, isAdmin, "Cancel", _logger);
 
             // T5-P2-16: 非当天本人取消需原因（US-MC-014 保留审计理由）
             var isSameDay = medicalCase.CreatedAt.Date == DateTime.Today;

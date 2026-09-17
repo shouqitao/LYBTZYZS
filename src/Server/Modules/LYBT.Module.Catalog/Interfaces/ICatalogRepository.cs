@@ -24,6 +24,11 @@ public interface ICatalogRepository<TEntity> : IRepository<TEntity>
     Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
 
     /// <summary>
+    /// 导出查询（P2-12：不分页，直接 ToListAsync 全量加载；可选子集合导航）。
+    /// </summary>
+    Task<List<TEntity>> GetAllForExportAsync(string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false);
+
+    /// <summary>
     /// 检查实体名称是否已存在。
     /// </summary>
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);

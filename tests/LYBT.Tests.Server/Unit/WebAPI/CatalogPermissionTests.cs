@@ -7,16 +7,16 @@ using Xunit;
 namespace LYBT.Tests.Server;
 
 /// <summary>
-/// Catalog 权限收紧守卫（I-5 / F-L4-01：药材/验方 batch-import、import-template、export（及 export-all）必须 AdminOrSuperAdmin）
+/// Catalog 权限收紧守卫（I-5 / F-L4-01：药材/验方 batch-import、import-template、export 必须 AdminOrSuperAdmin）
 /// Remote 端：P1-24 拆分后 HerbsController（药材）/ FormulasController（验方）
+/// P2-12: export-all 已合并入 export
 /// </summary>
 public class CatalogPermissionTests
 {
     private static readonly string[] HerbBatchImportLike = new[]
     {
         "HerbImportTemplate", // GET /herbs/import-template
-        "HerbExport",         // GET /herbs/export
-        "HerbExportAll",      // GET /herbs/export-all
+        "HerbExport",         // GET /herbs/export（P2-12 合并 export-all）
         "BatchImport"         // POST /herbs/batch-import
     };
 

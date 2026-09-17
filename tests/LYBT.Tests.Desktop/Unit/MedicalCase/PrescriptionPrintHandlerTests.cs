@@ -25,6 +25,7 @@ public class PrescriptionPrintHandlerTests
     private readonly IMedicalCaseRepository _repository;
     private readonly ISessionManager _sessionManager;
     private readonly IClinicSettingsService _clinicSettingsService;
+    private readonly IFileDialogService _fileDialogService;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IPrintService<PrescriptionPrintModel> _printService;
 
@@ -39,13 +40,14 @@ public class PrescriptionPrintHandlerTests
         {
             Name = "测试诊所", Department = "中医科", Address = "测试地址", Phone = "12345678"
         });
+        _fileDialogService = Substitute.For<IFileDialogService>();
         _loggerFactory = Substitute.For<ILoggerFactory>();
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(Substitute.For<ILogger>());
         _printService = Substitute.For<IPrintService<PrescriptionPrintModel>>();
     }
 
     private PrescriptionPrintHandler CreateSut() => new(
-        _medicalCaseService, _repository, _sessionManager, _clinicSettingsService, _loggerFactory, _printService);
+        _medicalCaseService, _repository, _sessionManager, _clinicSettingsService, _fileDialogService, _loggerFactory, _printService);
 
     [Fact]
     public async Task PrintPreviewAsync_NoPrescription_ShouldReturnFailed()

@@ -52,10 +52,18 @@ internal sealed class CatalogQueryService<TEntity, TListDto, TDetailDto> : ICata
 
     public async Task<Result<List<TDetailDto>>> ExportDetailsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
     {
-        // R-20: 导出明细需要子集合导航（验方 Herbs）
-        var result = await _repository.GetPagedAsync(1, 10000, keyword, category, operatorId, isAdmin, ct, includeChildren: true);
-        var dtos = result.Items.Select(_toDetail).ToList();
+        // P2-12: 专用导出查询（不分页，直接 ToListAsync）；R-20: 导出明细需要子集合导航（验方 Herbs）
+        var entities = await _repository.GetAllForExportAsync(keyword, category, operatorId, isAdmin, ct, includeChildren: true);
+        var dtos = entities.Select(_toDetail).ToList();
         return Result<List<TDetailDto>>.Success(dtos);
+    }
+
+    public async Task<Result<List<TListDto>>> ExportListsAsync(string? keyword = null, string? category = null, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default)
+    {
+        // P2-12: 列表导出（药材等无子集合导航需求）
+        var entities = await _repository.GetAllForExportAsync(keyword, category, operatorId, isAdmin, ct, includeChildren: false);
+        var dtos = entities.Select(_toList).ToList();
+        return Result<List<TListDto>>.Success(dtos);
     }
 
     public async Task<Result<TDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)

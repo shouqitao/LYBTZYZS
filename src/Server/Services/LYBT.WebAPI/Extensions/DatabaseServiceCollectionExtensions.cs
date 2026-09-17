@@ -27,15 +27,21 @@ public static class DatabaseServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // unify-configuration-system: 使用强类型配置
-        var databaseOptions = new DatabaseOptions();
-        configuration.GetSection(DatabaseOptions.SectionName).Bind(databaseOptions);
+        // P2-3: 标准 Options 链（AddLybtServerConfiguration 已注册 DI 侧；此处注册/读取本地实例用于本方法内联消费）
+        services.AddOptions<DatabaseOptions>()
+            .Bind(configuration.GetSection(DatabaseOptions.SectionName))
+            .ValidateDataAnnotations();
+        var databaseOptions = configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
 
-        var memoryCacheOptions = new LybtMemoryCacheOptions();
-        configuration.GetSection(LybtMemoryCacheOptions.SectionName).Bind(memoryCacheOptions);
+        services.AddOptions<LybtMemoryCacheOptions>()
+            .Bind(configuration.GetSection(LybtMemoryCacheOptions.SectionName))
+            .ValidateDataAnnotations();
+        var memoryCacheOptions = configuration.GetSection(LybtMemoryCacheOptions.SectionName).Get<LybtMemoryCacheOptions>() ?? new LybtMemoryCacheOptions();
 
-        var jwtOptions = new JwtOptions();
-        configuration.GetSection(JwtOptions.SectionName).Bind(jwtOptions);
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateDataAnnotations();
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
         // 数据库配置 - 从统一配置读取（HEALTHCHECK-FALLBACK-FIX: 共享 resolver——与 SqlServerHealthCheck 同源）
         var connectionString = DatabaseConnectionResolver.Resolve(configuration, databaseOptions);

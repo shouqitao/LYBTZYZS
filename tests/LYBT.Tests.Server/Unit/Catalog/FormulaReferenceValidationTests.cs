@@ -108,6 +108,8 @@ internal sealed class FakeHerbRepository : IHerbRepository
     public Task<List<Herb>> GetAllActiveAsync(CancellationToken ct = default) => Task.FromResult(new List<Herb>());
     public Task<PagedResult<Herb>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false)
         => Task.FromResult(new PagedResult<Herb>());
+    public Task<List<Herb>> GetAllForExportAsync(string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false)
+        => Task.FromResult(new List<Herb>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);
     public Task<Herb?> GetByNameAsync(string name, CancellationToken ct = default) => Task.FromResult(ExistingHerb);
 }
@@ -126,6 +128,8 @@ internal sealed class FakeFormulaRepository : IFormulaRepository
     public Task<bool> HardDeleteAsync(Formula entity, CancellationToken ct = default) => Task.FromResult(true);
     public Task<PagedResult<Formula>> GetPagedAsync(int page, int pageSize, string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false)
         => Task.FromResult(new PagedResult<Formula>());
+    public Task<List<Formula>> GetAllForExportAsync(string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false)
+        => Task.FromResult(new List<Formula>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);
     public Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate, CancellationToken ct = default)

@@ -75,11 +75,12 @@ public static class UnifiedMiddlewareConfiguration
         // refactor-logging-system: 实现端到端请求追踪（A-31-C1: UseLybtCorrelationId 单点注册）
         app.UseLybtCorrelationId();
 
-        // 1.3 HTTPS重定向和HSTS（生产环境）
+        // 1.3 HSTS 与 HTTPS 重定向（生产环境）
+        // P2-2: UseHsts 必须先于 UseHttpsRedirection（官方文档顺序——HSTS 响应头需写在重定向前）
         if (!app.Environment.IsDevelopment())
         {
-            app.UseHttpsRedirection();
             app.UseHsts();
+            app.UseHttpsRedirection();
         }
 
         // 1.4 安全响应头
