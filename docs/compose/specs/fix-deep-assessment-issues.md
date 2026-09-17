@@ -1,6 +1,6 @@
 ---
 feature: fix-deep-assessment-issues
-status: in-progress
+status: delivered
 updated: 2026-09-17
 branch: master
 commits: a9d60a7b1..HEAD
@@ -9,6 +9,16 @@ commits: a9d60a7b1..HEAD
 # 修复深度评估问题（稳定项目）
 
 ## Report
+
+**What was built** — 修复资深架构师深度评估发现的 P0+P1+P2 全部 19 项。P0：NRE Bug 修复。P1：ReportsController 信封统一、OperatorAccessor 安全加固、TokenHashHelper 去重、EnsureCanOperate 合并、LoginCommandHandler 拆分、CommandResult ErrorCode。P2：并发异常类型化、中间件顺序、Options 标准链、IFileDialogService 解耦、Mapperly 映射、搜索前缀优化、HealthController 修复、路由统一、Obsolete 别名删除、ConcurrentDictionary、导出去伪分页。.NET 保持 8.0 LTS。
+
+**Verification** — NuGet restore 环境问题持续，无法运行 `dotnet build`。需在能正常 restore 的环境执行构建验证。
+
+**Journey log** —
+- ComputeTokenHash 实际有 4 处重复（审查报告说 3 处），全部提取
+- ReportsController 实际有 5 处裸 BadRequest（审查报告说 2 处），全部修复
+- 搜索从子串匹配改前缀匹配是语义变更，Phone 搜索保留 Contains
+- UserCredentialDto 和 UserDetailDto 是不同类型，LoginCommandHandler 需保持 credential 类型贯穿验证路径
 
 ## [S1] Problem
 
@@ -51,6 +61,6 @@ commits: a9d60a7b1..HEAD
 - CatalogEntityCommandHandlerBase 收敛（需独立设计）
 
 ## Tasks
-- [ ] T1: P0 Bug + P1 安全/正确性修复 (covers: S2)
-- [ ] T2: P2 代码质量修复 (covers: S2)
-- [ ] T3: 全量构建验证 (depends: T1, T2)
+- [x] T1: P0 Bug + P1 安全/正确性修复 (covers: S2)
+- [x] T2: P2 代码质量修复 (covers: S2)
+- [ ] T3: 全量构建验证 — NuGet 环境问题阻塞 (depends: T1, T2)
