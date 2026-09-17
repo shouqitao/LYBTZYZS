@@ -3,6 +3,42 @@
 
 > ⚠️ 本文档超 400 行（约 870 行）。**TL;DR**：WPF + Prism.DryIoc + CommunityToolkit.Mvvm；Shell→Roles→Modules→Core 四层；双模式经 `SwitchingApiClient` 切 Remote Refit / Local HttpClient。**权威**：本文为 Desktop 架构当前态；业务规则见 `02-requirements/`，进程级 ViewModel 设计见 `07-ui-ux/viewmodel-layer-design.md`。建议优先阅读「概述 + 架构图 + 层结构」，细节按需检索。
 
+## 本文目录
+
+- [概述](#概述)
+- [架构图](#架构图)
+- [Desktop 层详细结构（16 项目）](#desktop-层详细结构16-项目)
+- [Desktop 分层规则](#desktop-分层规则)
+- [Core 层 (8 个项目)](#core-层-8-个项目)
+- [Modules 层 (6 个业务模块)](#modules-层-6-个业务模块)
+- [Views 和 Controls 目录约定](#views-和-controls-目录约定)
+- [Roles 层（2 个项目，3 类角色入口）](#roles-层2-个项目3-类角色入口)
+- [Shell 层](#shell-层)
+- [ViewModel 基类体系](#viewmodel-基类体系)
+- [Components 分层模式](#components-分层模式)
+- [模块注册规范](#模块注册规范)
+- [Data 层组件职责](#data-层组件职责)
+- [命令模式](#命令模式)
+- [导航模式](#导航模式)
+- [事件架构](#事件架构)
+- [启动管线](#启动管线)
+- [可复用业务控件](#可复用业务控件)
+- [业务弹窗](#业务弹窗)
+- [编辑模式状态机 (EditModeStateMachine)](#编辑模式状态机-editmodestatemachine)
+- [CardReader 集成](#cardreader-集成)
+- [UI 全局规范](#ui-全局规范)
+- [凭证存储架构](#凭证存储架构)
+- [Token 刷新失败处理](#token-刷新失败处理)
+- [客户端异常处理 / 错误消息 / 追踪码](#客户端异常处理--错误消息--追踪码)
+- [菜单可见性矩阵](#菜单可见性矩阵)
+- [Desktop 启动诊断 / 个人资料](#desktop-启动诊断--个人资料)
+- [同步 UI 架构](#同步-ui-架构)
+- [性能预算](#性能预算)
+- [UnsavedChangesDialog 交互流程](#unsavedchangesdialog-交互流程)
+- [已知实现缺口（I-6, 2026-08-19）](#已知实现缺口i-6-2026-08-19)
+- [架构决策记录](#架构决策记录)
+- [变更记录](#变更记录)
+
 ## 概述
 
 桌面端采用 WPF + Prism 8.1.97（模块框架/DI/导航）+ CommunityToolkit.Mvvm（ViewModel 基类）架构，共 16 个项目，分为 Core (基础设施)、Modules (业务模块)、Roles (角色入口)、Shell (应用外壳) 四层。通过 DryIoc DI 容器管理依赖，使用 Prism Region 机制实现模块间导航。

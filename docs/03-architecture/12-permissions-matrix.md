@@ -1,13 +1,13 @@
 # Permissions — 权限矩阵（视图层速查）
 > 版本: v1.0 | 日期: 2026-08-20
 
-> **⚠️ 本文件是权限矩阵的视图层速查，权威定义见 [[01-product/04-permissions#一、统一权限矩阵]]（SSOT）。**
+> **⚠️ 本文件是权限矩阵的视图层速查，权威定义见 [04-permissions.md §一、统一权限矩阵](../01-product/04-permissions.md#一统一权限矩阵)（SSOT）。**
 >
 > - **角色定义**见 [02-personas.md](../01-product/02-personas.md)
 > - **完整权限矩阵 + 代码策略映射 + P0/P1/P2 修复项**见 [04-permissions.md](../01-product/04-permissions.md)
 > - **本文件**仅保留行级安全、授权策略速查、代码待对齐清单等架构层视图内容
 
-> 权限矩阵详见 [[01-product/04-permissions#一、统一权限矩阵]]（SSOT）。本节为视图层速查——角色 × 操作权限详见目标态定义（2026-08-03 权限四连决策），代码策略映射与 P0-P2 修复项均在 04-permissions.md 中跟踪。
+> 权限矩阵详见 [04-permissions.md §一、统一权限矩阵](../01-product/04-permissions.md#一统一权限矩阵)（SSOT）。本节为视图层速查——角色 × 操作权限详见目标态定义（2026-08-03 权限四连决策），代码策略映射与 P0-P2 修复项均在 04-permissions.md 中跟踪。
 
 ## Row-Level Security
 

@@ -8,3 +8,4 @@
 | [02-ssot-architecture.md](02-ssot-architecture.md) | SSOT 架构 |
 | [03-technical-adoption-governance.md](03-technical-adoption-governance.md) | 技术引入治理 |
 | [04-project-doc-standard.md](04-project-doc-standard.md) | 项目文档标准 |
+| [tech-debt.md](tech-debt.md) | 技术债看板（SSOT 索引） |

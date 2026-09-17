@@ -1,6 +1,18 @@
 # 安全架构
 > 版本: v1.3 | 日期: 2026-09-17
 
+## 本文目录
+
+- [1. 概述](#1-概述)
+- [2. 认证流程](#2-认证流程)
+- [3. JWT Claims Schema](#3-jwt-claims-schema)
+- [4. 授权策略](#4-授权策略)
+- [5. 桌面端认证状态机](#5-桌面端认证状态机)
+- [6. Policy-to-Endpoint Matrix](#6-policy-to-endpoint-matrix)
+- [7. 安全考虑](#7-安全考虑)
+- [8. 决策记录](#8-决策记录)
+- [变更记录](#变更记录)
+
 ## 1. 概述
 
 > **Token Family 管理已实现**（`e2cedf6a2`，2026-08-06）：族旋转 + 登出撤销 + 安全审计日志均已在 v1.0 补回；重放检测（FamilyId/IsUsed）延后至 v2.0。安全架构覆盖 Server（ASP.NET Core WebAPI）和 Client（WPF Desktop）两端，确保认证、授权、Token 生命周期管理的完整性和一致性。

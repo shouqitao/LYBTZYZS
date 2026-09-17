@@ -1,43 +1,47 @@
 # 数据模型（视图层速查）
-> 版本: v1.1 | 日期: 2026-09-17
+> 版本: v1.2 | 日期: 2026-09-17
 
-> **用户速览**：核心实体 + 状态枚举的一屏压缩表，**不是权威定义**。
+> **用户速览**：核心实体索引 + 状态枚举指针，**不是权威定义**。
 >
 > **权威定义**：实体字段/状态机/计算属性等详细定义见 [04-data-model.md](04-data-model.md)（SSOT，见 [02-ssot-architecture.md](../00-governance/02-ssot-architecture.md)）。
 >
 > 由 [13-project-master-plan.md §二](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03）。
 
-## 2.1 核心实体（Shared/LYBT.Entities）
+## 2.1 核心实体索引（Shared/LYBT.Entities）
 
-| 实体 | 表名 | 关键字段 | 关系 |
-|------|------|---------|------|
-| **ApplicationUser** | Users (Identity) | RealName, PinYinCode, Role(UserRole), IsSysAdmin, Status, MustChangeOnNextLogin, RegistrationFee | IdentityUser<Guid> |
-| **Patient** | Patients | Name, PinYinCode, Gender, BirthDate, IdNumber(加密), PhoneNumber(加密), Status | — |
-| **MedicalCase** | MedicalCases | PatientId, UserId(Doctor), CaseNumber, CaseStatus, NeedsPrescription, IsPrinted, PrintCount | 聚合根 |
-| **Consultation** | Consultations | PresentIllness, TongueDiagnosis, PulseDiagnosis, TcmDiagnosis | 1:1 MedicalCase |
-| **Prescription** | Prescriptions | MedicalCaseId, PrescriptionNumber, DosageCount, Discount, Usage, Advice, ReferencedFormulas | 1:0..1 MedicalCase |
-| **PrescriptionItem** | PrescriptionItems | PrescriptionId, HerbId, HerbName, Quantity, UnitPrice, Unit, Role(君臣佐使) | 1:N Prescription |
-| **Herb** | Herbs | Name, PinYinCode, Category, Properties, Origin, Spec, Unit, Price, CostPrice, Effect, Usage | — |
-| **Formula** | Formulas | Name, Effect, Indication, Usage, Status, IsShared, ValidationStatus, Category, FormulaType | — |
-| **FormulaHerbItem** | FormulaHerbItems | FormulaId, HerbId, HerbName, Quantity, Unit, Role | 1:N Formula |
-| **Registration** | Registrations | PatientId, DoctorId, MedicalCaseId, Source(前台/医生), Status, QueueNumber, RegistrationFee | — |
-| **AuthSession** | AuthSessions | UserId, RefreshToken, TokenFamily | — |
-| **SecurityAuditLog** | SecurityAuditLogs | 事件类型、用户、IP、时间 | — |
-| **MedicalCaseAuditLog** | MedicalCaseAuditLogs | 医案ID、操作、操作人 | — |
-| **MedicalCasePrintLog** | MedicalCasePrintLogs | 医案ID、打印类型、打印机、操作人 | — |
-| **SystemLog** | SystemLogs | 系统日志（已标记死代码，待删除） | — |
+| 实体 | 表名 | 权威文档 |
+|------|------|---------|
+| **ApplicationUser** | Users (Identity) | [04-data-model.md](04-data-model.md) §实体定义 |
+| **Patient** | Patients | [04-data-model.md](04-data-model.md) §实体定义 |
+| **MedicalCase** | MedicalCases | [04-data-model.md](04-data-model.md) §实体定义（聚合根） |
+| **Consultation** | Consultations | [04-data-model.md](04-data-model.md) §实体定义（MedicalCase 内部） |
+| **Prescription** | Prescriptions | [04-data-model.md](04-data-model.md) §实体定义（MedicalCase 内部） |
+| **PrescriptionItem** | PrescriptionItems | [04-data-model.md](04-data-model.md) §实体定义（Prescription 内部） |
+| **Herb** | Herbs | [04-data-model.md](04-data-model.md) §实体定义 |
+| **Formula** | Formulas | [04-data-model.md](04-data-model.md) §实体定义 |
+| **FormulaHerbItem** | FormulaHerbItems | [04-data-model.md](04-data-model.md) §实体定义（Formula 内部） |
+| **Registration** | Registrations | [04-data-model.md](04-data-model.md) §实体定义 |
+| **AuthSession** | AuthSessions | [04-data-model.md](04-data-model.md) §辅助实体概览 |
+| **SecurityAuditLog** | SecurityAuditLogs | [04-data-model.md](04-data-model.md) §辅助实体概览 |
+| **MedicalCaseAuditLog** | MedicalCaseAuditLogs | [04-data-model.md](04-data-model.md) §辅助实体概览 |
+| **MedicalCasePrintLog** | MedicalCasePrintLogs | [04-data-model.md](04-data-model.md) §辅助实体概览 |
+| **SystemLog** | SystemLogs | 已标记死代码，待删除 |
 
-> **索引**：P1-20 `Patients.IdNumber` 过滤唯一 `IX_Patients_IdNumber` `[IsDeleted]=0 AND [IdNumber] IS NOT NULL`；P1-8 `Formulas.Name` 过滤唯一 `[IsDeleted]=0`（同 Herbs）|
+> 字段定义、关系与索引一律以 [04-data-model.md](04-data-model.md) 为准；本文件不再维护字段级清单（避免与代码漂移）。
 
-## 2.2 状态枚举
+## 2.2 状态枚举指针
 
-| 枚举 | 值 | 用途 |
-|------|-----|------|
-| **MedicalCaseStatus** | Active/Suspended/Completed（无 Cancelled，取消=物理删除） | 医案生命周期 |
-| **RegistrationStatus** | Waiting/InProgress/Completed/Cancelled | 挂号生命周期 |
-| **RegistrationSource** | Receptionist/Doctor | 挂号来源 |
-| **CommonStatus** | Enabled/Disabled | 通用启用/禁用 |
-| **UserRole** | SuperAdmin(100)/Admin(10)/Doctor(1)/Receptionist(0) | 角色 |
-| **FormulaValidationStatus** | Draft/Validated | 验方验证状态 |
-| **FormulaType** | Classic/Experience | 经典方/经验方 |
-| **Gender** | Male/Female/Unknown | 性别 |
+状态枚举的权威定义见 [04-data-model.md §枚举定义](04-data-model.md#枚举定义)。速查指针：
+
+| 枚举 | 权威文档 |
+|------|---------|
+| **MedicalCaseStatus** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **RegistrationStatus** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **RegistrationSource** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **CommonStatus** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **UserRole** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **FormulaValidationStatus** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **FormulaType** | [04-data-model.md](04-data-model.md) §枚举定义 |
+| **Gender** | [04-data-model.md](04-data-model.md) §枚举定义 |
+
+> **补充**：取消医案 = 物理删除（无 `Cancelled` 状态），详见 [02-requirements/07-medical-cases.md](../02-requirements/07-medical-cases.md) BR-000。

@@ -51,7 +51,7 @@
 
 ## 2. 技术栈与工具链
 
-> 技术栈详见 [[00-architecture-summary]]
+> 技术栈详见 [00-architecture-summary.md](../03-architecture/00-architecture-summary.md)
 
 ---
 

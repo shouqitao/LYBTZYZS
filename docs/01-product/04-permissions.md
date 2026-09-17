@@ -210,3 +210,13 @@
 | 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |
 | 2026-08-02 | v4.0 新建：从 02-personas.md 拆分；修正代码策略映射（实际代码与文档偏差）；增加 P0/P1/P2 分级 |
 | 2026-06-28 | 初始权限矩阵（含在 personas 中） |
+
+---
+
+## 相关文档
+
+- [ADR-0026: 授权矩阵 SSOT 收敛](../03-architecture/decisions/0026-authorization-matrix-ssot.md) — 本文件为权限矩阵唯一权威（SSOT）
+- [03-architecture/12-permissions-matrix.md](../03-architecture/12-permissions-matrix.md) — 架构层视图速查（非权威）
+- [01-product/02-personas.md](02-personas.md) — 角色定义
+- [00-governance/02-ssot-architecture.md](../00-governance/02-ssot-architecture.md) — SSOT 架构（信息点 #16）
+

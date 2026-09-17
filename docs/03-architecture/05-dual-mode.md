@@ -91,8 +91,8 @@
 | **JWT 签名密钥** | 配置文件 (appsettings.json) | 固定常量 (`LYBT-LocalWebAPI-Secret-Key-2024`) | 本地无需运维管理 |
 | **SecurityAuditLog** | 记录（登录/登出/刷新/锁定） | 不记录 | 本地无审计合规需求 |
 | **Rate Limiting** | 5次/60s 登录 + 100次/min API（均按来源 IP 分区） | `LocalLogin` 5次/60s + `ApiCalls` 100次/min（均按来源 IP 分区，2026-09-16 对齐远程维度；原为全局固定窗口且无 `ApiCalls`） | 本地登录防爆破 |
-| **客户端传输链** | 经私有 `IHttpClientFactory` 的具名客户端 `RemoteApi`：`LoggingHttpHandler` → `CachingHttpMessageHandler` → `AuthorizationMessageHandler` → `TokenRefreshHandler` → `SocketsHttpHandler` | 具名客户端 `LocalApi`：`CachingHttpMessageHandler` → `AuthorizationMessageHandler` → `SocketsHttpHandler`（**不含** `TokenRefreshHandler`：本地续期由 Shell `TokenLifecycleService` 显式驱动，避免误发远程刷新） | 两端同一「携带 Bearer」契约；本地端点同受 `[Authorize]` 保护。**2026-09-16 第二批**：桌面主容器为 Prism.DryIoc，无法直接 `AddHttpClient`，故由 `DesktopHttpTransportFactory` 以私有 `ServiceCollection` 构建传输层工厂后注入 DryIoc（ADR-0028）；handler 由工厂池化管理（`SetHandlerLifetime`/`PooledConnectionLifetime` = 2min），幂等请求带 3 次指数退避重试（POST 不重试）。此前本地传输无 `AuthorizationMessageHandler` 且返回共享 `HttpClient`，导致受保护端点恒 401、第二次调用 `ObjectDisposedException`（2026-09-16 第一批修复） |
-| **响应缓存** | 进程内 `IMemoryCache` + 传输层读写一体（ADR-0029） | 同左（双端共用同一条 handler 链） | GET 2xx 缓存（键 `GET:{path}{query}#{userId}`，目录类 TTL 5min / 事务类 30s，条目显式 `Size=1`）；非 GET 2xx 按域前缀失效（含 registrations ↔ medicalcases 跨域依赖） |
+| **客户端传输链** | 经私有 `IHttpClientFactory` 的具名客户端 `RemoteApi`：`LoggingHttpHandler` → `CachingHttpMessageHandler` → `AuthorizationMessageHandler` → `TokenRefreshHandler` → `SocketsHttpHandler` | 具名客户端 `LocalApi`：`CachingHttpMessageHandler` → `AuthorizationMessageHandler` → `SocketsHttpHandler`（**不含** `TokenRefreshHandler`：本地续期由 Shell `TokenLifecycleService` 显式驱动，避免误发远程刷新） | 两端同一「携带 Bearer」契约；本地端点同受 `[Authorize]` 保护。**2026-09-16 第二批**：桌面主容器为 Prism.DryIoc，无法直接 `AddHttpClient`，故由 `DesktopHttpTransportFactory` 以私有 `ServiceCollection` 构建传输层工厂后注入 DryIoc（[ADR-0028](decisions/0028-desktop-http-resilience.md)）；handler 由工厂池化管理（`SetHandlerLifetime`/`PooledConnectionLifetime` = 2min），幂等请求带 3 次指数退避重试（POST 不重试）。此前本地传输无 `AuthorizationMessageHandler` 且返回共享 `HttpClient`，导致受保护端点恒 401、第二次调用 `ObjectDisposedException`（2026-09-16 第一批修复） |
+| **响应缓存** | 进程内 `IMemoryCache` + 传输层读写一体（[ADR-0029](decisions/0029-desktop-response-cache.md)） | 同左（双端共用同一条 handler 链） | GET 2xx 缓存（键 `GET:{path}{query}#{userId}`，目录类 TTL 5min / 事务类 30s，条目显式 `Size=1`）；非 GET 2xx 按域前缀失效（含 registrations ↔ medicalcases 跨域依赖） |
 | **默认授权（FallbackPolicy）** | `RequireAuthenticatedUser` | `RequireAuthenticatedUser`（2026-09-16 补齐，此前缺失为 fail-open） | 双端默认拒绝，匿名端点须显式 `[AllowAnonymous]` |
 | **CORS** | 配置允许桌面端 origin | 不配置（同源） | localhost 无跨域 |
 | **Sync 端点** | 6 个（作为 Sync Server） | 无（本地是唯一数据源） | 本地无需与自己同步 |
@@ -301,6 +301,8 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 - [ADR-0010: LocalWebAPI 统一服务层](decisions/0010-localwebapi-unified-service-layer.md) — 保留复用，不解耦
 - [ADR-0009: URL 驱动双模式架构](decisions/0009-url-driven-dual-mode.md) — 当前决策：嵌入式 Kestrel + URL 驱动切换 + SQL Server LocalDB
 - [ADR-0002: 双模式架构](decisions/0002-dual-mode-architecture.md) — 历史决策（已被 ADR-0009 取代）
+- [ADR-0028: 桌面 HTTP 传输层池化与弹性](decisions/0028-desktop-http-resilience.md) — IHttpClientFactory + Polly（2026-09-16）
+- [ADR-0029: 桌面 GET 响应缓存策略](decisions/0029-desktop-response-cache.md) — 进程内 IMemoryCache + 传输层读写一体（2026-09-16）
 
 ---
 

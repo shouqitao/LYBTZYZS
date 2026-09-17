@@ -146,7 +146,7 @@ docs/                                # 文档
 
 ## 技术栈全景
 
-> 技术栈详见 [[00-architecture-summary]]
+> 技术栈详见 [00-architecture-summary.md](00-architecture-summary.md)
 
 ## 依赖方向
 
@@ -166,7 +166,7 @@ graph LR
 - 所有层可引用 Shared.Models
 - Module 之间禁止直接依赖，跨模块通过域接口（`IXxxCrossModuleService`）通信
 
-> **注意**：`AuthService` 为死代码（Controller 绕过直接用 UserManager），详见 [[auth]]
+> **注意**：`AuthService` 为死代码（Controller 绕过直接用 UserManager），详见 [modules/auth.md](modules/auth.md)
 
 ### Client 层依赖
 

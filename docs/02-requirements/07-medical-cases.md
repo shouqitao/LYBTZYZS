@@ -15,11 +15,37 @@
 
 ---
 
+## 本文目录
+
+- [模块级设计（横切）](#模块级设计横切)
+- [US-MC-001: 创建医案（含诊断+处方聚合）](#us-mc-001-创建医案含诊断处方聚合)
+- [US-MC-002: 保存医案（统一聚合保存）](#us-mc-002-保存医案统一聚合保存)
+- [US-MC-003: 设置处方需求标志（3步工作流第2步）](#us-mc-003-设置处方需求标志3步工作流第2步)
+- [US-MC-004: 查询医案详情（含诊断+处方）](#us-mc-004-查询医案详情含诊断处方)
+- [US-MC-005: 分页查询医案列表（按角色过滤）](#us-mc-005-分页查询医案列表按角色过滤)
+- [US-MC-006: 统一查询（ByPatient/Pending/Recent 等）](#us-mc-006-统一查询bypatientpendingrecent-等)
+- [US-MC-007: 跨模块搜索（患者+诊断+日期）](#us-mc-007-跨模块搜索患者诊断日期)
+- [US-MC-008: 查询诊断历史](#us-mc-008-查询诊断历史)
+- [US-MC-009: 查询处方历史](#us-mc-009-查询处方历史)
+- [US-MC-010: 更新医案状态（Active/Suspended）](#us-mc-010-更新医案状态activesuspended)
+- [US-MC-011: 完成医案（工作流验证）](#us-mc-011-完成医案工作流验证)
+- [US-MC-012: 强制关闭医案](#us-mc-012-强制关闭医案)
+- [US-MC-013: 暂停医案](#us-mc-013-暂停医案)
+- [US-MC-014: 取消医案（物理删除）](#us-mc-014-取消医案物理删除)
+- [US-MC-015: 删除/批量删除医案（软删除，管理清理）](#us-mc-015-删除批量删除医案软删除管理清理)
+- [US-MC-016: 查询医案权限](#us-mc-016-查询医案权限)
+- [US-MC-017: 查询审计日志（20字段差异）](#us-mc-017-查询审计日志20字段差异)
+- [US-MC-018: 批量详情查询（≤50，解决 N+1）](#us-mc-018-批量详情查询50解决-n1)
+- [US-MC-019: 复制上次处方微调](#us-mc-019-复制上次处方微调)
+- [US-MC-020: 医案批量删除](#us-mc-020-医案批量删除)
+- [交叉引用](#交叉引用)
+- [变更记录](#变更记录)
+
 ## 模块级设计（横切）
 
 ### 架构与设计原则
 
-医案模块采用 CQRS + 聚合根模式（CQRS 定义见 [[03-server]]）：5 个服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。
+医案模块采用 CQRS + 聚合根模式（CQRS 定义见 [03-server.md](../03-architecture/03-server.md)）：5 个服务（Command/Query/Processing/Audit/Print）由 `IMedicalCaseFacade` 聚合门面统一调度。所有业务规则集中在 `MedicalCaseBusinessRules`。
 
 1. **单一聚合根**：Consultation 和 Prescription 是 MedicalCase 的内部实体，无独立 CRUD 接口；外部模块（如验方导入）通过 MedicalCase 聚合根间接操作。
 2. **状态机驱动**：状态转换由域方法统一控制（如 `CompleteAsync`），禁止通过 `UpdateStatusAsync` 直接设置 `Completed`。

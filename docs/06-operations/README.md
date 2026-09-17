@@ -31,6 +31,7 @@
 | 09 | [变量与密钥](09-variables-secrets.md) | 配置变量清单 |
 | 10 | [变量值域](10-variables-value-ranges.md) | 取值范围+默认值 |
 | 11 | [服务器配置参考](11-server-config-reference.md) | 生产环境速查 |
+| 12 | [Desktop 发布流程](12-desktop-release.md) | Velopack 打包与自动更新 |
 
 ## 日志系统
 
