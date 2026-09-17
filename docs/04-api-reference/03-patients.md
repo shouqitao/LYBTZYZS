@@ -1,9 +1,12 @@
 # 患者 API
 > 版本: v1.0 | 日期: 2026-08-20
 
-> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 默认权限: `DoctorOrAdminOrReceptionist`
+> Controller: `PatientsController` | 路由前缀: `/api/v1/patients` | 类级默认权限: `DoctorOrAdminOrReceptionist`
 >
-> ⚠️ **权限待对齐**（见 [04-permissions.md](../01-product/04-permissions.md)）：删除/禁用目标态 `AdminOrSuperAdmin`（代码当前仍为类级 `DoctorOrAdminOrReceptionist`）。
+> **当前操作级策略**（与代码一致，见 [04-permissions.md](../01-product/04-permissions.md)）：
+> - GET/POST/PUT、引用检查、导入模板/导出、by-id-number：类级 `DoctorOrAdminOrReceptionist`
+> - DELETE、batch-delete、toggle-status、batch-import：`AdminOrSuperAdmin`
+> - restore：`AdminBusinessOnly`
 
 ## 概述
 
@@ -18,7 +21,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 获取患者分页列表。Non-Admin 仅可见 Enabled 患者。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -48,21 +51,25 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 获取患者详情（含年龄自动计算）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 - **路径参数**: `id` (Guid)
 
-**响应**: `ApiResponse<PatientDetailDto>`
+**响应**: `ApiResponse<PatientDetailDto>`（字段与 `Patient` 实体/`PatientDetailDto` 对齐）
 
 ```json
 {
-  "id": "...", "name": "张三", "gender": "Male", "birthDate": "1991-03-15", "age": 35,
-  "phoneNumber": "13800138000", "idNumber": "110101199103150012", "address": "...",
-  "maritalStatus": "Married", "idType": "IdCard", "bloodType": "A",
-  "emergencyContactName": "张四", "emergencyContactPhone": "13700137000", "emergencyContactRelation": "配偶",
-  "allergyHistory": "青霉素过敏", "medicalHistory": "高血压病史5年",
-  "lastVisitTime": "2026-06-20T14:30:00Z", "visitCount": 12,
-  "disableReason": null, "pinYinCode": "ZS", "status": "Enabled",
-  "remark": "...", "createdBy": "...", "createdAt": "...", "updatedAt": "..."
+  "id": "...",
+  "name": "张三",
+  "gender": "Male",
+  "birthDate": "1991-03-15",
+  "age": 35,
+  "idNumber": "110101199103150012",
+  "phoneNumber": "13800138000",
+  "pinYinCode": "ZS",
+  "status": "Enabled",
+  "createdAt": "...",
+  "updatedAt": "...",
+  "createdBy": "..."
 }
 ```
 
@@ -76,7 +83,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 新增患者。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 
 **请求体** (`PatientInputDto`):
 
@@ -87,10 +94,6 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 | `birthDate` | date | 否 | 出生日期 |
 | `phoneNumber` | string | 否 | 联系电话 |
 | `idNumber` | string | 否 | 身份证号 |
-| `address` | string | 否 | 地址 |
-| `allergyHistory` | string | 否 | 过敏史 |
-| `medicalHistory` | string | 否 | 病史 |
-| `remark` | string | 否 | 备注 |
 | `pinYinCode` | string | 否 | 拼音码 |
 
 **响应** (201): `ApiResponse<PatientDetailDto>` — 同 GET /patients/{id}
@@ -107,7 +110,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 更新患者信息。Doctor 仅限自己创建的患者（见 [04-patients.md US-PAT-004](../02-requirements/04-patients.md)）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 - **路径参数**: `id` (Guid)
 - **请求体**: `PatientInputDto`（同 POST）
 - **响应**: `ApiResponse<PatientDetailDto>` — 返回更新后详情
@@ -125,7 +128,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 软删除患者。Doctor 仅限自己创建的患者（见 [04-patients.md US-PAT-005](../02-requirements/04-patients.md)）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `AdminOrSuperAdmin`
 - **路径参数**: `id` (Guid)
 - **响应**: `ApiResponse<bool>` → `true`
 
@@ -159,7 +162,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 批量软删除患者。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `AdminOrSuperAdmin`
 
 **请求体** (`BatchDeleteInputDto`):
 
@@ -183,7 +186,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 下载患者导入 JSON 模板（字段说明 + 示例，与 batch-import DTO 一致）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 - **响应类型**: `application/json`（`ApiResponse<object>` — 含 Fields/Example）
 
 ---
@@ -192,7 +195,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 导出患者 JSON 数组（按筛选条件，敏感字段自动脱敏）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
@@ -206,7 +209,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 恢复已删除的患者（绕过软删除全局过滤器）。
 
-- **权限**: `AdminOrSuperAdmin`
+- **权限**: `AdminBusinessOnly`
 - **路径参数**: `id` (Guid)
 - **响应**: `ApiResponse<PatientDetailDto>`
 
@@ -235,7 +238,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 检查患者是否被医案引用（删除前确认）。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 - **路径参数**: `id` (Guid)
 - **响应**: `ApiResponse<PatientReferenceCheckDto>`
 
@@ -251,7 +254,7 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 批量检查多个患者的引用关系。
 
-- **权限**: `DoctorOrReceptionist`
+- **权限**: `DoctorOrAdminOrReceptionist`
 
 **请求体** (`PatientBatchCheckReferenceInputDto`):
 

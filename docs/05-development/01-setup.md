@@ -15,7 +15,7 @@ git checkout master
 
 ### 1. .NET SDK
 
-- **版本**: 8.0.400+ (`global.json` 锁定 `8.0.400` + `rollForward: latestMinor`，实际接受 8.0.4xx)
+- **版本**: 8.0.400+ (`global.json` 锁定 `8.0.400` + `rollForward: latestPatch`，实际接受 8.0.4xx 补丁版本)
 - **下载**: https://dotnet.microsoft.com/download/dotnet/8.0
 - **验证**: `dotnet --version` 输出 `8.0.4xx`
 
@@ -70,7 +70,7 @@ CREATE DATABASE LYBTDB_Dev;
 - LocalDB 随 Visual Studio / SQL Server Express 安装，无需额外配置
 
 > ⚠️ **首次运行必须注入默认密码**（2026-09-13 修复，见 13c #135）：
-> 嵌入式 LocalWebAPI 首启会执行种子 `IdentitySeedData.SeedRolesAndAdminAsync`（建 4 角色 + sysadmin）。
+> 嵌入式 LocalWebAPI 首启会执行种子 `IdentitySeedData.SeedRolesAndAdminAsync`（路径：`src/Server/Modules/LYBT.Module.Identity/Services/IdentitySeedData.cs`，建 4 角色 + sysadmin）。
 > 仓库内 `Shell/appsettings.json` 的 `DefaultPasswords` 为占位符 `__REPLACE__`，**不满足密码策略**，
 > 种子会 fail-fast 并打印可执行错误（`[SEED] 创建用户 sysadmin 失败：…请检查默认密码配置…`）。
 > 本地调试请先注入合规密码（≥8 位，含大写/小写/数字/特殊字符）再启动客户端：
@@ -135,21 +135,20 @@ dotnet run
 # 访问 https://localhost:5001/api/v1/health 验证
 ```
 
-默认管理员账号:
+默认账号（启动仅自动 seed **sysadmin**）:
 
 | 用户名 | 密码 | 角色 |
 |--------|------|------|
-| `sysadmin` | `SysAdmin@2026!` | 系统运维 (IsSysAdmin=true) |
-| `admin` | `Admin@123456` | 管理员 (IsSysAdmin=false) |
+| `sysadmin` | 来自 `DefaultPasswords__SysAdminPassword`（环境变量/配置注入，不固化在文档） | 系统运维 (IsSysAdmin=true) |
 
-密码可在 `appsettings.json` > `DefaultPasswords` 中修改。
+> `admin` 等业务账号**不由种子自动创建**，由 sysadmin 登录后手动创建。密码可在 `appsettings.json` > `DefaultPasswords` 或环境变量中配置。
 
 ### 客户端
 
 1. Visual Studio 打开 `LYBTZYZS.sln`
 2. 设置 `LYBT.Desktop.Shell` 为启动项目
 3. F5 运行
-4. 默认连接远程模式 (localhost:5001)
+4. 默认连接 **本地模式**（`http://localhost:5300`，嵌入式 LocalWebAPI）；远程模式需改为远程 WebAPI 地址（如 `http://localhost:5000`）并先启动服务端
 
 ---
 

@@ -148,7 +148,7 @@ public partial class PatientMapper
 
 ### FluentValidation 验证器
 
-在 `LYBT.Shared.Validators` 中定义，Server 和 Desktop 共享：
+在 `LYBT.Shared.Models/Validators/` 中定义（已合并自原 `LYBT.Shared.Validators` 独立项目），Server 和 Desktop 共享：
 
 ```csharp
 using FluentValidation;

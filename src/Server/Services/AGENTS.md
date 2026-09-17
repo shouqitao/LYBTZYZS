@@ -16,7 +16,7 @@ Contains the ASP.NET Core WebAPI entry point project. Configures middleware, dep
 ### Working In This Directory
 - `Program.cs` is the entry point — configures DI, middleware, auth, CORS, and registers all modules.
 - When adding a new module, register it in the DI container in `Program.cs`.
-- API routes follow `/api/{module}/` convention.
+- API routes follow `api/v{version:apiVersion}/[controller]` (or explicit resource routes such as `api/v{version}/herbs`, `api/v{version}/formulas`).
 - Run locally: `dotnet run --project src/Server/Services/LYBT.WebAPI`
 
 ### Testing Requirements
@@ -29,8 +29,9 @@ Contains the ASP.NET Core WebAPI entry point project. Configures middleware, dep
 ## Dependencies
 
 ### Internal
-- [Modules/](../Modules/AGENTS.md) — All business modules (Auth, Users, Patients, Herbs, Formula, MedicalCase, Registration, Sync)
+- [Modules/](../Modules/AGENTS.md) — All business modules (Identity, Catalog, Patients, MedicalCases, Registrations, Reports)
 - [Core/](../Core/AGENTS.md) — `LYBT.Infrastructure` (DbContext, repositories)
+- [Shared/](../../Shared/AGENTS.md) — `LYBT.Entities` (domain entities, moved out of Server/Core), `LYBT.Shared.Models`
 
 ### External
 - ASP.NET Core 8

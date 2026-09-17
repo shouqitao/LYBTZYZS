@@ -1,15 +1,15 @@
 # 医案 API
 > 版本: v1.0 | 日期: 2026-08-20
 
-> Controllers: `MedicalCasesController`, `MedicalCaseProcessingController` | 路由前缀: `/api/v1/medicalcases` | 默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
+> Controller: `MedicalCasesController`（继承模块内 `BaseMedicalCasesController`） | 路由前缀: `/api/v1/medicalcases` | 类级默认权限: `[Authorize(Policy = "DoctorOrAdmin")]`
 >
-> ⚠️ **权限详见** [04-permissions.md](../01-product/04-permissions.md) §医案管理。代码已按此实现（`MedicalCasesController.cs:98` 使用 `DoctorOnly`），前台不可见。
+> **当前操作级策略**：POST /medicalcases（创建）= `DoctorOnly`（`MedicalCasesController.cs:122`）；历史聚合 `GET /patients/{id}/history` = `DoctorOrAdmin`。前台不可见。权限详见 [04-permissions.md](../01-product/04-permissions.md) §医案管理。
 
 ## 概述
 
 医案 (MedicalCase) 是系统核心聚合根，包含 Consultation (诊断) 和 Prescription (处方) 子实体。
 采用 CQRS 原则（见 [[03-server]]）: Command/Query/State 服务分离。所有写操作通过聚合根统一保存。
-资源级授权通过 `MedicalCaseAuthorizationHandler` 实现。
+授权以角色策略为主（类级 `DoctorOrAdmin` + 创建 `DoctorOnly`）；资源所有权在 Service 层校验。
 
 **所有响应使用统一信封**: `ApiResponse<T>`（格式见 [README.md §响应格式](README.md#响应格式)）。
 
@@ -21,7 +21,7 @@
 
 创建新医案，支持同时包含 Consultation 和 Prescription。`Id=null` 触发创建逻辑。
 
-- **权限**: `[Authorize(Policy = "DoctorOrAdmin")]`（目标态详见 [04-permissions.md](../01-product/04-permissions.md) §医案管理）
+- **权限**: `[Authorize(Policy = "DoctorOnly")]`（仅医生可创建，见 [04-permissions.md](../01-product/04-permissions.md) §医案管理）
 
 **请求体** (`MedicalCaseInputDto`):
 
@@ -561,3 +561,4 @@ curl -X GET "https://api.example.com/api/v1/medicalcases/query?queryType=ByPatie
 | 2026-06-12 | v1.6 | MedicalCaseInputDto 新增 userId/registrationId/editReason/needsPrescription |
 | 2026-06-25 | v2.0 | 补充所有端点完整请求/响应示例; 新增枚举值速查表 |
 | 2026-06-29 | v2.3 | batch-details/permissions/audit-logs 变为已实现 |
+| 2026-09-17 | v2.4 | 对齐代码：删除不存在的 `MedicalCaseProcessingController` 与已移除的 AuthorizationHandler 引用；POST 创建权限改为 `DoctorOnly` |

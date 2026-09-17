@@ -43,8 +43,10 @@
 - Logging → Models
 
 ### External
-- FluentValidation, BCrypt.Net-Next, hyjiacan.pinyin4net（Models）
+- FluentValidation, hyjiacan.pinyin4net, Microsoft.Extensions.Caching.Memory（Models）
 - Microsoft.Extensions.Options（Configuration）
 - Serilog（Logging）
+
+> **BCrypt.Net-Next 已移除（A-27）**：密码哈希统一走 Identity PBKDF2（UserManager）；`PasswordHelper` 仅保留生成/策略，不提供哈希。
 
 <!-- MANUAL: -->

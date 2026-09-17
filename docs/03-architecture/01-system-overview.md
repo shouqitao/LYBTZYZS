@@ -1,5 +1,5 @@
 # 系统架构总览
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.8 | 日期: 2026-09-17
 
 ## 概述
 
@@ -12,25 +12,24 @@ graph TB
     subgraph Client["Client 层 (WPF Desktop)"]
         Shell["Shell (应用外壳)"]
         Roles["Roles (Admin/Clinical)"]
-        Modules_C["业务模块 x7"]
+        Modules_C["业务模块 x6"]
         Core_C["Core (基础设施)"]
         Shell --> Roles --> Modules_C --> Core_C
     end
 
-    subgraph Shared["Shared 层 (.NET 类库)"]
-        Models["Shared.Models (DTO)"]
-        Components["Shared.Components"]
-        Utilities["Shared.Utilities"]
+    subgraph Shared["Shared 层 (.NET 类库, 5 项目)"]
+        Models["Shared.Models (DTO/枚举/错误码)"]
+        Entities_S["LYBT.Entities (领域实体)"]
+        SharedTools["Configuration / ExceptionHandling / Logging"]
     end
 
     subgraph Server["Server 层 (ASP.NET Core)"]
         WebAPI["WebAPI (入口)"]
         SignalRHub["SignalR Hub<br/>(实时推送, v1.0)"]
-        Modules_S["业务模块 (7 active + Sync v2.0)"]
+        Modules_S["业务模块 x6"]
         Infra["Infrastructure"]
-        Entities["Entities"]
         WebAPI --> SignalRHub
-        WebAPI --> Modules_S --> Infra --> Entities
+        WebAPI --> Modules_S --> Infra
     end
 
     subgraph Data["数据层"]
@@ -41,6 +40,7 @@ graph TB
     Core_C -.->|"SignalR 实时推送<br/>(v1.0, 见 ADR-0013)"| SignalRHub
     Modules_C --> Models
     Modules_S --> Models
+    Infra --> Entities_S
     Infra --> SQLServer
 ```
 
@@ -74,72 +74,65 @@ graph LR
 
 双模式对比详见 [05-dual-mode.md §概述](05-dual-mode.md#概述)（远程/本地触发条件、API 宿主、数据库、认证差异）。
 
-## 解决方案结构（Shared SSOT：共享契约/DTO 权威见本文件；模块细节权威见 [03-server.md](03-server.md)）
+## 解决方案结构（Shared 层权威见 [08-shared.md](08-shared.md)；Server 模块细节权威见 [03-server.md](03-server.md)）
+
+> 以下清单按仓库实际 `*.csproj` 对齐（2026-09-17）。历史文档中的 Shared.Components/Utilities/Primitives/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹，详见 [08-shared.md](08-shared.md)。
 
 ```
 LYBTZYZS/
 src/
   Client/Desktop/                    # WPF 桌面客户端
-    Core/                            # 核心库 (8个项目)
-      LYBT.Desktop.Contracts/        # 接口定义
-      LYBT.Desktop.Foundation/       # 基础设施 (配置、网络、安全)
+    Core/                            # 核心库 (5 个项目)
+      LYBT.Desktop.Contracts/        # 接口定义（IApiClient 统一契约）
+      LYBT.Desktop.Foundation/       # 基础设施 (HTTP/安全/配置)
       LYBT.Desktop.Infrastructure/   # 通用服务、控件
-      LYBT.Desktop.Models/           # 客户端模型
+      LYBT.Desktop.Controls/         # 可复用控件
       LYBT.Desktop.Printing/         # 打印服务
-      LYBT.Desktop.Utilities/        # 工具类库
-      LYBT.Desktop.LocalData/        # 本地数据访问 (LocalWebAPI HTTP Proxy Repository)
-      LYBT.Desktop.CardReader/       # 身份证读卡器硬件集成
-    Modules/                         # 业务模块 (7 active)
+    Modules/                         # 业务模块 (6 个)
       LYBT.Desktop.Auth/             # 认证
-      LYBT.Desktop.Formula/          # 验方
-      LYBT.Desktop.Herbs/            # 药材
-      LYBT.Desktop.MedicalCase/      # 医案 (含处方+编辑状态机)
-      LYBT.Desktop.Patients/         # 患者 (含读卡器集成)
-      LYBT.Desktop.Registration/     # 挂号
       LYBT.Desktop.Users/            # 用户
+      LYBT.Desktop.Catalog/          # 药材 + 验方（合并模块）
+      LYBT.Desktop.Patients/         # 患者 (含读卡器集成)
+      LYBT.Desktop.Registrations/    # 挂号
+      LYBT.Desktop.MedicalCase/      # 医案 (含处方+编辑状态机)
       # LYBT.Desktop.Sync/           # 🧲 v2.0 (N1 决策：v1.0 数据孤立)
-    Roles/                           # 角色入口 (3个)
+    Roles/                           # 角色入口 (2 个)
       LYBT.Desktop.Admin/            # 管理员端
       LYBT.Desktop.Clinical/         # 临床端
-      LYBT.Desktop.Receptionist/     # 前台接待端
     Shell/
       LYBT.Desktop.Shell/            # 应用外壳
+    LocalWebAPI/
+      LYBT.LocalWebAPI/              # 本地模式嵌入式 API 宿主
 
   Server/                            # 后端服务
-    Core/                            # 核心层 (2个项目)
-      LYBT.Entities/                 # 领域实体 (贫血模型)
-      LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类)
-    Modules/                         # 业务模块 (7 active)
-      LYBT.Module.Auth/
-      LYBT.Module.Formula/
-      LYBT.Module.Herbs/
-      LYBT.Module.MedicalCases/
-      LYBT.Module.Patients/
-      LYBT.Module.Registration/      # 挂号管理
-      LYBT.Module.Reports/           # 报表/历史聚合查询 (MC-008/009, D9 补回 v1.0)
-      LYBT.Module.Users/
+    Core/
+      LYBT.Infrastructure/           # 基础设施 (DbContext, Repository基类, 跨模块服务)
+      # 实体源已移至 src/Shared/LYBT.Entities（2026-08）
+    Modules/                         # 业务模块 (6 个物理项目)
+      LYBT.Module.Identity/          # 认证 + 用户
+      LYBT.Module.Catalog/           # 药材 + 验方
+      LYBT.Module.Patients/          # 患者
+      LYBT.Module.MedicalCases/      # 医案 (聚合根)
+      LYBT.Module.Registrations/     # 挂号
+      LYBT.Module.Reports/           # 报表/历史聚合查询
     Services/
       LYBT.WebAPI/                   # Web API 入口
 
-  Shared/                            # 共享库 (3个核心 + 5个工具)
-    LYBT.Shared.Components/          # 共享UI组件
-    LYBT.Shared.Models/              # DTO、Contract
-    LYBT.Shared.Utilities/           # 工具类
-    LYBT.Shared.Logging/             # 统一日志抽象
-    LYBT.Shared.Validators/          # 共享验证规则 (从 Module Validators 迁移)
-    LYBT.Shared.Configuration/       # 共享配置模型
-    LYBT.Shared.Primitives/          # 基础类型和常量
+  Shared/                            # 共享库 (5 个项目，权威见 08-shared.md)
+    LYBT.Entities/                   # 领域实体 (贫血模型, MedicalCase 唯一充血聚合根)
+    LYBT.Shared.Models/              # DTO/Contract/Enums/ErrorCodes/Validators/Utilities
+    LYBT.Shared.Configuration/       # 共享配置模型 (Options + Validators)
     LYBT.Shared.ExceptionHandling/   # 统一异常类型定义
+    LYBT.Shared.Logging/             # 统一日志抽象 (Serilog/脱敏/CorrelationId)
 
-tests/                               # 测试 (4 个项目, Testing Trophy 架构)
-    LYBT.Tests.Server/               # Server 全量测试 (~1185 tests, 真实 SQL Server + Respawn, 零 mock)
-    LYBT.Tests.Desktop/              # Desktop 全量测试 (~760 tests, SQL Server LocalDB + 真实 Repository)
-    LYBT.Tests.Architecture/         # 架构防护测试 (87 tests, 含 AntiMockRules)
-    LYBT.Tests.Integration/          # 集成测试 (Desktop+Server, WebApplicationFactory)
+tests/                               # 测试 (3 个项目, Testing Trophy 架构)
+    LYBT.Tests.Server/               # Server 集成/单元测试 (真实 SQL Server + Respawn)
+    LYBT.Tests.Desktop/              # Desktop 测试 (SQL Server LocalDB + 真实 Repository)
+    LYBT.Tests.Architecture/         # 架构防护测试 (含 AntiMockRules)
 docs/                                # 文档
 ```
 
-**项目总数**: 约 40+ 个项目
+**项目总数**: 主解决方案约 31 个 csproj（含 LocalWebAPI/Shell/Roles/Tests；不含 Tools）
 
 ## 设计原则（贯穿所有 project）
 
@@ -163,13 +156,13 @@ docs/                                # 文档
 graph LR
     WebAPI --> Modules_S["Module.*"]
     Modules_S --> Infrastructure
-    Infrastructure --> Entities
+    Infrastructure --> Entities_S["Shared.LYBT.Entities"]
     Modules_S --> Shared_M["Shared.Models"]
     Infrastructure --> Shared_M
 ```
 
 **规则**:
-- WebAPI -> Modules -> Infrastructure -> Entities (单向)
+- WebAPI -> Modules -> Infrastructure -> Entities（实体位于 `src/Shared/LYBT.Entities`，单向）
 - 所有层可引用 Shared.Models
 - Module 之间禁止直接依赖，跨模块通过域接口（`IXxxCrossModuleService`）通信
 
@@ -184,7 +177,6 @@ graph LR
     Modules_C --> Infrastructure_C["Desktop.Infrastructure"]
     Infrastructure_C --> Foundation["Desktop.Foundation"]
     Foundation --> Contracts["Desktop.Contracts"]
-    Modules_C --> Models_C["Desktop.Models"]
 ```
 
 **规则**:
@@ -241,12 +233,12 @@ sequenceDiagram
 
 | 层级 | 前缀 | 示例 |
 |------|------|------|
-| Server Core | `LYBT.` | LYBT.Entities, LYBT.Infrastructure |
-| Server Module | `LYBT.Module.` | LYBT.Module.Patients |
+| Server Core | `LYBT.` | LYBT.Infrastructure |
+| Server Module | `LYBT.Module.` | LYBT.Module.Patients, LYBT.Module.Identity |
 | Server Service | `LYBT.` | LYBT.WebAPI |
-| Shared | `LYBT.Shared.` | LYBT.Shared.Models |
+| Shared | `LYBT.Entities` / `LYBT.Shared.` | LYBT.Entities, LYBT.Shared.Models |
 | Client Core | `LYBT.Desktop.` | LYBT.Desktop.Foundation |
-| Client Module | `LYBT.Desktop.` | LYBT.Desktop.Patients |
+| Client Module | `LYBT.Desktop.` | LYBT.Desktop.Patients, LYBT.Desktop.Catalog |
 | Client Role | `LYBT.Desktop.` | LYBT.Desktop.Clinical |
 | Client Shell | `LYBT.Desktop.` | LYBT.Desktop.Shell |
 
@@ -280,3 +272,4 @@ sequenceDiagram
 | 2026-03-09 | v1.5 | Sprint 5: SQLite->LocalDB 描述修正 (架构图/目录注释/测试描述); Desktop 测试数更新 (493) |
 | 2026-06-13 | v1.6 | 补充双模式运行架构章节：Mermaid 架构图展示远程/本地两条数据路径 + 对比表 |
 | 2026-06-28 | v1.7 | **模块清单 + 测试库对齐**: Server 模块清单补 Reports（D9 补回 v1.0），架构图 "8 active + Sync v2.0"; Desktop 模块清单 Sync 标 v2.0; Desktop 测试库描述 SQLite InMemory → SQL Server LocalDB; 测试数对齐 ADR-0003 |
+| 2026-09-17 | v1.8 | **SSOT 按实际 csproj 重写清单**：Shared 8→5 项目（权威改指 [08-shared.md](08-shared.md)）；Server 模块 Auth/Users/Herbs/Formula → Identity/Catalog/Patients/MedicalCases/Registrations/Reports（6 物理项目）；Desktop Herbs/Formula 合并 Catalog，Roles 仅 Admin/Clinical，Core 实际 5 项目；tests 4→3（删除 Integration）；实体位置标注 `src/Shared/LYBT.Entities` |

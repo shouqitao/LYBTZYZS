@@ -18,8 +18,10 @@
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}' | jq -r '.data.token')
+  -d '{"userName":"sysadmin","password":"<DefaultPasswords__SysAdminPassword>"}' | jq -r '.data.token')
 ```
+
+> 启动仅自动 seed `sysadmin`；`admin` 等业务账号由 sysadmin 手动创建。密码来自 `DefaultPasswords` 配置/环境变量，不在文档中固化。
 
 ## 响应格式
 
@@ -51,7 +53,7 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 | [报表](13-reports.md) | 收入/就诊/药材统计 | 3 | DoctorOrAdmin |
 | [部署](14-deploy.md) | 更新包上传+服务重启 | 2 | SysAdminOnly |
 
-> **策略说明**：策略常量定义见 `PolicyConstants.cs`（7 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`SysAdminOnly`、`DoctorOrReceptionist`、`DoctorOrAdminOrReceptionist`）。K1 待修复：`DoctorOrReceptionist` 代码注册仅含 Doctor/Receptionist，缺 SuperAdmin/Admin。
+> **策略说明**：策略常量定义见 `PolicyConstants.cs`（8 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`SysAdminOnly`、`DoctorOrReceptionist`、`ReceptionistOnly`、`DoctorOrAdminOrReceptionist`）。K1 已修复：`DoctorOrReceptionist` 注册含 SuperAdmin/Admin/Doctor/Receptionist。
 
 ## 通用 HTTP 状态码
 

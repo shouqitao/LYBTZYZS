@@ -1,5 +1,5 @@
 # 安全架构
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.3 | 日期: 2026-09-17
 
 ## 1. 概述
 
@@ -10,10 +10,10 @@
 | 组件 | 位置 | 职责 | 状态 |
 |------|------|------|------|
 | AuthenticationServiceCollectionExtensions | `LYBT.WebAPI/Extensions/` | JWT 认证中间件、授权策略注册 | ✅ |
-| JwtService | `LYBT.Module.Auth/Services/` | JWT Token 生成与验证 | ✅ |
-| AuthService | `LYBT.Module.Auth/Services/` | 登录/登出/凭据验证 | ✅ |
-| TokenManagementService | `LYBT.Module.Auth/Services/` | Token 刷新、轮换、Family 撤销 | ✅ v1.0 已实现（`e2cedf6a2`） |
-| SecurityAuditService | `LYBT.Module.Auth/Services/` | 安全审计日志 | ✅ v1.0 已实现（`e2cedf6a2`） |
+| JwtService | `LYBT.Module.Identity/Services/` | JWT Token 生成与验证 | ✅ |
+| AuthService | `LYBT.Module.Identity/Services/` | 登录/登出/凭据验证 | ✅ |
+| TokenManagementService | `LYBT.Module.Identity/Services/` | Token 刷新、轮换、Family 撤销 | ✅ v1.0 已实现（`e2cedf6a2`） |
+| SecurityAuditService | `LYBT.Module.Identity/Services/` | 安全审计日志 | ✅ v1.0 已实现（`e2cedf6a2`） |
 | SecurityHeadersMiddleware | `LYBT.WebAPI/Middleware/` | 安全响应头 | ✅ |
 | ClaimsNormalizationMiddleware | `LYBT.WebAPI/Middleware/` | Claims 格式标准化 | ✅ |
 | AuthenticationStateMachine | `LYBT.Desktop.Foundation/Security/` | 桌面端认证状态机 | ✅ |
@@ -111,19 +111,20 @@ sequenceDiagram
 
 ## 4. 授权策略
 
-系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **7 项**授权策略，通过 `RequireRole()` 声明式配置：
+系统在 `PolicyConstants`（`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`）中定义 **8 项**授权策略，通过 `RequireRole()` 声明式配置。下表「满足条件的角色」以代码 `AddPolicy` 注册为准（SSOT：`AuthenticationServiceCollectionExtensions.cs` / Local 镜像 `LocalJwtConfig.cs`）：
 
-| Policy | 常量 | 满足条件的角色 | 典型用途 |
+| Policy | 常量 | 满足条件的角色（代码 RequireRole） | 典型用途 |
 |--------|------|--------------|----------|
-| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 药材、验方（**目标态**，见 §下方 D7 待对齐注） |
-| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表 |
-| `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | **患者 CRUD、挂号、医案创建**（代码当前最常用策略） |
-| `DoctorOnly` | `PolicyConstants.DoctorOnly` | Doctor | 医案创建、处方打印（操作级）——SSOT 见 [04-permissions.md](../01-product/04-permissions.md)「医案创建/处方打印 = Doctor 唯一」 |
-| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | SuperAdmin, Admin | 用户管理、系统配置、诊断工具、患者删除/禁用 |
-| `AdminBusinessOnly` | `PolicyConstants.AdminBusinessOnly` | SuperAdmin, Admin | 纯管理业务操作（不含诊断） |
-| `SysAdminOnly` | `PolicyConstants.SysAdminOnly` | SuperAdmin | 配置中心、重启等系统运维端点 |
+| `AdminBusinessOnly` | `PolicyConstants.AdminBusinessOnly` | **Admin**（不含 SuperAdmin） | 纯管理业务操作（与运维隔离） |
+| `DoctorOnly` | `PolicyConstants.DoctorOnly` | Doctor | 医案创建、接诊、处方打印（操作级） |
+| `DoctorOrAdmin` | `PolicyConstants.DoctorOrAdmin` | SuperAdmin, Admin, Doctor | 医案列表/详情、报表、药材/验方读取 |
+| `AdminOrSuperAdmin` | `PolicyConstants.AdminOrSuperAdmin` | Admin, SuperAdmin | 用户管理、系统配置、诊断工具、患者删除/禁用 |
+| `SysAdminOnly` | `PolicyConstants.SysAdminOnly` | SuperAdmin | 配置中心、部署等系统运维端点 |
+| `DoctorOrReceptionist` | `PolicyConstants.DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist | 挂号创建等；**名称含 DoctorOrReceptionist，实际 RequireRole 为四角色** |
+| `ReceptionistOnly` | `PolicyConstants.ReceptionistOnly` | Receptionist | 挂号取消等前台专属操作 |
+| `DoctorOrAdminOrReceptionist` | `PolicyConstants.DoctorOrAdminOrReceptionist` | Doctor, Admin, SuperAdmin, Receptionist | 患者 CRUD、挂号列表等（代码当前最常用策略） |
 
-> ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：以下模块**代码当前为 `DoctorOrAdminOrReceptionist`/`DoctorOrReceptionist`，待按 2026-08-03 四连决策做操作级细分** —— 患者删除/禁用 → `AdminOrSuperAdmin`；药材/验方 GET 不含前台；挂号创建/取消仅前台、接诊/QuickVisit 仅 Doctor；医案创建 → `DoctorOnly`（已存在于 PolicyConstants，部分端点已使用，待全面对齐）。
+> ⚠️ **D7 权限对齐待办**（详见 [04-permissions.md](../01-product/04-permissions.md) P0-P2 修复项）：部分模块仍需按 2026-08-03 四连决策做操作级细分——患者删除/禁用、药材/验方 GET 不含前台、挂号创建/取消/接诊等已部分在控制器方法级落地，完整矩阵以代码 `[Authorize]` 为准。
 
 角色层次（隐含权限继承）：
 
@@ -133,16 +134,19 @@ SuperAdmin → Admin → Doctor → Receptionist
 
 ### 策略配置
 
+> 完整注册见 `src/Server/Services/LYBT.WebAPI/Extensions/AuthenticationServiceCollectionExtensions.cs`（Local 镜像：`src/Client/Desktop/LocalWebAPI/Auth/LocalJwtConfig.cs`）。以下为代码等价摘要：
+
 ```csharp
 // AuthenticationServiceCollectionExtensions.cs
-options.FallbackPolicy = 要求认证用户;  // 默认所有端点需要认证
-options.AddPolicy(PolicyConstants.AdminBusinessOnly,     RequireRole("SuperAdmin", "Admin"));
-options.AddPolicy(PolicyConstants.DoctorOnly,           RequireRole("Doctor"));
-options.AddPolicy(PolicyConstants.DoctorOrAdmin,        RequireRole("SuperAdmin", "Admin", "Doctor"));
-options.AddPolicy(PolicyConstants.AdminOrSuperAdmin,    RequireRole("SuperAdmin", "Admin"));
-options.AddPolicy(PolicyConstants.SysAdminOnly,         RequireRole("SuperAdmin"));
-options.AddPolicy(PolicyConstants.DoctorOrReceptionist, RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
-options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, RequireRole("SuperAdmin", "Admin", "Doctor", "Receptionist"));
+options.FallbackPolicy = RequireAuthenticatedUser; // 默认所有端点需要认证
+options.AddPolicy(PolicyConstants.AdminBusinessOnly,           RequireRole(RoleConstants.Admin));
+options.AddPolicy(PolicyConstants.DoctorOnly,                  RequireRole(RoleConstants.Doctor));
+options.AddPolicy(PolicyConstants.DoctorOrAdmin,               RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor));
+options.AddPolicy(PolicyConstants.AdminOrSuperAdmin,           RequireRole(RoleConstants.Admin, RoleConstants.SuperAdmin));
+options.AddPolicy(PolicyConstants.SysAdminOnly,                RequireRole(RoleConstants.SuperAdmin));
+options.AddPolicy(PolicyConstants.DoctorOrReceptionist,        RequireRole(RoleConstants.SuperAdmin, RoleConstants.Admin, RoleConstants.Doctor, RoleConstants.Receptionist));
+options.AddPolicy(PolicyConstants.ReceptionistOnly,            RequireRole(RoleConstants.Receptionist));
+options.AddPolicy(PolicyConstants.DoctorOrAdminOrReceptionist, RequireRole(RoleConstants.Doctor, RoleConstants.Admin, RoleConstants.SuperAdmin, RoleConstants.Receptionist));
 ```
 
 ### 默认安全策略
@@ -278,10 +282,10 @@ stateDiagram-v2
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | DoctorOrAdminOrReceptionist | 代码实际 |
-| GET / GET /{id} | DoctorOrReceptionist | 分页列表/详情 |
-| POST / | DoctorOrReceptionist | 新增患者 |
-| PUT /{id} | DoctorOrReceptionist | 更新患者 |
-| DELETE /{id} | DoctorOrReceptionist | 软删除（目标态 AdminOrSuperAdmin，P0-5 待修） |
+| GET / GET /{id} | DoctorOrAdminOrReceptionist（类级） | 分页列表/详情 |
+| POST / | DoctorOrAdminOrReceptionist（类级） | 新增患者 |
+| PUT /{id} | DoctorOrAdminOrReceptionist（类级） | 更新患者 |
+| DELETE /{id} | AdminOrSuperAdmin | 软删除（代码已用 AdminOrSuperAdmin） |
 | POST /{id}/toggle-status | AdminOrSuperAdmin | 启用/禁用 |
 | POST /{id}/restore | AdminOrSuperAdmin | 恢复已删除患者 |
 
@@ -291,7 +295,7 @@ stateDiagram-v2
 |------|--------|------|
 | 类级别 | DoctorOrAdmin | 代码实际 |
 | `GET /` / `GET /{id}` | DoctorOrAdmin | 列表/详情 |
-| `POST /` | DoctorOnly | 医案创建（操作级） |
+| `POST /` | DoctorOnly | 医案创建（操作级，代码已落地） |
 | `PUT /{id}` | DoctorOrAdmin | 更新医案 |
 | `DELETE /{id}` | DoctorOrAdmin | 删除医案 |
 | `POST /batch-delete` | DoctorOrAdmin | 批量删除 |
@@ -304,11 +308,11 @@ stateDiagram-v2
 
 ### HerbsController (`/api/v1/herbs`) / FormulasController (`/api/v1/formulas`)（P1-24 拆分自 CatalogController）
 
-> 药材（HerbsController）与验方（FormulasController）策略一致（类级 DoctorOrAdmin，写操作 AdminOrSuperAdmin）；下表为共网策略。
+> 药材（HerbsController）与验方（FormulasController）策略一致：类级 `DoctorOrAdmin`，写操作 `AdminOrSuperAdmin`；下表为共网策略。
 
 | 端点 | Policy | 备注 |
 |------|--------|------|
-| 类级别 | DoctorOrAdmin | 代码实际 |
+| 类级别 | DoctorOrAdmin | 代码实际（非 DoctorOrReceptionist） |
 | `GET /` / `GET /{id}` | DoctorOrAdmin | 列表/详情 |
 | `POST /` | AdminOrSuperAdmin | 创建药材/验方 |
 | `PUT /{id}` | AdminOrSuperAdmin | 更新药材/验方 |
@@ -323,22 +327,24 @@ stateDiagram-v2
 | 端点 | Policy | 备注 |
 |------|--------|------|
 | 类级别 | DoctorOrAdminOrReceptionist | 代码实际 |
-| `POST /` | DoctorOrReceptionist | 挂号创建 |
+| `POST /` | DoctorOrReceptionist | 挂号创建（四角色 RequireRole，见 §4） |
 | `PUT /{id}/start-visit` | DoctorOnly | 接诊（操作级） |
-| `PUT /{id}/cancel` | DoctorOrReceptionist | 取消挂号 |
+| `PUT /{id}/cancel` | ReceptionistOnly | 取消挂号（前台专属） |
 
 ### ReportsController (`/api/v1/reports`)
 
-> 报表端点策略继承类级别 FallbackPolicy（需认证），具体操作级策略见控制器代码。
+| 端点 | Policy | 备注 |
+|------|--------|------|
+| 类级别 | DoctorOrAdmin | 代码实际（前台不可查） |
 
 ### 其他端点
 
 | Controller | Policy | 备注 |
 |------------|--------|------|
-| `ConfigurationController` | AdminOrSuperAdmin / SysAdminOnly | 配置管理（操作级区分） |
+| `ConfigurationController` | SysAdminOnly | 配置管理（仅 sysadmin） |
 | `DeployController` | SysAdminOnly | 部署控制 |
 | `DiagnosticsController` | AdminOrSuperAdmin | 诊断工具 |
-| `HealthController` | AllowAnonymous | 健康检查 |
+| `HealthController` | AllowAnonymous / `[Authorize]` | 公开健康检查 + 认证详情检查 |
 | `DownloadController` | FallbackPolicy (需认证) | 文件下载 |
 
 ## 7. 安全考虑
@@ -485,6 +491,7 @@ stateDiagram-v2
 | 2026-06-13 | 1.0 | 初始创建：完整安全架构文档 | AI |
 | 2026-06-25 | 1.1 | **Mermaid 图表替换**: 登录流程、Token 轮换流程 ASCII 时序图替换为 Mermaid sequence diagram; 认证状态机、Token 生命周期 ASCII 图替换为 Mermaid state diagram | AI |
 | 2026-06-28 | 1.2 | **D3 B+ 对齐**: RefreshToken/TokenManagementService/FamilyId 体系标注 🧲 v1.0 待实现（重放检测 v2.0）; 授权策略对齐 PolicyConstants 实有 4 项（含 DoctorOrAdmin/AdminOnly，无 DoctorOnly）; 加 D7 待对齐注 | AI |
+| 2026-09-17 | 1.3 | **策略表/组件路径 SSOT 对齐**：AdminBusinessOnly 改为仅 Admin；策略清单 7→8（补 ReceptionistOnly）；RequireRole 与 AddPolicy 代码一致；组件路径 Module.Auth→Module.Identity；Policy-to-Endpoint 矩阵按控制器实际 `[Authorize`] 校准 | AI |
 
 <!-- F3 P3 batch: P3-1-1/1-5/2-6/2-9/3-2 已评估，见 architecture-deep-review P3全表 -->
 

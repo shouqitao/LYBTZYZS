@@ -77,17 +77,16 @@ graph TB
 | LYBT.Desktop.Auth | 10 | ViewModels/Views/Models + LoginCoordinator | ADR-0005；FirstRunSetup/ServerConfig |
 | LYBT.Desktop.Users | 15 | 全目录（Controls/Mappers/Models/Repositories/Services/ViewModels）| 用户管理 UI |
 | LYBT.Desktop.Patients | 18 | 全目录 + Interfaces（D1 观察项）| 患者管理 UI |
-| LYBT.Desktop.Herbs | 13 | 全目录 | 药材管理 UI |
-| LYBT.Desktop.Formula | 14 | 全目录 | 验方管理 UI |
+| LYBT.Desktop.Catalog | 27 | 全目录（药材+验方合并，2026-08） | 药材/验方管理 UI |
 | LYBT.Desktop.MedicalCase | 49 | 目录最全（6 子目录，Dialogs/Reports 等）| 医案工作台（核心）|
 | LYBT.Desktop.Registrations | 9 | 精简（Dialogs/Events/Repositories/Services/ViewModels）| 挂号 UI + SignalRClient |
 
-### Roles（2 个角色工作台）
+### Roles（2 个项目 → 3 类角色入口：Admin / Clinical-Doctor / Clinical-Receptionist）
 
-| 项目 | 文件数 | 引用模块 | 依据 |
-|------|--------|---------|------|
-| **LYBT.Desktop.Admin** | 17 | Catalog/Patients/MedicalCase/Users/Reports | 业务管理角色（08-04 角色画像）|
-| **LYBT.Desktop.Clinical** | 21 | Catalog/Patients/MedicalCase/Registration/Reports | 临床看诊角色 |
+| 项目 | 服务角色 | 文件数 | 引用模块 | 依据 |
+|------|--------|------|---------|------|
+| **LYBT.Desktop.Admin** | Admin + SuperAdmin(Sysadmin) | 17 | Catalog/Patients/MedicalCase/Users/Reports | 业务管理角色（08-04 角色画像）|
+| **LYBT.Desktop.Clinical** | Doctor + Receptionist（前台） | 21 | Catalog/Patients/MedicalCase/Registration/Reports | 临床看诊 + 前台挂号 |
 
 ### Shell（组合根）
 
@@ -159,8 +158,9 @@ LYBT.Desktop.{Domain}/
 
 | 类型 | 数据访问层 | 典型模块 | 说明 |
 |------|-----------|----------|------|
-| 独立实体 | Repository | Patients, Herbs, Users | 标准 CRUD |
-| 聚合根 | Repository + DataManager | MedicalCase, Formula | 管理子实体 |
+| 独立实体 | Repository | Patients, Users, Registration | 标准 CRUD |
+| 目录实体 | Repository | Catalog（药材+验方合并） | CRUD + 分类/组成 |
+| 聚合根 | Repository + DataManager | MedicalCase | 管理子实体 |
 | 从属实体 | CommandHandler | Consultation | 通过父聚合操作 |
 
 ### 模块清单
@@ -170,10 +170,10 @@ LYBT.Desktop.{Domain}/
 | Auth | Admin + Clinical | 登录、Token 管理 |
 | Users | Admin | 用户 CRUD、密码管理 |
 | Patients | Admin + Clinical | 患者 CRUD、导入导出、读卡器集成 |
-| Herbs | Admin + Clinical | 药材 CRUD、分类 |
-| Formula | Admin + Clinical | 验方 CRUD、药材绑定 |
+| Catalog | Admin + Clinical | 药材+验方合并（2026-08 Herbs/Formula → Catalog） |
 | MedicalCase | Clinical | 医案核心 (含处方、EditModeStateMachine) |
-| Registration | Admin + Clinical | 挂号管理 |
+| Registration | Clinical | 挂号管理（Doctor 偶尔代挂号 + Receptionist） |
+| Reports | Admin + Clinical | 报表查询 |
 
 > 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，Desktop.Sync 模块及其 SyncPhase FSM 延期至 v2.0。下方「同步 UI 架构」章节为 v2.0 设计参考。
 
@@ -204,17 +204,17 @@ LYBT.Desktop.{Domain}/
 
 ---
 
-## Roles 层 (2 个角色入口)
+## Roles 层（2 个项目，3 类角色入口）
 
-### Admin (管理员工作台)
+### Admin (管理员工作台 — Admin / SuperAdmin·Sysadmin)
 
-- **包含模块**: Auth, Users, Patients, Catalog
-- **核心功能**: 用户管理、数据维护、系统配置
+- **包含模块**: Auth, Users, Patients, Catalog, MedicalCase, Reports
+- **核心功能**: 用户管理、数据维护、系统配置、医案审核
 
-### Clinical (临床工作台)
+### Clinical (临床工作台 — Doctor + Receptionist 前台)
 
-- **包含模块**: Auth, Patients, MedicalCase, Registration, Herbs, Formula
-- **核心功能**: 诊疗流程、开方、处方打印
+- **包含模块**: Auth, Patients, Catalog, MedicalCase, Registration, Reports（Receptionist 子集：Users/Patients/Registration）
+- **核心功能**: 诊疗流程、开方、处方打印；前台挂号/退号
 
 > 🧲 Sync 模块属 v2.0，v1.0 不加载。
 
@@ -478,7 +478,7 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 
 ### HerbListControl (药材列表编辑器)
 
-**位置**: `Modules/LYBT.Desktop.Herbs/Controls/HerbList/`
+**位置**: `Modules/LYBT.Desktop.Catalog/Controls/HerbList/`（Catalog 合并后路径）
 **使用场景**: 处方药材编辑 (MedicalCase)、验方药材编辑 (Formula)
 
 | 职责 | 说明 |
@@ -495,7 +495,7 @@ Modules 层中提取的可复用 UI 组件，采用独立 ViewModel + 事件驱�
 
 ### HerbItemControl (单味药材编辑器)
 
-**位置**: `Modules/LYBT.Desktop.Herbs/Controls/HerbItem/`
+**位置**: `Modules/LYBT.Desktop.Catalog/Controls/HerbItem/`（Catalog 合并后路径）
 **使用场景**: HerbListControl 内部子组件
 
 | 职责 | 说明 |

@@ -17,15 +17,15 @@ LocalWebAPI 是 **Client → Server 唯一的跨层引用路径**。这是有意
 
 ```
 Desktop Shell
-  → LocalWebAPI (embedded Kestrel, port 5290)
-    → Server/Core/LYBT.Entities        (domain entities)
-    → Server/Core/LYBT.Infrastructure  (AppDbContext, BaseRepository)
-    → Server/Modules/LYBT.Module.Identity    (IAuthService/IUserService — Auth+Users 合并)
-    → Server/Modules/LYBT.Module.Catalog     (IHerbService/IFormulaService — Herbs+Formulas 合并)
-    → Server/Modules/LYBT.Module.Patients    (IPatientService)
-    → Server/Modules/LYBT.Module.MedicalCases (IMedicalCaseFacade)
-    → Server/Modules/LYBT.Module.Registrations (IRegistrationService)
-    → Server/Modules/LYBT.Module.Reports     (IReportsService)
+  → LocalWebAPI (embedded Kestrel, port 5300)
+    → Shared/LYBT.Entities                          (domain entities — moved out of Server/Core)
+    → Server/Core/LYBT.Infrastructure               (AppDbContext, BaseRepository)
+    → Server/Modules/LYBT.Module.Identity           (IAuthService/IUserService — Auth+Users 合并)
+    → Server/Modules/LYBT.Module.Catalog            (IHerbService/IFormulaService — Herbs+Formulas 合并)
+    → Server/Modules/LYBT.Module.Patients           (IPatientService)
+    → Server/Modules/LYBT.Module.MedicalCases       (IMedicalCaseCommandService/QueryService/StateService)
+    → Server/Modules/LYBT.Module.Registrations      (IRegistrationService)
+    → Server/Modules/LYBT.Module.Reports            (IReportsService)
 ```
 
 ### 变更协议
@@ -40,8 +40,8 @@ Desktop Shell
 | File | Description |
 |------|-------------|
 | `LocalWebApiProgram.cs` | Entry point: AppDbContext + IHttpContextAccessor + 6 AddXxxModule() registrations + LocalJwtConfig |
-| `LYBT.LocalWebAPI.csproj` | ASP.NET Core SDK; references Server Core + 6 Server Modules |
-| `Auth/LocalJwtConfig.cs` | Simplified JWT (12-hour token, no refresh) |
+| `LYBT.LocalWebAPI.csproj` | ASP.NET Core SDK; references Server Core + 6 Server Modules + Shared/LYBT.Entities |
+| `Auth/LocalJwtConfig.cs` | Simplified JWT — 12-hour access token；支持 RefreshToken（`AuthController.RefreshToken` + `LocalRefreshTokenCommandHandler`） |
 | `Data/LocalWebApiSeedData.cs` | Seed data initialization (accepts AppDbContext) |
 
 ## Architecture (Unified Service Layer)
@@ -60,26 +60,29 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 
 | Directory | Purpose |
 |-----------|---------|
-| `Auth/` | LocalJwtConfig (simplified JWT generation) |
-| `Commands/` | MediatR CQRS Commands（本地登录/刷新） |
-| `Controllers/` | 11 controllers — 与 Remote WebAPI 同构 |
+| `Auth/` | LocalJwtConfig (simplified JWT generation + refresh) |
+| `Commands/` / `Handlers/` | MediatR CQRS Commands（本地登录/刷新） |
+| `Controllers/` | 14 controllers — 与 Remote WebAPI 同构（见下表） |
 | `Data/` | SeedData only (LocalWebApiDbContext deleted — uses AppDbContext) |
 
 ## Controllers
 
 | Controller | Service Injected | Notes |
 |------------|-----------------|-------|
-| AuthController | IAuthService + IAutoLoginService | Hybrid: Service verification + local JWT |
+| AuthController | IAuthService + IAutoLoginService | Hybrid: Service verification + local JWT；含 `RefreshToken` |
 | UsersController | IUserService | Full CRUD + batch + password reset |
 | PatientsController | IPatientService + IPatientImportExportService | Full CRUD + import/export |
-| CatalogController | ICatalogQueryService | 药材+验方合并（2026-08 模块合并），CRUD + 批量 + 引用检查 + 克隆 |
-| MedicalCasesController | IMedicalCaseCommandService/QueryService/StateService | 12 endpoints via Facade |
-| RegistrationsController | IRegistrationService | CRUD + queue + quick-visit |
+| HerbsController | ICatalogQueryService&lt;HerbListDto, HerbDetailDto&gt; | 药材 CRUD/批量/引用检查（Catalog 模块，路由 `/api/v1/herbs`） |
+| FormulasController | ICatalogQueryService&lt;FormulaListDto, FormulaDetailDto&gt; | 验方 CRUD/批量/引用检查/克隆（Catalog 模块，路由 `/api/v1/formulas`） |
+| MedicalCasesController | IMedicalCaseCommandService/QueryService/StateService | CQRS via BaseMedicalCasesController |
+| RegistrationsController | IRegistrationService | CRUD + queue + start-visit + cancel |
 | ConfigurationController | (none — in-memory store) | Key/value config, no business logic |
 | HealthController | IHealthCheckService | CanConnectAsync only |
 | DiagnosticsController | (none — LoggingLevelManager) | Log level management |
 | ReportsController | IReportsService | 只读报表查询（B-04）|
 | DeployController | (none) | restart 确认（A-13）|
+| DownloadController | (none) | 下载辅助端点 |
+| SecurityAuditController | (none) | 安全审计日志查询 |
 
 ## For AI Agents
 
@@ -93,7 +96,7 @@ Controllers inherit `BaseApiController` (from `LYBT.Infrastructure.Web`) and use
 ### Internal
 - `LYBT.Infrastructure` — AppDbContext, BaseRepository, BaseApiController
 - `LYBT.Module.*` — All 6 server modules (Identity, Catalog, Patients, MedicalCases, Registrations, Reports)
-- `LYBT.Entities` — Domain entities
+- `LYBT.Entities` — Domain entities（路径 `src/Shared/LYBT.Entities`，非 Server/Core）
 - `LYBT.Shared.Models` — DTOs and contracts
 - `LYBT.Desktop.Contracts` — Desktop interface definitions
 

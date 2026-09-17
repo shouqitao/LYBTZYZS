@@ -4,14 +4,15 @@
 # Core (Server)
 
 ## Purpose
-Core libraries for the ASP.NET Core backend. Contains domain entities (anemic model, except MedicalCaseModel which is a DDD aggregate root) and EF Core infrastructure (DbContext, BaseRepository, entity configurations). These libraries form the foundation that all server modules depend on.
+Core libraries for the ASP.NET Core backend. Contains EF Core infrastructure (DbContext, BaseRepository, entity configurations). Domain entities live in **`src/Shared/LYBT.Entities`** (moved out of Server/Core) and are referenced by Infrastructure/modules.
 
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Entities/ | Domain entities — POCOs for all business objects (Patient, Herb, Formula, MedicalCase, Consultation, Prescription, User, etc.) |
 | LYBT.Infrastructure/ | EF Core infrastructure — `AppDbContext`, `BaseRepository<T>`, entity type configurations, migrations |
 | Documentation/ | Internal architecture documentation |
+
+> **LYBT.Entities 已迁至 Shared**：实体项目路径为 `src/Shared/LYBT.Entities/`（见 [Shared/AGENTS.md](../../Shared/AGENTS.md)），不在 Server/Core 下。
 
 ## For AI Agents
 

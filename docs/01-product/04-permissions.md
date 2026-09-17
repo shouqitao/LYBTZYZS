@@ -1,6 +1,6 @@
 # 权限矩阵与修复项 (Permissions)
 
-> 版本: v4.1 | 日期: 2026-08-20 | 状态: 文档定义（设计态）
+> 版本: v4.2 | 日期: 2026-09-17 | 状态: 文档定义（设计态）；§2 代码策略已与代码校准
 
 本文件定义四角色的权限矩阵、当前代码策略映射、已知问题与修复计划。
 
@@ -62,26 +62,32 @@
 
 ### 2.1 Controller 级授权策略
 
-| Controller | 代码策略 | 目标策略（操作级细分） | 差异 |
+> 代码策略以控制器 `[Authorize]` 属性为准（SSOT：`src/Server/Services/LYBT.WebAPI/Controllers/` + LocalWebAPI 镜像树）。下表「代码策略」列已按当前代码校准（2026-09-17）。
+
+| Controller | 代码策略（实际） | 目标策略（操作级细分） | 差异 |
 | ----------- | --------- | --------- | ------ |
-| `RegistrationsController` | `DoctorOrAdminOrReceptionist` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist/Doctor（Source 区分——两步建号 2026-08-13）；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
-| `PatientsController` | `DoctorOrAdminOrReceptionist` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | ⚠️ 删除/禁用仅 Admin+（2026-08-03 决策）；Admin 不直接管理患者读写 |
-| `MedicalCasesController` | `DoctorOrAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | ⚠️ 创建仅 Doctor（C4/K3 待修） |
+| `RegistrationsController` | 类级 `DoctorOrAdminOrReceptionist`；POST `DoctorOrReceptionist`；start-visit `DoctorOnly`；cancel `ReceptionistOnly` | GET：Doctor+Receptionist+**Admin 只读**；POST：Receptionist/Doctor（Source 区分——两步建号 2026-08-13）；start-visit：`DoctorOnly`；cancel：Receptionist | ⚠️ Admin 只读查看挂号（2026-08-03 决策）；创建/取消仅前台；接诊/QuickVisit 仅 Doctor |
+| `PatientsController` | 类级 `DoctorOrAdminOrReceptionist`；DELETE/toggle-status/restore `AdminOrSuperAdmin` | GET/POST/PUT：Doctor+Receptionist；DELETE/禁用：`AdminOrSuperAdmin` | 删除/禁用已用 `AdminOrSuperAdmin`（代码已对齐目标） |
+| `MedicalCasesController` | 类级 `DoctorOrAdmin`；Create `DoctorOnly`；print-completed `DoctorOnly`；close `AdminOrSuperAdmin` | 创建：`DoctorOnly`；查看/编辑按 MC 铁律 | 创建已用 `DoctorOnly`（代码已对齐目标） |
 | `ReportsController` | `DoctorOrAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**） | 2026-08-08 统一双端策略（A-31-C0） |
 | `ConfigurationController` | `SysAdminOnly` | 配置读写/生产验证/restart/validate：**仅 SuperAdmin（sysadmin）**——业务管理员不碰系统配置 | — |
-| `HerbsController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 🔴 前台不可查看药材（2026-08-03 决策）；写操作仅 Admin |
-| `FormulasController` | `DoctorOrReceptionist` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 🔴 前台不可查看验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
+| `HerbsController` | 类级 `DoctorOrAdmin`；写操作 `AdminOrSuperAdmin` | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT/DELETE：`AdminOrSuperAdmin` | 类级已改为 `DoctorOrAdmin`（非 `DoctorOrReceptionist`）；前台不可查药材（2026-08-03 决策）；写操作仅 Admin |
+| `FormulasController` | 类级 `DoctorOrAdmin`；写操作 `AdminOrSuperAdmin`（个别 `AdminBusinessOnly`） | GET：Doctor+Admin+SuperAdmin（**前台不可查**）；POST/PUT：`DoctorOrAdmin` | 类级已改为 `DoctorOrAdmin`（非 `DoctorOrReceptionist`）；前台不可查验方（2026-08-03 决策）；写操作 Doctor(自己)+Admin |
 
-### 2.2 PolicyConstants 现有策略
+### 2.2 PolicyConstants 现有策略（8 项，以代码 RequireRole 为准）
 
-| 策略名 | 包含角色 |
+> 权威定义：`src/Server/Core/LYBT.Infrastructure/Constants/PolicyConstants.cs`；注册：`src/Server/Services/LYBT.WebAPI/Extensions/AuthenticationServiceCollectionExtensions.cs`（Local 镜像：`src/Client/Desktop/LocalWebAPI/Auth/LocalJwtConfig.cs`）。
+
+| 策略名 | 包含角色（代码 `RequireRole`） |
 | -------- | --------- |
 | `DoctorOnly` | Doctor |
-| `DoctorOrAdmin` | Doctor, Admin |
+| `DoctorOrAdmin` | SuperAdmin, Admin, Doctor |
 | `AdminOrSuperAdmin` | Admin, SuperAdmin |
+| `AdminBusinessOnly` | **Admin**（不含 SuperAdmin——业务管理与运维隔离） |
 | `SysAdminOnly` | SuperAdmin（sysadmin 专属——配置/部署等运维操作，2026-08-11 SHELL-018 引入） |
-| `DoctorOrReceptionist` | Doctor, Receptionist |
-| `DoctorOrAdminOrReceptionist` | Doctor, Admin, Receptionist |
+| `DoctorOrReceptionist` | SuperAdmin, Admin, Doctor, Receptionist（**名称含 DoctorOrReceptionist，实际 RequireRole 为四角色**） |
+| `ReceptionistOnly` | Receptionist（挂号取消等前台专属操作） |
+| `DoctorOrAdminOrReceptionist` | Doctor, Admin, SuperAdmin, Receptionist |
 
 > **Phase② 计划**：采用 RBAC + Permission 枚举方案（~35 项原子操作），替代当前分散在 Controller 策略/Service 层的碎片化权限逻辑。
 
@@ -104,13 +110,13 @@
 
 ### 3.1 P0 必须修复（阻断核心流程）—— 目标策略均已 2026-08-03 产品确认
 
-| # | 问题 | Controller | 目标策略 | 修复方案 |
-| --- | ------ | ----------- | --------- | ---------- |
-| P0-1 | Herbs 策略 `DoctorOrReceptionist` → Doctor/Receptionist 可写药材 | `HerbsController` | `AdminOrSuperAdmin`（写）；GET 不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT/DELETE：`AdminOrSuperAdmin` |
-| P0-2 | MedicalCases `DoctorOrAdmin` → Admin 可创建医案 | `MedicalCasesController` | `DoctorOnly` | 新增 `DoctorOnly` 策略；Create 操作限定 Doctor |
-| P0-3 | Formulas 策略 `DoctorOrReceptionist` → Receptionist 可写验方 | `FormulasController` | 写：`DoctorOrAdmin`；读：不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT：`DoctorOrAdmin` |
-| P0-4 | Herbs 删除无引用检查 → 可删除被处方引用的药材 | `HerbsService` | — | 增加引用检查（BR-DEL-001） |
-| P0-5 | Patients 删除无引用检查 → 可删除被医案引用的患者 | `PatientsService` | — | 增加引用检查（BR-DEL-001） |
+| # | 问题 | Controller | 目标策略 | 修复方案 | 状态 |
+| --- | ------ | ----------- | --------- | ---------- | ---- |
+| P0-1 | Herbs 策略前台可读 | `HerbsController` | `AdminOrSuperAdmin`（写）；GET 不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT/DELETE：`AdminOrSuperAdmin` | ✅ 类级已改为 `DoctorOrAdmin` + 写 `AdminOrSuperAdmin` |
+| P0-2 | MedicalCases 创建未限 Doctor | `MedicalCasesController` | `DoctorOnly` | Create 操作限定 Doctor | ✅ 代码已用 `DoctorOnly` |
+| P0-3 | Formulas 策略前台可读 | `FormulasController` | 写：`DoctorOrAdmin`；读：不含前台 | GET：Doctor+Admin+SuperAdmin；POST/PUT：`DoctorOrAdmin` | ✅ 类级已改为 `DoctorOrAdmin` + 写 `AdminOrSuperAdmin` |
+| P0-4 | Herbs 删除无引用检查 → 可删除被处方引用的药材 | `HerbsService` | — | 增加引用检查（BR-DEL-001） | — |
+| P0-5 | Patients 删除无引用检查 → 可删除被医案引用的患者 | `PatientsService` | — | 增加引用检查（BR-DEL-001） | — |
 
 ### 3.2 P1 重要（影响安全性/完整性）
 
@@ -198,6 +204,7 @@
 
 | 日期 | 变更 |
 | ------ | ------ |
+| 2026-09-17 | **SSOT 策略对齐**：§2.1 代码策略按控制器实际 `[Authorize]` 校准（Herbs/Formulas 类级 `DoctorOrAdmin`，非 `DoctorOrReceptionist`）；§2.2 重写为 8 策略表并标注实际 `RequireRole`（补 `AdminBusinessOnly`/`ReceptionistOnly`；`DoctorOrReceptionist` 实含四角色）；P0-1/2/3 标注代码已对齐 |
 | 2026-08-03 | v4.4 医案状态机注（§5 数据管理规则）：取消=物理删除、软删仅已完成、无 Status 字段 |
 | 2026-08-03 | v4.3 权限边界更新（四角色需求审查）：Admin 挂号只读查看 + 打印记录查看；Doctor/Receptionist 患者删除/禁用 ❌；前台不涉及药材/验方（决策确认） |
 | 2026-08-02 | §五 新增数据管理规则：两字段模式（禁用+软删除）定义、适用范围（资源类/流程类/从属类/审计类）、实体状态字段映射 |

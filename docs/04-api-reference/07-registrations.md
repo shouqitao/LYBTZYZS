@@ -1,9 +1,14 @@
 # 挂号管理 API
 > 版本: v1.0 | 日期: 2026-08-20
 
-> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（代码实际，`RegistrationsController.cs:21`）
+> Controller: `RegistrationsController` | 路由前缀: `/api/v1/registrations` | 类级默认权限: `[Authorize(Policy = "DoctorOrAdminOrReceptionist")]`（`RegistrationsController.cs:20`）
 >
-> ⚠️ **权限待对齐（2026-08-03 四连决策，见 [04-permissions.md](../01-product/04-permissions.md)）**：目标态操作级细分——挂号创建/取消仅前台 Receptionist、接诊/QuickVisit 仅 Doctor（`DoctorOnly` 待新增）、Admin 只读查看。代码当前为类级 `DoctorOrAdminOrReceptionist`（Receptionist 可挂号，已实现）。
+> **当前操作级策略**（代码已落地，见 [04-permissions.md](../01-product/04-permissions.md)）：
+> - POST /registrations（创建挂号）= `DoctorOrReceptionist`
+> - PUT /registrations/{id}/start-visit（接诊）= `DoctorOnly`
+> - PUT /registrations/{id}/cancel（退号）= `ReceptionistOnly`
+> - GET 查询/队列 = 类级 `DoctorOrAdminOrReceptionist`
+> - Admin 对挂号为只读查看（不可创建/接诊/退号）
 
 ## 概述
 
@@ -16,7 +21,7 @@ US-REG-001~006: 创建、查询、接诊、取消等操作。
 
 创建挂号记录 (前台模式)。
 
-- **权限**: DoctorOrReceptionist (前台/医生/管理员)
+- **权限**: `DoctorOrReceptionist`（操作级；Admin 不可创建）
 - US-REG-001: Source=Receptionist, Status=Waiting
 
 **请求体** (`RegistrationInputDto`):
@@ -288,7 +293,7 @@ curl -X GET "http://localhost:5000/api/v1/registrations/queue?doctorId=87654321-
 
 接诊：从队列选中患者，Registration 状态变更为 InProgress。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `DoctorOnly`（操作级；仅医生接诊）
 - US-REG-003 验收标准第4条
 
 **路径参数**: `id` (Guid)
@@ -319,7 +324,7 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 
 取消挂号。
 
-- **权限**: DoctorOrReceptionist
+- **权限**: `ReceptionistOnly`（操作级；仅前台退号）
 - US-REG-006: 仅 Waiting 状态可取消
 
 **路径参数**: `id` (Guid)
@@ -362,3 +367,4 @@ curl -X PUT "http://localhost:5000/api/v1/registrations/a1b2c3d4-e5f6-7890-abcd-
 | 2026-06-25 | v2.0 | 全面重写：为全部 7 个端点补充完整请求/响应 JSON 示例、curl 命令、参数表；使用真实 GUID 和中文姓名 |
 | 2026-06-28 | v2.1 | 文档对齐基线：权限策略加 D7 待对齐标注（目标 DoctorOrReceptionist，代码 DoctorOrAdmin，影响 Receptionist 挂号） |
 | 2026-06-28 | v1.3 | 文档结构优化批次1：JSON 示例去 ApiResponse 外壳只留 data；错误响应 JSON 块合并到错误码表；curl 删除 TOKEN 脚本（见 README）；通用状态码引用 README |
+| 2026-09-17 | v2.2 | 对齐代码：`DoctorOnly`/`ReceptionistOnly` 操作级策略已落地；头注删除「待新增/待对齐」；补 Create/StartVisit/Cancel 操作级策略 |

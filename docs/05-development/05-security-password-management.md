@@ -9,7 +9,7 @@
 
 ### IPasswordService 接口
 
-位置: `LYBT.Shared.Utilities/Security/IPasswordService.cs`
+位置: `LYBT.Shared.Models/Utilities/Security/`（原 `LYBT.Shared.Utilities` 路径已废；当前 `PasswordHelper` 位于 Models/Utilities/Security，哈希统一走 Identity PBKDF2）
 
 | 方法 | 用途 |
 |------|------|

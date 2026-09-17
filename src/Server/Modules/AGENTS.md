@@ -74,8 +74,8 @@ services.AddMediatR(cfg =>
 ## Dependencies
 
 ### Internal
-- [Core/](../Core/AGENTS.md) — `LYBT.Infrastructure`, `LYBT.Entities`
-- [Shared/](../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Shared.Validators`
+- [Core/](../Core/AGENTS.md) — `LYBT.Infrastructure`
+- [Shared/](../../Shared/AGENTS.md) — `LYBT.Shared.Models`, `LYBT.Entities`（实体在 Shared，非 Server/Core）
 
 ### External
 - ASP.NET Core 8 (controllers, DI)

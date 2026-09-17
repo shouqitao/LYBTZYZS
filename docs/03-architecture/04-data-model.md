@@ -1,5 +1,5 @@
 # 数据模型
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v2.4 | 日期: 2026-09-17
 
 ## 概述
 
@@ -21,11 +21,12 @@ erDiagram
     FormulaHerbItem }o--o| Herb : "N:0..1 (延迟绑定)"
     PrescriptionItem }o--|| Herb : "N:1"
     User ||--o{ AuthSession : "1:N"
-    User ||--o{ RefreshToken : "1:N"
     Registration }o--|| Patient : "N:1"
     Registration }o--|| User : "N:1 (指派医生)"
     Registration ||--o| MedicalCase : "1:0..1"
 ```
+
+> **注**：代码中无 `RefreshToken` 实体（D3 B+ 规划，`src/Shared/LYBT.Entities/Auth/` 仅有 `AuthSessionModel`/`SecurityAuditLog`）。会话令牌哈希存于 `AuthSession.TokenHash`。
 
 ## 聚合根边界
 
@@ -146,7 +147,7 @@ graph TB
 | MedicalCaseId | Guid | 是 | 外键 |
 | PrescriptionNumber | string(20) | 否 | 处方编号 |
 | DosageCount | int | 是 | 剂数 (默认 7) |
-| Discount | decimal(5,4) | 是 | 折扣 (默认 1.0) |
+| Discount | decimal(3,2) | 是 | 折扣 (默认 1.0；代码 `[Column(TypeName = "decimal(3,2)")]`) |
 | Usage | string(500) | 否 | 用法 |
 | Advice | string(500) | 否 | 医嘱 |
 | ReferencedFormulas | string(500) | 否 | 引用验方 (逗号分隔) |
@@ -196,20 +197,22 @@ graph TB
 
 ### User (用户)
 
-> **实体类型**: `ApplicationUser : IdentityUser<Guid>`（ASP.NET Core Identity 集成，非简单 POCO；详见 `src/Server/Core/LYBT.Entities/Users/ApplicationUser.cs`）
+> **实体类型**: `ApplicationUser : IdentityUser<Guid>`（ASP.NET Core Identity 集成，非简单 POCO；详见 `src/Shared/LYBT.Entities/Users/ApplicationUser.cs`）
+> **审计字段特例**: 因继承 `IdentityUser<Guid>` 无法继承 `BaseEntity`，`CreatedAt/UpdatedAt/CreatedBy/UpdatedBy/IsDeleted/RowVersion` 为手抄字段，与 BaseEntity 同步维护。
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| UserName | string(50) | 是 | 用户名（IdentityUser 继承） |
-| RealName | string(50) | 是 | 真实姓名 |
+| UserName | string(32) | 是 | 用户名（IdentityUser 继承） |
+| RealName | string(100) | 是 | 真实姓名 |
 | PinYinCode | string(50) | 否 | 拼音码 |
 | PhoneNumber | string(20) | 否 | 手机号 |
 | Email | string(100) | 否 | 邮箱 |
 | Role | UserRole | 是 | 角色 (默认 Doctor) |
 | Status | CommonStatus | 是 | 状态 |
-| PasswordHash | string(256) | 是 | BCrypt 密码哈希（IdentityUser 基类字段） |
-| FailedLoginCount | int | 是 | 登录失败次数 |
-| LockoutEnd | DateTime? | 否 | 锁定截止时间 |
+| PasswordHash | string | 是 | **Identity PBKDF2** 密码哈希（`IdentityUser` 基类字段；登录/改密统一走 `UserManager`，非 BCrypt） |
+| MustChangeOnNextLogin | bool | 是 | 下次登录须改密（管理员重置密码后设置，默认 false） |
+| FailedLoginCount | int | 是 | 登录失败次数（IdentityUser 继承 AccessFailedCount） |
+| LockoutEnd | DateTime? | 否 | 锁定截止时间（IdentityUser 继承） |
 | LastLoginTime | DateTime? | 否 | 最后登录时间（用于 IdentitySeedData 重置判断） |
 | Remark | string(500) | 否 | 备注 |
 | IsSysAdmin | bool | 是 | 运维标记（独立用户非角色，默认 false） |
@@ -287,20 +290,27 @@ graph TB
 
 ### AuthSession (认证会话)
 
+> 代码：`src/Shared/LYBT.Entities/Auth/AuthSessionModel.cs`（弱实体，不继承 BaseEntity）。
+
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | Id | Guid | 是 | 主键 |
 | UserId | Guid | 是 | 用户 ID |
-| TokenHash | string(256) | 是 | Token 哈希 |
+| TokenHash | string(256) | 是 | 会话令牌哈希 |
 | LoginTime | DateTime | 是 | 登录时间 |
 | LogoutTime | DateTime? | 否 | 登出时间 |
 | ExpiryTime | DateTime | 是 | 过期时间 |
 | IpAddress | string(45) | 是 | IP 地址 |
-| IsRevoked | bool | 是 | 是否撤销 |
+| UserAgent | string(500)? | 否 | 用户代理 |
+| IsRevoked | bool | 是 | 是否撤销（默认 false） |
+| RevokedReason | string(256)? | 否 | 撤销原因（`Revoke(string reason)` 写入） |
+| Status | CommonStatus | 是 | 会话状态（默认 Enabled；Logout/Revoke 时置 Disabled） |
+
+**领域方法**: `Create(...)` / `Logout()` / `Revoke()` / `Revoke(reason)` / `IsValid()` / `IsExpired()`。
 
 ### RefreshToken (刷新令牌)
 
-> 🧲 **v1.0 待实现（D3 B+ 方案）** — RefreshToken 实体当前**不存在于代码中**（`SimplifyDataModel` 迁移曾移除，`AppDbContext` 无 DbSet）。按 D3 B+ 决策（2026-06-28）：Token 族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）延后至 v2.0。完整目标字段定义（Token/UserId/UserType/Jti/ExpiresAt/IsRevoked/FamilyId/IsUsed/UsageCount）见 D3 spec。
+> 🧲 **v1.0 待实现（D3 B+ 方案）** — RefreshToken 实体当前**不存在于代码中**（`src/Shared/LYBT.Entities/Auth/` 无此类；`SimplifyDataModel` 迁移曾移除，`AppDbContext` 无 DbSet）。按 D3 B+ 决策（2026-06-28）：Token 族旋转 + 登出撤销 + 审计日志将在 v1.0 补回；重放检测（FamilyId）延后至 v2.0。完整目标字段定义（Token/UserId/UserType/Jti/ExpiresAt/IsRevoked/FamilyId/IsUsed/UsageCount）见 D3 spec。
 
 ## 辅助实体概览
 
@@ -308,11 +318,11 @@ graph TB
 
 | 实体 | 类型 | 说明 |
 |------|------|------|
-| **MedicalCasePrintLog** | 聚合根内部实体 | 🧲 v1.0 待实现（D2 决策：打印保护回写）。记录每次打印操作（PrintType/PrintVersion/PrintedAt/PrintedBy/PrinterName/IsSuccess），用于合规追溯。已打印医案修改后需提供 EditReason (MC-D15) |
+| **MedicalCasePrintLog** | 聚合根内部实体 | **已实现**（`src/Shared/LYBT.Entities/MedicalCases/MedicalCasePrintLog.cs`，继承 BaseEntity）。记录每次打印操作（PrintType/PrintVersion/PrintedAt/PrintedBy/PrinterName），用于合规追溯。已打印医案修改后需提供 EditReason (MC-D15) |
 | **PrescriptionItem** | Prescription 子实体 | 不继承 BaseEntity（无软删除/审计），随处方整体操作。关键计算：`Amount = UnitPrice × Dosage` |
 | **FormulaHerbItem** | Formula 子实体 | N:N 关系，支持延迟绑定（HerbId 可 null，OriginalHerbName 保留原始名称，IsValidated 标记校验状态） |
-| **AuthSession** | User 关联实体 | 登录/登出时间、Token 哈希、IP 地址，支持会话撤销（IsRevoked） |
-| **RefreshToken** | User 关联实体 | 🧲 v1.0 待实现（D3 B+）。Token 轮换 + 重放检测（FamilyId），重放检测延后至 v2.0 |
+| **AuthSession** | User 关联实体 | 登录/登出时间、令牌哈希、IP/UserAgent、撤销（IsRevoked/RevokedReason）与 CommonStatus |
+| **RefreshToken** | User 关联实体 | 🧲 v1.0 待实现（D3 B+）。**代码中不存在此类**。Token 轮换 + 重放检测（FamilyId），重放检测延后至 v2.0 |
 
 ## 枚举定义
 
@@ -408,7 +418,7 @@ graph TB
 - Fluent API 优先于 Data Annotations
 - 全局查询过滤器: `entity.HasQueryFilter(e => !e.IsDeleted)`
 - DateTime 统一 UTC
-- decimal 使用 `HasPrecision(18, 2)` 或 `HasPrecision(5, 4)`
+- decimal 使用 `HasPrecision(18, 2)`（金额类）或列类型 `decimal(3,2)`（Prescription.Discount 折扣）
 
 ### 索引策略
 
@@ -489,6 +499,7 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-09-17 | v2.4 | **实体代码对齐**：User.PasswordHash 标注 Identity PBKDF2（非 BCrypt）+ 补 MustChangeOnNextLogin；Prescription.Discount decimal(5,4)→decimal(3,2)；MedicalCasePrintLog 标「已实现」；AuthSession 补 UserAgent/RevokedReason/Status；ER 图移除代码不存在的 RefreshToken；实体路径改 `src/Shared/LYBT.Entities` |
 | 2026-08-20 | v2.2 | **P0-7 Patient 简化对齐**：Patient 20+ 字段裁剪为 7 字段（Name/PinYinCode/Gender/BirthDate/IdNumber/PhoneNumber/Status + BaseEntity），与 `PatientModel.cs` 代码 SSOT 对齐；敏感数据 Address/AllergyHistory/MedicalHistory 等延期至 v2.0。 |
 | 2026-09-17 | v2.3 | **R-6 盲索引**：Patient 增 `IdCardHash`（HMAC-SHA256 of IdNumber，`IX_Patients_IdCardHash`），`GetByIdNumberAsync` 由全表内存比对改为索引精确匹配；启动回填存量。 |
 | 2026-06-28 | v2.1 | **spec S3 批次2 提炼（542→~420 行）**：MedicalCase 业务生命周期状态转换表/Registration 联动/打印保护覆盖层改链接到 07-medical-cases.md（留状态枚举）；辅助实体重复段（MedicalCasePrintLog/PrescriptionItem/FormulaHerbItem/AuthSession+RefreshToken 重复描述）合并为概览表；RefreshToken 字段表（🧲 代码不存在）压成 D3 spec 引用。变更历史见 git log。 |

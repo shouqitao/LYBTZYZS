@@ -89,19 +89,19 @@
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 | WebAPI | Desktop |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
-| US-HERB-001 | Must | ADR-0007 | Flow 2 | GET /herbs | CatalogController.cs:50 | R12/A4/D10 | ✅ 已实现 | ✅ | ✅ |
-| US-HERB-002 | Must | ADR-0007 | — | GET /herbs/{id} | CatalogController.cs:107 | — | ✅ 已实现 | ✅ | ✅ |
-| US-HERB-003 | Must | ADR-0010 | — | POST /herbs | CatalogController.cs:124 | — | ✅ 已实现 | ✅ | ✅ |
-| US-HERB-004 | Must | ADR-0001 | — | PUT /herbs/{id} | CatalogController.cs:146 | A2/D13 | ✅ 已实现 | ✅ | ✅ |
-| US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | CatalogController.cs:174 | — | ✅ 已实现（B1: 单删引用检查 ValidateBeforeDeleteAsync——处方/验方引用拒绝删除） | ✅ | ✅ |
-| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | CatalogController.cs:262 | A1 | ✅ 已实现（DTO/JSON 唯一路径——2026-08-13 移除服务端 Excel 解析 import-excel） | ✅ | ✅ |
-| US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | CatalogController.cs（export-all） | — | ✅ 已实现（T4: export-all 端点——2026-08-19 P1：Local 补 export-all/export/import-template 端点，双端成立） | ✅ | ✅ |
-| US-HERB-008 | Should | ADR-0001 | — | GET /herbs/{id}/check-reference | CatalogController.cs:287 | — | ✅ 已实现（CheckHerbReference 处方+验方双计数） | ✅ | ⚠️ |
-| US-HERB-009 | Should | ADR-0001 | — | POST /herbs/batch-check-reference | CatalogController.cs:302 | — | ✅ 已实现（BatchCheckReference 聚合计数） | ✅ | ⚠️ |
-| US-HERB-010 | Must | — | — | POST /herbs/{id}/toggle-status | CatalogController.cs:202 | A3 | ✅ 已实现 | ✅ | ✅ |
-| US-HERB-011 | Should | — | — | POST /herbs/{id}/restore | CatalogController.cs:228 | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
-| US-HERB-012 | Should | ADR-0001 | — | POST /herbs/batch-enable 等 | CatalogController.cs:319 | — | ✅ 已实现（批量删除引用检查） | ✅ | ⚠️ |
-| US-HERB-013 | Should | ADR-0010 | — | GET /herbs/export + import-template | CatalogController.cs（export/import-template） | — | ✅ 已实现（T4: export/import-template 端点——2026-08-19 P1：Local 补端点 + 契约-路由对齐守卫，双端成立） | ✅ | ✅ |
+| US-HERB-001 | Must | ADR-0007 | Flow 2 | GET /herbs | HerbsController.cs:45 | R12/A4/D10 | ✅ 已实现 | ✅ | ✅ |
+| US-HERB-002 | Must | ADR-0007 | — | GET /herbs/{id} | HerbsController.cs | — | ✅ 已实现 | ✅ | ✅ |
+| US-HERB-003 | Must | ADR-0010 | — | POST /herbs | HerbsController.cs | — | ✅ 已实现 | ✅ | ✅ |
+| US-HERB-004 | Must | ADR-0001 | — | PUT /herbs/{id} | HerbsController.cs | A2/D13 | ✅ 已实现 | ✅ | ✅ |
+| US-HERB-005 | Must | ADR-0001 | — | DELETE /herbs/{id} | HerbsController.cs | — | ✅ 已实现（B1: 单删引用检查 ValidateBeforeDeleteAsync——处方/验方引用拒绝删除） | ✅ | ✅ |
+| US-HERB-006 | Must | ADR-0010 | Flow 5(none) | POST /herbs/batch-import | HerbsController.cs | A1 | ✅ 已实现（DTO/JSON 唯一路径——2026-08-13 移除服务端 Excel 解析 import-excel） | ✅ | ✅ |
+| US-HERB-007 | Should | ADR-0010 | — | GET /herbs/export-all | HerbsController.cs（export-all） | — | ✅ 已实现（T4: export-all 端点——2026-08-19 P1：Local 补 export-all/export/import-template 端点，双端成立） | ✅ | ✅ |
+| US-HERB-008 | Should | ADR-0001 | — | GET /herbs/{id}/check-reference | HerbsController.cs | — | ✅ 已实现（CheckHerbReference 处方+验方双计数） | ✅ | ⚠️ |
+| US-HERB-009 | Should | ADR-0001 | — | POST /herbs/batch-check-reference | HerbsController.cs | — | ✅ 已实现（BatchCheckReference 聚合计数） | ✅ | ⚠️ |
+| US-HERB-010 | Must | — | — | POST /herbs/{id}/toggle-status | HerbsController.cs | A3 | ✅ 已实现 | ✅ | ✅ |
+| US-HERB-011 | Should | — | — | POST /herbs/{id}/restore | HerbsController.cs | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
+| US-HERB-012 | Should | ADR-0001 | — | POST /herbs/batch-enable 等 | HerbsController.cs | — | ✅ 已实现（批量删除引用检查） | ✅ | ⚠️ |
+| US-HERB-013 | Should | ADR-0010 | — | GET /herbs/export + import-template | HerbsController.cs（export/import-template） | — | ✅ 已实现（T4: export/import-template 端点——2026-08-19 P1：Local 补端点 + 契约-路由对齐守卫，双端成立） | ✅ | ✅ |
 
 ## 五、验方管理（US-FORM × 14）
 
@@ -109,19 +109,19 @@
 
 | US-FORM-014 | Should | — | — | POST /formulas/{id}/clone | LocalWebAPI/Controllers/FormulasController.cs（CloneFormula） | — | ✅ 已实现（R3-补：克隆——仅本地，远程待补；2026-09-14 修复克隆漏拷 ProcessingMethod + E2E `FormulaCrudE2ETests.Clone_*`） | ⚠️ | ✅ |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
-| US-FORM-001 | Must | ADR-0007 | — | GET /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（列表 Doctor 仅本人+共享） | ✅ | ✅ |
-| US-FORM-002 | Must | ADR-0007 | — | GET /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（Doctor 所有权检查 403） | ✅ | ✅ |
-| US-FORM-003 | Must | ADR-0007 | — | POST /Formulas | CatalogController.cs:363 | D11 | ✅ 已实现（创建持久化药材组成） | ✅ | ✅ |
-| US-FORM-004 | Must | ADR-0007 | — | PUT /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现（更新替换药材+降级检查） | ✅ | ✅ |
-| US-FORM-005 | Must | ADR-0007 | — | DELETE /Formulas/{id} | CatalogController.cs:363 | — | ✅ 已实现 | ✅ | ⚠️ |
-| US-FORM-006 | Must | ADR-0010 | — | POST /Formulas/batch-import | CatalogController.cs:363 | — | ✅ 已实现（10000 上限） | ✅ | ✅ |
+| US-FORM-001 | Must | ADR-0007 | — | GET /Formulas | FormulasController.cs | D11 | ✅ 已实现（列表 Doctor 仅本人+共享） | ✅ | ✅ |
+| US-FORM-002 | Must | ADR-0007 | — | GET /Formulas/{id} | FormulasController.cs | — | ✅ 已实现（Doctor 所有权检查 403） | ✅ | ✅ |
+| US-FORM-003 | Must | ADR-0007 | — | POST /Formulas | FormulasController.cs | D11 | ✅ 已实现（创建持久化药材组成） | ✅ | ✅ |
+| US-FORM-004 | Must | ADR-0007 | — | PUT /Formulas/{id} | FormulasController.cs | — | ✅ 已实现（更新替换药材+降级检查） | ✅ | ✅ |
+| US-FORM-005 | Must | ADR-0007 | — | DELETE /Formulas/{id} | FormulasController.cs | — | ✅ 已实现 | ✅ | ⚠️ |
+| US-FORM-006 | Must | ADR-0010 | — | POST /Formulas/batch-import | FormulasController.cs | — | ✅ 已实现（10000 上限） | ✅ | ✅ |
 | US-FORM-007 | Must | ADR-0007 | — | GET /Formulas/pending-validation | IFormulaService.cs:11 | D11 | ✅ 已实现（待验证列表分页） | ✅ | ✅ |
 | US-FORM-008 | Must | ADR-0007 | — | POST /Formulas/{fid}/herbs/{hid}/validate | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ✅ |
 | US-FORM-009 | Must | ADR-0007 | — | IFormulaService.ValidateFormulaHerbAsync | IFormulaService.cs:11 | — | ✅ 已实现 | ✅ | ✅ |
 | US-FORM-010 | Must | ADR-0007 | — | IFormulaService.UpdateAsync | IFormulaService.cs:11 | — | ✅ 已实现（FLAW-F1 降级 Draft） | ✅ | ✅ |
-| US-FORM-011 | Must | ADR-0007 | — | POST /Formulas/{id}/toggle-status | CatalogController.cs:363 | — | ✅ 已实现（toggle-status + batch-enable/disable） | ✅ | ✅ |
-| US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | CatalogController.cs:363 | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
-| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | CatalogController.cs（formulas/export?category= + FormulaDetailDto Herbs） | — | ✅ 已实现（2026-08-19 P2：导出含 Herbs 明细 + 分类筛选 category 对齐；双端 AdminOrSuperAdmin） | ✅ | ✅ |
+| US-FORM-011 | Must | ADR-0007 | — | POST /Formulas/{id}/toggle-status | FormulasController.cs | — | ✅ 已实现（toggle-status + batch-enable/disable） | ✅ | ✅ |
+| US-FORM-012 | Should | ADR-0007 | — | POST /Formulas/{id}/restore | FormulasController.cs | A10 | ✅ 已实现（Restore 泛型命令） | ✅ | ✅ |
+| US-FORM-013 | Should | ADR-0010 | — | GET /Formulas/export + import-template | FormulasController.cs（formulas/export?category= + FormulaDetailDto Herbs） | — | ✅ 已实现（2026-08-19 P2：导出含 Herbs 明细 + 分类筛选 category 对齐；双端 AdminOrSuperAdmin） | ✅ | ✅ |
 
 ## 六、医案管理（US-MC × 20，核心聚合根）
 

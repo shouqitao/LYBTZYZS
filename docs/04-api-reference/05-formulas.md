@@ -8,7 +8,7 @@
 ## 概述
 
 验方 (Formula) 管理模块，覆盖 CRUD、药材组成管理、延迟绑定验证、导入、状态切换、批量删除。启用 OutputCache。
-Doctor 只能看到自己的和共享的验方，Admin/SuperAdmin 可操作全部。资源级授权通过 `FormulaAuthorizationHandler` 实现。
+Doctor 只能看到自己的和共享的验方，Admin/SuperAdmin 可操作全部。授权以角色策略为主（类级 `DoctorOrAdmin` + 操作级 `AdminOrSuperAdmin`/`AdminBusinessOnly`）；所有权在 Service 层校验。
 
 ---
 

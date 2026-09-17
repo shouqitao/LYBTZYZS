@@ -1,9 +1,9 @@
 # 服务端架构（模块结构 SSOT）
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v2.5 | 日期: 2026-09-17
 
 ## 概述
 
-Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 6 个逻辑模块（8 个物理项目）。Identity (认证+用户)、Catalog (药材+验方)、Patients、Registration 使用 MediatR CQRS；MedicalCases 为 Service 拆分（无 MediatR）；Reports 为只读聚合查询模块。
+Server 层采用模块化单体架构: Controller -> Service/MediatR Handler -> Repository -> DbContext，分为 Core (基础设施)、Modules (业务逻辑)、Services (API 入口) 三组，共 **6 个物理模块项目**。Identity (认证+用户)、Catalog (药材+验方)、Patients、Registrations 使用 MediatR CQRS；MedicalCases 为 Service 拆分（无 MediatR）；Reports 为只读聚合查询模块。
 
 ## 请求生命周期
 
@@ -62,14 +62,14 @@ sequenceDiagram
 
 ### 模块清单
 
-| 模块 | 架构模式 | 跨模块通信 |
+| 物理项目 | 架构模式 | 跨模块通信 |
 |------|----------|------------|
-| Identity (Auth+Users) | MediatR CQRS | IUserCrossModuleService |
-| Catalog (Herbs+Formula) | Service + MediatR | ICatalogCrossModuleService |
-| Patients | Service + MediatR | IMedicalCaseCrossModuleService |
-| MedicalCases | Service 拆分（Command/Query/State） | IRegistrationCrossModuleService + ICatalogCrossModuleService |
-| Registration | MediatR CQRS | IRegistrationCrossModuleService |
-| Reports | 只读聚合查询 | — |
+| `LYBT.Module.Identity`（认证+用户） | MediatR CQRS | IUserCrossModuleService |
+| `LYBT.Module.Catalog`（药材+验方） | Service + MediatR | ICatalogCrossModuleService |
+| `LYBT.Module.Patients` | Service + MediatR | IPatientCrossModuleService |
+| `LYBT.Module.MedicalCases` | Service 拆分（Command/Query/State） | IMedicalCaseCrossModuleService + ICatalogCrossModuleService + IRegistrationCrossModuleService |
+| `LYBT.Module.Registrations` | MediatR CQRS | IRegistrationCrossModuleService |
+| `LYBT.Module.Reports` | 只读聚合查询 | — |
 
 > 🧲 **Sync 模块属 v2.0**（N1 决策 2026-06-28）：v1.0 远程与本地数据孤立，`LYBT.Module.Sync` 不在 v1.0 范围。
 
@@ -79,7 +79,7 @@ sequenceDiagram
 
 > 蓝图 v1.3 及之前以「七目录理想模板」表述，实际代码为三态并存（模块清单表格为准）。本版改为三态模板，标注各模块实际形态，**七目录模板从未完整落地**（全模块无 `Domain/`，实体下沉 LYBT.Entities）。
 
-**状态一：CQRS 模块（Identity/Patients/Herbs/Formula/Registration）**
+**状态一：CQRS 模块（Identity/Patients/Catalog/Registrations）**
 
 ```
 Controllers/           # HTTP 边界（继承 Base*，返回 IActionResult）
@@ -117,20 +117,20 @@ Infrastructure/        # ReportRepository + ReportQueryModels（复用 AppDbCont
 
 三种形态:
 
-**CQRS 模块** (Auth/Users/Patients/Herbs/Formula/Registration):
+**CQRS 模块** (Identity/Patients/Catalog/Registrations):
 ```
 LYBT.Module.{Domain}/
-  {Domain}Module.cs, Application/, Domain/, Infrastructure/, Interfaces/, Services/
+  {Domain}Module.cs, Application/, Infrastructure/, Interfaces/, Services/
 ```
 
-**MedicalCase** (Command/Query/State 三 Service 拆分):
+**MedicalCases** (Command/Query/State 三 Service 拆分):
 ```
 LYBT.Module.MedicalCases/ — Controllers/ Interfaces/ Mappers/ Repositories/ Services/
 ```
 
 **Reports** (只读聚合查询):
 ```
-LYBT.Module.Reports/ — Domain/ Infrastructure/ Interfaces/
+LYBT.Module.Reports/ — Controllers/ Services/ Infrastructure/
 ```
 
 ### MedicalCase 服务拆分
@@ -292,9 +292,9 @@ Desktop (SignalRClient) ←WebSocket→ MapHub("/hubs/registration")
 
 ## 模块独立 DbContext
 
-4 个模块拥有独立 DbContext: Auth (`AuthDbContext`)、Users (`UsersDbContext`)、Herbs (`HerbsDbContext`)、Formula (`FormulaDbContext`)。均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串。
+5 个业务模块拥有独立 DbContext: Identity (`IdentityDbContext`)、Catalog (`CatalogDbContext`)、Patients (`PatientsDbContext`)、Registrations (`RegistrationDbContext`)、MedicalCases (`MedicalCaseDbContext`)。均通过 `ConnectionStringResolver.GetEffectiveConnectionString()` 三级回退获取连接字符串。
 
-复用 `AppDbContext` 的模块: Patients、MedicalCase、Registration、Auth (SecurityAuditRepository)、Herbs (HerbReferenceRepository)。
+Reports 无自有 DbContext（复用 `AppDbContext` 做只读聚合查询）。
 
 > 架构测试 P02（Repository 必须继承 BaseRepository）对直接注入 DbContext 的模块内 Repository 予以豁免；P10（Service 禁止直接注入 AppDbContext）仅约束 Service 层。
 
@@ -371,6 +371,7 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v2.5 | 2026-09-17 | **模块清单 SSOT 对齐**：「6 逻辑/8 物理」→ 6 个物理 csproj；模块名 Auth/Users/Herbs/Formula/Registration → Identity/Catalog/Patients/MedicalCases/Registrations/Reports；独立 DbContext 清单改为实际 5 个 |
 | v2.4 | 2026-08-07 | WebApi 文档完整性审计修复 |
 | v2.3 | 2026-08-05 | 文档与代码全面对齐（14 项） |
 | v2.2 | 2026-06-28 | spec S3 批次2 提炼 |

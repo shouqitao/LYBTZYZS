@@ -1,5 +1,5 @@
 # 异常处理与错误追踪架构
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-17
 
 > 覆盖 DOC3-11 (异常体系架构) 和 DOC3-14 (CorrelationId 全链路追踪)
 
@@ -84,20 +84,25 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ## ErrorCode 统一错误码
 
-定义于 `LYBT.Shared.Primitives.ErrorCodes.ErrorCode` 枚举，采用 **MCCEE 分区规则** (M=模块, CC=子类别, EE=序号)：
+定义于 `LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode` 枚举（SSOT：`src/Shared/LYBT.Shared.Models/Primitives/ErrorCodes/ErrorCode.cs`），采用 **MCCEE 分区规则** (M=模块, CC=子类别, EE=序号)：
 
-| 分区 | 模块 | 示例 |
+| 分区 | 模块 | 示例（以代码为准） |
 |------|------|------|
-| `0xxxx` | 通用 | `Unknown(0)`, `RateLimitExceeded(12)` |
-| `1xxxx` | 用户/认证 | `UserNotFound(10001)`, `AuthInvalidCredentials(10101)` |
+| `0xxxx` | 通用 | `Unknown(0)`, `RateLimitExceeded(12)`, `SensitiveDecryptFailed(13)` |
+| `1xxxx` | 用户/认证 | `UserNotFound(10001)`, `AuthInvalidCredentials(10101)`, `AuthTokenRevoked(10203)` |
 | `2xxxx` | 患者 | `PatientNotFound(20001)`, `PatientPhoneDuplicate(20701)` |
-| `3xxxx` | 医案 | `MedicalCaseNotFound(30001)`, `McInvalidStatusTransition(30301)` |
-| `4xxxx` | 处方 | `PrescriptionNotFound(40001)` |
-| `5xxxx` | 药材 | `HerbNotFound(50001)`, `HerbImportFileEmpty(50301)` |
+| `3xxxx` | 医案（含处方 304xx） | `MedicalCaseNotFound(30001)`, `McActiveCaseExists(30103)`, `McInvalidStatusTransition(30301)` |
+| `4xxxx` | 处方 | **预留分区**——处方错误收敛至医案 304xx（如 `McPrescriptionRequired(30303)`），当前无独立 4xxxx 枚举值 |
+| `5xxxx` | 药材 | `HerbNotFound(50001)`, `HerbNameExists(50002)` |
 | `6xxxx` | 验方 | `FormulaNotFound(60001)`, `FormulaHerbItemNotFound(60202)` |
-| `8xxxx` | 挂号 | `RegistrationNotFound(80001)`, `McInvalidStatusTransition(80301)` |
+| `7xxxx` | 同步 | **预留分区**（v2.0 Sync） |
+| `8xxxx` | 挂号 | `RegistrationNotFound(80001)`, `RegistrationInvalidStatusTransition(80002)`, `RegistrationCancelNotAllowed(80003)` |
+
+> **文档纪律**：错误码只写入 `ErrorCode.cs` 已定义值，禁止在架构文档虚构枚举名/数值。
 
 ### 扩展方法 (ErrorCodeExtensions)
+
+位于 `LYBT.Shared.Models/Primitives/ErrorCodes/ErrorCodeExtensions.cs`：
 
 - `ToFormattedString()` -- 格式化为 `"ERR-30001"`
 - `ToHttpStatusCode()` -- 映射到 HTTP 状态码 (400/401/403/404/409/422/429/500/503)
@@ -106,7 +111,7 @@ throw NotFoundException.Herb(herbId);         // ErrorCode = HerbNotFound (50001
 
 ### ErrorMessages 错误消息
 
-`ErrorMessages` 静态类维护中英文双语消息映射表，提供 `Get(code)` / `GetUserMessage(code)` / `GetTechnicalMessage(code)` 方法。
+`ErrorMessages` 静态类（`LYBT.Shared.Models/Primitives/ErrorCodes/ErrorMessages.cs`）维护中英文双语消息映射表，提供 `Get(code, useEnglish)` / `GetUserMessage(code)` 方法。**代码中无 `GetTechnicalMessage` 方法**。
 
 ## API 响应格式
 
@@ -269,4 +274,11 @@ Desktop                          Server
 
 ---
 
-最后更新: 2026-06-28
+最后更新: 2026-09-17
+
+## 变更记录
+
+| 日期 | 变更 |
+|------|------|
+| 2026-09-17 | **错误码 SSOT 对齐**：命名空间 `LYBT.Shared.Primitives` → `LYBT.Shared.Models.Primitives.ErrorCodes`；删除虚构码 `PrescriptionNotFound(40001)`/`HerbImportFileEmpty(50301)`/`McInvalidStatusTransition(80301)`；4xxxx/7xxxx 标预留分区；ErrorMessages 去掉不存在的 `GetTechnicalMessage`；示例改为引用 ErrorCode.cs 实有值 |
+| 2026-06-28 | 初始版本（DOC3-11/14 整合） |

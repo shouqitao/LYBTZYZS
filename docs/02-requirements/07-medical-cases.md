@@ -416,7 +416,7 @@ IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: 🔴 缺失（历史聚合端点不存在；文档引用 GetPatientConsultations 虚构）
+**状态**: ✅ 已实现（`GET /medicalcases/patients/{patientId}/history` 历史聚合端点，`BaseMedicalCasesController.GetPatientHistory`）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Consultation 列表）；US-MC-006 是**当前医案维度查询**（返回 MedicalCase 集合）。两者不重叠。
 
@@ -442,7 +442,7 @@ IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 
 **角色**: 医生、管理员
 **优先级**: Should
-**状态**: 🔴 缺失（处方历史端点不存在）
+**状态**: ✅ 已实现（`GET /medicalcases/patients/{patientId}/history` 历史聚合端点，含已完成医案处方摘要）
 
 > **边界**：本故事是**历史聚合查询**（跨医案返回 Prescription 列表）；US-MC-006 是**当前医案维度查询**。复制处方动作见 US-MC-019。
 
@@ -698,7 +698,7 @@ IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: 🔴 缺失（GetBatchAsync 与 batch-details 端点均不存在——保持）
+**状态**: ✅ 已实现（`POST /medicalcases/batch-details`——`MedicalCasesController.GetBatchDetails`，上限 50，ERR-30603）
 
 **作为** 医生，**我想要** 批量查询多个医案的详情，**以便** 在列表场景下避免 N+1 查询问题，提升性能。
 
@@ -789,3 +789,4 @@ IsLocked = IsCompleted && (ClinicLocalDate(CompletedAt) < ClinicLocalDate(now))
 | 2026-08-03 | **BR-000 修订为「接诊即建」**：StartVisit/QuickVisit/本地模式原子创建 MedicalCase(Active)+Registration(InProgress)；状态机注释同步 |
 | 2026-08-13 | **BR-000 QuickVisit 修订为两步**：①创建 Registration(Waiting, Source=Doctor) ②StartVisit→InProgress+MedicalCase(Active)；InProgress 后置，断网残留 Waiting 可自愈；前端 VM 封装一键 |
 | 2026-08-03 | **医案状态机重构（医案专题）**：取消=物理删除（不判内容，无 Cancelled 状态）；已完成只可软删（Admin）；未完成不可打印；打印保护简化为 IsPrinted 标记；REG-BR-005 放弃恢复；无 Status 字段 |
+| 2026-09-17 | US-MC-008/009/018 状态 🔴→✅：history 聚合端点与 batch-details 端点代码已落地 |

@@ -77,15 +77,10 @@
 **curl 示例：**
 
 ```bash
-# 登录
+# 登录（启动仅 seed sysadmin；业务账号由 sysadmin 创建）
 curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"userName":"admin","password":"Admin@123456"}'
-
-# sysadmin 登录
-curl -X POST http://localhost:5000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"userName":"sysadmin","password":"SysAdmin@2026!"}'
+  -d '{"userName":"sysadmin","password":"<DefaultPasswords__SysAdminPassword>"}'
 ```
 
 **错误码：**

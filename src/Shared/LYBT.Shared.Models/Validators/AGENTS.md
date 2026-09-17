@@ -1,11 +1,11 @@
-# LYBT.Shared.Validators - Shared Validators
+# LYBT.Shared.Models/Validators - Shared Validators
 
-**Purpose**: FluentValidation validators organized by business module, shared between Server and Desktop.
+**Purpose**: FluentValidation validators organized by business module, shared between Server and Desktop（已合并自独立项目 `LYBT.Shared.Validators`）。
 
 ## Structure
 
 ```
-LYBT.Shared.Validators/
+LYBT.Shared.Models/Validators/
 ├── Auth/                # Login validators
 ├── BusinessRules/       # Cross-cutting business rule validators
 ├── Consultation/        # Consultation input validators
@@ -14,6 +14,7 @@ LYBT.Shared.Validators/
 ├── MedicalCase/         # MedicalCase input validators
 ├── Patients/            # Patient input validators
 ├── Prescriptions/       # Prescription input validators
+├── Registration/        # Registration input validators
 └── Users/               # User input validators
 ```
 

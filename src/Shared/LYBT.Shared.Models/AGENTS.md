@@ -23,7 +23,7 @@ LYBT.Shared.Models/
 ├── Extensions/          # EnumExtensions（DTO 转换唯一走 Mapperly，A-31-C8）
 ├── Primitives/          # ErrorCode, ErrorCategory, ValidationConstants
 ├── Utilities/           # 共享工具类（Server + Desktop 共用）
-│   ├── Security/        # PasswordHelper, PasswordPolicyValidator（BCrypt）
+│   ├── Security/        # PasswordHelper, PasswordPolicyValidator（生成/策略——哈希走 Identity PBKDF2）
 │   ├── Text/            # PinYinHelper（拼音转换）
 │   └── Extensions/      # CacheExtensions（IMemoryCache 扩展）
 ├── Validators/          # FluentValidation 验证器（已合并自 LYBT.Shared.Validators）
@@ -37,7 +37,7 @@ LYBT.Shared.Models/
 | 共享 DTO | `Contracts/` | 按领域分子目录 |
 | 共享枚举 | `Enums/` | Gender, HerbRole, CaseStatus, UserRole 等 |
 | 错误码 | `Primitives/ErrorCodes/` | ErrorCode 枚举 + 扩展 |
-| 密码工具 | `Utilities/Security/` | PasswordHelper（BCrypt 哈希） |
+| 密码工具 | `Utilities/Security/` | PasswordHelper（生成/策略；哈希统一走 Identity PBKDF2） |
 | 拼音工具 | `Utilities/Text/` | PinYinHelper（拼音首字母） |
 | 缓存扩展 | `Utilities/Extensions/` | IMemoryCache.RemoveByPrefix/Clear |
 | 验证器 | `Validators/` | FluentValidation 规则 |
@@ -57,6 +57,7 @@ LYBT.Shared.Models/
 ## 依赖说明
 
 以下包看似不属"Models"，但被 Server + Desktop 共用，是合理的共享依赖：
-- `BCrypt.Net-Next` — PasswordHelper（密码哈希，Server 验证 + Desktop 本地验证）
 - `hyjiacan.pinyin4net` — PinYinHelper（拼音，Server 批量导入 + Desktop 搜索）
 - `Microsoft.Extensions.Caching.Memory` — CacheExtensions（缓存清理，两端共用）
+
+> **BCrypt.Net-Next 已移除（A-27）**：不在本项目依赖中；密码哈希统一 Identity PBKDF2。

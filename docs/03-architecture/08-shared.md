@@ -1,7 +1,8 @@
-# 共享层架构（视图层，权威见 [01-system-overview.md](01-system-overview.md) §解决方案结构）
-> 版本: v1.0 | 日期: 2026-08-20
+# 共享层架构（Shared 结构 SSOT）
+> 版本: v1.7 | 日期: 2026-09-17
 
 > **v1.6（2026-08-08）**：按实际 5 项目结构重写（原文档声称 8 项目，实际 5 项目，Primitives/Utilities/Components/Validators 已坍缩为 `LYBT.Shared.Models` 内文件夹）。结构审计依据：A-16 结构审计报告（compose 过程报告，已归档删除）。
+> **v1.7（2026-09-17）**：**本文档为 Shared 层项目清单/职责的 SSOT**；[01-system-overview.md](01-system-overview.md) 的解决方案结构树引用本文件，不再自行维护 Shared 权威清单。
 
 ## 概述
 
@@ -379,7 +380,7 @@ Entity (DataAnnotations)
 
 | 层 | Mapper 数量 | 位置 |
 |----|------------|------|
-| Server 模块（Mapperly） | 3 | `LYBT.Module.Registration/Mappers/RegistrationMapper.cs`、`LYBT.Module.MedicalCases/Mappers/MedicalCaseMapper.cs`、`LYBT.Module.Auth/Application/Mappers/AuthUserMapper.cs` |
+| Server 模块（Mapperly） | 3 | `LYBT.Module.Registrations/Mappers/`、`LYBT.Module.MedicalCases/Mappers/`、`LYBT.Module.Identity/Application/Mappers/` |
 | Server 模块（手写静态类，A-18 P1-4 已转 Mapperly） | 4 | `LYBT.Module.{Formula,Herbs,Patients,Users}/Application/Mappers/*Mapper.cs` |
 | Client Desktop 模块 | 9 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
 | Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |
