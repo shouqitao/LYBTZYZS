@@ -1,10 +1,10 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-05-04 | Updated: 2026-08-11 -->
+<!-- Generated: 2026-05-04 | Updated: 2026-09-27 -->
 
 # tests
 
 ## Purpose
-Test projects for the LYBTZYZS solution. Implements a Testing Trophy architecture across multiple projects: server unit tests (EF InMemory, zero mock), desktop unit/integration tests, architecture guard tests. **T2-1（2026-08-11）校正**：Server 测试实际为 EF InMemory 单元测试（359 方法/571 用例），原宣称的「真 SQL Server + Respawn 集成测试」基建（_Infrastructure/）零消费者已删除。
+Test projects for the LYBTZYZS solution. Implements a Testing Trophy architecture across multiple projects: server unit tests (EF InMemory, zero mock) + SQL Server integration (`_Infrastructure`/`Integration/SqlCore`), desktop unit/integration tests, architecture guard tests. **SQL 集成基建重建（2026-09-27）**：`LYBT.Tests.Server/_Infrastructure/` + `Integration/SqlCore/`（真 SQL Server + Respawn 领域路径）。
 
 ## Key Files
 | File | Description |
@@ -30,7 +30,7 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 - Run module-specific: `dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~MedicalCase"`
 
 ### Testing Requirements
-- **Server tests**: EF InMemory 真实实现 + 手写 fake，ZERO mocks（AntiMock 规则 AM01/AM02 强制）。真 SQL Server + Respawn 集成基建已随 T2-1 删除（原 _Infrastructure/ 零消费者），补集成测试需重建基建。
+- **Server tests**: 分层——`Integration/SqlCore` 真 SQL Server + Respawn（LocalDB `LYBT_Test` 或 `TEST_CONNECTION_STRING`）；单元测试 EF InMemory 真实实现 + 手写 fake，ZERO mocks（AntiMock 规则 AM01/AM02 强制）。
 - **Desktop tests**: 纯 VM 单元测试无 DB（T2-2 后 UserJourneyTestBase 不再挂 LocalDB）；LocalWebAPI 控制器测试用真实 Kestrel + LocalDB；E2E 测试依赖 localhost:5000 运行中服务。
 - **Architecture tests**: Verify dependency direction rules, naming conventions, and anti-mock policies (e.g., `P10_Services_Should_Not_Directly_Inject_AppDbContext`).
 

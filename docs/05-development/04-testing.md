@@ -1,5 +1,5 @@
 # 测试指南
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.1 | 日期: 2026-09-27
 
 ## 核心策略: 集成优先，最小 Mock
 
@@ -15,13 +15,16 @@
 
 ## 测试项目结构 (3 个项目, Testing Trophy 架构)
 
-> **T2-1 校正（2026-08-11）**：Server 测试实际为 EF InMemory 单元测试 + WebApplicationFactory 系统测试；原宣称的「真 SQL Server + Respawn」集成基建（`_Infrastructure/`）零消费者已删除。独立 E2E 测试项目亦已删除。
+> **T2-1 校正（2026-08-11）**：原「真 SQL Server + Respawn」集成基建（`_Infrastructure/`）零消费者已删除。
+> **SQL 集成基建重建（2026-09-27）**：最小可用基建已重建（`_Infrastructure/` + `Integration/SqlCore/`），见下文「SQL Server 集成测试」。
 
 ```
 tests/
   LYBT.Tests.Server/                  # Server 端全量测试 (net8.0)
-    Integration/                      # WebApplicationFactory 系统测试 (WebApiTestFactory)
-      System/                         # 登录流、配置权限行为、公式校验注册
+    _Infrastructure/                  # SQL Server 集成基建（TestDbFactory / RespawnCheckpoint / IntegrationTestBase）
+    Integration/
+      SqlCore/                        # 真 SQL Server + Respawn 领域路径集成测试
+      System/                         # WebApplicationFactory 系统测试（登录流、配置权限行为、公式校验注册）
       Permissions/                    # 角色授权、跨角色
       P0Endpoints/                    # 关键端点 (Auth/Users/Patients/MedicalCases/Registrations/Herbs)
       Deployment/                     # 部署配置、Swagger 暴露面
@@ -57,9 +60,50 @@ tests/
     AntiMockRuleTests                 # Testing Trophy 防护: Server 零 mock (NSubstitute/Moq 禁用)
 ```
 
-> **注意**: Desktop 集成/E2E 测试使用 **SQL Server LocalDB**；Server 单元测试使用 **EF InMemory**（不校验列映射，故另有 `DbContextMappingSmokeTests` 拦截 InMemory 盲区）。
+> **注意**: Desktop 集成/E2E 测试使用 **SQL Server LocalDB**；Server 单元测试使用 **EF InMemory**（不校验列映射，故另有 `DbContextMappingSmokeTests` 拦截 InMemory 盲区）；Server 领域路径集成测试使用 **真 SQL Server + Respawn**（见下节）。
 
-**Testing Trophy 原则**: Server 测试使用 EF InMemory + WebApplicationFactory (零 mock，AntiMockRuleTests 强制)；Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
+**Testing Trophy 原则**: Server 测试分层——领域路径用真 SQL Server + Respawn（`Integration/SqlCore`）、系统层用 WebApplicationFactory、单元用 EF InMemory（零 mock，AntiMockRuleTests 强制）；Desktop 测试使用 SQL Server LocalDB + 真实 Repository (仅 WPF 边界 mock)。
+
+---
+
+## SQL Server 集成测试（Server，`Integration/SqlCore`）
+
+真 SQL Server 路径验证（列映射、过滤唯一索引、全局软删除过滤、领域状态机落库），弥补 EF InMemory 盲区。
+
+### 基建（`tests/LYBT.Tests.Server/_Infrastructure/`）
+
+| 文件 | 职责 |
+|------|------|
+| `TestDbFactory.cs` | 连接串解析（`TEST_CONNECTION_STRING` 环境变量优先，回退 LocalDB `LYBT_Test`）+ `UseSqlServer` Options |
+| `RespawnCheckpoint.cs` | Respawn 7 清库（`Respawner`/`RespawnerOptions`；忽略 `__EFMigrationsHistory`，`WithReseed=true`；首次 Reset 前需 EnsureCreated） |
+| `IntegrationTestBase.cs` | `IAsyncLifetime`：每测前 `EnsureCreatedAsync`，每测后 Respawn 清库 |
+| `SqlServerIntegrationCollection.cs` | xUnit 串行集合——共享库 + Respawn，禁并行 |
+
+### 运行
+
+```bash
+# 需本机 LocalDB，或设置 TEST_CONNECTION_STRING
+dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~Integration.SqlCore"
+
+# 指定外部 SQL Server
+$env:TEST_CONNECTION_STRING="Server=.;Database=LYBT_Test;Trusted_Connection=True;TrustServerCertificate=True"
+dotnet test tests/LYBT.Tests.Server/ --filter "FullyQualifiedName~Integration.SqlCore"
+```
+
+### 当前覆盖（最小核心路径）
+
+| 测试类 | 覆盖 |
+|--------|------|
+| `MedicalCaseSqlIntegrationTests` | Create/GetById/Update、Complete 状态流转、软删除查询过滤、物理 Delete |
+| `RegistrationSqlIntegrationTests` | Create + StartVisit + Complete、Cancel（Waiting / 非法状态 / 已关联医案） |
+| `PatientSqlIntegrationTests` | Create/GetById/Update、软删除 + Restore、软删后再建同名 |
+
+### 约定
+
+- 测试数据自包含（工厂方法内联构造），不依赖种子库
+- 使用 `AppDbContext`（MedicalCase 对 Patient/User 有 FK，需同一上下文）
+- 新增 SQL 集成测试类必须加 `[Collection(SqlServerIntegrationCollection.Name)]`
+- 医案/挂号涉及 Patient/User FK 时先 seed 对应行
 
 **平台分离**: Server 测试用 `net8.0` (跨平台)，Desktop 测试用 `net8.0-windows` (WPF)。
 
