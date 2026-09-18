@@ -133,7 +133,7 @@ public class WorkspaceStateTests
     }
 
     [Theory]
-    [InlineData(WorkspaceMode.Clinical, "返回患者选择")]
+    [InlineData(WorkspaceMode.Clinical, "返回上一页")]
     [InlineData(WorkspaceMode.Management, "返回医案列表")]
     public void BackButtonText_matches_mode(WorkspaceMode mode, string expected)
     {

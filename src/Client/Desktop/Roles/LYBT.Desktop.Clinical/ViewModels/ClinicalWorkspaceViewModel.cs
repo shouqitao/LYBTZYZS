@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -122,21 +123,41 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
 
     #region 命令
 
-    /// <summary>开始看诊：导航到医案工作区（临床模式）</summary>
+    /// <summary>开始看诊：导航到医案工作区（临床模式）— 必须携带 PatientDetailDto 上下文</summary>
     [RelayCommand(CanExecute = nameof(CanStartConsultation))]
-    private void StartConsultation()
+    private async Task StartConsultationAsync()
     {
-        if (SelectedPatient == null) return;
+        if (SelectedPatient == null)
+        {
+            await ShowWarningMessageAsync("请先选择患者");
+            return;
+        }
 
         try
         {
             Logger.LogInformation("开始看诊 - 患者: {Name} ({Id})", SelectedPatient.Name, SelectedPatient.Id);
-            var navParams = MedicalCaseNavigationParameters.ForClinical(SelectedPatient.Id);
-            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, new Dictionary<string, object>(navParams));
+
+            // SelectedPatient 是列表 DTO；MedicalCaseWorkspace 需要完整 PatientDetailDto
+            var patientDetail = PatientDetail;
+            if (patientDetail == null || patientDetail.Id != SelectedPatient.Id)
+            {
+                var result = await _patientService.GetByIdAsync(SelectedPatient.Id);
+                if (!result.Success || result.Data == null)
+                {
+                    await ShowErrorMessageAsync("无法获取患者详情，请重试");
+                    return;
+                }
+                patientDetail = result.Data;
+                PatientDetail = patientDetail;
+            }
+
+            var navParams = MedicalCaseNav.ForNewCase(patientDetail, returnView: ViewNames.ClinicalWorkspace);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "导航到医案工作区失败");
+            await ShowErrorMessageAsync("导航到医案工作区失败，请重试");
         }
     }
 
@@ -149,8 +170,7 @@ public partial class ClinicalWorkspaceViewModel : NavigableViewModelBase
         try
         {
             Logger.LogInformation("导航到患者管理（新建）");
-            var parameters = new Dictionary<string, object> { { "Action", "AddNew" } };
-            _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, parameters);
+            _ = _navigationCoordinator.NavigateTo(ViewNames.PatientManagement, PatientManagementNav.AddNew());
         }
         catch (Exception ex)
         {

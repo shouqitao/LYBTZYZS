@@ -21,7 +21,9 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
             "CatalogModule",
             "MedicalCaseModule",
             "RegistrationModule",
-            "ReportsModule"
+            "ReportsModule",
+            // 设计原则：角色 Home 所属模块必须在 RequiredModules（ClinicalWorkspaceView 注册于 ClinicalModule）
+            "ClinicalModule"
         };
 
         /// <inheritdoc/>

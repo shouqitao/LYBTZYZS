@@ -30,6 +30,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
+    private readonly IPatientService _patientService;
     private readonly IToastService _toastService;
     private readonly PrescriptionPrintHandler _printHandler;
     private readonly IDialogService? _dialogService;
@@ -67,6 +68,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
         _medicalCaseService = Substitute.For<IMedicalCaseService>();
         _navigationCoordinator = Substitute.For<INavigationCoordinator>();
         _activeConsultationService = Substitute.For<IActiveConsultationService>();
+        _patientService = Substitute.For<IPatientService>();
         _toastService = Substitute.For<IToastService>();
 
         // Mock dependencies for PrescriptionPrintHandler
@@ -94,6 +96,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
             _medicalCaseService,
             _navigationCoordinator,
             _activeConsultationService,
+            _patientService,
             _toastService,
             _printHandler,
             _dialogService);

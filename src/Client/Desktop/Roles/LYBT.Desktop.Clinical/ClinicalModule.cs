@@ -12,6 +12,8 @@ namespace LYBT.Desktop.Clinical
     [ModuleDependency("MedicalCaseModule")]
     [ModuleDependency("RegistrationModule")]
     [ModuleDependency("CardReaderModule")]
+    // Herb/Formula 薄包装依赖 Catalog 控件（HerbMasterDetailControl / FormulaMasterDetailControl）
+    [ModuleDependency("CatalogModule")]
     public class ClinicalModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

@@ -74,18 +74,15 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         {
             if (parameters == null) return;
 
-            // 读取消息内容
-            Message = GetDialogParameter(parameters, "message", string.Empty);
+            // PascalCase 键（DialogParams 统一契约）
+            Message = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Message, string.Empty);
 
-            // 读取标题（可选）
-            Title = GetDialogParameter(parameters, "title", GetDefaultTitle());
+            Title = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Title, GetDefaultTitle());
 
-            // 读取消息类型
-            if (parameters.TryGetValue<string>("type", out var typeStr))
+            if (parameters.TryGetValue<string>(LYBT.Desktop.Infrastructure.Services.DialogParams.Type, out var typeStr))
             {
                 MessageType = ParseMessageType(typeStr);
-                // 如果没有传入title，使用类型对应的默认标题
-                if (!parameters.ContainsKey("title"))
+                if (!parameters.ContainsKey(LYBT.Desktop.Infrastructure.Services.DialogParams.Title))
                 {
                     Title = GetDefaultTitle();
                 }

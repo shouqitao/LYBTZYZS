@@ -93,6 +93,7 @@ public abstract class DesktopTestBase : IAsyncLifetime
         var userNotificationService = Substitute.For<IUserNotificationService>();
         var commonDialogService = Substitute.For<ICommonDialogService>();
         var roleRegistry = Substitute.For<LYBT.Desktop.Contracts.Roles.IRoleRegistry>();
+        var navigationCoordinator = Substitute.For<INavigationCoordinator>();
 
         mock.LoggerFactory.Returns(loggerFactory);
         mock.EventAggregator.Returns(eventAggregator);
@@ -102,6 +103,7 @@ public abstract class DesktopTestBase : IAsyncLifetime
         mock.CommonDialogService.Returns(commonDialogService);
         mock.RoleRegistry.Returns(roleRegistry);
         mock.UiThreadDispatcher.Returns(UiDispatcher);
+        mock.NavigationCoordinator.Returns(navigationCoordinator);
 
         return mock;
     }

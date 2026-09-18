@@ -289,7 +289,9 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 { "MedicalCaseId", createResult.Data },
                 { "CurrentPatient", patientDetail },
                 { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
+                // N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+                { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
             };
 
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
@@ -335,7 +337,9 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 { "MedicalCaseId", pendingCase.MedicalCaseId.Value },
                 { "CurrentPatient", patientDetail },
                 { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
+                // N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+                { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
             };
 
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);

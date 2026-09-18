@@ -51,9 +51,9 @@ namespace LYBT.Desktop.Infrastructure.Services
 
             var parameters = new DialogParameters
             {
-                { "message", message },
-                { "title", title },
-                { "type", type }
+                { DialogParams.Message, message },
+                { DialogParams.Title, title },
+                { DialogParams.Type, type }
             };
 
             _dialogService.ShowDialog(MessageDialogName, parameters, _ =>
@@ -69,13 +69,11 @@ namespace LYBT.Desktop.Infrastructure.Services
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            // I-5 修复：键名大小写须与 ConfirmationDialogViewModel.OnDialogOpenedCore 读取的
-            // "Message"/"Title" 一致（DialogParameters 查找大小写敏感，原 "message"/"title" 全部落默认值，
-            // 导致所有确认框显示通用文案而非真实提示）
+            // 键名 PascalCase，与 ConfirmationDialogViewModel.OnDialogOpenedCore 一致
             var parameters = new DialogParameters
             {
-                { "Message", message },
-                { "Title", title ?? "确认" }
+                { DialogParams.Message, message },
+                { DialogParams.Title, title ?? "确认" }
             };
 
             _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -134,6 +135,8 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
         {
             await _signalRClient.StartAsync(doctorId);
         }
+
+        ConsumeNavigationParameters(context);
     }
 
     /// <summary>每次导航到此页面时刷新</summary>
@@ -144,6 +147,58 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
             _ = LoadQueueAsync();
             StartAutoRefresh();
         }
+
+        ConsumeNavigationParameters(context);
+    }
+
+    /// <summary>
+    /// 消费导航参数：Action==Create 自动打开新建挂号弹窗；PatientId/PatientName 预填。
+    /// </summary>
+    private void ConsumeNavigationParameters(NavigationContext context)
+    {
+        var parameters = context?.Parameters;
+        if (parameters is null) return;
+
+        var action = parameters.GetValue<string>(RegistrationListNav.Action);
+        var patientId = parameters.GetValue<Guid>(RegistrationListNav.PatientId);
+        var patientName = parameters.GetValue<string>(RegistrationListNav.PatientName);
+
+        if (action == "Create" || patientId != Guid.Empty)
+        {
+            OpenCreateRegistrationDialog(patientId, patientName);
+        }
+    }
+
+    /// <summary>打开新建挂号弹窗（可选患者预填）</summary>
+    private void OpenCreateRegistrationDialog(Guid patientId = default, string? patientName = null)
+    {
+        if (_dialogService is null)
+        {
+            Logger.LogWarning("[REG-VM] IDialogService 未注入，无法打开新建挂号弹窗");
+            return;
+        }
+
+        if (!CanCreateRegistration())
+        {
+            Logger.LogWarning("[REG-VM] 当前角色/状态不可新建挂号，忽略导航 Action=Create");
+            return;
+        }
+
+        IDialogParameters dialogParameters = new DialogParameters();
+        if (patientId != Guid.Empty)
+        {
+            dialogParameters.Add(RegistrationListNav.PatientId, patientId);
+            dialogParameters.Add(RegistrationListNav.PatientName, patientName ?? string.Empty);
+        }
+
+        _dialogService.ShowDialog("RegistrationCreateDialog", dialogParameters, result =>
+        {
+            if (result.Result == ButtonResult.OK)
+            {
+                Logger.LogInformation("[REG-VM] 新建挂号成功，刷新队列");
+                _ = LoadQueueAsync();
+            }
+        });
     }
 
     /// <summary>离开页面时停止刷新</summary>
@@ -264,20 +319,7 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
     [RelayCommand(CanExecute = nameof(CanCreateRegistration))]
     private void CreateRegistration()
     {
-        if (_dialogService is null)
-        {
-            Logger.LogWarning("[REG-VM] IDialogService 未注入，无法打开新建挂号弹窗");
-            return;
-        }
-
-        _dialogService.ShowDialog("RegistrationCreateDialog", null, result =>
-        {
-            if (result.Result == ButtonResult.OK)
-            {
-                Logger.LogInformation("[REG-VM] 新建挂号成功，刷新队列");
-                _ = LoadQueueAsync();
-            }
-        });
+        OpenCreateRegistrationDialog();
     }
 
     /// <summary>仅 Receptionist（含 Admin/SuperAdmin）且空闲时可新建挂号，Doctor 禁用</summary>
@@ -320,14 +362,11 @@ public partial class RegistrationListViewModel : NavigableViewModelBase
                 return;
             }
 
-            // 导航到医案工作区（Clinical 模式，编辑状态）
-            var navParams = new Dictionary<string, object>
-            {
-                { MedicalCaseNavigationParameters.MedicalCaseIdKey, result.Data },
-                { "CurrentPatient", patientResult.Data },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
-            };
+            // 导航到医案工作区（Clinical 模式，编辑状态）— 统一走 MedicalCaseNav 工厂
+            var navParams = MedicalCaseNav.ForExistingCase(
+                result.Data,
+                patientResult.Data,
+                returnView: ViewNames.RegistrationList);
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
         }
         catch (Exception ex)

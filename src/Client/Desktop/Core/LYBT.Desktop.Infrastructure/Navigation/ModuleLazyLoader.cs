@@ -1,4 +1,5 @@
 using LYBT.Desktop.Contracts.Roles;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Enums;
@@ -14,13 +15,15 @@ public class ModuleLazyLoader : IModuleLazyLoader
     private readonly IModuleLoadingService? _moduleLoadingService;
     private readonly IRoleRegistry? _roleRegistry;
     private readonly ILogger<ModuleLazyLoader> _logger;
+    private readonly IUserNotificationService? _userNotificationService;
 
     /// <summary>
-    /// 视图名 → 业务模块名映射
+    /// 视图名 → 业务模块名映射（架构测试 SSOT；HomeView→Module 必须可解析）
     /// </summary>
     // 映射按各 Module.RegisterTypes 中 RegisterForNavigation 的实际注册方对齐。
     // ClinicalModule 注册角色台与薄包装管理视图（View 在角色台，Control 在业务模块）。
-    private static readonly Dictionary<string, string> ViewToModuleMap = new(StringComparer.Ordinal)
+    // AccountSettingsView 注册于 Shell（非业务模块），故不在本映射中。
+    public static readonly IReadOnlyDictionary<string, string> ViewToModuleMap = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         // ClinicalModule
         { ViewNames.ClinicalHome, "ClinicalModule" },
@@ -34,6 +37,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
         { ViewNames.FormulaManagement, "ClinicalModule" },
 
         // AdminModule
+        { ViewNames.AdminHome, "AdminModule" },
         { ViewNames.UserManagement, "AdminModule" },
         { ViewNames.SystemSettings, "AdminModule" },
 
@@ -48,6 +52,7 @@ public class ModuleLazyLoader : IModuleLazyLoader
         { ViewNames.ReportsHome, "ReportsModule" },
 
         // SysadminModule
+        { ViewNames.SysadminHome, "SysadminModule" },
         { ViewNames.LogLevelControl, "SysadminModule" },
         { ViewNames.Deployment, "SysadminModule" },
         { ViewNames.BackupManagement, "SysadminModule" },
@@ -57,11 +62,13 @@ public class ModuleLazyLoader : IModuleLazyLoader
     public ModuleLazyLoader(
         IModuleLoadingService? moduleLoadingService,
         IRoleRegistry? roleRegistry,
-        ILogger<ModuleLazyLoader> logger)
+        ILogger<ModuleLazyLoader> logger,
+        IUserNotificationService? userNotificationService = null)
     {
         _moduleLoadingService = moduleLoadingService;
         _roleRegistry = roleRegistry;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _userNotificationService = userNotificationService;
     }
 
     /// <summary>
@@ -80,7 +87,11 @@ public class ModuleLazyLoader : IModuleLazyLoader
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "懒加载模块 {ModuleName} 失败", moduleName);
+            // 失败策略：禁止静默——可见错误 + 抛出，由 NavigationCoordinator 回退主页
+            _logger.LogError(ex, "懒加载模块 {ModuleName} 失败", moduleName);
+            if (_userNotificationService != null)
+                await _userNotificationService.ShowErrorAsync($"模块加载失败：{moduleName}");
+            throw;
         }
     }
 

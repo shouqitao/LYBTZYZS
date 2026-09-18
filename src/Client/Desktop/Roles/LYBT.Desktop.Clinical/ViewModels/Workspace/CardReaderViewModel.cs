@@ -385,7 +385,9 @@ public partial class CardReaderViewModel : ChildViewModelBase
             { "MedicalCaseId", medicalCaseId },
             { "CurrentPatient", patientDetail },
             { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
+            // N4：读卡器嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+            { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
         };
         _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
     }

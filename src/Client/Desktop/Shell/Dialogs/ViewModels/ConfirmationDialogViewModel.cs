@@ -52,6 +52,18 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         [NotifyPropertyChangedFor(nameof(IsHardDelete))]
         private bool _isSoftDelete = true;
 
+        /// <summary>
+        /// 是否显示第三按钮（否）— 三选项离开确认
+        /// </summary>
+        [ObservableProperty]
+        private bool _showNoButton;
+
+        /// <summary>
+        /// 第三按钮文案
+        /// </summary>
+        [ObservableProperty]
+        private string _noButtonText = "否";
+
         #endregion
 
         #region 计算属性
@@ -95,16 +107,19 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         {
             if (parameters == null) return;
 
-            // 从参数中读取配置
-            Title = GetDialogParameter(parameters, "Title", "确认操作");
-            Message = GetDialogParameter(parameters, "Message", "确定要执行此操作吗？");
-            IconSource = GetDialogParameter(parameters, "IconSource", "/Assets/Icons/warning.png");
-            ConfirmButtonText = GetDialogParameter(parameters, "ConfirmButtonText", "确认");
-            CancelButtonText = GetDialogParameter(parameters, "CancelButtonText", "取消");
-            ShowDeleteOptions = GetDialogParameter(parameters, "ShowDeleteOptions", false);
+            // 从参数中读取配置（PascalCase 键 — DialogParams）
+            var p = LYBT.Desktop.Infrastructure.Services.DialogParams;
+            Title = GetDialogParameter(parameters, p.Title, "确认操作");
+            Message = GetDialogParameter(parameters, p.Message, "确定要执行此操作吗？");
+            IconSource = GetDialogParameter(parameters, p.IconSource, "/Assets/Icons/warning.png");
+            ConfirmButtonText = GetDialogParameter(parameters, p.ConfirmButtonText, "确认");
+            CancelButtonText = GetDialogParameter(parameters, p.CancelButtonText, "取消");
+            ShowDeleteOptions = GetDialogParameter(parameters, p.ShowDeleteOptions, false);
+            ShowNoButton = GetDialogParameter(parameters, p.ShowNoButton, false);
+            NoButtonText = GetDialogParameter(parameters, p.NoButtonText, "否");
 
-            Logger.LogInformation("ConfirmationDialog - 打开对话框，标题：{Title}，显示删除选项：{ShowDeleteOptions}",
-                Title, ShowDeleteOptions);
+            Logger.LogInformation("ConfirmationDialog - 打开对话框，标题：{Title}，显示删除选项：{ShowDeleteOptions}，三选项：{ShowNoButton}",
+                Title, ShowDeleteOptions, ShowNoButton);
         }
 
         /// <summary>
@@ -130,10 +145,26 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             // 返回结果和参数
             var parameters = new DialogParameters
             {
-                { "IsSoftDelete", IsSoftDelete }
+                { LYBT.Desktop.Infrastructure.Services.DialogParams.IsSoftDelete, IsSoftDelete }
             };
 
             CloseDialog(parameters, ButtonResult.OK);
+        }
+
+        /// <summary>
+        /// 否命令 — 三选项场景（ButtonResult.No）
+        /// </summary>
+        [RelayCommand]
+        private void No()
+        {
+            Logger.LogInformation("ConfirmationDialog - 选择「否」");
+
+            var parameters = new DialogParameters
+            {
+                { LYBT.Desktop.Infrastructure.Services.DialogParams.IsSoftDelete, false }
+            };
+
+            CloseDialog(parameters, ButtonResult.No);
         }
 
         /// <summary>

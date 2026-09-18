@@ -20,7 +20,11 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
             "PatientsModule",
             "CatalogModule",
             "MedicalCaseModule",
-            "ReportsModule"
+            "ReportsModule",
+            // 设计原则：角色 Home 所属模块必须在 RequiredModules（AdminHomeView 注册于 AdminModule）
+            "AdminModule",
+            // Admin 可访问 Herb/Formula/Patient/MedicalCase 管理薄包装（注册于 ClinicalModule）
+            "ClinicalModule"
         };
 
         /// <inheritdoc/>

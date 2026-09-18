@@ -21,6 +21,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         public IToastService ToastService { get; }
         public IRoleRegistry RoleRegistry { get; }
         public IUiThreadDispatcher UiThreadDispatcher { get; }
+        public INavigationCoordinator NavigationCoordinator { get; }
 
         public ViewModelServices(
             ILoggerFactory loggerFactory,
@@ -31,7 +32,8 @@ namespace LYBT.Desktop.Infrastructure.Services
             ICommonDialogService commonDialogService,
             IToastService toastService,
             IRoleRegistry roleRegistry,
-            IUiThreadDispatcher uiThreadDispatcher)
+            IUiThreadDispatcher uiThreadDispatcher,
+            INavigationCoordinator navigationCoordinator)
         {
             LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
@@ -42,6 +44,7 @@ namespace LYBT.Desktop.Infrastructure.Services
             ToastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
             RoleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
             UiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
+            NavigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         }
     }
 }

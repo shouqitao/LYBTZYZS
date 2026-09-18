@@ -67,10 +67,10 @@ public class ShellExtractionArchTests
         method.Should().NotBeNull("BuildNavigationItems 方法应存在");
         method!.GetParameters().Should().HaveCount(1);
 
-        // 图标 Kind 白名单（与 NavigationManager C+ 矩阵一致）
+        // 图标 Kind 白名单（与 NavigationManager C+ 矩阵一致；N3 Doctor 改为患者选择+挂号队列）
         var allowedIcons = new HashSet<string>
         {
-            "Home", "AccountSearch", "NoteEdit",
+            "Home", "AccountSearch", "CalendarClock", "NoteEdit",
             "PlusCircle", "AccountGroup",
             "AccountCog", "Leaf",
             "BackupRestore", "RocketLaunch"

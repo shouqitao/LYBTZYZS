@@ -62,6 +62,12 @@
                     Width="100" Height="32"
                     Margin="0,0,10,0"
                     FontSize="14"/>
+            <Button Content="{Binding NoButtonText}"
+                    Command="{Binding NoCommand}"
+                    Width="100" Height="32"
+                    Margin="0,0,10,0"
+                    FontSize="14"
+                    Visibility="{Binding ShowNoButton, Converter={x:Static converters:Cvt.BoolToVis}}"/>
             <Button Content="{Binding CancelButtonText}"
                     Command="{Binding CancelCommand}"
                     Width="100" Height="32"

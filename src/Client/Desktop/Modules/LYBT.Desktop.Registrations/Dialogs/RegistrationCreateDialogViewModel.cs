@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -72,6 +73,45 @@ public partial class RegistrationCreateDialogViewModel : DialogViewModelBase
     {
         LoadDoctorsAsync().SafeFireAndForget(
             ex => Logger.LogError(ex, "[REG-DIALOG] 加载医生列表失败"));
+
+        // N2：导航预填 — RegistrationListNav.PatientId / PatientName
+        var patientId = parameters?.GetValue<Guid>(RegistrationListNav.PatientId) ?? Guid.Empty;
+        var patientName = parameters?.GetValue<string>(RegistrationListNav.PatientName);
+        if (patientId != Guid.Empty)
+        {
+            PrefillPatientAsync(patientId, patientName).SafeFireAndForget(
+                ex => Logger.LogError(ex, "[REG-DIALOG] 预填患者失败: {PatientId}", patientId));
+        }
+    }
+
+    /// <summary>按 PatientId 回填选中患者（失败时回退按姓名搜索）</summary>
+    private async Task PrefillPatientAsync(Guid patientId, string? patientName)
+    {
+        var result = await _patientService.GetByIdAsync(patientId);
+        if (result.Success && result.Data != null)
+        {
+            var detail = result.Data;
+            SelectedPatient = new PatientListDto
+            {
+                Id = detail.Id,
+                Name = detail.Name,
+                Gender = detail.Gender,
+                Age = detail.Age,
+                PhoneNumber = detail.PhoneNumber,
+                PinYinCode = detail.PinYinCode,
+                Status = detail.Status,
+                CreatedAt = detail.CreatedAt,
+            };
+            PatientSearchText = detail.Name;
+            StatusMessage = $"已预填患者: {detail.Name}";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(patientName))
+        {
+            PatientSearchText = patientName;
+            await SearchPatientsAsync();
+        }
     }
 
     protected override bool CanConfirm() =>

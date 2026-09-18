@@ -21,7 +21,7 @@
 
 | Spec | 状态 | 日期 | 说明 |
 |------|------|------|------|
-| [`desktop-navigation-viewmodel-design-2026-09-18.md`](specs/desktop-navigation-viewmodel-design-2026-09-18.md) | **待实施** | 2026-09-18 | Desktop 导航架构详细设计（角色守卫/参数契约/单门面/返回路径/对话框收敛；切片 N1–N7） |
+| [`desktop-navigation-viewmodel-design-2026-09-18.md`](specs/desktop-navigation-viewmodel-design-2026-09-18.md) | **正式文档已同步（N7）** | 2026-09-18 | Desktop 导航架构详细设计（角色守卫/参数契约/单门面/返回路径/对话框收敛；切片 N1–N7）。N7：`desktop-ui-detailed-design.md` §3/§5 + `02-desktop.md` 导航节 + `11a-shell.md` US-SHELL-003/005 状态列已同步；架构测试 4 项已入 `tests/LYBT.Tests.Architecture/`。**代码切片 N1–N6 仍待实施** |
 | [`architecture-optimization-2026-09-16/design-01-cancellation-token.md`](specs/architecture-optimization-2026-09-16/design-01-cancellation-token.md) | 已落地 | 2026-09-16 | CancellationToken 全链传播（桌面客户端） |
 | [`architecture-optimization-2026-09-16/design-02-domain-error-layer.md`](specs/architecture-optimization-2026-09-16/design-02-domain-error-layer.md) | 已落地 | 2026-09-16 | 领域错误层统一（`ApiClientException`） |
 | [`architecture-optimization-2026-09-16/design-03-cross-aggregate-transactions.md`](specs/architecture-optimization-2026-09-16/design-03-cross-aggregate-transactions.md) | 已落地 | 2026-09-16 | 跨聚合写一致性（ADR-0030） |
@@ -40,7 +40,7 @@
 
 | 日期 | 报告 |
 |------|------|
-| 2026-09-18 | [`desktop-navigation-audit-2026-09-18.md`](reports/desktop-navigation-audit-2026-09-18.md) |
+| 2026-09-18 | [`desktop-navigation-audit-2026-09-18.md`](reports/desktop-navigation-audit-2026-09-18.md) — 审查报告（设计输入；正式文档 N7 已按其结论同步） |
 | 2026-09-17 | [`senior-architect-deep-assessment-2026-09-17.md`](reports/senior-architect-deep-assessment-2026-09-17.md) |
 | 2026-09-17 | [`full-project-architecture-rereview-2026-09-17.md`](reports/full-project-architecture-rereview-2026-09-17.md) |
 | 2026-09-16 | [`full-project-architecture-review-2026-09-16.md`](reports/full-project-architecture-review-2026-09-16.md) |

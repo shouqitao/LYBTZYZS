@@ -21,7 +21,14 @@ namespace LYBT.Desktop.Infrastructure.Roles.Definitions
             // DI 修复：SysadminHomeViewModel → CardReaderDiagnosticsViewModel → ICardReaderDiagnostics
             // 注册于 OnDemand 的 CardReaderModule；不含此模块则超管登录后解析 SysadminHomeView 失败
             // （An unexpected error occurred while resolving 'System.Object' ... 'SysadminHomeView'）
-            "CardReaderModule"
+            "CardReaderModule",
+            // 设计原则：角色可访问的管理视图所属模块必须在 RequiredModules
+            // Herb/Formula/Patient 管理薄包装注册于 ClinicalModule
+            "ClinicalModule",
+            // ReportsHome 注册于 ReportsModule
+            "ReportsModule",
+            // AuditLog / MedicalCaseMasterDetail 注册于 MedicalCaseModule
+            "MedicalCaseModule"
         };
 
         public override UserRole Role => UserRole.SuperAdmin;

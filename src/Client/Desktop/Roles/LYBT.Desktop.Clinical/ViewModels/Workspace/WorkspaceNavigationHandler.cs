@@ -61,11 +61,14 @@ internal sealed class WorkspaceNavigationHandler
 
     /// <summary>
     /// 执行返回导航
+    /// N4：Clinical 模式优先使用生产方写入的 ReturnView（ClinicalWorkspace/RegistrationList/PatientSelection）
     /// </summary>
+    /// <param name="returnView">来源视图名；空则 fallback ClinicalWorkspace（医生主页）</param>
     public async Task ExecuteBackAsync(WorkspaceState state, Guid medicalCaseId,
         Func<ConsultationInputDto?> getConsultationData,
         Func<PrescriptionInputDto?> getPrescriptionData,
-        Func<Task<LeaveConsultationResult>> handleLeaveRequest)
+        Func<Task<LeaveConsultationResult>> handleLeaveRequest,
+        string? returnView = null)
     {
         try
         {
@@ -82,7 +85,13 @@ internal sealed class WorkspaceNavigationHandler
             }
 
             var result = await handleLeaveRequest();
-            if (result.CanLeave) _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection);
+            if (result.CanLeave)
+            {
+                var target = !string.IsNullOrEmpty(returnView)
+                    ? returnView
+                    : ViewNames.ClinicalWorkspace;
+                _ = _navigationCoordinator.NavigateTo(target);
+            }
         }
         catch (Exception)
         {

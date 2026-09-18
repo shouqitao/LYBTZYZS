@@ -42,7 +42,8 @@ public class NavigationCoordinator : INavigationCoordinator
         [ViewNames.BackupManagement] = [UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.SecurityAuditLog] = [UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.SystemSettings] = [UserRole.Admin, UserRole.SuperAdmin],
-        [ViewNames.MedicalCaseWorkspace] = [UserRole.Doctor],
+        // N1: 接诊/管理查看需要；业务上前台 StartVisit 必达（Doctor+Receptionist+Admin+SuperAdmin）
+        [ViewNames.MedicalCaseWorkspace] = [UserRole.Doctor, UserRole.Receptionist, UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.MedicalCaseMasterDetail] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.PatientSelection] = [UserRole.Doctor, UserRole.Receptionist],
         [ViewNames.RegistrationList] = [UserRole.Doctor, UserRole.Receptionist],
@@ -142,7 +143,23 @@ public class NavigationCoordinator : INavigationCoordinator
             _lastNavigationTime = DateTime.UtcNow;
             _lastNavigationView = viewName;
 
-            await _services.ModuleLazyLoader.EnsureModuleLoadedAsync(viewName);
+            try
+            {
+                await _services.ModuleLazyLoader.EnsureModuleLoadedAsync(viewName);
+            }
+            catch (Exception loadEx)
+            {
+                // ModuleLazyLoader 已向用户展示错误；此处回退角色主页，避免空白页
+                // 防重入：若目标已是主页则不再 NavigateToHome，避免加载失败时无限递归
+                _logger.LogError(loadEx, "模块加载失败，回退主页: {ViewName}", viewName);
+                var role = _services.SessionManager.CurrentUser?.Role;
+                var homeViewName = role == null
+                    ? ViewNames.ClinicalHome
+                    : _services.RoleRegistry.GetHomeViewName(role.Value);
+                if (!string.Equals(viewName, homeViewName, StringComparison.Ordinal))
+                    await NavigateToHome();
+                return;
+            }
             var fromView = CurrentView;
             _logger.LogInformation("导航到 {ViewName}", viewName);
             var navParams = ConvertToNavigationParameters(parameters);
@@ -228,7 +245,7 @@ public class NavigationCoordinator : INavigationCoordinator
         await NavigateTo(homeViewName);
     }
 
-    /// <summary>导航后退</summary>
+    /// <summary>导航后退 — Journal 空时 fallback 到角色主页（设计 N4）</summary>
     public void NavigateBack()
     {
         try
@@ -236,13 +253,17 @@ public class NavigationCoordinator : INavigationCoordinator
             var region = _services.RegionManager.Regions[RegionNames.ContentRegion];
             if (region?.NavigationService?.Journal?.CanGoBack == true)
             {
+                var fromView = CurrentView;
                 region.NavigationService.Journal.GoBack();
                 _logger.LogDebug("导航回退成功");
+                // Journal.GoBack 不经过 NavigateTo，显式广播以便 Menu/Header 刷新 CanExecute
+                NavigationChanged?.Invoke(this, new NavigationChangedEventArgs(fromView, CurrentView ?? "back"));
+                return;
             }
-            else
-            {
-                _logger.LogWarning("无法回退，导航历史为空");
-            }
+
+            _logger.LogWarning("导航历史为空，fallback 返回角色主页");
+            _ = _services.UserNotificationService?.ShowWarningAsync("已是最早的页面，已返回主页");
+            _ = NavigateToHome();
         }
         catch (Exception ex)
         {
@@ -259,8 +280,10 @@ public class NavigationCoordinator : INavigationCoordinator
             var region = _services.RegionManager.Regions[RegionNames.ContentRegion];
             if (region?.NavigationService?.Journal?.CanGoForward == true)
             {
+                var fromView = CurrentView;
                 region.NavigationService.Journal.GoForward();
                 _logger.LogDebug("导航前进成功");
+                NavigationChanged?.Invoke(this, new NavigationChangedEventArgs(fromView, CurrentView ?? "forward"));
             }
             else
             {

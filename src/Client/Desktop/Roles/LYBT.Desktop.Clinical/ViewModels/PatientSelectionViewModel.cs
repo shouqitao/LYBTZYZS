@@ -417,7 +417,9 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
             { "MedicalCaseId", medicalCaseId },
             { "CurrentPatient", PatientDetail! },
             { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing }
+            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
+            // N4：返回目标 = PatientSelection（KeepAlive 恢复选中患者）
+            { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.PatientSelection }
         };
 
         Logger.LogInformation("导航到医案工作区：{MedicalCaseId}", medicalCaseId);

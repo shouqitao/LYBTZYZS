@@ -2,6 +2,7 @@
 // P2-18-4 VM覆盖率已评估
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NetArchTest.Rules;
 using Xunit;
 
@@ -282,6 +283,97 @@ public class DesktopLayerArchTests
 
         Assert.True(violatingTypes.Count == 0,
             $"ViewModel 不应直接注入 IRegionManager，应使用 INavigationCoordinator: {string.Join(", ", violatingTypes)}");
+    }
+
+    /// <summary>
+    /// N7/设计 §2.1：ViewModel 源码不得出现 <c>RegionManager.RequestNavigate</c> 字面量。
+    /// 唯一导航门面是 <c>INavigationCoordinator</c>；白名单仅 NavigationCoordinator / LoginCoordinator / ClearRegion(LoginRegion) 调用。
+    /// </summary>
+    [Fact]
+    public void ViewModels_MustNot_RequestNavigate_Directly()
+    {
+        var desktopRoot = TryFindDesktopSrcRoot();
+        if (desktopRoot is null)
+            return; // 非源码环境跳过（与 ShellViewViewModelBindingTests 同策略）
+
+        var whitelistTypeTokens = new[] { "NavigationCoordinator", "LoginCoordinator" };
+        var violations = new List<string>();
+
+        foreach (var file in EnumerateViewModelSources(desktopRoot))
+        {
+            var fileName = Path.GetFileName(file);
+            if (whitelistTypeTokens.Any(token => fileName.Contains(token, StringComparison.Ordinal)))
+                continue;
+
+            var text = File.ReadAllText(file);
+            // 去掉块注释与行注释，避免文档示例误报
+            text = StripComments(text);
+
+            foreach (Match match in Regex.Matches(text, @"RegionManager\s*\.\s*RequestNavigate\s*\("))
+            {
+                // ClearRegion / LoginRegion 清理调用允许（登录页区域切换不走 ContentRegion）
+                var windowStart = match.Index;
+                var windowEnd = Math.Min(text.Length, windowStart + 240);
+                var window = text[windowStart..windowEnd];
+                if (window.Contains("LoginRegion", StringComparison.Ordinal) ||
+                    window.Contains("ClearRegion", StringComparison.Ordinal))
+                    continue;
+
+                violations.Add($"{fileName}: {TruncateForMessage(window)}");
+            }
+        }
+
+        Assert.True(
+            violations.Count == 0,
+            $"ViewModel 不得直接 RegionManager.RequestNavigate（应经 INavigationCoordinator；白名单 NavigationCoordinator/LoginCoordinator/ClearRegion）:\n{string.Join("\n", violations)}");
+    }
+
+    private static string StripComments(string text)
+    {
+        var withoutBlock = Regex.Replace(text, @"/\*.*?\*/", "", RegexOptions.Singleline);
+        return Regex.Replace(withoutBlock, @"//.*?$", "", RegexOptions.Multiline);
+    }
+
+    private static string TruncateForMessage(string value)
+        => value.Length <= 120 ? value : value[..120] + "…";
+
+    private static IEnumerable<string> EnumerateViewModelSources(string desktopRoot)
+    {
+        var roots = new[]
+        {
+            Path.Combine(desktopRoot, "Modules"),
+            Path.Combine(desktopRoot, "Roles"),
+            Path.Combine(desktopRoot, "Shell"),
+            Path.Combine(desktopRoot, "Core")
+        };
+
+        foreach (var root in roots.Where(Directory.Exists))
+        {
+            foreach (var file in Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories))
+            {
+                if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
+                    file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+                    continue;
+
+                if (file.Contains($"{Path.DirectorySeparatorChar}ViewModels{Path.DirectorySeparatorChar}"))
+                    yield return file;
+            }
+        }
+    }
+
+    private static string? TryFindDesktopSrcRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(dir.FullName, "src", "Client", "Desktop");
+            if (File.Exists(Path.Combine(dir.FullName, "LYBTZYZS.sln")) && Directory.Exists(candidate))
+                return candidate;
+
+            dir = dir.Parent;
+        }
+
+        return null;
     }
 
     /// <summary>

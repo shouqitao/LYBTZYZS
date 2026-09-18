@@ -11,6 +11,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 
 /// <summary>
 /// 医案审计日志视图模型
+/// 无 MedicalCaseId 参数时仍展示状态提示，禁止空白页
 /// </summary>
 public partial class AuditLogViewModel : NavigableViewModelBase
 {
@@ -30,6 +31,13 @@ public partial class AuditLogViewModel : NavigableViewModelBase
     private int _totalPages;
     [ObservableProperty] private int _totalCount;
 
+    /// <summary>空态/提示文案（无参或无数据时展示，禁止空白页）</summary>
+    [ObservableProperty]
+    private string _emptyStatusMessage = string.Empty;
+
+    /// <summary>是否有空态提示可展示</summary>
+    public bool HasEmptyStatus => !string.IsNullOrEmpty(EmptyStatusMessage) && Logs.Count == 0;
+
     private const int PageSize = 20;
 
     public AuditLogViewModel(IViewModelServices services, IAuditLogService auditLogService, INavigationCoordinator navigationCoordinator)
@@ -43,11 +51,17 @@ public partial class AuditLogViewModel : NavigableViewModelBase
     public override void OnNavigatedTo(NavigationContext navigationContext)
     {
         base.OnNavigatedTo(navigationContext);
-        if (navigationContext.Parameters.TryGetValue("MedicalCaseId", out Guid id))
+        if (navigationContext.Parameters.TryGetValue("MedicalCaseId", out Guid id) && id != Guid.Empty)
         {
             _medicalCaseId = id;
+            EmptyStatusMessage = string.Empty;
             _ = LoadLogsAsync();
+            return;
         }
+
+        // 无参导航：不显示空白页——展示引导提示并尝试加载（接口仅支持按医案查询）
+        _medicalCaseId = Guid.Empty;
+        _ = LoadLogsAsync();
     }
 
     [RelayCommand]
@@ -57,6 +71,16 @@ public partial class AuditLogViewModel : NavigableViewModelBase
         {
             IsLoading = true;
             Logs.Clear();
+            EmptyStatusMessage = string.Empty;
+
+            if (_medicalCaseId == Guid.Empty)
+            {
+                // API 契约为 /medicalcases/{id}/audit-logs，无全局日志端点
+                TotalCount = 0;
+                TotalPages = 0;
+                EmptyStatusMessage = "请从医案工作台或医案管理进入以查看审计日志";
+                return;
+            }
 
             var result = await _auditLogService.GetAuditLogsAsync(_medicalCaseId, CurrentPage, PageSize);
             if (result.Success && result.Data != null)
@@ -65,15 +89,24 @@ public partial class AuditLogViewModel : NavigableViewModelBase
                     Logs.Add(log);
                 TotalCount = result.Data.TotalCount;
                 TotalPages = result.Data.TotalPages;
+
+                if (Logs.Count == 0)
+                    EmptyStatusMessage = "当前医案暂无审计日志";
+            }
+            else if (!result.Success)
+            {
+                EmptyStatusMessage = result.Error ?? "加载审计日志失败";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "加载审计日志失败");
+            EmptyStatusMessage = "加载审计日志失败，请稍后重试";
         }
         finally
         {
             IsLoading = false;
+            OnPropertyChanged(nameof(HasEmptyStatus));
             // P2-A：翻页后刷新命令可执行状态（末页禁用 Next、回首页禁用 Prev）
             PreviousPageCommand.NotifyCanExecuteChanged();
             NextPageCommand.NotifyCanExecuteChanged();

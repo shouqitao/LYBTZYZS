@@ -60,5 +60,10 @@ namespace LYBT.Desktop.Contracts.Services
         /// UI线程调度器
         /// </summary>
         IUiThreadDispatcher UiThreadDispatcher { get; }
+
+        /// <summary>
+        /// 导航协调器（唯一导航门面；ViewModel 基类委托它，禁止直调 RegionManager）
+        /// </summary>
+        INavigationCoordinator NavigationCoordinator { get; }
     }
 }

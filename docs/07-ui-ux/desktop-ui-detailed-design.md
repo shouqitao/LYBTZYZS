@@ -116,24 +116,31 @@ Login → AdminHomeView (快捷卡片: 用户/药材/患者/验方/医案/系统
 
 ### 3.3 Doctor
 ```
-Login → ClinicalWorkspaceView (患者列表 + 看诊工作区一体化)
-  ├─ 患者管理 → PatientManagementView → 选患者 → MedicalCaseWorkspaceView
+Login → ClinicalWorkspaceView (患者列表 + 看诊工作区一体化)   ← Doctor 首页 SSOT
+  ├─ 开始看诊 / 患者双击 → MedicalCaseWorkspaceView
+  │     参数: MedicalCaseNav.ForNewCase(selectedPatient)  （含 CurrentPatient）
+  ├─ 患者管理 → PatientManagementView
   ├─ 医案管理 → MedicalCaseMasterDetailView → 选医案 → MedicalCaseWorkspaceView
+  │     参数: MedicalCaseNav.ForExistingCase(id, patient)
   ├─ 药材(只读) → HerbManagementView
   ├─ 验方 → FormulaManagementView
-  ├─ 挂号 → RegistrationListView
+  ├─ 挂号队列 → RegistrationListView （侧栏项；无参直达「医案工作台」入口已废弃）
   └─ 报表 → ReportsHomeView
 ```
 
 ### 3.4 Receptionist
 ```
-Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
-  ├─ 挂号列表 → RegistrationListView (新建/取消/ReceptionistOnly)
-  ├─ 患者管理 → PatientManagementView (新建 + 读身份证主按钮)
-  └─ 患者选择 → PatientSelectionView (SearchBox + 读卡 + 内嵌待诊队列)
+Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptionist 首页 SSOT
+  ├─ 新建挂号 / 读卡 → RegistrationListView
+  │     参数: RegistrationListNav.Create() / CreateForPatient(patientId, name)
+  ├─ 挂号列表接诊 StartVisit → MedicalCaseWorkspaceView
+  │     参数: MedicalCaseNav.ForExistingCase(medicalCaseId, patientDetail)
+  │     守卫: ViewRoleAccess[MedicalCaseWorkspace] 含 Receptionist
+  ├─ 患者管理 → PatientManagementView （Action=Create/AddNew 预填）
+  └─ 患者搜索 → PatientManagement Search(SearchKeyword)
 ```
 
-> 导航经 `ViewNames` 强类型常量（`Core/LYBT.Desktop.Infrastructure/Constants/ViewNames.cs`）+ `INavigationCoordinator.NavigateTo(viewName)` / `NavigateTo<TParams>(viewName, params)` 写入内容区 `RegionNames.ContentRegion`（常量值 `"ContentRegion"`，唯一宿主 `AppShell.xaml` 的 `ContentControl`）（R09），`KeepAlive` 列表页保持搜索/分页。
+> 导航经 `ViewNames` 强类型常量（`Core/LYBT.Desktop.Infrastructure/Constants/ViewNames.cs`）+ **唯一门面** `INavigationCoordinator.NavigateTo(viewName[, params])` 写入内容区 `RegionNames.ContentRegion`（常量值 `"ContentRegion"`，唯一宿主 `AppShell.xaml` 的 `ContentControl`）。ViewModel **禁止**直接 `RegionManager.RequestNavigate`。`KeepAlive` 列表页保持搜索/分页。参数契约与 ViewRoleAccess 矩阵见 [§5](#5-跨页数据流--导航契约)。
 
 ## 4. 页面详细规格（30 个 View，口径见封面）
 
@@ -355,15 +362,97 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)
 
 > 合计 **30**（= 封面 View 口径）。`PendingQueueView` 已于 2026-08-29 删除、不计入。
 
-## 5. 跨页数据流
+## 5. 跨页数据流 / 导航契约
+
+> 设计 SSOT：[desktop-navigation-viewmodel-design-2026-09-18.md](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)（N7 文档同步 2026-09-18）。
+
+### 5.1 角色主页 SSOT
+
+| 角色 | HomeView（SSOT） | 依据 |
+|------|------------------|------|
+| Doctor | **`ClinicalWorkspaceView`** | `DoctorRoleDefinition.HomeViewName => ViewNames.ClinicalWorkspace`；`ClinicalHomeView` 仍注册但**非首页**（[Obsolete] 入口，§5.4 设计） |
+| Receptionist | `ReceptionistHomeView` | `ReceptionistRoleDefinition.HomeViewName` |
+| Admin | `AdminHomeView` | `AdminRoleDefinition.HomeViewName` |
+| SuperAdmin | `SysadminHomeView` | `SuperAdminRoleDefinition.HomeViewName` |
+
+> 登录后首屏导航目标 = 该角色 HomeViewName；Home 所属模块必须出现在 `IRoleDefinition.RequiredModules`（懒加载仅用于次级业务页）。
+
+### 5.2 导航参数契约（MedicalCaseNav 等工厂）
+
+跨页导航参数统一走 `LYBT.Desktop.Contracts` 导航常量工厂（禁止目标 VM 只读另一套键）：
+
+| 契约类 | 键（const string） | 工厂方法 | 生产方 → 消费方 |
+|--------|-------------------|----------|-----------------|
+| `MedicalCaseNav` | `MedicalCaseId` / `CurrentPatient` / `PatientId` / `WorkspaceMode` / `InitialEditState` / `EditMode` | `ForExistingCase(id, patient, mode, edit)` / `ForNewCase(patient, mode, edit)` | ClinicalWorkspace.StartConsultation、PatientSelection、RegistrationList.StartVisit、PendingQueue/CardReader → `MedicalCaseWorkspaceViewModel.OnNavigatedToAsync` |
+| `PatientManagementNav` | `Action` / `SearchKeyword` | `AddNew()` / `Search(keyword)` | ClinicalWorkspace、ReceptionistHome、MenuManager(Ctrl+N) → PatientManagement（code-behind / PatientMasterDetail） |
+| `RegistrationListNav` | `Action` / `PatientId` / `PatientName` | `Create()` / `CreateForPatient(id, name)` | ReceptionistHome（新建挂号/读卡/搜索）→ `RegistrationListViewModel` |
+| `AuditLogNav` | `MedicalCaseId` | `ForCase(id)` | MedicalCaseWorkspace → AuditLogViewModel |
+| `AccountSettingsNav` | `Tab`（`"Password"`） | `PasswordTab()` | ClinicalWorkspace / Header → AccountSettingsViewModel |
+
+**MedicalCaseWorkspace 消费契约**（目标）：
+
+```
+MedicalCaseId = params.GetValue<Guid>(MedicalCaseNav.MedicalCaseId)
+CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient)
+// PatientId-only 路径：回填 CurrentPatient
+// 无上下文（CurrentPatient==null && MedicalCaseId==Empty）→ 明确错误 + NavigateToHome，禁止空白页
+```
+
+> 架构守卫：`NavParams_ContractKeys_ConsumedByTargetViewModel` — 每个契约 const 键必须在目标 ViewModel 中被 `GetValue`/`ContainsKey`/`TryGetValue` 消费（禁止只写不读）。
+
+### 5.3 ViewRoleAccess 矩阵（客户端守卫）
+
+`NavigationCoordinator.ViewRoleAccess`（未列出的视图不限制；服务端策略仍兜底）：
+
+| ViewName | Doctor | Receptionist | Admin | SuperAdmin | 备注 |
+|----------|:------:|:------------:|:-----:|:----------:|------|
+| AdminHome | | | ✓ | | |
+| SysadminHome | | | | ✓ | |
+| ClinicalHome | ✓ | | | | 非 Doctor 首页；保留注册 |
+| ReceptionistHome | | ✓ | | | |
+| ClinicalWorkspace | ✓ | | | | Doctor 首页 |
+| **MedicalCaseWorkspace** | ✓ | **✓** | **✓** | **✓** | 接诊/管理查看需要；前台 StartVisit 必达 |
+| PatientSelection | ✓ | ✓ | | | |
+| RegistrationList | ✓ | ✓ | | | |
+| PatientManagement | ✓ | ✓ | ✓ | ✓ | |
+| MedicalCaseManagement | ✓ | | ✓ | ✓ | |
+| Herb/Formula Management | ✓ | | ✓ | ✓ | |
+| UserManagement | | | ✓ | ✓ | |
+| SystemSettings | | | ✓ | ✓ | |
+| BackupManagement / SecurityAuditLog | | | ✓ | ✓ | |
+| LogLevelControl / Deployment | | | | ✓ | |
+| ReportsHome / AuditLog / MedicalCaseMasterDetail | ✓ | | ✓ | ✓ | |
+| Login | （匿名放行） | | | | 未列入 ViewRoleAccess |
+| AccountSettings | （不限制） | | | | 未列入=放行（显式豁免） |
+
+> 架构守卫：`ViewRoleAccess_CoversAllRegisterForNavigationViews` — ViewNames ⊆ ViewRoleAccess ∪ {Login, AccountSettings}。
+> 服务端对齐：MedicalCaseWorkspace 对 Receptionist 放开属客户端守卫变更；创建/更新医案若仍 `DoctorOnly`，须按双控制器树同步策略。
+
+### 5.4 返回路径设计
+
+| 项 | 设计 |
+|----|------|
+| UI | Header/SideNav 顶增加后退按钮（`ArrowLeft`），绑定 `NavigateBackCommand`；`NavigationChanged` → CanExecute 刷新 |
+| NavigateBack 语义 | `journal.CanGoBack` → GoBack；否则 Toast 警告 + **fallback 角色主页**（禁止死路） |
+| Workspace Clinical 返回目标 | 从 ClinicalWorkspace 进入 → 回 ClinicalWorkspace（KeepAlive 恢复选中患者）；从 RegistrationList → RegistrationList；从 PatientSelection → PatientSelection；侧栏直达（应已禁止）→ NavigateToHome |
+| HistoryService | 面包屑仅展示；**不**作为 GoBack 数据源（Journal 是唯一后退数据源）；`ClearHistory()` 同时清 Journal（登出/切换用户） |
+| ClinicalHome 处置 | 默认不删 View；删除误导性入口文案；fallback 不指向 ClinicalHome，改角色 Home |
+
+### 5.5 跨页数据流（数据维度）
+
 | 数据 | 来源 | 目标 | 方式 | 备注 |
 |------|------|------|------|------|
-| PatientId | 患者列表 | 医案工作台 | `NavigationParameters["PatientId"]` 强类型 `MedicalCaseNavigationParameters` | `INavigationCoordinator` |
-| RegistrationId | 挂号列表 | 医案工作台 | 同上 | `start-visit` 返回 `MedicalCaseId` |
-| MedicalCaseId | 医案列表 | 工作台/审计 | 同上 + `WorkspaceState` 持久化 `LastPatientId` | 异常恢复回填 |
+| Patient + MedicalCaseId | ClinicalWorkspace「开始看诊」/ 患者双击 | 医案工作台 | `MedicalCaseNav.ForNewCase(CurrentPatient)` | 目标 Id 空时 CreateMedicalCase |
+| MedicalCaseId + Patient | RegistrationList StartVisit / PendingQueue / CardReader | 医案工作台 | `MedicalCaseNav.ForExistingCase(id, patient)` | `start-visit` 返回 MedicalCaseId + 拉取 PatientDetailDto |
+| MedicalCaseId + Patient | PatientSelection | 医案工作台 | `MedicalCaseNav.ForExistingCase` | 现有/暂存医案回填 |
+| Action / SearchKeyword | ReceptionistHome / Ctrl+N | PatientManagement | `PatientManagementNav.AddNew/Search` | 预填新建/搜索 |
+| Action / PatientId / PatientName | ReceptionistHome | RegistrationList | `RegistrationListNav.Create/CreateForPatient` | 自动开新建挂号弹窗并预填 |
+| MedicalCaseId | MedicalCaseWorkspace | AuditLog | `AuditLogNav.ForCase` | 无参时加载最近日志，禁止空白页 |
 | HerbId | 药材列表 | 验方/处方 | `IHerbSearchProvider` 委托 `ICatalogQueryService` | `AllHerbs` 55% 常驻 |
 | FormulaId | 验方列表 | 医案 FormulaImportDialog | `Dialog` 参数 | 克隆/导入 |
 | UserId | 登录 | 全局 | `ICurrentUserProvider` + `ClaimsPrincipal` | `NameIdentifier` |
+
+> 唯一导航门面：ViewModel **不得**直接 `RegionManager.RequestNavigate`，统一 `INavigationCoordinator.NavigateTo`（架构测试白名单：NavigationCoordinator / LoginCoordinator / ClearRegion）。
 
 ## 6. 状态机定义
 | 实体 | 状态 | 转换 | 守卫 |

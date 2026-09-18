@@ -72,11 +72,12 @@ public partial class NavigationManager : ObservableObject, INavigationManager
         });
 
         // C+ 角色矩阵 2 业务入口（分组对齐设计稿：临床/目录/管理）
+        // N3：Doctor 去掉无参医案工作台；主管侧栏含备份/部署
         switch (role)
         {
             case UserRole.Doctor:
                 items.Add(new NavigationItem { Title = "患者选择", ViewName = ViewNames.PatientSelection, IconKind = "AccountSearch", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.PatientSelection)), Group = "临床" });
-                items.Add(new NavigationItem { Title = "医案工作台", ViewName = ViewNames.MedicalCaseWorkspace, IconKind = "NoteEdit", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace)), Group = "临床" });
+                items.Add(new NavigationItem { Title = "挂号队列", ViewName = ViewNames.RegistrationList, IconKind = "CalendarClock", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList)), Group = "临床" });
                 break;
             case UserRole.Receptionist:
                 items.Add(new NavigationItem { Title = "新建挂号", ViewName = ViewNames.RegistrationList, IconKind = "PlusCircle", Command = new RelayCommand(() => _ = _navigationCoordinator.NavigateTo(ViewNames.RegistrationList)), Group = "临床" });

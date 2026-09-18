@@ -146,7 +146,7 @@
 | 3 | 待诊队列 | `PatientSelectionView` 左栏 | 侧栏「患者选择」 | `PendingQueue.RefreshCommand`、`PendingQueue.SelectCommand` | `PendingQueueViewModel`（子 VM） |
 | 4 | 读卡建档 | `PatientSelectionView` 左栏 | 面板按钮 | `CardReader.ManualReadCardCommand`、`CardReader.ToggleAutoReadCommand` | `CardReaderViewModel`（子 VM） |
 | 5 | 接诊 | `RegistrationListView` | 侧栏（Doctor 无「新建挂号」项）→ `[待确认]` 具体路径；列表工具栏「接诊」按钮（`Visibility=IsDoctor`） | `StartVisitCommand`（`CanExecute`：`SelectedRegistration.Status == Waiting && !IsBusy`）→ `IRegistrationService.StartVisitAsync` → `PUT /api/v1/registrations/{id}/start-visit` | `RegistrationListViewModel` |
-| 6 | 进入工作台 | `MedicalCaseWorkspaceView` | 接诊成功后导航，参数用 `MedicalCaseNavigationParameters`：`MedicalCaseId` / `CurrentPatient` / `WorkspaceMode.Clinical` / `InitialEditState.Editing` | — | `MedicalCaseWorkspaceViewModel` |
+| 6 | 进入工作台 | `MedicalCaseWorkspaceView` | 接诊成功后导航，参数用 **`MedicalCaseNav.ForExistingCase`**：`MedicalCaseId` / `CurrentPatient` / `WorkspaceMode.Clinical` / `InitialEditState.Editing`（契约见 [desktop-ui-detailed-design.md §5](desktop-ui-detailed-design.md#5-跨页数据流--导航契约)） | — | `MedicalCaseWorkspaceViewModel` |
 | 7 | 编辑诊疗内容 | `MedicalCaseWorkspaceView` | 内嵌编辑区 | `ConsultationEditor.*`、`PrescriptionEditor.*` | `ConsultationEditorViewModel`、`PrescriptionEditorViewModel` |
 | 8 | 保存 | 同上 | 工作台按钮 | `Commands.SaveCommand`（`CanSave` = `State.IsEditing`） | `MedicalCaseCommandsViewModel` |
 | 9 | 挂起 | 同上 | 工作台按钮 | `Commands.SuspendCommand` | `MedicalCaseCommandsViewModel` |
@@ -195,7 +195,7 @@
 | 交接 | 上游产物 | 下游消费 | 传递方式 |
 |------|---------|---------|---------|
 | 前台 → 医生 | 挂号记录（`RegistrationStatus.Waiting`） | 医生「接诊」按钮 | `RegistrationRefreshedEvent` + `IRegistrationService.StartVisitAsync` |
-| 接诊 → 工作台 | `MedicalCaseId`、`PatientDetailDto` | `MedicalCaseWorkspaceView` | `MedicalCaseNavigationParameters`（`MedicalCaseIdKey` / `PatientIdKey` / `WorkspaceModeKey` / `InitialEditStateKey`） |
+| 接诊 → 工作台 | `MedicalCaseId`、`PatientDetailDto` | `MedicalCaseWorkspaceView` | **`MedicalCaseNav.ForExistingCase`**（`MedicalCaseId` / `CurrentPatient` / `WorkspaceMode` / `InitialEditState`；ViewRoleAccess 含 Receptionist） |
 | 工作台 → 打印 | 已完成医案 | `PrescriptionPrintService` | `PrescriptionPrintHandler` → `IPrintService<PrescriptionPrintModel>` |
 | 任意角色 → 个人资料 | `AccountSettingsView` | 顶栏用户区 | `HeaderViewModel.EditProfileCommand` → `MenuManager.EditProfileCommand` → `NavigateTo(ViewNames.AccountSettings)` |
 | 会话失效 → 登录 | `TokenLifecycleState.Expired` | `LoginRegion` | `LoginStateManager.HandleTokenExpiredAsync` → `LogoutRequested` → `ShowLoginDialog()` |

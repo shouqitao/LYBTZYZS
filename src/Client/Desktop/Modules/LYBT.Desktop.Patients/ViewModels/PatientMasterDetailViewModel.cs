@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
@@ -16,6 +17,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Infrastructure.CardReader.Models;
 using Microsoft.Win32;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -132,6 +134,40 @@ namespace LYBT.Desktop.Patients.ViewModels
             ViewMedicalRecordsCommand.NotifyCanExecuteChanged();
             NewConsultationCommand.NotifyCanExecuteChanged();
             ReadCardCommand.NotifyCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 消费 PatientManagement 导航参数（Action / SearchKeyword）。
+        /// 薄包装 View（PatientManagementView）无自有 VM，须由 View.OnNavigatedTo 转发调用。
+        /// </summary>
+        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        {
+            await base.OnNavigatedToAsync(navigationContext);
+            await ApplyNavigationParametersAsync(navigationContext);
+        }
+
+        /// <summary>公开导航参数消费入口（供 PatientManagementView / Control 转发）</summary>
+        public async Task ApplyNavigationParametersAsync(NavigationContext? navigationContext)
+        {
+            var parameters = navigationContext?.Parameters;
+            if (parameters is null) return;
+
+            var action = parameters.GetValue<string>(PatientManagementNav.Action);
+            var keyword = parameters.GetValue<string>(PatientManagementNav.SearchKeyword);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                SearchText = keyword;
+                await SearchAsync();
+            }
+
+            if (action is "AddNew" or "Create")
+            {
+                if (!IsEditMode && !IsBusy)
+                    await CreateNewAsync();
+                else
+                    Logger.LogWarning("导航 Action={Action} 请求新建患者，但当前状态不可新建", action);
+            }
         }
 
         #region 基类抽象方法实现

@@ -41,6 +41,14 @@
             <TextBlock Grid.Row="1" Text="加载中..." HorizontalAlignment="Center" VerticalAlignment="Center"
                        Visibility="{Binding IsLoading, Converter={x:Static converters:Cvt.BoolToVis}}"/>
 
+            <!-- Empty status: 无参/无数据时禁止空白页 -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding EmptyStatusMessage}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       TextWrapping="Wrap" Margin="24"
+                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                       Visibility="{Binding HasEmptyStatus, Converter={x:Static converters:Cvt.BoolToVis}}"/>
+
             <!-- Pagination -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
                 <Button Content="上一页" Command="{Binding PreviousPageCommand}"

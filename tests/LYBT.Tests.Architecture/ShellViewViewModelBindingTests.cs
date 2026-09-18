@@ -63,7 +63,8 @@ public class ShellViewViewModelBindingTests
         }
 
         // 三控件的绑定契约：VM 必须暴露 XAML 顶层绑定的成员（防止改名只改一侧）
-        AssertVmSurface("HeaderViewModel", "CurrentUserDisplayName", "CurrentUserRoleDisplay", "EditProfileCommand");
+        AssertVmSurface("HeaderViewModel", "CurrentUserDisplayName", "CurrentUserRoleDisplay", "EditProfileCommand",
+            "NavigateBackCommand");
         AssertVmSurface("SideNavViewModel", "IsSidebarExpanded", "SidebarWidth", "IsNavTextVisible",
             "IsDarkMode", "SelectedNavItem", "GroupedNavigationItems", "LogoutCommand");
         AssertVmSurface("FooterViewModel", "ApiStatusText", "ApiStatusIcon", "ApiStatusColor",

@@ -18,6 +18,6 @@
              d:DataContext="{d:DesignInstance vm:PatientMasterDetailViewModel}"
              mc:Ignorable="d">
     <Grid>
-        <patientControls:PatientMasterDetailControl />
+        <patientControls:PatientMasterDetailControl x:Name="PatientMasterDetailControl" />
     </Grid>
 </UserControl>

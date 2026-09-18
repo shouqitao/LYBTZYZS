@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Models;
 using LYBT.Desktop.Infrastructure.CardReader.Services;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Helpers;
@@ -150,13 +151,17 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
     [RelayCommand]
     private void CreateNewPatient()
     {
-        NavigateToView(ViewNames.PatientManagement, new Dictionary<string, object> { { "Action", "Create" } });
+        // 前台文案用 Create；消费端 Action=="AddNew"|"Create" 均进入新建模式
+        NavigateToView(ViewNames.PatientManagement, new Dictionary<string, object>
+        {
+            { PatientManagementNav.Action, "Create" }
+        });
     }
 
     [RelayCommand]
     private void CreateNewRegistration()
     {
-        NavigateToView(ViewNames.RegistrationList, new Dictionary<string, object> { { "Action", "Create" } });
+        NavigateToView(ViewNames.RegistrationList, RegistrationListNav.Create());
     }
 
     [RelayCommand]
@@ -188,19 +193,13 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
             else if (patients.Count == 1)
             {
                 // 直接导航到挂号创建，预填充患者
-                NavigateToView(ViewNames.RegistrationList, new Dictionary<string, object>
-                {
-                    { "PatientId", patients[0].Id },
-                    { "PatientName", patients[0].Name }
-                });
+                NavigateToView(ViewNames.RegistrationList,
+                    RegistrationListNav.CreateForPatient(patients[0].Id, patients[0].Name));
             }
             else
             {
                 // 多个结果，导航到患者列表
-                NavigateToView(ViewNames.PatientManagement, new Dictionary<string, object>
-                {
-                    { "SearchKeyword", SearchKeyword }
-                });
+                NavigateToView(ViewNames.PatientManagement, PatientManagementNav.Search(SearchKeyword));
             }
         }
         catch (Exception ex)
@@ -242,11 +241,8 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
                 await ShowConfirmMessageAsync($"找到患者：{existingPatient.Name}{visitInfo}\n\n是否前往挂号？", "患者已存在");
 
                 // 导航到挂号创建页面，预填充患者信息
-                NavigateToView(ViewNames.RegistrationList, new Dictionary<string, object>
-                {
-                    { "PatientId", existingPatient.PatientId },
-                    { "PatientName", existingPatient.Name }
-                });
+                NavigateToView(ViewNames.RegistrationList,
+                    RegistrationListNav.CreateForPatient(existingPatient.PatientId, existingPatient.Name));
             }
             else
             {
@@ -268,11 +264,8 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
                     await ShowSuccessMessageAsync($"患者 {newPatient.Name} 创建成功");
 
                     // 导航到挂号创建页面，预填充患者信息
-                    NavigateToView(ViewNames.RegistrationList, new Dictionary<string, object>
-                    {
-                        { "PatientId", newPatient.PatientId },
-                        { "PatientName", newPatient.Name }
-                    });
+                    NavigateToView(ViewNames.RegistrationList,
+                        RegistrationListNav.CreateForPatient(newPatient.PatientId, newPatient.Name));
                 }
             }
         }

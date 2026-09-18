@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Extensions;
@@ -40,6 +41,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private readonly IMedicalCaseService _medicalCaseService;
     private readonly INavigationCoordinator _navigationCoordinator;
     private readonly IActiveConsultationService _activeConsultationService;
+    private readonly IPatientService _patientService;
     private readonly IDialogService? _dialogService;
     private readonly IToastService _toastService;
 
@@ -47,6 +49,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
     private readonly IEditModeStateMachine _editStateMachine;
     private readonly WorkspaceStateManager _stateManager;
     private readonly WorkspaceNavigationHandler _navHandler;
+
+    /// <summary>返回目标视图（生产方经 ReturnView 参数写入；Clinical 模式 Back 消费）</summary>
+    private string? _returnView;
 
     #endregion
 
@@ -262,6 +267,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         IMedicalCaseService medicalCaseService,
         INavigationCoordinator navigationCoordinator,
         IActiveConsultationService activeConsultationService,
+        IPatientService patientService,
         IToastService toastService,
         PrescriptionPrintHandler printHandler,
         IDialogService? dialogService = null)
@@ -270,6 +276,7 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _navigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
+        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
 
@@ -324,12 +331,44 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
 
     private async Task OnNavigatedToAsync(NavigationContext navigationContext)
     {
-        MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
-        CurrentPatient = navigationContext.Parameters.GetValue<PatientDetailDto>("CurrentPatient");
-        var workspaceMode = navigationContext.Parameters.GetValue<WorkspaceMode>(MedicalCaseNavigationParameters.WorkspaceModeKey);
-        var initialEditState = navigationContext.Parameters.GetValue<EditState>(MedicalCaseNavigationParameters.InitialEditStateKey);
-        var editMode = navigationContext.Parameters.GetValue<string>("EditMode");
+        var parameters = navigationContext.Parameters;
+        MedicalCaseId = parameters.GetValue<Guid>(MedicalCaseNav.MedicalCaseId);
+        CurrentPatient = parameters.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient);
+        var workspaceMode = parameters.GetValue<WorkspaceMode>(MedicalCaseNav.WorkspaceMode);
+        var initialEditState = parameters.GetValue<EditState>(MedicalCaseNav.InitialEditState);
+        var editMode = parameters.GetValue<string>(MedicalCaseNav.EditMode);
         var isHistoricalEdit = editMode == "HistoricalEdit";
+        // N4：记录返回目标（ClinicalWorkspace / RegistrationList / PatientSelection）
+        _returnView = parameters.GetValue<string>(MedicalCaseNav.ReturnView);
+
+        // PatientId-only 路径：CurrentPatient 缺失时按 PatientId 回填
+        if (CurrentPatient == null)
+        {
+            var patientId = parameters.GetValue<Guid>(MedicalCaseNav.PatientId);
+            if (patientId != Guid.Empty)
+            {
+                try
+                {
+                    var patientResult = await _patientService.GetByIdAsync(patientId);
+                    if (patientResult.Success && patientResult.Data != null)
+                        CurrentPatient = patientResult.Data;
+                    else
+                        Logger.LogWarning("按 PatientId={PatientId} 回填患者失败: {Error}", patientId, patientResult.Error);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "按 PatientId={PatientId} 回填患者异常", patientId);
+                }
+            }
+        }
+
+        // 无上下文导航：明确失败而非空白页
+        if (CurrentPatient == null && MedicalCaseId == Guid.Empty)
+        {
+            await ShowErrorMessageAsync("请从患者列表或挂号队列选择患者后再开始看诊");
+            _ = _navigationCoordinator.NavigateToHome();
+            return;
+        }
 
         // Set mode early so ResumeSuspended can check it
         State = new WorkspaceState(Mode: workspaceMode);
@@ -490,7 +529,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         await _navHandler.ExecuteBackAsync(State, MedicalCaseId,
             () => ConsultationEditor.GetConsultationData(),
             () => PrescriptionEditor.GetPrescriptionData(),
-            () => HandleLeaveRequestAsync());
+            () => HandleLeaveRequestAsync(),
+            _returnView);
     }
 
     /// <summary>

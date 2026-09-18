@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using FluentAssertions;
 using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
@@ -274,11 +275,12 @@ public class RegistrationMasterDetailViewModelTests : DesktopTestBase
         await _patientService.Received(1).GetByIdAsync(patientId, Arg.Any<CancellationToken>());
         await _navigationCoordinator.Received(1).NavigateTo(
             ViewNames.MedicalCaseWorkspace,
-            Arg.Is<Dictionary<string, object>>(p =>
-                p.ContainsKey(MedicalCaseNavigationParameters.MedicalCaseIdKey) &&
-                p.ContainsKey("CurrentPatient") &&
-                p.ContainsKey(MedicalCaseNavigationParameters.WorkspaceModeKey) &&
-                p.ContainsKey(MedicalCaseNavigationParameters.InitialEditStateKey)));
+            Arg.Is<IDictionary<string, object>>(p =>
+                p.ContainsKey(MedicalCaseNav.MedicalCaseId) &&
+                p.ContainsKey(MedicalCaseNav.CurrentPatient) &&
+                p.ContainsKey(MedicalCaseNav.PatientId) &&
+                p.ContainsKey(MedicalCaseNav.WorkspaceMode) &&
+                p.ContainsKey(MedicalCaseNav.InitialEditState)));
         sut.OnNavigatedFrom(CreateTestNavigationContext());
     }
 

@@ -5,6 +5,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using LYBT.Desktop.Admin.Sysadmin.Models;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Admin.Sysadmin.ViewModels;
@@ -78,10 +79,18 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     }
 
     /// <summary>
-    /// 导航到用户管理
+    /// 导航到用户管理（管理员账号入口：DefaultRoleFilter=Admin）
     /// </summary>
     [RelayCommand]
-    private void NavigateToUserManagement() => NavigateTo(ViewNames.UserManagement);
+    private void NavigateToUserManagement()
+    {
+        Logger.LogInformation("导航到 {ViewName} (DefaultRoleFilter=Admin)", ViewNames.UserManagement);
+        var parameters = new Dictionary<string, object>
+        {
+            ["DefaultRoleFilter"] = UserRole.Admin
+        };
+        _ = _navigationCoordinator.NavigateTo(ViewNames.UserManagement, parameters);
+    }
 
     /// <summary>
     /// 导航到日志级别控制
@@ -100,6 +109,12 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     /// </summary>
     [RelayCommand]
     private void NavigateToSecurityAuditLog() => NavigateTo(ViewNames.SecurityAuditLog);
+
+    /// <summary>
+    /// 导航到备份管理（设计 N3：SysadminHome 补备份入口）
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToBackupManagement() => NavigateTo(ViewNames.BackupManagement);
 
     /// <summary>
     /// 导航到指定视图

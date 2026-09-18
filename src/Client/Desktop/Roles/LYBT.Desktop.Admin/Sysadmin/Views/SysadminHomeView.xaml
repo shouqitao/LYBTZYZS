@@ -377,6 +377,20 @@
                             </StackPanel>
                         </Button>
                     </Border>
+
+                    <!-- 卡片5: 备份管理（设计 N3：SysadminHome 补备份入口） -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToBackupManagementCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="BackupRestore"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="备份管理" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
                 </StackPanel>
 
                 <!-- 状态卡片 -->

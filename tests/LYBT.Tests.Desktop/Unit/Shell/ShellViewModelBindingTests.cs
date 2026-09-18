@@ -5,6 +5,7 @@ using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Services;
+using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.Services.Backup;
 using LYBT.Desktop.Shell;
 using LYBT.Desktop.Shell.Services;
@@ -31,8 +32,10 @@ public class ShellViewModelBindingTests
     private readonly INavigationManager _navigationManager = Substitute.For<INavigationManager>();
     private readonly IShellServices _shell = Substitute.For<IShellServices>();
     private readonly IActiveConsultationService _activeConsultation = Substitute.For<IActiveConsultationService>();
-    private readonly ICommonDialogService _commonDialog = Substitute.For<ICommonDialogService>();
+    private readonly IDialogManager _dialogManager = Substitute.For<IDialogManager>();
     private readonly IShellLogoutService _logoutService = Substitute.For<IShellLogoutService>();
+    private readonly IMenuManager _menu = Substitute.For<IMenuManager>();
+    private readonly Prism.Commands.DelegateCommand _navigateBackCommand = new(() => { });
 
     public ShellViewModelBindingTests()
     {
@@ -42,6 +45,8 @@ public class ShellViewModelBindingTests
             new() { Title = "系统设置", Group = "管理", IconKind = "AccountCog" },
         });
 
+        _menu.NavigateBackCommand.Returns(_navigateBackCommand);
+        _shell.Menu.Returns(_menu);
         _shell.Sidebar.Returns(_sidebar);
         _shell.Theme.Returns(_theme);
         _shell.StatusBar.Returns(_statusBar);
@@ -49,9 +54,9 @@ public class ShellViewModelBindingTests
         _shell.Navigation.Returns(_navigationManager);
         _shell.ActiveConsultation.Returns(_activeConsultation);
         _shell.Logout.Returns(_logoutService);
-        // 真实 ShellDialogHelper（其方法非 virtual 无法被 NSubstitute 拦截）→ 底层 ICommonDialogService 可控
+        // 真实 ShellDialogHelper（其方法非 virtual 无法被 NSubstitute 拦截）→ 底层 IDialogManager 可控
         _shell.Dialogs.Returns(new ShellDialogHelper(
-            _commonDialog,
+            _dialogManager,
             null,
             Substitute.For<Microsoft.Extensions.Logging.ILogger<ShellDialogHelper>>()));
     }
@@ -106,14 +111,14 @@ public class ShellViewModelBindingTests
         host.ToggleSidebarCommand.Execute(null);
         host.IsSidebarExpanded.Should().BeTrue();
         sideNav.IsSidebarExpanded.Should().BeTrue("宿主 Ctrl+M 与侧栏汉堡必须同源");
-        host.SidebarWidth.Should().Be(ShellConstants.SidebarExpandedWidth);
+        sideNav.SidebarWidth.Should().Be(ShellConstants.SidebarExpandedWidth);
         sideNav.SidebarWidth.Should().Be(ShellConstants.SidebarExpandedWidth);
         hostChanges.Should().Contain(nameof(MainWindowViewModel.SidebarWidth), "宽度变化需通知绑定刷新");
 
         // 侧栏汉堡（双向绑定 IsSidebarExpanded）→ 宿主同样观察
         sideNav.IsSidebarExpanded = false;
         host.IsSidebarExpanded.Should().BeFalse();
-        host.SidebarWidth.Should().Be(ShellConstants.SidebarCollapsedWidth);
+        sideNav.SidebarWidth.Should().Be(ShellConstants.SidebarCollapsedWidth);
         sideNav.SidebarWidth.Should().Be(ShellConstants.SidebarCollapsedWidth);
     }
 
@@ -169,7 +174,7 @@ public class ShellViewModelBindingTests
     [Fact]
     public void Footer_Notifies_When_StatusBarReportsChange()
     {
-        _statusBar.ApiStatus.Returns(ApiHealthStatus.Checking);
+        _statusBar.ApiStatus.Returns(ApiHealthStatus.Healthy);
         using var footer = new FooterViewModel(_shell);
         var changes = new List<string>();
         footer.PropertyChanged += (_, e) => changes.Add(e.PropertyName ?? string.Empty);
@@ -195,6 +200,7 @@ public class ShellViewModelBindingTests
         header.CurrentUserDisplayName.Should().Be("陈医生");
         header.CurrentUserRoleDisplay.Should().Be("医生");
         header.EditProfileCommand.Should().BeSameAs(_shell.Menu.EditProfileCommand);
+        header.NavigateBackCommand.Should().BeSameAs(_shell.Menu.NavigateBackCommand);
 
         _loginState.LoginStateChanged += Raise.Event<EventHandler>(_loginState, EventArgs.Empty);
         changes.Should().Contain(nameof(HeaderViewModel.CurrentUserDisplayName));
@@ -266,13 +272,13 @@ public class ShellViewModelBindingTests
     public async Task ShellLogout_NoActiveConsultation_RequiresConfirmation()
     {
         _activeConsultation.HasActiveConsultation.Returns(false);
-        _commonDialog.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(false);
+        _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(false);
 
         var cancelled = await CreateLogoutService().RequestLogoutAsync();
         cancelled.Should().Be(LogoutOutcome.Cancelled);
         await _loginState.DidNotReceive().PerformLogoutAsync();
 
-        _commonDialog.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(true);
+        _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(true);
         var confirmed = await CreateLogoutService().RequestLogoutAsync();
         confirmed.Should().Be(LogoutOutcome.LoggedOut);
         await _loginState.Received(1).PerformLogoutAsync();
@@ -282,7 +288,7 @@ public class ShellViewModelBindingTests
     public async Task ShellLogout_Failure_ReturnsFailed_WithoutThrowing()
     {
         _activeConsultation.HasActiveConsultation.Returns(false);
-        _commonDialog.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(true);
+        _dialogManager.ShowConfirmAsync(Arg.Any<string>(), Arg.Any<string?>()).Returns(true);
         _loginState.PerformLogoutAsync().Returns(Task.FromException(new InvalidOperationException("boom")));
 
         var outcome = await CreateLogoutService().RequestLogoutAsync();
@@ -299,7 +305,7 @@ public class ShellViewModelBindingTests
         await sideNav.LogoutCommand.ExecuteAsync(null);
 
         await _logoutService.Received(1).RequestLogoutAsync();
-        // 侧栏不得直调 PerformLogoutAsync（若直调则绕过活跃医案守卫——既有审查 #34）
+        // 侧栏不得直调 PerformLogoutAsync（若直调则绕过活跃医案离开守卫——既有审查 #34）
         await _loginState.DidNotReceive().PerformLogoutAsync();
     }
 

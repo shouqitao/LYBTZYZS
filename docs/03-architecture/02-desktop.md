@@ -395,10 +395,94 @@ private bool CanSave() => !IsBusy && !HasErrors;
 
 ## 导航模式
 
-- **Region 导航**: `IRegionManager.RequestNavigate(regionName, viewName, params)`
-- **参数传递**: `NavigationParameters` 类型安全提取
-- **导航确认**: `IConfirmNavigationRequest` (未保存数据提示)
+> 设计 SSOT：[desktop-navigation-viewmodel-design-2026-09-18.md](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)（N7 文档同步 2026-09-18）。
+> UI 细节与 ViewRoleAccess 全表见 [desktop-ui-detailed-design.md §5](../07-ui-ux/desktop-ui-detailed-design.md#5-跨页数据流--导航契约)。
+
+### 单一门面（强制）
+
+```
+ViewModel / Menu / SideNav / Shell 快捷键
+        │
+        ▼
+INavigationCoordinator.NavigateTo(viewName, NavigationParameters?)
+        │  1) RoleAccessGuard（ViewRoleAccess）
+        │  2) Debounce + Timeout
+        │  3) IModuleLazyLoader.EnsureModuleLoadedAsync
+        │  4) IRegionManager.RequestNavigate(ContentRegion, view, params)
+        │  5) INavigationHistoryService.Record + NavigationChanged
+        ▼
+目标 View + ViewModel.OnNavigatedTo（消费 NavigationParameters）
+```
+
+- **ViewModel 禁止**直接 `RegionManager.RequestNavigate`（架构测试 `ViewModels_MustNot_RequestNavigate_Directly`；白名单：NavigationCoordinator / LoginCoordinator / ClearRegion(LoginRegion)）。
+- DP09 保持：ViewModel 禁注入 `IRegionManager`。
+- 基类 `NavigableViewModelBase.NavigateTo/NavigateToHome` 必须委托 `INavigationCoordinator`，不得旁路调用 RegionManager。
+
+### 角色主页 SSOT
+
+| 角色 | HomeViewName | 所属模块（须 ∈ RequiredModules） |
+|------|--------------|----------------------------------|
+| Doctor | **`ClinicalWorkspaceView`**（`ClinicalWorkspace`） | `ClinicalModule` |
+| Receptionist | `ReceptionistHomeView` | `ClinicalModule`（薄包装在 ClinicalModule） |
+| Admin | `AdminHomeView` | Shell/AdminModule 直注册 |
+| SuperAdmin | `SysadminHomeView` | SysadminModule 直注册；管理页涉及的 Clinical/Reports/MedicalCase 模块须按矩阵写入 RequiredModules 或保证懒加载失败可见 |
+
+- 登录后 `RoleRegistry.GetHomeViewName(role)` 是导航目标唯一真相源。
+- **设计规则**：角色 Home 所属模块必须出现在该角色 `RequiredModules`（架构测试 `RoleRequiredModules_ContainHomeViewModule`）；懒加载仅用于次级业务页，失败禁止静默（错误可见 + fallback 主页）。
+
+### 侧栏 / 导航矩阵
+
+`NavigationManager.BuildNavigationItems` 以 `RoleRegistry.GetDefinition(role)` 为唯一真相源，每角色侧栏 3 项（`Group` ∈ 临床/目录/管理）：
+
+| 角色 | 侧栏 3 项（目标） |
+|------|-------------------|
+| Doctor | 主页 ClinicalWorkspace；患者选择；挂号队列（**无**无参「医案工作台」入口） |
+| Receptionist | 主页 ReceptionistHome；挂号列表；患者管理 |
+| Admin | 主页 AdminHome；用户管理；药材/验方 |
+| SuperAdmin | 主页 SysadminHome；备份；部署 |
+
+- 菜单/快捷键可见性：`IsVisible`/`CanExecute` 由 ViewRoleAccess 或 IRoleDefinition 推导（**能隐藏不 toast**）。
+- 完整菜单层级见 [11a-shell.md](../02-requirements/11a-shell.md) US-SHELL-005。
+
+### 导航参数契约
+
+参数工厂位于 `LYBT.Desktop.Contracts`（与 `WorkspaceMode`/`EditState` 同层）：
+
+| 契约类 | 关键键 | 用途 |
+|--------|--------|------|
+| `MedicalCaseNav` | MedicalCaseId / CurrentPatient / PatientId / WorkspaceMode / InitialEditState / EditMode | 医案工作台唯一入口参数（ForExistingCase / ForNewCase） |
+| `PatientManagementNav` | Action / SearchKeyword | AddNew / Search 预填 |
+| `RegistrationListNav` | Action / PatientId / PatientName | 新建挂号 / 读卡预填 |
+| `AuditLogNav` | MedicalCaseId | 医案审计日志 |
+| `AccountSettingsNav` | Tab | 个人资料改密页 |
+
+- 架构守卫 `NavParams_ContractKeys_ConsumedByTargetViewModel`：每个契约 const 键必须被目标 ViewModel `GetValue`/`ContainsKey` 消费。
+- 遗留类型 `MedicalCaseNavigationParameters` 若保留，须改为上述工厂的薄封装（禁止兼容层）。
+
+### ViewRoleAccess（客户端守卫）
+
+- 矩阵实现：`NavigationCoordinator.ViewRoleAccess`（`NavigationCoordinator.cs`）。
+- **MedicalCaseWorkspace** 对 Doctor / Receptionist / Admin / SuperAdmin 全角色放行（前台 StartVisit 必达；业务写入仍受服务端策略约束）。
+- 未列入的视图不限制；**Login** 匿名放行；**AccountSettings** 保持未列入=放行。
+- 架构守卫 `ViewRoleAccess_CoversAllRegisterForNavigationViews`：ViewNames ⊆ ViewRoleAccess ∪ {Login, AccountSettings}。
+
+### 返回与历史
+
+| 项 | 规则 |
+|----|------|
+| Journal | Region NavigationService Journal 是 **唯一** GoBack 数据源 |
+| History/面包屑 | 仅展示，**不**作为后退数据源 |
+| NavigateBack 空历史 | Toast 警告 + fallback 角色主页 |
+| Workspace 返回目标 | 优先显式 ReturnView；否则来源（ClinicalWorkspace / RegistrationList / PatientSelection）；兜底主页 |
+| ClearHistory | 登出/切换用户时同时清 Journal |
+
+### 其它约束
+
+- **Region 导航**: 仅 NavigationCoordinator 内部使用 `IRegionManager.RequestNavigate(ContentRegion, viewName, params)`
+- **参数传递**: NavigationParameters + 契约常量键；目标 VM 必须消费
+- **导航确认**: `IConfirmNavigationRequest`（未保存数据提示）
 - **事件通信**: `IEventAggregator` + `EventSubscriptionManager` 自动生命周期管理
+- **模块懒加载**: `ModuleLazyLoader.ViewToModuleMap` 视图→模块；失败必须可见错误，禁止静默空白
 
 ## 事件架构
 
@@ -451,7 +535,7 @@ Events.Publish<SyncEvents.StatusChangedEvent, SyncStatusPayload>(new SyncStatusP
 | 场景 | 推荐方式 | 说明 |
 |------|----------|------|
 | 跨模块通知 | PubSubEvent | 通过 EventSubscriptionManager 管理生命周期 |
-| 导航到详情页 | Region Navigation | `IRegionManager.RequestNavigate`，参数通过 NavigationParameters |
+| 导航到详情页 | Region Navigation | **`INavigationCoordinator.NavigateTo`**（禁止 VM 直呼 `IRegionManager.RequestNavigate`），参数经导航契约常量 |
 | 父子 ViewModel 通信 | Direct method call / Property binding | 同一模块内直接调用，无需事件 |
 | 长时间操作结果 | PubSubEvent + background thread | `ThreadOption.BackgroundThread`，避免阻塞 UI |
 
@@ -688,7 +772,7 @@ PatientMasterDetailViewModel
 
 新建/编辑保存成功后返回列表页 + 成功 Toast。医案保存例外: 弹出"是否打印处方?"提示。保存失败停留当前页。
 
-**实现**: `NavigationCoordinator.NavigateBack()` 或 `RegionManager.RequestNavigate(ContentRegion, listViewName)`。
+**实现**: `INavigationCoordinator.NavigateBack()`（Journal 空历史 fallback 角色主页）；禁止业务 VM 直呼 `RegionManager.RequestNavigate`。
 
 ### 删除确认 (UI-D03)
 
@@ -698,9 +782,9 @@ PatientMasterDetailViewModel
 
 ### 工作区模式 (UI-D04)
 
-Clinical (诊疗) / Management (管理) 通过主页卡片导航区分。每个角色的 Home View 是导航中心，以功能卡片展示入口；侧边栏承载角色导航矩阵（`NavigationManager.BuildNavigationItems` 按角色生成，按「主页/业务/管理」分组）与底部全局操作（主题/退出），个人资料入口在顶栏 Header。
+Clinical (诊疗) / Management (管理) 通过主页卡片导航区分。每个角色的 Home View 是导航中心（SSOT 见「导航模式 → 角色主页」），以功能卡片展示入口；侧边栏承载角色导航矩阵（`NavigationManager.BuildNavigationItems` 按角色生成，`Group` = 临床/目录/管理）与底部全局操作（主题/退出），个人资料入口在顶栏 Header。
 
-**实现**: `MenuManager.SetWorkspaceMode(mode)` 控制 `MenuItems` 集合的 `Visibility`。
+**实现**: `MenuManager.SetWorkspaceMode(mode)` 控制 `MenuItems` 集合的 `Visibility`；可见性由 ViewRoleAccess / IRoleDefinition 推导（能隐藏不 toast）。
 
 ### 表单布局 (UI-D05)
 
@@ -780,8 +864,9 @@ Desktop 端异常处理实现 `DesktopExceptionHandler`（注册 `AppDomain.Unha
 | 用户管理 | O | O | X | X |
 | 数据同步 | O | O | O | X |
 | 诊所设置 | O | X | X | X |
+| 医案工作台（MedicalCaseWorkspace，接诊/查看） | O | O | O | O |
 
-**实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`。通过 `IApplicationCommands` 接口暴露全局命令。完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](12-permissions-matrix.md)。
+**实现**: `MenuManager` 在登录后根据用户角色过滤菜单项 `Visibility`（与 `NavigationCoordinator.ViewRoleAccess` 同源）。通过 `IApplicationCommands` 接口暴露全局命令。完整权限矩阵（资源 × 操作 × 角色）见权威文档 [12-permissions-matrix.md](12-permissions-matrix.md)；ViewRoleAccess 视图级矩阵见 [desktop-ui-detailed-design.md §5.3](../07-ui-ux/desktop-ui-detailed-design.md#5-跨页数据流--导航契约)。
 
 ---
 

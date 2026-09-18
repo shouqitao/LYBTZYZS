@@ -143,16 +143,22 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         #region 导航命令
 
         /// <summary>
-        /// 返回主页命令
+        /// 返回主页命令 — 委托 INavigationCoordinator（唯一导航门面，禁止直调 RegionManager）
         /// </summary>
         [RelayCommand]
         protected virtual void NavigateToHome()
         {
             try
             {
-                var homeViewName = GetHomeViewName();
-                Logger.LogDebug("返回主页: {HomeViewName}", homeViewName);
-                NavigateTo("ContentRegion", homeViewName);
+                var coordinator = Services.NavigationCoordinator;
+                if (coordinator == null)
+                {
+                    Logger.LogWarning("INavigationCoordinator 未注入，无法返回主页");
+                    return;
+                }
+
+                Logger.LogDebug("返回主页（经 INavigationCoordinator.NavigateToHome）");
+                _ = coordinator.NavigateToHome();
             }
             catch (Exception ex)
             {
@@ -166,14 +172,29 @@ namespace LYBT.Desktop.Infrastructure.ViewModels.Base
         #region 导航方法
 
         /// <summary>
-        /// 导航到指定视图
+        /// 导航到指定视图 — 委托 INavigationCoordinator（唯一导航门面；区域固定 ContentRegion 由协调器决定）
         /// </summary>
-        protected virtual void NavigateTo(string regionName, string viewName, NavigationParameters? parameters = null)
+        protected virtual void NavigateTo(string viewName, NavigationParameters? parameters = null)
         {
             try
             {
-                Logger.LogDebug("导航到视图: {ViewName} (区域: {RegionName})", viewName, regionName);
-                RegionManager.RequestNavigate(regionName, viewName, parameters ?? new NavigationParameters());
+                var coordinator = Services.NavigationCoordinator;
+                if (coordinator == null)
+                {
+                    Logger.LogWarning("INavigationCoordinator 未注入，无法导航到 {ViewName}", viewName);
+                    return;
+                }
+
+                Logger.LogDebug("导航到视图: {ViewName}（经 INavigationCoordinator）", viewName);
+                IDictionary<string, object>? dict = null;
+                if (parameters != null && parameters.Count > 0)
+                {
+                    dict = new Dictionary<string, object>();
+                    foreach (var kvp in parameters)
+                        dict[kvp.Key] = kvp.Value;
+                }
+
+                _ = coordinator.NavigateTo(viewName, dict);
             }
             catch (Exception ex)
             {

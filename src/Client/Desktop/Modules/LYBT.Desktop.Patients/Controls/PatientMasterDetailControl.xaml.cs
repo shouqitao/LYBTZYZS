@@ -1,4 +1,5 @@
 using LYBT.Desktop.Controls.Controls;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.Controls
 {
@@ -13,6 +14,18 @@ namespace LYBT.Desktop.Patients.Controls
         {
             InitializeComponent();
             InitializeAsyncSupport();
+        }
+
+        /// <summary>
+        /// 消费导航参数（Action/SearchKeyword）— 供薄包装 View 的 INavigationAware 转发。
+        /// 对齐 UserMasterDetailControl.SetDefaultRoleFilter 先例。
+        /// </summary>
+        public void ApplyNavigationParameters(NavigationContext navigationContext)
+        {
+            if (DataContext is ViewModels.PatientMasterDetailViewModel vm)
+            {
+                _ = vm.ApplyNavigationParametersAsync(navigationContext);
+            }
         }
     }
 }

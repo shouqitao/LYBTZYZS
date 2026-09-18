@@ -76,7 +76,8 @@ public record WorkspaceState(
 
     public string BackButtonText => Mode switch
     {
-        WorkspaceMode.Clinical => "返回患者选择",
+        // N4：Clinical 返回目标由导航参数 ReturnView 决定（工作台/挂号队列/患者选择），不再写死患者选择
+        WorkspaceMode.Clinical => "返回上一页",
         WorkspaceMode.Management => "返回医案列表",
         _ => "返回"
     };

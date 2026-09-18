@@ -56,25 +56,26 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: 🔴 代码待对齐（C1：LoginCoordinator 旁路待删）
+**状态**: ⚠️ 部分实现（登录后按 RoleRegistry.HomeViewName 导航已对齐；**RequiredModules 缺 Home 所属模块**待 N5——Doctor/Receptionist 的 ClinicalModule 未写入 RequiredModules，首屏依赖懒加载；设计见 [desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md) §2.3）
 
 **作为** 用户，**我想要** 登录后系统按我的角色自动加载对应功能模块，**以便** 我直接进入工作台而不需手动配置，且无越权菜单。
 
 **验收标准**:
 
-- [ ] Admin 登录 → 加载管理模块，导航到管理工作台
-- [ ] Doctor 登录 → 加载临床模块，导航到临床工作台
-- [ ] Receptionist 登录 → 加载患者管理 + 读卡器模块
-- [ ] 登出 → 清除会话与导航历史，返回登录页
+- [ ] Admin 登录 → 加载管理模块，导航到 `AdminHomeView`
+- [ ] Doctor 登录 → 加载临床模块，导航到 **`ClinicalWorkspaceView`（Doctor 首页 SSOT，非 ClinicalHome）**
+- [ ] Receptionist 登录 → 加载 Registration + **ClinicalModule（ReceptionistHome 薄包装所在模块）**，导航到 `ReceptionistHomeView`
+- [ ] SuperAdmin 登录 → 导航到 `SysadminHomeView`；矩阵所需 Clinical/Reports/MedicalCase 模块可加载（RequiredModules 或失败可见懒加载）
+- [ ] 登出 → 清除会话与导航历史（含 Journal），返回登录页
 
 **业务规则**:
 
-1. `ApplicationBootstrapper.LoadModulesForRoleAsync` 按角色过滤 Prism 模块。
-2. 菜单可见性矩阵：诊所设置仅 SuperAdmin；药材/用户管理 Admin+；医案/验方 Doctor+；患者管理全部角色。
-3. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
+1. `ApplicationBootstrapper.LoadModulesForRoleAsync` / `App.ConfigureModuleCatalog` 按角色 `IRoleDefinition.RequiredModules` 过滤 Prism 模块。
+2. **Home 所属模块必须 ∈ RequiredModules**（架构测试 `RoleRequiredModules_ContainHomeViewModule`）；懒加载仅用于次级业务页。
+3. 菜单可见性与 `NavigationCoordinator.ViewRoleAccess` 同源：诊所设置仅 Admin/SuperAdmin；药材/验方/医案管理 Doctor+Admin；患者管理全部角色；**医案工作台 MedicalCaseWorkspace 四角色可达**（前台接诊）。
+4. 角色层级：Receptionist=0, Doctor=1, Admin=10, SuperAdmin=100。
 
-
-**实现参考**: `src/Client/Desktop/Shell/Services/Bootstrap/ApplicationBootstrapper.cs`
+**实现参考**: `src/Client/Desktop/Shell/Services/Bootstrap/ApplicationBootstrapper.cs`、`RoleDefinitionBase` / `*RoleDefinition`、`ModuleLazyLoader`
 
 ---
 
@@ -110,29 +111,31 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ✅ 已实现
+**状态**: ⚠️ 部分实现（NavigateTo/角色菜单可用；**导航重构 N1–N4 待实施**——MedicalCaseNav 参数契约、MedicalCaseWorkspace 守卫扩权、VM 禁直呼 RequestNavigate、后退 fallback 主页。设计：[desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)）
 
 **作为** 医生，**我想要** 在功能模块间快速切换并能回退到上一页，**以便** 高效地在患者/医案/验方间流转而不丢失上下文。
 
 **验收标准**:
 
-- [ ] `NavigateTo(viewName, params)` → ContentRegion 显示目标视图
-- [ ] `NavigateBack()` → 返回上一视图（Alt+左箭头）
-- [ ] 导航历史最多 20 条，登出时清空
-- [ ] 导航参数正确传递到目标 ViewModel
-- [ ] 不同角色登录 → 菜单项按可见性矩阵显示/隐藏
+- [ ] `NavigateTo(viewName, params)` → ContentRegion 显示目标视图（唯一门面 `INavigationCoordinator`）
+- [ ] `NavigateBack()` → Journal 有历史返回上一页（Alt+左箭头）；**空历史 fallback 角色主页**
+- [ ] 导航历史/面包屑最多展示 20 条，登出时清空（含 Journal）
+- [ ] **导航参数契约成对**：生产方用 `MedicalCaseNav`/`RegistrationListNav`/`PatientManagementNav` 工厂，目标 VM `GetValue`/`ContainsKey` 消费；禁止只写不读
+- [ ] Doctor：ClinicalWorkspace「开始看诊」→ MedicalCaseWorkspace 且含患者上下文
+- [ ] Receptionist：StartVisit → MedicalCaseWorkspace（ViewRoleAccess 含 Receptionist）
+- [ ] 不同角色登录 → 菜单/侧栏按 ViewRoleAccess + RoleDefinition 可见性矩阵显示/隐藏（能隐藏不 toast）
 
 **业务规则**:
 
-1. 基于 Prism Region 导航（`NavigationCoordinator` 封装）。
-2. 全局快捷键：Ctrl+N 新建患者、Ctrl+S 保存、F5 刷新、Ctrl+P 打印。
+1. 基于 Prism Region 导航，**统一经 `INavigationCoordinator`**（ViewModel 禁止 `RegionManager.RequestNavigate`）。
+2. 全局快捷键：Ctrl+N 新建患者（Doctor/Receptionist/Admin）、Ctrl+Shift+C 仅 Doctor→ClinicalWorkspace、Alt+Left/Home 后退/主页。
 3. 主题切换：浅色/深色一键切换。
-4. 前进导航与面包屑已实现。
+4. 参数契约与 ViewRoleAccess 矩阵 SSOT 见 [desktop-ui-detailed-design.md §5](../07-ui-ux/desktop-ui-detailed-design.md#5-跨页数据流--导航契约)。
 
 **双模式差异**:
 模式差异：远程: 全部菜单可用；本地: 部分需服务端的菜单禁用
 
-**实现参考**: `NavigationCoordinator`、`MenuManager`、Prism Region 定义
+**实现参考**: `NavigationCoordinator`、`MenuManager`、`NavigationManager`、Prism Region 定义；架构测试 `ViewModels_MustNot_RequestNavigate_Directly` / `NavParams_ContractKeys_ConsumedByTargetViewModel`
 
 ---
 

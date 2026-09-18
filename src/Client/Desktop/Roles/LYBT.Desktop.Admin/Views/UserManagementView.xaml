@@ -3,15 +3,18 @@
 
     薄包装View，复用业务模块的UserMasterDetailControl
     支持 DefaultRoleFilter 导航参数（sysadmin 管理员账号管理）
+    参数消费：UserManagementViewModel.OnNavigatedTo
 -->
 <UserControl x:Class="LYBT.Desktop.Admin.Views.UserManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:prism="http://prismlibrary.com/"
              xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls;assembly=LYBT.Desktop.Users"
-             xmlns:vm="clr-namespace:LYBT.Desktop.Users.ViewModels;assembly=LYBT.Desktop.Users"
-             d:DataContext="{d:DesignInstance vm:UserMasterDetailViewModel}"
+             xmlns:vm="clr-namespace:LYBT.Desktop.Admin.ViewModels;assembly=LYBT.Desktop.Admin"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             d:DataContext="{d:DesignInstance vm:UserManagementViewModel}"
              mc:Ignorable="d">
     <!-- 视觉基线 v1：bg-warm 铺满 文字居中 -->
     <Grid Background="{DynamicResource SurfaceLevel0Brush}">
