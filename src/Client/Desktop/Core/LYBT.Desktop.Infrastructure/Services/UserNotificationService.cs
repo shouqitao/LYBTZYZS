@@ -1,4 +1,3 @@
-using System.Windows;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 
@@ -6,17 +5,16 @@ namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 用户通知服务实现 - UltraThink架构
-    /// 提供基于 WPF MessageBox 的简单用户通知功能
+    /// 统一委托 <see cref="IDialogManager"/>（Prism MDIX Dialog），禁止 System.Windows.MessageBox。
     /// Issue #840: 替代 ErrorHandlingServiceStub,提供真实实现
-    /// R-16: 所有 MessageBox.Show 经 IUiThreadDispatcher.Invoke 调度到 UI 线程，避免跨线程调用崩溃
     /// </summary>
     public class UserNotificationService : IUserNotificationService
     {
-        private readonly IUiThreadDispatcher _dispatcher;
+        private readonly IDialogManager _dialogManager;
 
-        public UserNotificationService(IUiThreadDispatcher dispatcher)
+        public UserNotificationService(IDialogManager dialogManager)
         {
-            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _dialogManager = dialogManager ?? throw new ArgumentNullException(nameof(dialogManager));
         }
 
         /// <summary>
@@ -35,65 +33,24 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// 显示错误消息
         /// </summary>
         public Task ShowErrorAsync(string message, string? title = null)
-        {
-            _dispatcher.Invoke(() =>
-            {
-                MessageBox.Show(
-                    message,
-                    title ?? "错误",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            });
-            return Task.CompletedTask;
-        }
+            => _dialogManager.ShowErrorAsync(message, title ?? "错误");
 
         /// <summary>
         /// 显示成功消息
         /// </summary>
         public Task ShowSuccessAsync(string message, string? title = null)
-        {
-            _dispatcher.Invoke(() =>
-            {
-                MessageBox.Show(
-                    message,
-                    title ?? "成功",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            });
-            return Task.CompletedTask;
-        }
+            => _dialogManager.ShowSuccessAsync(message, title ?? "成功");
 
         /// <summary>
         /// 显示警告消息
         /// </summary>
         public Task ShowWarningAsync(string message, string? title = null)
-        {
-            _dispatcher.Invoke(() =>
-            {
-                MessageBox.Show(
-                    message,
-                    title ?? "警告",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-            });
-            return Task.CompletedTask;
-        }
+            => _dialogManager.ShowWarningAsync(message, title ?? "警告");
 
         /// <summary>
         /// 显示确认对话框
         /// </summary>
         public Task<bool> ShowConfirmAsync(string message, string? title = null)
-        {
-            var result = _dispatcher.Invoke(() =>
-            {
-                return MessageBox.Show(
-                    message,
-                    title ?? "确认",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-            });
-
-            return Task.FromResult(result == MessageBoxResult.Yes);
-        }
+            => _dialogManager.ShowConfirmAsync(message, title ?? "确认");
     }
 }

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using LYBT.Desktop.Contracts.Services;
 using Prism.Commands;
 
 namespace LYBT.Desktop.Controls.Controls
@@ -138,32 +139,43 @@ namespace LYBT.Desktop.Controls.Controls
             }
 
             // Create wrapped command that checks IsDirty
+            // N6：确认对话框走 ICommonDialogService（Prism MDIX），禁止 MessageBox
             var wrappedCommand = new DelegateCommand(() =>
             {
                 if (IsDirty)
                 {
-                    // Show confirmation dialog
-                    var result = System.Windows.MessageBox.Show(
-                        "您有未保存的更改，确定要离开吗？",
-                        "确认离开",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (result == MessageBoxResult.No)
+                    var dialog = UiNotificationHost.Dialog;
+                    if (dialog is not null)
+                    {
+                        _ = ConfirmLeaveThenExecuteAsync(dialog, originalCommand);
                         return;
+                    }
+                    // 服务未装配时放行，避免永久卡死
                 }
 
-                // Execute original command
-                if (originalCommand is System.Windows.Input.ICommand cmd)
-                {
-                    if (cmd.CanExecute(null))
-                        cmd.Execute(null);
-                }
+                ExecuteOriginalCommand(originalCommand);
             });
 
             // 先登记哨兵再写 DP：写 DP 会重入 OnGoBackCommandChanged，由 ReferenceEquals 哨兵拦截
             _goBackWrapped = wrappedCommand;
             SetValue(GoBackCommandProperty, wrappedCommand);
+        }
+
+        private static async Task ConfirmLeaveThenExecuteAsync(ICommonDialogService dialog, ICommand originalCommand)
+        {
+            var confirmed = await dialog.ShowConfirmAsync(
+                "您有未保存的更改，确定要离开吗？",
+                "确认离开");
+            if (!confirmed)
+                return;
+
+            ExecuteOriginalCommand(originalCommand);
+        }
+
+        private static void ExecuteOriginalCommand(ICommand originalCommand)
+        {
+            if (originalCommand is System.Windows.Input.ICommand cmd && cmd.CanExecute(null))
+                cmd.Execute(null);
         }
 
         public ICommand SwitchToEditCommand

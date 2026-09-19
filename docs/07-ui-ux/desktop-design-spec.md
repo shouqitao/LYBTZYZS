@@ -692,7 +692,7 @@ AdminHomeView/ClinicalHomeView → 统计报表卡片
 | 快捷键 | 命令 | 用途 |
 |--------|------|------|
 | `Ctrl+N` | QuickAddPatientCommand | 快速新增患者 |
-| `Ctrl+Shift+C` | ShowHelpCommand | 帮助 |
+| `Ctrl+Shift+C` | ClinicalWorkspace（仅 Doctor） | 进入临床工作台（选患者后开始看诊） |
 | `Ctrl+OemComma` | ShowSettingsCommand | 设置 |
 | `Ctrl+M` | ToggleSidebarCommand | 侧边栏展开/收起 |
 | `Alt+Left` | NavigateBackCommand | 后退 |

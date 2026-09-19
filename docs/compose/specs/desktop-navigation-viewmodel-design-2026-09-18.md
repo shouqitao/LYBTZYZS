@@ -1,9 +1,10 @@
 # Desktop 导航架构详细设计（View/ViewModel 跳转修复）
 
-> 版本: v1.0 | 日期: 2026-09-18 | 状态: 设计待实施（需求/方案已对齐审查结论）
+> 版本: v1.0 | 日期: 2026-09-18 | 状态: 实施中——N1/N3/N4/N5 已实施；N2 参数消费已补齐；N6 对话框核心已收敛
 > 输入: [desktop-navigation-audit-2026-09-18.md](../reports/desktop-navigation-audit-2026-09-18.md)
 > 关联正式文档（实施后须同步）: [desktop-ui-detailed-design.md](../../07-ui-ux/desktop-ui-detailed-design.md)、[02-desktop.md](../../03-architecture/02-desktop.md)
 > 约束: 文档先行；0 错误 0 警告；外科手术式修改；禁止兼容层；权限变更同步双控制器树（若服务端策略调整）
+> **代码实施进度（2026-09 校准）**：N1（MedicalCaseNav 契约 + MedicalCaseWorkspace 守卫扩权 + **生产方工厂对齐**：PatientSelection/PendingQueue/CardReader → `MedicalCaseNav.ForExistingCase`）/ N3（VM 统一走 `INavigationCoordinator`）/ N4（后退 Journal 空 fallback 主页）/ N5（角色 RequiredModules 含 Home 模块）已实施；N2 参数消费已补齐（RegistrationList Action/PatientId/PatientName + PatientManagement Action/SearchKeyword）；N6 对话框核心已收敛（UserNotificationService/NotificationService 委托 IDialogManager/IToastService；Control 经 `UiNotificationHost`；ToastService 无主窗口 MessageBox 兜底保留）
 
 ---
 
@@ -364,7 +365,7 @@ Toast 轻提示
 - [ ] Doctor：ClinicalWorkspace 选患者 → 开始看诊 → 工作台正确；返回工作台选中保留
 - [ ] Admin/Sysadmin：卡片与侧栏全部可达；无权快捷键不出现
 - [ ] 后退按钮：有历史回上一页；无历史回角色主页
-- [ ] 无 MessageBox 业务确认；对话框 MDIX 风格
+- [x] 无 MessageBox 业务确认；对话框 MDIX 风格（核心路径已收敛；ToastService 无主窗口 MessageBox 兜底保留）
 - [ ] `dotnet build --no-incremental` 0 错误 0 警告
 - [ ] `dotnet test tests/LYBT.Tests.Architecture/` 全绿（含新增导航守卫测试）
 - [ ] 正式文档与需求状态列已同步（代码-文档一致性红线）

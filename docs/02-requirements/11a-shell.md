@@ -56,16 +56,16 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ⚠️ 部分实现（登录后按 RoleRegistry.HomeViewName 导航已对齐；**RequiredModules 缺 Home 所属模块**待 N5——Doctor/Receptionist 的 ClinicalModule 未写入 RequiredModules，首屏依赖懒加载；设计见 [desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md) §2.3）
+**状态**: ✅ N5 已实现（登录后按 RoleRegistry.HomeViewName 导航已对齐；RequiredModules 已写入 Home 所属模块——Doctor/Receptionist/SuperAdmin/Admin 均含 `ClinicalModule`，架构测试 `RoleRequiredModules_ContainHomeViewModule` 入 `tests/LYBT.Tests.Architecture/`；设计见 [desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md) §2.3）
 
 **作为** 用户，**我想要** 登录后系统按我的角色自动加载对应功能模块，**以便** 我直接进入工作台而不需手动配置，且无越权菜单。
 
 **验收标准**:
 
-- [ ] Admin 登录 → 加载管理模块，导航到 `AdminHomeView`
-- [ ] Doctor 登录 → 加载临床模块，导航到 **`ClinicalWorkspaceView`（Doctor 首页 SSOT，非 ClinicalHome）**
-- [ ] Receptionist 登录 → 加载 Registration + **ClinicalModule（ReceptionistHome 薄包装所在模块）**，导航到 `ReceptionistHomeView`
-- [ ] SuperAdmin 登录 → 导航到 `SysadminHomeView`；矩阵所需 Clinical/Reports/MedicalCase 模块可加载（RequiredModules 或失败可见懒加载）
+- [x] Admin 登录 → 加载管理模块，导航到 `AdminHomeView`（RequiredModules 含 ClinicalModule）
+- [x] Doctor 登录 → 加载临床模块，导航到 **`ClinicalWorkspaceView`（Doctor 首页 SSOT，非 ClinicalHome）**（RequiredModules 含 ClinicalModule ✅）
+- [x] Receptionist 登录 → 加载 Registration + **ClinicalModule（ReceptionistHome 薄包装所在模块）**，导航到 `ReceptionistHomeView`（RequiredModules 含 ClinicalModule ✅）
+- [x] SuperAdmin 登录 → 导航到 `SysadminHomeView`；矩阵所需 Clinical/Reports/MedicalCase 模块可加载（RequiredModules 含 ClinicalModule ✅）
 - [ ] 登出 → 清除会话与导航历史（含 Journal），返回登录页
 
 **业务规则**:
@@ -111,7 +111,7 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ⚠️ 部分实现（NavigateTo/角色菜单可用；**导航重构 N1–N4 待实施**——MedicalCaseNav 参数契约、MedicalCaseWorkspace 守卫扩权、VM 禁直呼 RequestNavigate、后退 fallback 主页。设计：[desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)）
+**状态**: ⚠️ 部分实现（导航切片 N1/N3/N4/N5 已落地✅——N1 MedicalCaseNav 参数契约 + MedicalCaseWorkspace 守卫扩权、N3 VM 禁直呼 RequestNavigate 统一走 `INavigationCoordinator`、N4 后退 Journal 空 fallback 角色主页、N5 角色 RequiredModules 对齐；**N1 生产方补齐✅**：PatientSelection / PendingQueue / CardReader 已改 `MedicalCaseNav.ForExistingCase`，ReceptionistHome 新建患者改 `PatientManagementNav.AddNew()`；**N2 参数消费✅**：RegistrationList Action/PatientId/PatientName 预填 + PatientManagement Action/SearchKeyword 均已消费；**N6 对话框核心已收敛✅**：UserNotificationService→IDialogManager、NotificationService→IDialogManager+IToastService、Control/VM 层 MessageBox 已替换（ToastService 仍保留无主窗口时 MessageBox 兜底）。设计：[desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)）
 
 **作为** 医生，**我想要** 在功能模块间快速切换并能回退到上一页，**以便** 高效地在患者/医案/验方间流转而不丢失上下文。
 
@@ -661,4 +661,6 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| v1.1 | 2026-09-18 | US-SHELL-003 状态→✅ N5 已实现（RequiredModules 含 ClinicalModule，AC 相关项标 ✅）；US-SHELL-005 状态细分——N1/N3/N4/N5✅ / N2⚠️部分完成 / N6🔴待收敛 | 前端设计文档漂移 P0：状态列与导航切片代码实施进度对齐 |
+| v1.2 | 2026-09-18 | US-SHELL-005 进度再校准——N1 生产方 MedicalCaseNav 工厂补齐✅、N2 参数消费✅、N6 对话框核心收敛✅（UserNotificationService/NotificationService/Control/VM MessageBox 已替换；ToastService 兜底保留） | 导航参数契约迁移 P1 + N6 MessageBox 清理代码批次后状态列同步 |
 | v1.0 | 2026-06-28 | Split from 11-platform.md into focused module | 文档结构优化 S4 批次 3 |

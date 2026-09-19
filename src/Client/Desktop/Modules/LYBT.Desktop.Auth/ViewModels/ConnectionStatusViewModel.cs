@@ -181,7 +181,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
             if (!result.Succeeded)
             {
                 Logger.LogWarning("[VM] Login.SwitchToLocal blocked - {ErrorCode}: {Message}", result.ErrorCode, result.Message);
-                ShowSwitchBlockedMessage(result);
+                await ShowSwitchBlockedMessageAsync(result);
                 return;
             }
 
@@ -213,7 +213,7 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
             if (!switchResult.Succeeded)
             {
                 Logger.LogWarning("[VM] Login.SwitchToRemote blocked - {ErrorCode}: {Message}", switchResult.ErrorCode, switchResult.Message);
-                ShowSwitchBlockedMessage(switchResult);
+                await ShowSwitchBlockedMessageAsync(switchResult);
                 return;
             }
 
@@ -258,15 +258,12 @@ public partial class ConnectionStatusViewModel : NavigableViewModelBase
 
     /// <summary>
     /// 切换被守卫阻断时的用户提示（B2 US-SHELL-007: ERR-70506 等）
+    /// N6：警告走 UserNotificationService（Prism MDIX Dialog），禁止 MessageBox
     /// </summary>
-    private static void ShowSwitchBlockedMessage(ModeSwitchResult result)
-    {
-        System.Windows.MessageBox.Show(
+    private Task ShowSwitchBlockedMessageAsync(ModeSwitchResult result)
+        => UserNotificationService.ShowWarningAsync(
             result.Message ?? "切换失败",
-            "无法切换模式",
-            System.Windows.MessageBoxButton.OK,
-            System.Windows.MessageBoxImage.Warning);
-    }
+            "无法切换模式");
 
     /// <summary>
     /// 重试 API 健康检查

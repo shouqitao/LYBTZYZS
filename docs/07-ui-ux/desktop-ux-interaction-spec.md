@@ -24,7 +24,7 @@
 | 快捷键 | 命令（绑定） | 实际行为（`Shell/Services/MenuManager.cs`） |
 |--------|------------|------------------------------------------|
 | `Ctrl+N` | `QuickAddPatientCommand` | 导航 `PatientManagementView` 并携带 `Action = "AddNew"`，成功后 Toast「已切换到患者管理页面，准备添加新患者」 |
-| `Ctrl+Shift+C` | `QuickStartMedicalCaseCommand` | 导航 `MedicalCaseWorkspaceView`，Toast「已开始诊疗流程，请选择患者」 |
+| `Ctrl+Shift+C` | `QuickStartMedicalCaseCommand` | 导航 `ClinicalWorkspaceView（仅 Doctor）`，Toast「已开始诊疗流程，请选择患者」 |
 | `F1` | `ShowHelpCommand` | Toast 展示快捷键说明（Ctrl+N / Ctrl+Shift+C / F1 / Alt+F4 / Ctrl+,） |
 | `Ctrl+,`（`Key="OemComma"`） | `ShowSettingsCommand` | Toast「用户设置功能将在未来版本中实现」（**占位实现**；个人资料入口是顶栏按钮 `EditProfileCommand`） |
 | `Ctrl+M` | `ToggleSidebarCommand` | `ISidebarStateManager.Toggle()`——与侧栏汉堡按钮同源 |
@@ -173,10 +173,11 @@ CanCloseDialog()（默认 true）→ OnDialogClosed() ──log──► OnDialo
 
 | 服务 | 实现方式 | 典型场景 |
 |------|---------|---------|
-| `ICommonDialogService` | `System.Windows.MessageBox`（Warning/Error/YesNo/YesNoCancel） | Shell 层警告与确认 |
-| `IDialogManager` | Prism `IDialogService.ShowDialog("MessageDialog"/"ConfirmationDialog")` | 风格统一的成功/失败/确认 |
-| `IUserNotificationService` | `MessageBox`（经 `ClientErrorMessageMapper` 转文案） | 菜单命令的失败提示 |
-| `ShellDialogHelper` | 成功/错误 → `IToastService`；警告/确认 → `ICommonDialogService` | Shell 聚合入口 |
+| `ICommonDialogService` | Prism `IDialogService.ShowDialog("MessageDialog"/"ConfirmationDialog")`（N6：已去 MessageBox） | 业务确认与警告；`TripleChoiceResult` 三选一 |
+| `IDialogManager` | Prism `IDialogService.ShowDialog("MessageDialog"/"ConfirmationDialog")` | 风格统一的成功/失败/确认；`IUserNotificationService`/`INotificationService` 底层委托 |
+| `IUserNotificationService` | `IDialogManager`（N6：禁止 MessageBox） + `ClientErrorMessageMapper` 转文案 | 菜单命令的失败提示 |
+| `UiNotificationHost` | 静态宿主（`ViewModelServices` 装配） | Control code-behind（BaseDetailContainer/HerbItemControl）无 DI 场景 |
+| `ShellDialogHelper` | 成功/错误 → `IToastService`；警告/确认 → `IDialogManager`/`ICommonDialogService` | Shell 聚合入口 |
 
 > 不存在名为 `DialogService` 的类，也不存在 `DialogServiceExtensions`（与部分既有文档描述不符）。
 

@@ -7,7 +7,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
 using LYBT.Desktop.Contracts.Enums;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -380,15 +380,13 @@ public partial class CardReaderViewModel : ChildViewModelBase
 
     private void NavigateToWorkspace(Guid medicalCaseId, PatientDetailDto patientDetail)
     {
-        var parameters = new Dictionary<string, object>
-        {
-            { "MedicalCaseId", medicalCaseId },
-            { "CurrentPatient", patientDetail },
-            { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
-            // N4：读卡器嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
-            { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
-        };
+        // 生产方一律走 MedicalCaseNav 工厂；N4：读卡器嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+        var parameters = MedicalCaseNav.ForExistingCase(
+            medicalCaseId,
+            patientDetail,
+            WorkspaceMode.Clinical,
+            EditState.Editing,
+            returnView: ViewNames.ClinicalWorkspace);
         _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
     }
 

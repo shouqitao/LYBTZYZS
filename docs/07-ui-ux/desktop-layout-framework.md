@@ -162,6 +162,8 @@ children = [左侧导航, 右列]
 | Sysadmin | 首页 / 备份管理 / 部署管理 / 日志级别 / 安全审计 / 个人资料 | home / backup / deploy / tune / security / person |
 | 共用底部 | 深色模式 / 退出 | dark_mode / logout |
 
+> ⚠️ 代码现状每角色 3 项（主页+2 业务）；此处 4~8 项为设计稿目标态。以 NavigationManager.cs 为准，产品决策后二选一对齐。
+
 ### 底部固定区（左侧栏底部）
 
 | 顺序 | name | 属性 |

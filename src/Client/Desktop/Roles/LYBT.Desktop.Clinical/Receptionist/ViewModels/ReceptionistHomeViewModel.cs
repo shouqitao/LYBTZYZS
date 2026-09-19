@@ -151,11 +151,8 @@ public partial class ReceptionistHomeViewModel : NavigableViewModelBase
     [RelayCommand]
     private void CreateNewPatient()
     {
-        // 前台文案用 Create；消费端 Action=="AddNew"|"Create" 均进入新建模式
-        NavigateToView(ViewNames.PatientManagement, new Dictionary<string, object>
-        {
-            { PatientManagementNav.Action, "Create" }
-        });
+        // 生产方一律走 PatientManagementNav 工厂（禁止兼容层）；消费端 Action=="AddNew"|"Create" 均进入新建模式
+        NavigateToView(ViewNames.PatientManagement, PatientManagementNav.AddNew());
     }
 
     [RelayCommand]

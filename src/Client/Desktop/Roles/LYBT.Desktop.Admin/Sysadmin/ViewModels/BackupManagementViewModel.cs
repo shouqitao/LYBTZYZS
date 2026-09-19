@@ -91,11 +91,17 @@ public partial class BackupManagementViewModel : NavigableViewModelBase
         }
     }
 
-    /// <summary>恢复所选备份（T7-2: 确认弹框在 View 层，此处执行恢复）</summary>
+    /// <summary>恢复所选备份（N6：确认弹框下沉 VM，走 CommonDialogService，View 层无 MessageBox）</summary>
     [RelayCommand]
     private async Task RestoreAsync()
     {
         if (SelectedBackup == null || IsRestoring) return;
+
+        var confirmed = await CommonDialogService.ShowConfirmAsync(
+            $"将覆盖当前数据库并恢复为备份「{SelectedBackup.FileName}」，是否继续？",
+            "恢复确认");
+        if (!confirmed) return;
+
         IsRestoring = true;
         StatusMessage = "正在恢复...";
         try

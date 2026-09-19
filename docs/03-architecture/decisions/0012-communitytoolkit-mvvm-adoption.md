@@ -23,6 +23,12 @@ Accepted
 - 禁止使用 Prism 的 BindableBase/DelegateCommand（仅限新代码）
 - 旧代码逐步迁移，不一次性重构
 
+### 已知例外（有意保留）
+- Shell 服务层（MenuManager/NavigationManager/StatusBarManager）的手写 DelegateCommand
+- NavigationItem 数据构造逻辑
+- DP 包装命令
+详细依据见 docs/07-ui-ux/viewmodel-layer-design.md §八.6
+
 ## 关联 US
 
 无直接关联（Desktop ViewModel 基础设施 ADR，`[ObservableProperty]` / `[RelayCommand]` 源生成器影响全部 Desktop 业务模块 ViewModel，不绑定单一 US；Prism 的 DI/导航仍保留）。

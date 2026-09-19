@@ -127,12 +127,11 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     [RelayCommand]
     private async Task RestartLocalServiceAsync()
     {
-        var confirm = System.Windows.MessageBox.Show(
+        // N6：确认对话框走 CommonDialogService（Prism MDIX），禁止 MessageBox
+        var confirmed = await CommonDialogService.ShowConfirmAsync(
             "将重启本地内嵌服务（30 秒后生效，本地模式短暂不可用）。确认继续？",
-            "确认重启本地服务",
-            System.Windows.MessageBoxButton.OKCancel,
-            System.Windows.MessageBoxImage.Warning);
-        if (confirm != System.Windows.MessageBoxResult.OK)
+            "确认重启本地服务");
+        if (!confirmed)
             return;
 
         try

@@ -28,9 +28,9 @@
 └─────────────────────────────────────────────────────────────────────────────┘
                     ▲ 未被业务捕获的异常
 ┌ 第 2 层：服务与提示（面向用户，落点由调用方选择） ───────────────────────────┐
-│ IToastService（3000ms / 错误 4000ms） │ ICommonDialogService（MessageBox）     │
+│ IToastService（3000ms / 错误 4000ms） │ ICommonDialogService（Prism Dialog）  │
 │ IDialogManager（Prism MessageDialog / ConfirmationDialog）                    │
-│ IUserNotificationService（MessageBox + ClientErrorMessageMapper 文案）        │
+│ IUserNotificationService（IDialogManager + ClientErrorMessageMapper 文案）    │
 │ ShellDialogHelper（成功/错误→Toast；警告/确认→CommonDialogService）           │
 └─────────────────────────────────────────────────────────────────────────────┘
                     ▲ 业务异常经 ClientErrorMessageMapper 转用户文案
@@ -80,9 +80,11 @@
 
 | 服务 | 实现载体 | 适用 |
 |------|---------|------|
-| `ICommonDialogService` | `System.Windows.MessageBox`（Warning / Error / YesNo / YesNoCancel） | Shell 层警告与确认；`TripleChoiceResult { Yes, No, Cancel }` 支持三选一 |
-| `IDialogManager` | Prism `IDialogService` → `MessageDialog`（type=success/error/warning）、`ConfirmationDialog` | 需要与设计系统一致的模态框 |
-| `IUserNotificationService` | `MessageBox` + `ClientErrorMessageMapper` 文案 | 菜单命令、导航失败等系统提示 |
+| `ICommonDialogService` | Prism `IDialogService` → `MessageDialog` / `ConfirmationDialog`（N6：已去 MessageBox） | 业务确认与警告；`TripleChoiceResult { Yes, No, Cancel }` 支持三选一 |
+| `IDialogManager` | Prism `IDialogService` → `MessageDialog`（type=success/error/warning）、`ConfirmationDialog` | 需要与设计系统一致的模态框；`IUserNotificationService`/`INotificationService` 底层委托 |
+| `IUserNotificationService` | `IDialogManager`（N6：委托 Prism Dialog，禁止 MessageBox） + `ClientErrorMessageMapper` 文案 | 菜单命令、导航失败等系统提示 |
+| `INotificationService` | 消息→`IToastService`；确认→`IDialogManager`（N6） | 通知事件 + Toast/确认 |
+| `UiNotificationHost` | 静态宿主，Shell 经 `ViewModelServices` 装配 | Control code-behind（BaseDetailContainer/HerbItemControl）无 DI 场景 |
 | `ShellDialogHelper` | 成功/错误 → Toast；警告 → `ShowWarningAsync`；确认 → `ShowConfirmAsync` | Shell 聚合；服务缺失时仅记日志并返回 `false` |
 
 ---

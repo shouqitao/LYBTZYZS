@@ -1,22 +1,28 @@
-using System.Windows;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services.Notifications
 {
     /// <summary>
     /// 通知服务实现 - 简化版本
-    /// 遵循"适度设计、拒绝过度工程"原则，提供基本的消息通知功能
+    /// 遵循"适度设计、拒绝过度工程"原则。
+    /// N6：消息走 <see cref="IToastService"/>（ADR-0003），确认走 <see cref="IDialogManager"/>；禁止 MessageBox。
     /// </summary>
     public class NotificationService : INotificationService
     {
         private readonly ILogger<NotificationService> _logger;
-        private readonly IUiThreadDispatcher _dispatcher;
+        private readonly IDialogManager _dialogManager;
+        private readonly IToastService _toastService;
 
-        public NotificationService(ILogger<NotificationService> logger, IUiThreadDispatcher dispatcher)
+        public NotificationService(
+            ILogger<NotificationService> logger,
+            IDialogManager dialogManager,
+            IToastService toastService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _dialogManager = dialogManager ?? throw new ArgumentNullException(nameof(dialogManager));
+            _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         }
 
         /// <summary>
@@ -87,12 +93,7 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         {
             try
             {
-                var result = await _dispatcher.InvokeAsync(() =>
-                {
-                    var messageBoxResult = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    return messageBoxResult == MessageBoxResult.Yes;
-                });
-
+                var result = await _dialogManager.ShowConfirmAsync(message, title);
                 _logger.LogInformation("用户确认对话框结果: {Result}", result);
                 return result;
             }
@@ -104,7 +105,7 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
         }
 
         /// <summary>
-        /// 显示通知的核心方法
+        /// 显示通知的核心方法 — 事件 + Toast（替代 MessageBox）
         /// </summary>
         private void ShowNotification(string message, NotificationType type, string title)
         {
@@ -124,12 +125,25 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
                     Type = type
                 });
 
-                // 在UI线程显示MessageBox
-                _dispatcher.Invoke(() =>
+                // ADR-0003：轻量 Toast 替代 MessageBox
+                switch (type)
                 {
-                    var messageBoxImage = GetMessageBoxImage(type);
-                    MessageBox.Show(message, title, MessageBoxButton.OK, messageBoxImage);
-                });
+                    case NotificationType.Info:
+                        _toastService.ShowInfo(message);
+                        break;
+                    case NotificationType.Success:
+                        _toastService.ShowSuccess(message);
+                        break;
+                    case NotificationType.Warning:
+                        _toastService.ShowWarning(message);
+                        break;
+                    case NotificationType.Error:
+                        _toastService.ShowError(message);
+                        break;
+                    default:
+                        _toastService.ShowInfo(message);
+                        break;
+                }
 
                 _logger.LogInformation("显示{Type}消息: {Message}", type, message);
             }
@@ -137,21 +151,6 @@ namespace LYBT.Desktop.Infrastructure.Services.Notifications
             {
                 _logger.LogError(ex, "显示通知时发生异常: {Message}", message);
             }
-        }
-
-        /// <summary>
-        /// 获取MessageBox图标
-        /// </summary>
-        private static MessageBoxImage GetMessageBoxImage(NotificationType type)
-        {
-            return type switch
-            {
-                NotificationType.Info => MessageBoxImage.Information,
-                NotificationType.Success => MessageBoxImage.Information,
-                NotificationType.Warning => MessageBoxImage.Warning,
-                NotificationType.Error => MessageBoxImage.Error,
-                _ => MessageBoxImage.None
-            };
         }
     }
 }

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Enums;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.ViewModels.Composition;
@@ -284,15 +284,13 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 return;
             }
 
-            var parameters = new Dictionary<string, object>
-            {
-                { "MedicalCaseId", createResult.Data },
-                { "CurrentPatient", patientDetail },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
-                // N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
-                { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
-            };
+            // 生产方一律走 MedicalCaseNav 工厂；N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+            var parameters = MedicalCaseNav.ForExistingCase(
+                createResult.Data,
+                patientDetail,
+                WorkspaceMode.Clinical,
+                EditState.Editing,
+                returnView: ViewNames.ClinicalWorkspace);
 
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到新医案：{MedicalCaseId}", createResult.Data);
@@ -332,15 +330,13 @@ public partial class PendingQueueViewModel : ChildViewModelBase
                 return;
             }
 
-            var parameters = new Dictionary<string, object>
-            {
-                { "MedicalCaseId", pendingCase.MedicalCaseId.Value },
-                { "CurrentPatient", patientDetail },
-                { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-                { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
-                // N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
-                { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.ClinicalWorkspace }
-            };
+            // 生产方一律走 MedicalCaseNav 工厂；N4：队列嵌在 ClinicalWorkspace，返回目标 = ClinicalWorkspace
+            var parameters = MedicalCaseNav.ForExistingCase(
+                pendingCase.MedicalCaseId.Value,
+                patientDetail,
+                WorkspaceMode.Clinical,
+                EditState.Editing,
+                returnView: ViewNames.ClinicalWorkspace);
 
             _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
             Logger.LogInformation("已导航到挂起医案：{MedicalCaseId}", pendingCase.MedicalCaseId.Value);

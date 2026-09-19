@@ -83,7 +83,7 @@
                             <Button Content="刷新" Command="{Binding RefreshCommand}"
                                     Style="{StaticResource MaterialDesignOutlinedButton}" />
                             <Button Content="恢复所选备份" Margin="16,0,0,0"
-                                    Click="RestoreButton_Click"
+                                    Command="{Binding RestoreCommand}"
                                     Style="{StaticResource MaterialDesignRaisedButton}" />
                         </StackPanel>
                     </StackPanel>

@@ -153,12 +153,11 @@ public partial class ServerConfigSectionViewModel : NavigableViewModelBase
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task RestartServerAsync()
     {
-        var confirm = System.Windows.MessageBox.Show(
+        // N6：确认对话框走 CommonDialogService（Prism MDIX），禁止 MessageBox
+        var confirmed = await CommonDialogService.ShowConfirmAsync(
             "将重启远程服务器（30 秒后生效，所有在线用户会短暂断连）。确认继续？",
-            "确认重启服务",
-            System.Windows.MessageBoxButton.OKCancel,
-            System.Windows.MessageBoxImage.Warning);
-        if (confirm != System.Windows.MessageBoxResult.OK)
+            "确认重启服务");
+        if (!confirmed)
             return;
 
         try

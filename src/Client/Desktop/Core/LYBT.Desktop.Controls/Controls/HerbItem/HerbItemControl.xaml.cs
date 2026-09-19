@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
@@ -415,8 +416,9 @@ namespace LYBT.Desktop.Controls.Controls.HerbItem
             }
             else
             {
-                MessageBox.Show($"药材 \"{herbName}\" 不存在，请从建议列表中选择或输入正确的药材名称。",
-                    "药材不存在", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // N6：警告走 Toast（ADR-0003），禁止 MessageBox
+                UiNotificationHost.Toast?.ShowWarning(
+                    $"药材 \"{herbName}\" 不存在，请从建议列表中选择或输入正确的药材名称。");
                 HerbNameTextBox.SelectAll();
                 e.Handled = true;
             }
@@ -464,16 +466,25 @@ namespace LYBT.Desktop.Controls.Controls.HerbItem
             var herbName = _viewModel?.HerbName;
             var displayName = string.IsNullOrEmpty(herbName) ? "此药材" : $"{herbName}";
 
-            var result = MessageBox.Show(
-                $"确定要删除{displayName}吗？",
-                "确认删除",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            // N6：确认走 ICommonDialogService（Prism MDIX），禁止 MessageBox
+            var dialog = UiNotificationHost.Dialog;
+            if (dialog is null)
             {
+                // 服务未装配时按菜单意图直接删除（降级）
                 DeleteRequested?.Invoke(this, EventArgs.Empty);
+                return;
             }
+
+            _ = ConfirmDeleteAsync(dialog, displayName);
+        }
+
+        private async Task ConfirmDeleteAsync(ICommonDialogService dialog, string displayName)
+        {
+            var confirmed = await dialog.ShowConfirmAsync(
+                $"确定要删除{displayName}吗？",
+                "确认删除");
+            if (confirmed)
+                DeleteRequested?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

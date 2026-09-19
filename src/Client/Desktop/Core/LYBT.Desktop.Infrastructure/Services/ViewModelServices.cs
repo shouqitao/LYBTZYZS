@@ -45,6 +45,9 @@ namespace LYBT.Desktop.Infrastructure.Services
             RoleRegistry = roleRegistry ?? throw new ArgumentNullException(nameof(roleRegistry));
             UiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
             NavigationCoordinator = navigationCoordinator ?? throw new ArgumentNullException(nameof(navigationCoordinator));
+
+            // N6：装配 Control code-behind 通知宿主（BaseDetailContainer / HerbItemControl 等无 DI 构造）
+            UiNotificationHost.Set(UserNotificationService, ToastService, CommonDialogService);
         }
     }
 }

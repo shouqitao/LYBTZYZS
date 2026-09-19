@@ -176,9 +176,9 @@
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 | WebAPI | Desktop |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
 | US-SHELL-001 | Must | ADR-0006/0007 | Flow 4 | App.xaml.cs 启动管线 | App.xaml.cs:41 | S1 | ✅ 已实现 | N/A | ✅ |
-| US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | ✅ 已实现（角色模块加载 + LoginCoordinator 死代码已清——C7 删 HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics，2026-08-09 实际已处理，状态列 2026-08-11 校准） | N/A | ✅ |
+| US-SHELL-003 | Must | ADR-0006/0007 | Flow 4 | ApplicationBootstrapper | ApplicationBootstrapper.cs:35 | — | ✅ 已实现（N5：角色 RequiredModules 含 ClinicalModule——Home 模块对齐；LoginCoordinator 死代码已清——C7 删 HandleLoginSuccessAsync/GetDiagnostics/LoginFlowDiagnostics） | N/A | ✅ |
 | US-SHELL-004 | Could | ADR-0007 | — | AccountSettingsControl | AccountSettingsControl | — | ✅ 已实现 | N/A | ✅ |
-| US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ✅ 已实现 | N/A | ✅ |
+| US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ⚠️ 部分实现（N1/N2/N3/N4/N5 已实施✅——MedicalCaseNav 契约生产方工厂对齐/参数消费补齐/VM 禁直呼 RequestNavigate/后退 fallback 主页/角色菜单矩阵；N6 对话框核心已收敛✅——UserNotificationService/NotificationService/Control/VM MessageBox 已替换） | N/A | ⚠️ |
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ⚠️ 部分实现（双模路由✅/NO_REMOTE_URL 阻断✅；ERR-70506 未完成医案守卫仅日志未阻断——2026-09-14 E2E 取证 `ModeSwitchE2ETests`） | ⚠️ | ✅ |
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
@@ -281,14 +281,14 @@
 | MC | 20 | 17 | 0 | 3 | 0 | 0 |
 | REG | 8 | 7 | 0 | 0 | 1 | 0 |
 | PRINT | 4 | 4 | 0 | 0 | 0 | 0 |
-| Shell | 20 | 5 | 1 | 1 | 6 | 0 |
+| Shell | 20 | 4 | 2 | 1 | 6 | 0 |
 | CFG | 6 | 6 | 0 | 0 | 0 | 0 |
 | ERR | 8 | 6 | 2 | 0 | 0 | 0 |
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
 | REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
-| **合计** | **154** | **142** | **2** | **0** | **7** | **0** |
+| **合计** | **154** | **141** | **3** | **0** | **7** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 
@@ -303,6 +303,8 @@
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
+| 2026-09-18 | **v1.13 前端设计文档漂移 P0 状态同步**：US-SHELL-003 状态列→✅ N5 已实现（RequiredModules 含 ClinicalModule）；US-SHELL-005 状态列→⚠️ 部分实现（N1/N3/N4/N5 已实施、N2 参数消费部分完成、N6 对话框待收敛）；Shell/合计统计同步（✅-1 ⚠️+1） | 代码-文档一致性红线：导航切片代码落地后需求状态列滞后 |
+| 2026-09-18 | **v1.14 导航参数契约 P1 + N6 MessageBox 清理后状态再校准**：US-SHELL-005 更新为 N1 生产方工厂补齐✅ / N2 参数消费✅ / N6 对话框核心收敛✅（ToastService 兜底保留） | 代码批次后状态列同步 |
 | 2026-08-20 | **v1.12 R15/R16 修复**：① Shell 节标题 14→20（实际 SHELL-001~025 活跃 20 行）；② 统计汇总表 Shell 13→20、合计 151→154；③ 覆盖描述 151→154 | R15/R16 审计结论：PRD/矩阵 US 总数矛盾修复 |
 | 2026-08-19 | **v1.11 P2 修复（.hermes-task-p2-fixes-doc-sync）**：① **权限口径对齐（T3）**——药材/验方 `batch-import`/`import-template`/`export`/`export-all` 双端补显式 `[Authorize(Policy=AdminOrSuperAdmin)]`（对齐患者 `batch-import` Admin口径；原类级 `DoctorOrAdmin` 放行 Doctor 导入/导出）；② **验方导出筛选参数对齐 + 明细补全（T5）**——服务端 `FormulaExport` 参数名 `keyword`→`category` 对齐客户端 `IFormulaApi:71` `?category=`（原传参永不生效）；导出 DTO 由 `List<FormulaListDto>`→`List<FormulaDetailDto>` 含 `Herbs` 明细（US-FORM-013 每行含药材组成）；`ICatalogQueryService` 扩展 `ExportDetailsAsync` + `GetPagedAsync(category)` 直通仓储 `Category` 字段；③ **文档同步（T7）**——`06-formulas.md` US-FORM-013 ⚠️→✅ + 标题“导出 Excel”→“导出 JSON”；`13-traceability-matrix.md` FORM-013 ⚠️→✅（142/2）；`13c-current-status.md` 修正药材 export“双端”表述（#112 此前不成立注记 + 新增 #130 P2 行） | 任务书 .hermes-task-p2-fixes-doc-sync.md（desktop-deep-review P2 结论） |
 | 2026-08-19 | **v1.10 P1 修复（desktop-deep-review 派单）**：① 药材 export/import-template/export-all 双端补端点——Remote CatalogController 新増 `GET /herbs/export`（筛选导出，对齐患者；此前 Desktop 契约调 /export 而服务端只有 /export-all → 404）；LocalWebAPI 补 `GET /herbs/import-template`/`/export`/`/export-all`（此前缺失 → 本地模式 404）；② 验方模板 DTO 对齐——FormulaImportItemDto 补 Category（实体/Factory 已支持，导入分类不再静默丢弃）+ 模板 Example.Herbs 改对象数组 [{HerbName,Dosage,Unit}]（照抄模板此前必解析失败）；③ 同类路由修复（新发现）：LocalWebAPI 验方 16 个 action 路由模板缺前导 `/` → 属性路由与类级 herbs 前缀拼接成 /api/v1/herbs/api/v1/formulas/*（离线模式验方全操作 404）——对齐 Remote CATALOG-ROUTE-FIX 先例改绝对路径；④ 新增契约-端点路由对齐守卫测试（ImportExportRouteParityTests——Refit 路径 ↔ Remote/Local 路由表反射比对）+ ImportExportJsonTests/LocalImportExportJsonTests 补药材断言；⑤ 修正 HERB-007/013 Desktop ⚠️→✅（修复后成立）；FORM-013 Desktop ✅→⚠️（导出缺药材组成明细 + 分类筛选参数对齐 P2 待办）；⑥ 需求文档：US-PAT-011/012 状态 🔧→✅、US-HERB-007/013 验收标准去 Excel 残留、删虚构接口 IHerbImportExportService/IFormulaImportExportService、US-FORM-013 删 AllowAnonymous 矛盾规则 | 任务书 .hermes-task-p1-fixes.md（源自 desktop-deep-code-review-2026-08-19 报告 P1/P2 结论） |

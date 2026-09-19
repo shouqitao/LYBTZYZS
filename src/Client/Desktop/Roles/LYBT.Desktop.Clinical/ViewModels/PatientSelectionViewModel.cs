@@ -5,7 +5,7 @@ using LYBT.Desktop.Infrastructure.CardReader.Integration;
 using LYBT.Desktop.Infrastructure.CardReader.Services;
 using LYBT.Desktop.Clinical.ViewModels.Workspace;
 using LYBT.Desktop.Contracts.Enums;
-using LYBT.Desktop.Contracts.Models;
+using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -412,15 +412,13 @@ public partial class PatientSelectionViewModel : NavigableViewModelBase, IWorksp
     /// </summary>
     private void NavigateToMedicalCase(Guid medicalCaseId)
     {
-        var parameters = new Dictionary<string, object>
-        {
-            { "MedicalCaseId", medicalCaseId },
-            { "CurrentPatient", PatientDetail! },
-            { MedicalCaseNavigationParameters.WorkspaceModeKey, WorkspaceMode.Clinical },
-            { MedicalCaseNavigationParameters.InitialEditStateKey, EditState.Editing },
-            // N4：返回目标 = PatientSelection（KeepAlive 恢复选中患者）
-            { MedicalCaseNavigationParameters.ReturnViewKey, ViewNames.PatientSelection }
-        };
+        // 生产方一律走 MedicalCaseNav 工厂（禁止兼容层）；N4：返回目标 = PatientSelection
+        var parameters = MedicalCaseNav.ForExistingCase(
+            medicalCaseId,
+            PatientDetail!,
+            WorkspaceMode.Clinical,
+            EditState.Editing,
+            returnView: ViewNames.PatientSelection);
 
         Logger.LogInformation("导航到医案工作区：{MedicalCaseId}", medicalCaseId);
         _ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, parameters);
