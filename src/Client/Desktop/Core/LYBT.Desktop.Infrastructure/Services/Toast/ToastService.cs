@@ -102,7 +102,9 @@ public class ToastService : IToastService
     }
 
     /// <summary>
-    /// MessageBox后备方案（用于Toast不可用时）
+    /// 无主窗口时的兜底提示（启动早期/崩溃恢复）。
+    /// 正常运行时 UI 提示走 IDialogManager / IToastService，不走此路径。
+    /// 有意保留：Prism Dialog 需要已初始化的 Region/Window，启动早期不可用。
     /// </summary>
     private void ShowMessageBoxFallback(string message, ToastType type)
     {

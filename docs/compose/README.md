@@ -21,7 +21,7 @@
 
 | Spec | 状态 | 日期 | 说明 |
 |------|------|------|------|
-| [`desktop-navigation-viewmodel-design-2026-09-18.md`](specs/desktop-navigation-viewmodel-design-2026-09-18.md) | **正式文档已同步（N7）+ 代码主路径落地** | 2026-09-18 | Desktop 导航架构详细设计（角色守卫/参数契约/单门面/返回路径/对话框收敛；切片 N1–N7）。N7：`desktop-ui-detailed-design.md` §3/§5 + `02-desktop.md` 导航节 + `11a-shell.md` US-SHELL-003/005 状态列已同步；架构测试 4 项已入 `tests/LYBT.Tests.Architecture/`。**代码实施进度：N1/N2/N3/N4/N5 已实施（生产方 MedicalCaseNav/PatientManagementNav 工厂对齐）；N6 对话框核心已收敛（UserNotificationService/NotificationService/Control/VM MessageBox 已替换；ToastService 兜底保留）** |
+| [`desktop-navigation-viewmodel-design-2026-09-18.md`](specs/desktop-navigation-viewmodel-design-2026-09-18.md) | **已交付（N1–N7 全部实施）** | 2026-09-18 / 2026-09-27 定稿 | Desktop 导航架构详细设计（角色守卫/参数契约/单门面/返回路径/对话框收敛；切片 N1–N7）。N1–N5 代码已实施；N6 对话框核心收敛（ToastService 无主窗口 MessageBox 兜底有意保留并 XML 注释）；N7 正式文档 + 架构测试 4 项入 `tests/LYBT.Tests.Architecture/`。**服务端对齐结论**：MedicalCaseWorkspace 客户端四角色可进，服务端类级 `DoctorOrAdmin`（不含 Receptionist）、Create 仍 `DoctorOnly`，双控制器树一致。 |
 | [`architecture-optimization-2026-09-16/design-01-cancellation-token.md`](specs/architecture-optimization-2026-09-16/design-01-cancellation-token.md) | 已落地 | 2026-09-16 | CancellationToken 全链传播（桌面客户端） |
 | [`architecture-optimization-2026-09-16/design-02-domain-error-layer.md`](specs/architecture-optimization-2026-09-16/design-02-domain-error-layer.md) | 已落地 | 2026-09-16 | 领域错误层统一（`ApiClientException`） |
 | [`architecture-optimization-2026-09-16/design-03-cross-aggregate-transactions.md`](specs/architecture-optimization-2026-09-16/design-03-cross-aggregate-transactions.md) | 已落地 | 2026-09-16 | 跨聚合写一致性（ADR-0030） |

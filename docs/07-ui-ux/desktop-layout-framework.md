@@ -154,15 +154,17 @@ children = [左侧导航, 右列]
 
 ### 角色 × 菜单矩阵
 
-| 角色 | 菜单项（展开） | 图标（Material Symbols） |
-|------|---------------|-------------------------|
-| Doctor | 首页 / 患者管理 / 医案管理 / 药材(只读) / 验方 / 挂号 / 报表 / 个人资料 | home / people / medical_services / herbalism / recipe / assignment / bar_chart / person |
-| Receptionist | 首页 / 患者管理 / 挂号 / 个人资料 | home / people / assignment / person |
-| Admin | 首页 / 用户管理 / 患者管理 / 药材/验方 / 医案查看 / 报表 / 个人资料 | home / manage_accounts / people / herbalism / medical_services / bar_chart / person |
-| Sysadmin | 首页 / 备份管理 / 部署管理 / 日志级别 / 安全审计 / 个人资料 | home / backup / deploy / tune / security / person |
-| 共用底部 | 深色模式 / 退出 | dark_mode / logout |
+> **表头声明**：「设计稿目标态」列为 UI 设计稿像素级目标（`designs/*.pen`），**不是**当前代码行为。代码现状以 `Shell/Services/NavigationManager.cs` 为准（每角色 3 项：主页 + 2 业务入口）。两列并存供产品决策后二选一对齐。
 
-> ⚠️ 代码现状每角色 3 项（主页+2 业务）；此处 4~8 项为设计稿目标态。以 NavigationManager.cs 为准，产品决策后二选一对齐。
+| 角色 | 设计稿目标态（菜单项 / 图标） | 代码现状（NavigationManager.cs，2026-09-27 复核） |
+|------|---------------|-------------------------|
+| Doctor | 首页 / 患者管理 / 医案管理 / 药材(只读) / 验方 / 挂号 / 报表 / 个人资料 — home / people / medical_services / herbalism / recipe / assignment / bar_chart / person | 主页（ClinicalWorkspace）/ 患者选择 / 挂号队列 — 各 3 项 |
+| Receptionist | 首页 / 患者管理 / 挂号 / 个人资料 — home / people / assignment / person | 主页（ReceptionistHome）/ 新建挂号 / 患者管理 — 各 3 项 |
+| Admin | 首页 / 用户管理 / 患者管理 / 药材/验方 / 医案查看 / 报表 / 个人资料 — home / manage_accounts / people / herbalism / medical_services / bar_chart / person | 主页（AdminHome）/ 用户管理 / 药材/验方 — 各 3 项 |
+| Sysadmin | 首页 / 备份管理 / 部署管理 / 日志级别 / 安全审计 / 个人资料 — home / backup / deploy / tune / security / person | 主页（SysadminHome）/ 备份管理 / 部署管理 — 各 3 项 |
+| 共用底部 | 深色模式 / 退出 | 深色模式 / 退出（底栏，非侧栏菜单项） |
+
+> ⚠️ 产品决策未决：侧栏是否扩展到设计稿 4~8 项。当前代码维持 C+ 矩阵（每角色 3 项）；扩展入口走主页卡片/快捷键，不改侧栏密度。
 
 ### 底部固定区（左侧栏底部）
 

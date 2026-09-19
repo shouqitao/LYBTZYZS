@@ -12,6 +12,20 @@
 | Server 测试 | **823/823 pass**（C-01 修复后全绿） |
 | Desktop 测试 | 全量需放宽 `TestSessionTimeout`（仓库 `.runsettings` 20 分钟不够，见 #141）；2026-09-16 定向套件全绿，全量 867/870 后超时中止（3 项失败经 `HEAD` 基线复现为存量） |
 | 最新迁移 | `RecreateDroppedAuditTables` |
+| 前端导航切片 | **N1–N7 已实施（2026-09-27 收尾）**——见下「前端导航修复记录」 |
+
+### 三.1 前端导航修复记录（2026-09-27）
+
+> 设计 SSOT: `docs/compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md`（已交付）
+
+| 项 | 状态 | 说明 |
+| ---- | ---- | ---- |
+| N1–N7 导航切片 | ✅ 已实施 | MedicalCaseNav 参数契约 + MedicalCaseWorkspace 守卫扩权（四角色）+ VM 单门面（INavigationCoordinator）+ 后退 Journal fallback + 角色 RequiredModules 含 Home 模块 + 对话框核心收敛 + 正式文档/架构测试同步 |
+| 医案工作台参数契约 | ✅ 已统一 | `MedicalCaseNav` / `PatientManagementNav` / `RegistrationListNav` 工厂入 `LYBT.Desktop.Contracts/Models/Navigation/`；生产方（PatientSelection/RegistrationList/ClinicalWorkspace）对齐 ForExistingCase/ForNewCase |
+| 对话框收敛 | ✅ 核心路径已完成 | UserNotificationService/NotificationService/Control 委托 IDialogManager/IToastService；**ToastService.ShowMessageBoxFallback 有意保留**（无主窗口/启动早期兜底，已 XML 注释文档化） |
+| 架构守卫 | ✅ 4 项已入测试 | `NavParams_ContractKeys_ConsumedByTargetViewModel` / `ViewRoleAccess_CoversAllRegisterForNavigationViews` / `RoleRequiredModules_ContainHomeViewModule`（DesktopNavigationArchTests）+ `ViewModels_MustNot_RequestNavigate_Directly`（DesktopLayerArchTests） |
+| Desktop Model 层 | ✅ 核心已落地 | Registration Models（DetailModel+EditContext）、Formula Herbs `FormulaHerbItemModel`、MedicalCase `MedicalCaseEditContext`+`PrescriptionItemModel`+`MedicalCaseEditSession`——16-desktop-architecture-spec 已标「部分落地」 |
+| **MedicalCaseWorkspace 角色 vs 服务端策略** | ⚠️ 有意不一致 | **客户端** ViewRoleAccess 含 Receptionist/Admin/SuperAdmin（可进工作台查看）；**服务端**双控制器树类级 `DoctorOrAdmin`（**不含 Receptionist**）、Create `DoctorOnly`、close `AdminOrSuperAdmin`。前台进工作台调医案 API 会 403。若需前台查看医案，须产品确认后同步双端类级策略为 `DoctorOrAdminOrReceptionist`（写操作保持 DoctorOnly）并更新 `01-product/04-permissions.md`。 |
 
 ## 四、Desktop 视图（代码实际定义）
 

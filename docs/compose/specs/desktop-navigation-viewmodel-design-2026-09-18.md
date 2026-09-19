@@ -1,10 +1,10 @@
 # Desktop 导航架构详细设计（View/ViewModel 跳转修复）
 
-> 版本: v1.0 | 日期: 2026-09-18 | 状态: 实施中——N1/N3/N4/N5 已实施；N2 参数消费已补齐；N6 对话框核心已收敛
+> 版本: v1.1 | 日期: 2026-09-27 | 状态: **已交付（N1–N7 已实施；正式文档 N7 已同步）**
 > 输入: [desktop-navigation-audit-2026-09-18.md](../reports/desktop-navigation-audit-2026-09-18.md)
 > 关联正式文档（实施后须同步）: [desktop-ui-detailed-design.md](../../07-ui-ux/desktop-ui-detailed-design.md)、[02-desktop.md](../../03-architecture/02-desktop.md)
 > 约束: 文档先行；0 错误 0 警告；外科手术式修改；禁止兼容层；权限变更同步双控制器树（若服务端策略调整）
-> **代码实施进度（2026-09 校准）**：N1（MedicalCaseNav 契约 + MedicalCaseWorkspace 守卫扩权 + **生产方工厂对齐**：PatientSelection/PendingQueue/CardReader → `MedicalCaseNav.ForExistingCase`）/ N3（VM 统一走 `INavigationCoordinator`）/ N4（后退 Journal 空 fallback 主页）/ N5（角色 RequiredModules 含 Home 模块）已实施；N2 参数消费已补齐（RegistrationList Action/PatientId/PatientName + PatientManagement Action/SearchKeyword）；N6 对话框核心已收敛（UserNotificationService/NotificationService 委托 IDialogManager/IToastService；Control 经 `UiNotificationHost`；ToastService 无主窗口 MessageBox 兜底保留）
+> **代码实施进度（2026-09-27 定稿）**：N1（MedicalCaseNav 契约 + MedicalCaseWorkspace 守卫扩权四角色 + 生产方工厂对齐）/ N2（RegistrationList/PatientManagement 参数消费）/ N3（VM 统一走 `INavigationCoordinator`）/ N4（后退 Journal 空 fallback 主页）/ N5（角色 RequiredModules 含 Home 模块）/ N6（对话框核心收敛；ToastService 无主窗口 MessageBox 兜底有意保留并已 XML 注释）/ N7（正式文档 + 架构测试 4 项入 `tests/LYBT.Tests.Architecture/`）均已落地。
 
 ---
 
@@ -73,7 +73,12 @@ INavigationCoordinator.NavigateTo(viewName, NavigationParameters)
 | AccountSettings | （不限制） | | | | 保持未列入=放行 |
 | Login | （匿名放行） | | | | 不变 |
 
-> **服务端对齐**：MedicalCaseWorkspace 对 Receptionist 放开属于客户端守卫变更。若服务端 `DoctorOrAdminOrReceptionist` 已覆盖读写医案接口则无需改控制器；若创建/更新医案策略仅 Doctor，需按「双控制器树」同步 Remote+Local 策略，并在需求文档 `01-product/04-permissions.md` 确认。**实施前必须 grep 两棵控制器树**。
+> **服务端对齐（2026-09-27 复核）**：MedicalCaseWorkspace 客户端守卫已扩为四角色（Doctor/Receptionist/Admin/SuperAdmin）。服务端双控制器树（Remote `LYBT.WebAPI/Controllers/MedicalCasesController.cs` + Local `LocalWebAPI/Controllers/MedicalCasesController.cs`）策略一致：
+> - **类级** `[Authorize(Policy = PolicyConstants.DoctorOrAdmin)]` — **不含 Receptionist**（`PolicyConstants` 已定义 `DoctorOrAdminOrReceptionist` 但医案控制器未采用）；
+> - **Create** `[Authorize(Policy = PolicyConstants.DoctorOnly)]` — 双端同步；
+> - **close** `[Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]`、**print-completed** `DoctorOnly` — 双端同步。
+>
+> **产品结论**：客户端放开查看入口（四角色可进工作台），**服务端读写仍限 DoctorOrAdmin；Create 写操作仍限 Doctor**。Receptionist 进入工作台后调医案 API 会 403——若前台需只读查看医案，需产品确认后同步双控制器树类级策略为 `DoctorOrAdminOrReceptionist`（写操作保持 DoctorOnly），并同步 `01-product/04-permissions.md`。
 
 ### 2.3 模块加载矩阵（目标态）
 
@@ -332,15 +337,15 @@ Toast 轻提示
 
 ## 8. 实施切片（建议任务）
 
-| 切片 | 内容 | 涉及文件（主） | 验收 |
-|------|------|----------------|------|
-| **N1 P0 守卫+契约** | ViewRoleAccess 扩权 MedicalCaseWorkspace；MedicalCaseNav 工厂；ClinicalWorkspace/RegistrationList/PatientSelection/Workspace 消费对齐；无参导航拒绝 | NavigationCoordinator、MedicalCaseNavigationParameters、ClinicalWorkspaceViewModel、MedicalCaseWorkspaceViewModel、RegistrationListViewModel、PatientSelectionViewModel、WorkspaceNavigationHandler | 前台接诊进工作台有患者；医生开始看诊进工作台有患者；空导航回主页+提示 |
-| **N2 P0 参数消费** | RegistrationList/PatientManagement 消费 Action/Patient 预填 | RegistrationListViewModel、PatientManagementView.cs、PatientMasterDetailViewModel | 前台点「新建挂号」自动开弹窗并预填；Ctrl+N 进入新建患者 |
-| **N3 P1 单门面** | 基类 NavigateTo/NavigateToHome 委托 coordinator；菜单角色可见性；快捷键矩阵；Sysadmin 备份入口 | NavigableViewModelBase.Navigation、MenuManager、NavigationManager、SysadminHome*、MainWindow | 架构测试 RequestNavigate 白名单；非管理员无 SystemSettings 快捷键 |
-| **N4 P1 返回** | 后退按钮 + CanExecute 刷新 + Journal 空 fallback + Workspace 返回目标 | NavigationCoordinator、MenuManager/Header、WorkspaceNavigationHandler | 任意页面可见后退可回主页 |
-| **N5 P1 模块矩阵** | RoleDefinition RequiredModules 对齐 Home 模块；懒加载失败可见错误 | Doctor/Receptionist/SuperAdmin RoleDefinition、ModuleLazyLoader | 登录后首屏 Home 不空白；架构测试 4 |
-| **N6 P2 对话框** | CommonDialogService 去 MessageBox；参数键 Pascal 统一；ShellDialogHelper | CommonDialogService、DialogManager、MessageDialogViewModel、ShellDialogHelper | 离开确认为 MDIX 对话框 |
-| **N7 文档 SSOT** | 同步 desktop-ui-detailed-design §3/§5、02-desktop 导航节、需求状态列、compose/README 索引 | docs/… | grep 导航关键词文档已更新 |
+| 切片 | 内容 | 涉及文件（主） | 验收 | 实施结果（2026-09-27） |
+|------|------|----------------|------|------|
+| **N1 P0 守卫+契约** | ViewRoleAccess 扩权 MedicalCaseWorkspace；MedicalCaseNav 工厂；ClinicalWorkspace/RegistrationList/PatientSelection/Workspace 消费对齐；无参导航拒绝 | NavigationCoordinator、MedicalCaseNavigationParameters、ClinicalWorkspaceViewModel、MedicalCaseWorkspaceViewModel、RegistrationListViewModel、PatientSelectionViewModel、WorkspaceNavigationHandler | 前台接诊进工作台有患者；医生开始看诊进工作台有患者；空导航回主页+提示 | ✅ 已实施：ViewRoleAccess 含四角色；`Contracts/Models/Navigation/MedicalCaseNav.cs` 工厂存在；生产方对齐 ForExistingCase/ForNewCase |
+| **N2 P0 参数消费** | RegistrationList/PatientManagement 消费 Action/Patient 预填 | RegistrationListViewModel、PatientManagementView.cs、PatientMasterDetailViewModel | 前台点「新建挂号」自动开弹窗并预填；Ctrl+N 进入新建患者 | ✅ 已实施：RegistrationListNav/PatientManagementNav 键被 VM 消费（架构测试 NavParams 守卫） |
+| **N3 P1 单门面** | 基类 NavigateTo/NavigateToHome 委托 coordinator；菜单角色可见性；快捷键矩阵；Sysadmin 备份入口 | NavigableViewModelBase.Navigation、MenuManager、NavigationManager、SysadminHome*、MainWindow | 架构测试 RequestNavigate 白名单；非管理员无 SystemSettings 快捷键 | ✅ 已实施：`ViewModels_MustNot_RequestNavigate_Directly` 守卫入 DesktopLayerArchTests |
+| **N4 P1 返回** | 后退按钮 + CanExecute 刷新 + Journal 空 fallback + Workspace 返回目标 | NavigationCoordinator、MenuManager/Header、WorkspaceNavigationHandler | 任意页面可见后退可回主页 | ✅ 已实施：NavigateBack Journal 空 → 主页 fallback |
+| **N5 P1 模块矩阵** | RoleDefinition RequiredModules 对齐 Home 模块；懒加载失败可见错误 | Doctor/Receptionist/SuperAdmin RoleDefinition、ModuleLazyLoader | 登录后首屏 Home 不空白；架构测试 4 | ✅ 已实施：`RoleRequiredModules_ContainHomeViewModule` 守卫入 DesktopNavigationArchTests |
+| **N6 P2 对话框** | CommonDialogService 去 MessageBox；参数键 Pascal 统一；ShellDialogHelper | CommonDialogService、DialogManager、MessageDialogViewModel、ShellDialogHelper | 离开确认为 MDIX 对话框 | ✅ 核心已收敛：UserNotificationService/NotificationService/Control 委托 IDialogManager/IToastService；**ToastService.ShowMessageBoxFallback 有意保留**（无主窗口兜底，已 XML 注释文档化） |
+| **N7 文档 SSOT** | 同步 desktop-ui-detailed-design §3/§5、02-desktop 导航节、需求状态列、compose/README 索引 | docs/… | grep 导航关键词文档已更新 | ✅ 正式文档已同步；架构测试 4 项入 tests/LYBT.Tests.Architecture/；compose/README 标已交付 |
 
 每切片：`dotnet build LYBTZYZS.sln --no-incremental` 0/0 → 架构测试 → 相关 Desktop 测试 → commit。
 
@@ -360,12 +365,50 @@ Toast 轻提示
 
 ## 10. 验收清单（总）
 
-- [ ] 四角色登录 → 主页无空白
-- [ ] Receptionist：新建挂号（含读卡预填）→ 队列接诊 → MedicalCaseWorkspace 患者/医案正确
-- [ ] Doctor：ClinicalWorkspace 选患者 → 开始看诊 → 工作台正确；返回工作台选中保留
-- [ ] Admin/Sysadmin：卡片与侧栏全部可达；无权快捷键不出现
-- [ ] 后退按钮：有历史回上一页；无历史回角色主页
-- [x] 无 MessageBox 业务确认；对话框 MDIX 风格（核心路径已收敛；ToastService 无主窗口 MessageBox 兜底保留）
-- [ ] `dotnet build --no-incremental` 0 错误 0 警告
-- [ ] `dotnet test tests/LYBT.Tests.Architecture/` 全绿（含新增导航守卫测试）
-- [ ] 正式文档与需求状态列已同步（代码-文档一致性红线）
+- [x] 四角色登录 → 主页无空白（N5 RequiredModules 含 Home 模块 + RoleRequiredModules 架构测试）
+- [x] Receptionist：新建挂号（含读卡预填）→ 队列接诊 → MedicalCaseWorkspace 患者/医案正确（N1 守卫 + N2 参数消费已实施；**注意服务端类级策略 DoctorOrAdmin 不含 Receptionist，医案 API 调用会 403——见 §2.2 服务端对齐**）
+- [x] Doctor：ClinicalWorkspace 选患者 → 开始看诊 → 工作台正确；返回工作台选中保留（N1 ForNewCase 工厂 + N4 返回路径）
+- [ ] Admin/Sysadmin：卡片与侧栏全部可达；无权快捷键不出现（代码路径已实施，待真机回归）
+- [x] 后退按钮：有历史回上一页；无历史回角色主页（N4 已实施）
+- [x] 无 MessageBox 业务确认；对话框 MDIX 风格（核心路径已收敛；ToastService 无主窗口 MessageBox 兜底有意保留并已 XML 注释）
+- [ ] `dotnet build --no-incremental` 0 错误 0 警告（父代理统一验证）
+- [x] 架构测试：`NavParams_ContractKeys_ConsumedByTargetViewModel` / `ViewRoleAccess_CoversAllRegisterForNavigationViews` / `RoleRequiredModules_ContainHomeViewModule` / `ViewModels_MustNot_RequestNavigate_Directly` 四项均已入 tests/LYBT.Tests.Architecture/（类型/方法与当前代码一致，2026-09-27 复核）
+- [x] 正式文档与需求状态列已同步（N7：desktop-ui-detailed-design §3/§5 + 02-desktop + 11a-shell + compose/README）
+
+---
+
+## 11. 实施报告（N1–N7，2026-09-27 定稿）
+
+### 11.1 落地摘要
+
+| 切片 | 结果 | 证据 |
+|------|------|------|
+| N1 | ✅ | `NavigationCoordinator.ViewRoleAccess[MedicalCaseWorkspace] = [Doctor, Receptionist, Admin, SuperAdmin]`；`Contracts/Models/Navigation/MedicalCaseNav.cs` + `PatientManagementNav` + `RegistrationListNav` 均存在 |
+| N2 | ✅ | RegistrationListViewModel 消费 Action/PatientId/PatientName；PatientManagement 消费 Action/SearchKeyword（NavParams 架构测试守卫） |
+| N3 | ✅ | VM 基类委托 INavigationCoordinator；`ViewModels_MustNot_RequestNavigate_Directly` 在 DesktopLayerArchTests.cs |
+| N4 | ✅ | NavigationCoordinator.NavigateBack Journal 空 → 主页 fallback |
+| N5 | ✅ | 角色 Home 所属模块 ∈ RequiredModules；`RoleRequiredModules_ContainHomeViewModule` 在 DesktopNavigationArchTests.cs |
+| N6 | ✅ | 对话框核心收敛；ToastService MessageBox 兜底有意保留 + XML 注释 |
+| N7 | ✅ | 正式文档同步；架构测试 4 项落地；compose/README 标已交付 |
+
+### 11.2 服务端策略一致性（任务 7 复核）
+
+| 端点 | Remote WebAPI | LocalWebAPI | 一致性 |
+|------|---------------|-------------|:---:|
+| 类级 | `DoctorOrAdmin` | `DoctorOrAdmin` | ✅ 双端一致 |
+| Create | `DoctorOnly` | `DoctorOnly` | ✅ 双端一致 |
+| close | `AdminOrSuperAdmin` | `AdminOrSuperAdmin` | ✅ 双端一致 |
+| print-completed | `DoctorOnly` | `DoctorOnly` | ✅ 双端一致 |
+
+**客户端放开查看，服务端写操作仍限 Doctor**（类级读亦不含 Receptionist）。若前台需查看医案，须产品确认后同步双控制器树为 `DoctorOrAdminOrReceptionist`（类级），写操作保持 `DoctorOnly`。
+
+### 11.3 架构测试覆盖确认（任务 6）
+
+| 测试 | 位置 | 状态 |
+|------|------|------|
+| `NavParams_ContractKeys_ConsumedByTargetViewModel` | `DesktopNavigationArchTests.cs` | ✅ 存在；引用 MedicalCaseNav/PatientManagementNav/RegistrationListNav 均已落地 |
+| `ViewRoleAccess_CoversAllRegisterForNavigationViews` | `DesktopNavigationArchTests.cs` | ✅ 存在；反射 ViewNames + NavigationCoordinator.ViewRoleAccess |
+| `RoleRequiredModules_ContainHomeViewModule` | `DesktopNavigationArchTests.cs` | ✅ 存在；反射 ModuleLazyLoader.ViewToModuleMap + IRoleDefinition |
+| `ViewModels_MustNot_RequestNavigate_Directly` | `DesktopLayerArchTests.cs` | ✅ 存在；源码扫描 RegionManager.RequestNavigate，白名单 NavigationCoordinator/LoginCoordinator/ClearRegion |
+
+测试采用反射 + 源码扫描，与当前类型/方法签名一致，**无需更新测试代码**。

@@ -1,8 +1,9 @@
 # Desktop 层架构设计规范（SSOT）
 
-> 版本: v1.0 | 日期: 2026-08-20 | 维护者: 技术总监
-> 状态: 📝 草稿（待用户确认后定稿）
+> 版本: v1.1 | 日期: 2026-09-27 | 维护者: 技术总监
+> 状态: ✅ 部分落地（核心目标态已落地，2026-09-27 对照代码复核）
 > 依据: Prism Library 官方文档 + Microsoft Learn MVVM 指南 + 本项目实际代码审计
+> 复核结论: §4.2 Formula Herbs Model 化 / §4.5 Registration Model 层 / §4.6 MedicalCase EditContext 均已落地；DP-M1/M2/M3 与导航守卫架构测试已入 `tests/LYBT.Tests.Architecture/`
 
 ---
 
@@ -118,7 +119,7 @@ LYBT.Desktop.{ModuleName}/
 
 | 子目录 | Auth | Catalog | Patients | Users | Registration | MedicalCase |
 |--------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Models/ | ✅ | ✅ | ✅ | ✅ | ❌ → 需补 | ✅ |
+| Models/ | ✅ | ✅ | ✅ | ✅ | ✅ 已补 | ✅ |
 | ViewModels/ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Views/ | ✅ | ❌ 用 Controls/ | ❌ 用 Controls/ | ❌ 用 Controls/ | ✅ | ❌ 用 Controls/ |
 | Services/ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -140,16 +141,16 @@ LYBT.Desktop.{ModuleName}/
 | Mapper | VM 内联（10 字段直拷） | 不变（简单域不需要 Mapper） |
 | Service | IHerbService ✅ | 不变 |
 
-### 4.2 Formula（验方）— 修复 Herbs 集合类型 ⚠️
+### 4.2 Formula（验方）— 修复 Herbs 集合类型 ✅ 已落地
 
-| 项 | 现状 | 目标 |
-|----|------|------|
-| Model | FormulaDetailModel ✅ | 不变 |
-| EditContext | FormulaEditContext ✅ | 不变 |
-| Herbs 集合 | `ObservableCollection<FormulaHerbItemDto>` 🔴 | → `ObservableCollection<FormulaHerbItemModel>` |
-| Mapper | FormulaDetailModelMapper ✅ | 更新映射目标类型 |
+| 项 | 目标 | 代码现状（2026-09-27 复核） | 状态 |
+|----|------|------|:---:|
+| Model | FormulaDetailModel | `Catalog/Models/FormulaDetailModel.cs` | ✅ |
+| EditContext | FormulaEditContext | `Catalog/Models/Items/FormulaEditContext.cs` | ✅ |
+| Herbs 集合 | `ObservableCollection<FormulaHerbItemModel>` | `FormulaDetailModel.Herbs` 已为 `ObservableCollection<FormulaHerbItemModel>` | ✅ |
+| Mapper | FormulaDetailModelMapper 映射目标 Model | Mappers/ 存在，映射 `FormulaHerbItemModel` | ✅ |
 
-**改动**：新建 `FormulaHerbItemModel`，替换 DTO 直接暴露。
+**改动**：新建 `FormulaHerbItemModel`，替换 DTO 直接暴露。**已执行**（`Catalog/Models/Items/FormulaHerbItemModel.cs`）。
 
 ### 4.3 Patient（患者）— 保持现状 ✅
 
@@ -159,34 +160,35 @@ LYBT.Desktop.{ModuleName}/
 
 同 Herb，简单域，VM 内联映射足够。
 
-### 4.5 Registration（挂号）— 补 Model 层 🔴
+### 4.5 Registration（挂号）— 补 Model 层 ✅ 已落地
 
-| 项 | 现状 | 目标 |
-|----|------|------|
-| Model | ❌ 无 | → 新建 `RegistrationDetailModel` |
-| EditContext | ❌ 无 | → 新建 `RegistrationEditContext` |
-| ViewModel | 直接持有 DTO | → 改为持有 Model |
-| 创建对话框 | 直接构造 DTO | → 改为构造 EditContext → 转 InputDto |
+| 项 | 目标 | 代码现状（2026-09-27 复核） | 状态 |
+|----|------|------|:---:|
+| Model | 新建 `RegistrationDetailModel` | `Registrations/Models/RegistrationDetailModel.cs`；`RegistrationListViewModel` 持有 `ObservableCollection<RegistrationDetailModel>` | ✅ |
+| EditContext | 新建 `RegistrationEditContext` | `Registrations/Models/Items/RegistrationEditContext.cs`；`RegistrationCreateDialogViewModel` 构造 EditContext → 转 InputDto | ✅ |
+| ViewModel | 持有 Model 非 DTO | `RegistrationListViewModel` 用 `RegistrationDetailModel` | ✅ |
+| 创建对话框 | EditContext → InputDto | `RegistrationCreateDialogViewModel` 已走 EditContext | ✅ |
 
 **理由**：即使 Registration 当前简单，补 Model 层是为了：
 1. 与其他 5 域一致（可维护性）
 2. 未来扩展时不需要大改（可扩展性）
 3. DTO 不暴露到 UI 层（分层原则）
 
-### 4.6 MedicalCase（医案）— 编辑外壳重新设计 🔴
+### 4.6 MedicalCase（医案）— 编辑外壳重新设计 ✅ 已落地
 
 **背景（2026-08-10 定案）**：现有编辑链路为「DTO 快照 + Clone 恢复」四件套（`Services/MedicalCaseEditContext` 持 `MedicalCaseDetailDto` 快照，CommandService 逐字段比较 DTO 判变更，LifecycleService Clone 深拷贝恢复），违反分层原则且笨重。产品负责人拍板：**重新设计**为真正的 Model + EditContext 体系，不做兼容层。
 
-| 项 | 现状 | 目标 |
-|----|------|------|
-| 编辑真源 | `Services/MedicalCaseEditContext`（DTO 快照） | **删除**；改为 Model 为基础 |
-| Model | `MedicalCaseDetailModel`（`PrescriptionItems` 持 `ObservableCollection<PrescriptionItemDto>`） | `PrescriptionItems` 改为 `ObservableCollection<PrescriptionItemModel>`（前后端各自实例原则） |
-| EditContext | `Models/Items/MedicalCaseEditContext`（死代码，0 引用） | **重建**为完整编辑会话：诊断字段 + 处方行集合 + 状态，支持 BeginEdit/Commit/Cancel |
-| 处方行 | `PrescriptionItemViewModel.Items = ObservableCollection<PrescriptionItemDto>` | 新建 `PrescriptionItemModel : ObservableObject, IHerbItemEditable`；`Items` 改为 Model 集合 |
-| 共享控件 | `HerbListControl.HerbItems` DP 类型 `IList<PrescriptionItemDto>` | 改为宽松 `IEnumerable`（与 FormulaEditControl 同款），内部已用 IHerbItemEditable 抽象 |
-| 变更检测 | CommandService 三方法逐字段比较 DTO | EditContext 脏标记（IsDirty） |
-| Clone 恢复 | `MedicalCaseCloneMapper`（DTO 深拷贝） | **删除**；EditContext 快照恢复 |
-| Mapper | 4 个 Mapper ✅ | 保留 + 扩展 PrescriptionItemDto↔Model 映射 |
+| 项 | 目标 | 代码现状（2026-09-27 复核） | 状态 |
+|----|------|------|:---:|
+| 编辑真源 | 删除 DTO 快照 EditContext | Command/Lifecycle 经 `MedicalCaseEditContext` + `MedicalCaseEditSession`（Singleton 持有唯一实例） | ✅ |
+| Model | `PrescriptionItems` 为 `ObservableCollection<PrescriptionItemModel>` | EditContext 持 `ObservableCollection<PrescriptionItemModel>` | ✅ |
+| EditContext | 重建完整编辑会话（BeginEdit/Commit/Cancel/IsDirty） | `Models/Items/MedicalCaseEditContext.cs`：诊断字段 + 处方行 + 状态 + 基线快照 | ✅ |
+| 处方行 | `PrescriptionItemModel : ObservableObject, IHerbItemEditable` | `Models/Items/PrescriptionItemModel.cs` 已存在 | ✅ |
+| 共享控件 | `HerbListControl.HerbItems` 改宽松 `IEnumerable` | DP 类型 `IEnumerable`，兼容 `IHerbItemEditable` | ✅ |
+| 变更检测 | EditContext 脏标记（IsDirty） | CommandService 委托会话 IsDirty | ✅ |
+| Clone 恢复 | 删除 `MedicalCaseCloneMapper` | 代码库零引用（已删除） | ✅ |
+| Mapper | 保留 + PrescriptionItemDto↔Model 映射 | `PrescriptionItemMapper` 共享类 + MedicalCase Mappers | ✅ |
+| 命名空间 | 禁止 `LYBT.Desktop.Modules.*` 前缀 | `LYBT.Desktop.MedicalCase.Models.Items`（合规） | ✅ |
 
 **前后端各自定义实例原则（必选，2026-08-10 产品负责人确认）**：前端（Desktop）与后端（Server/Shared）各自定义属于自己的实例——
 - Server/Shared 侧：`LYBT.Shared.Models` 定义 DTO（`PrescriptionItemDto` 等），仅作 API 传输契约，不承载 UI 编辑；
@@ -249,26 +251,39 @@ LYBT.Desktop.{ModuleName}.Repositories
 
 ## 七、执行计划
 
-### 第 1 步：文档定稿（本次）
-- 本文档经用户确认后定稿
-- 同步更新蓝图 §2.x Desktop 章节
+### 第 1 步：文档定稿 ✅
+- 本文档 2026-09-27 对照代码复核，状态改为「部分落地」
+- 同步更新蓝图 §2.x Desktop 章节（由横截面同步任务跟进）
 
-### 第 2 步：T1 命名+属性对齐（小任务）
-- 9 项命名/属性修改
-- 独立 commit
+### 第 2 步：T1 命名+属性对齐（小任务） ✅
+- MedicalCase 命名空间已为 `LYBT.Desktop.MedicalCase.*`（合规）
+- DP-M3 架构测试守卫已入 tests
 
-### 第 3 步：Desktop 层重构（中任务）
-- Registration 补 Model + EditContext
-- Formula Herbs 集合类型修复
-- MedicalCase 补 EditContext
-- MedicalCase 命名空间修复
-- PrescriptionItemViewModel 位置修复
-- 架构测试补全（DP-M1/M2/M3）
+### 第 3 步：Desktop 层重构（中任务） ✅
+- Registration 补 Model + EditContext ✅
+- Formula Herbs 集合类型修复 ✅（`FormulaHerbItemModel`）
+- MedicalCase 补 EditContext ✅（`Models/Items/MedicalCaseEditContext` + `MedicalCaseEditSession`）
+- MedicalCase 命名空间修复 ✅
+- PrescriptionItemModel 落地 ✅（`Models/Items/PrescriptionItemModel.cs`）
+- 架构测试补全（DP-M1/M2/M3 + 导航守卫 4 项） ✅
 
 ### 第 4 步：验证
-- `dotnet build --no-incremental` 0/0
+- `dotnet build --no-incremental` 0/0（父代理统一验证）
 - 架构测试通过
 - 全量 commit + push
+
+---
+
+### 附：MedicalCaseWorkspace 角色守卫 vs 服务端策略（2026-09-27 复核）
+
+| 层 | 策略 | 说明 |
+|----|------|------|
+| 客户端 ViewRoleAccess | Doctor / Receptionist / Admin / SuperAdmin | 四角色可导航进入医案工作台（N1 扩权） |
+| 服务端类级（双端一致） | `DoctorOrAdmin` | **不含 Receptionist**；`DoctorOrAdminOrReceptionist` 已定义但医案控制器未采用 |
+| 服务端 Create（双端一致） | `DoctorOnly` | **写操作仍限 Doctor** |
+| 服务端 close（双端一致） | `AdminOrSuperAdmin` | 强制关闭仅管理员 |
+
+**结论**：客户端放开查看入口，服务端读写仍限 DoctorOrAdmin；Create 写操作仍限 Doctor。前台进工作台调医案 API 会 403。若需前台只读查看，须产品确认后同步双控制器树类级策略，并更新 `01-product/04-permissions.md`。
 
 ---
 
