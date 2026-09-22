@@ -1,5 +1,5 @@
 # Desktop UI 需求文档
-> 版本: v1.2 | 日期: 2026-09-13（审计修正；事实校准与计数口径见 §九）
+> 版本: v1.3 | 日期: 2026-09-22（审计修正；事实校准与计数口径见 §九）
 
 > **基于**: [desktop-design-spec.md](./desktop-design-spec.md) + [desktop-view-inventory.md](../compose/specs/desktop-view-inventory.md)（v0.1，落差已在本文件标注）+ `../../designs/*.pen` 设计稿 **36** 个
 >
@@ -140,8 +140,10 @@
 
 ### 3.2 数据库备份恢复
 - **设计稿**: `../../designs/backup-management.pen` ✅
-- **代码**: `BackupManagementView.xaml` ✅ 已实现
-- **功能**: LocalDB 备份/恢复/状态查看
+- **代码**: `BackupManagementView.xaml` ✅ 已实现（B-06：VM `BackupManagementViewModel` + 门面 `IBackupManagementService` → `IApiClient.Backup`）
+- **功能**: 备份状态（上次备份/文件数/总大小/目录/保留期/自动备份说明）+ 手动全量/差异备份（可选压缩、加密+口令）+ 进度条（每秒轮询 `/api/v1/backup/status`）+ 文件列表（类型/时间/大小/保护/差异基准）+ 删除/清理过期 + 恢复工作流（整库或选择性表-记录、恢复前自动保护性备份、输入「确认恢复」+ 5 秒倒计时、恢复后提示重启应用）
+- **双模式可达**: 侧栏「备份管理」（SuperAdmin，远程/本地均可用）与 SysadminHome 功能卡片「备份管理」；SysadminHomeView 内嵌「备份恢复」Tab 为**本地模式专用**（ADR-0014 本地全栈单面板，`IsLocalMode` 可见）
+- **角色守卫**: `NavigationCoordinator.ViewRoleAccess[BackupManagement] = [SuperAdmin]`（B-06 收紧——原 Admin+SuperAdmin），对齐服务端 `SysAdminOnly`
 - **US**: US-SHELL-013
 - **优先级**: P1
 

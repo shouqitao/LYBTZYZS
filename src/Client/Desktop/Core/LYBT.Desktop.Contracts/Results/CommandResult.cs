@@ -33,7 +33,7 @@ public record CommandResult<T>(bool Success, T? Data, string? Error, ErrorCode? 
     /// 创建未找到结果
     /// </summary>
     public static CommandResult<T> NotFound(string? message = null)
-        => new(false, default, message ?? "未找到请求的资源", ErrorCode.NotFound);
+        => new(false, default, message ?? "未找到请求的资源", global::LYBT.Shared.Models.Primitives.ErrorCodes.ErrorCode.NotFound);
 
     /// <summary>
     /// 隐式转换为bool（方便条件判断）

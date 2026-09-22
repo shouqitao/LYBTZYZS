@@ -35,7 +35,7 @@ public static class MedicalCaseNav
     public static Dictionary<string, object> ForExistingCase(
         Guid medicalCaseId,
         PatientDetailDto patient,
-        WorkspaceMode mode = WorkspaceMode.Clinical,
+        global::LYBT.Desktop.Contracts.Enums.WorkspaceMode mode = global::LYBT.Desktop.Contracts.Enums.WorkspaceMode.Clinical,
         EditState edit = EditState.Editing,
         string? returnView = null)
     {
@@ -61,7 +61,7 @@ public static class MedicalCaseNav
     /// <summary>新建：仅患者（目标负责 CreateMedicalCase）</summary>
     public static Dictionary<string, object> ForNewCase(
         PatientDetailDto patient,
-        WorkspaceMode mode = WorkspaceMode.Clinical,
+        global::LYBT.Desktop.Contracts.Enums.WorkspaceMode mode = global::LYBT.Desktop.Contracts.Enums.WorkspaceMode.Clinical,
         EditState edit = EditState.Editing,
         string? returnView = null)
     {

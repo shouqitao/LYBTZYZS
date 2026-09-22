@@ -118,7 +118,9 @@ public class ArchTests
 
         // 排除基础架构控制器类（含Module.Users中的共享基类）
         // 包含 T8 重构新增的泛型 CRUD 基类
-        var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController", "BaseUsersController", "BaseCrudController", "BaseMedicalCasesController", "BaseRegistrationsController" };
+        var baseControllerNames = new[] { "BaseApiController", "BaseControllerCore", "BaseSystemController", "BaseUsersController", "BaseCrudController", "BaseMedicalCasesController", "BaseRegistrationsController",
+            // B-06: 备份/恢复双端共享基类（LYBT.Infrastructure.Web，远程与本地同源）
+            "BaseBackupController" };
 
         var controllersOutsideWebAPI = allControllers
             .Where(t => t.Assembly.GetName().Name != "LYBT.LocalWebAPI") // P07 白名单：LocalWebAPI 控制器豁免（ADR-0010/0023）

@@ -1,5 +1,5 @@
 # v1.0 用户验收测试 (UAT) 计划
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.3 | 日期: 2026-09-22
 
 > **版本**: v1.0
 > **创建日期**: 2026-03-09
@@ -252,7 +252,7 @@
 
 | # | 场景 | 验证方式 | 覆盖 NFR/US | Pass/Fail |
 |---|------|---------|-------------|-----------|
-| X.1 | 本地模式登录后自动备份 | 检查备份目录 (`%LOCALAPPDATA%\LYBT\Backups`) 有新 .bak 文件 | NFR-AVAIL-001 | |
+| X.1 | 登录后自动备份（远程/本地双模式） | 登录成功后客户端 fire-and-forget 调 `POST /api/v1/backup/auto`；检查 `Backup:Directory`（远程默认 `{应用基目录}/backup`，本地默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`）出现新 `.bak` + 同名 `*.manifest.json`；**距上次备份未满 `Backup:AutoBackup:IntervalHours`（默认 24h）时应为空操作（不新增文件）**——同日内多次登录只产生一份 | NFR-AVAIL-001 | |
 | X.2 | 不活跃自动登出 | 15 分钟无操作后，系统静默登出并跳转登录页 | NFR-SEC-001 (Auth 会话) | |
 | X.3 | 日志脱敏 | 查看日志文件，身份证号显示为 `320***1234` 格式 | LOG-007, NFR-SEC-004 | |
 | X.4 | 乐观锁冲突 | 两个客户端同时编辑同一医案，后保存者收到冲突提示 | MC-D10 | |
@@ -323,3 +323,4 @@
 | 2026-03-09 | v1.0 | 初始版本: 4 Narrative + 跨场景验证 + 性能感知 + 验收标准 |
 | 2026-03-09 | v1.1 | 新增 Narrative 0 (系统引导): 从零开始覆盖 sysadmin 首次登录 -> 创建用户 -> 初始化药材库 -> 创建验方 -> 配置诊所信息; 测试数据分为首次 UAT (模式 A) 和回归测试 (模式 B) |
 | 2026-06-14 | v1.2 | 代码审计后对齐: 修正用户管理权限 (Admin→SuperAdmin for reset); 模式切换更新 (DataSource→URL-Switching); 新增 X.9~X.15 回归测试 (REG-005联动/本地所有权/本地验证/本地取消保护/快速看诊身份/导入策略); MedicalCase 同步从"v2.0排除"改为"基础已实现" |
+| 2026-09-22 | v1.3 | B-06 备份/恢复交付同步：X.1 由「本地模式登录后自动备份（检查 `%LOCALAPPDATA%\LYBT\Backups`）」改为「登录后自动备份（远程/本地双模式）」——触发路径 `POST /api/v1/backup/auto`、备份目录 `Backup:Directory`（远程 `{应用基目录}/backup`／本地 `%LOCALAPPDATA%\LYBT\Desktop\Backup`）、产物 `.bak` + `*.manifest.json`、并明确「未满 24 小时间隔为空操作」（原验证路径与目录在代码中不存在——同步模块备份为未实现设计；B-06 后自动备份语义为「登录触发 + 24 小时间隔判定」） |

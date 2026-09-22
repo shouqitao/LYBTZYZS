@@ -2,11 +2,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using FluentAssertions;
 using LYBT.Desktop.Controls.Models;
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Services;
 using LYBT.Desktop.Infrastructure.Services;
-using LYBT.Desktop.Infrastructure.Services.Backup;
 using LYBT.Desktop.Shell;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Login;
@@ -81,7 +81,7 @@ public class ShellViewModelBindingTests
             var events = new ShellEventCoordinator(
                 Substitute.For<IShellEventServices>(),
                 new Prism.Events.EventAggregator(),
-                Substitute.For<ILocalDbBackupService>(),
+                Substitute.For<IApiClient>(),
                 Substitute.For<Microsoft.Extensions.Logging.ILogger<ShellEventCoordinator>>());
             _shell.Events.Returns(events);
 

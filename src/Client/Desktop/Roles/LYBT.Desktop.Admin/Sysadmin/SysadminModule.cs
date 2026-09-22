@@ -33,6 +33,8 @@ public class SysadminModule : IModule
         // D6: DP10 收口——Sysadmin VM 经服务门面访问 IApiClient 子域
         containerRegistry.Register<IDeploymentService, DeploymentService>();
         containerRegistry.Register<IDiagnosticsService, DiagnosticsService>();
+        // B-06: 备份/恢复服务门面（BackupManagementViewModel → IApiClient.Backup）
+        containerRegistry.Register<IBackupManagementService, Services.BackupManagementService>();
         // ServerConfigSectionViewModel 依赖 IServerConfigurationService（原仅注册于 AdminModule）
         containerRegistry.Register<IServerConfigurationService, ServerConfigurationService>();
         containerRegistry.Register<ISecurityAuditQueryService, Services.SecurityAuditQueryService>();

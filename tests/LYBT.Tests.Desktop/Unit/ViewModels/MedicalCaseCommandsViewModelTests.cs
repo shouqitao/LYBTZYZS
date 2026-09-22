@@ -25,6 +25,7 @@ public class MedicalCaseCommandsViewModelTests
             Substitute.For<IMedicalCaseRepository>(),
             Substitute.For<ISessionManager>(),
             Substitute.For<IClinicSettingsService>(),
+            Substitute.For<IFileDialogService>(),
             Substitute.For<ILoggerFactory>(),
             null);
         var toast = Substitute.For<IToastService>();

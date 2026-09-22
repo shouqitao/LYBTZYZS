@@ -1,5 +1,5 @@
 # 双模式架构（Remote WebAPI + LocalWebAPI）
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v8.2 | 日期: 2026-09-22
 
 > **N1 决策（2026-06-28，用户确认）**：**v1.0 远程库与本地库数据孤立，不互通**。本地模式定位为"远程故障应急降级"，断网期录入的数据事后手动补录或可丢。**Sync（数据同步）整体延期至 v2.0**，详见 [17-sync-protocol.md](17-sync-protocol.md)（v2.0 设计参考）。
 
@@ -47,7 +47,7 @@
 | 本地模式 HTTP 序列化开销 | localhost 回环延迟 <1ms，小诊所数据量（~5000 医案/年）下不可感知 |
 | 两套 Controller 代码 | Controller 仅做参数校验 + 调用 Service，核心业务规则在共享层（Entities/Validators/DTOs） |
 | 本地 JWT 固定密钥 | 本地单用户场景，Mutex 保证单实例，安全风险可控；后续可 DPAPI 外部化 |
-| 端点覆盖需手动对齐 | 当前 ~95%（104 remote vs 99 local，不含 Sync），差异集中在 MedicalCases 查询端点与 Reports 趋势端点（2026-08-08 核对） |
+| 端点覆盖需手动对齐 | 当前 ~96%（112 remote vs 107 local，不含 Sync），差异集中在 MedicalCases 查询端点与 Reports 趋势端点（2026-08-08 核对；2026-09-22 B-06 备份/恢复 8 端点双端对齐） |
 
 **获得的收益**：
 
@@ -229,8 +229,9 @@ SwitchingApiClient : IApiClient
 | Diagnostics | 4 | 7 | 175% | Local 多 db-info, logs/recent, version |
 | Configuration | 5 | 4 | 80% | Local 少批量 PUT |
 | Deploy | 2 | 2 | 100% | — |
+| Backup | 8 | 8 | 100% | 双端共享 `BaseBackupController` + `IBackupService`（远程 SQL Server / 本地 LocalDB 同一引擎，B-06） |
 | Health | 3 | 3 | 100% | — |
-| **总计** | **~104** | **~99** | — | 2026-08-08 A-17 修复后核对（不含 Sync；原表 113/112 为文档虚构，D8 修正） |
+| **总计** | **~112** | **~107** | — | 2026-08-08 A-17 修复后核对 + 2026-09-22 B-06 备份/恢复双端 8 端点（不含 Sync；原表 113/112 为文档虚构，D8 修正） |
 
 ---
 
@@ -310,6 +311,7 @@ modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly)
 
 | 日期 | 版本 | 变更内容 |
 | ------ | ------ | ---------- |
+| 2026-09-22 | v8.2 | **B-06 备份/恢复双端对齐**：端点覆盖表新增 `Backup` 行（8/8 = 100%，双端共享 `BaseBackupController` + `IBackupService`——远程对 SQL Server、本地对 LocalDB 同一引擎），总计 ~104/~99 → ~112/~107；「端点覆盖需手动对齐」代价行同步（~95% → ~96%） | B-06 交付：备份/恢复不再 Desktop 专用，双端同路由 8 端点 |
 | 2026-08-08 | v8.1 | **13 项文档偏差修正（A-18 P1-7，D5-D10）**：URL 前缀统一 `/api/v1/`；迁移方式 EnsureCreated→MigrateAsync+双种子；DI 架构「Controller→DbContext 直连」→「复用 Server Service/Handler 层（ADR-0010）」；端点覆盖表按代码实际重写（103 vs 99，删虚构 categories/by-phone 端点）；打印日志行为「返回空结果」→「404（端点不存在）」；Rate Limiting 本地 5/60s；实体位置 `src/Shared/LYBT.Entities/`；DbContext 章节 LocalWebApiDbContext→AppDbContext |
 | 2026-06-28 | v8.0 | **spec S3 批次2 提炼（712→~360 行）**：同步架构 + 同步协议规范（Checksum/元数据/序列化/依赖顺序/错误恢复/MedicalCase 聚合同步/模块级决策）整体外移至 [17-sync-protocol.md](17-sync-protocol.md)；WebAPI vs LocalWebAPI 对比矩阵 + 本地认证架构 + DbContext 架构 + 本地模式限制 4 表合 1；N1 横幅简化为链接指向 sync-protocol。变更历史见 git log。 |
 | 2026-06-28 | v7.2 | N1 决策对齐：顶部加 N1 横幅；端口统一 5300；模式切换流程图重写为 ADR-0009「URL 改即生效」语义；Policy 数量 2→4 对齐 PolicyConstants。 |

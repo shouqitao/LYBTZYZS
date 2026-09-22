@@ -92,7 +92,7 @@
 | 详情加载 / 切换选中 | 详情侧 `LoadingOverlay`（`IsBusy` + 「正在处理...」） | 5 个主从控件 | 与主列表遮罩分离，互不覆盖 |
 | 保存 / 校验 | 命令 `CanExecute` 含 `!IsBusy`；保存期间按钮不可用 | `MasterDetailCommandGroup`、`MedicalCaseCommandsViewModel` | 医案保存后 Toast 5000ms |
 | 导入 / 导出 | **无遮罩**：确认对话框 → 执行 → 成功/失败对话框（`MasterDetailServices.Dialog.*`）；导入完成后 `RefreshAsync()` 走列表加载遮罩 | `PatientMasterDetailViewModel.ImportPatientsAsync/ExportPatientsAsync`（`OpenFileDialog` 选文件） | 无百分比进度回传 |
-| 备份 / 恢复 | **无遮罩、无进度条**：`StatusMessage` 文本反馈（「正在备份... / 正在恢复... / 备份成功：…」）+ VM 内 `IsBackingUp` / `IsRestoring` 重入守卫 | `BackupManagementViewModel`、`BackupManagementView`（`Text="{Binding StatusMessage}"`）；服务层 `LocalDbBackupService` 以 `SemaphoreSlim(1,1)` 串行化 | 备份/恢复命令未设 `CanExecute` 守卫，按钮不禁用 |
+| 备份 / 恢复 | **确定型进度条** `ProgressBar`（绑定 `IsOperationRunning`/`ProgressPercent`/`OperationPhase`）+ `StatusMessage`/`ErrorMessage` 文本反馈；恢复前二次确认面板（红色警告 + 输入「确认恢复」+ 5s 倒计时，`ConfirmRestoreCommand` 谓词 `CanConfirmRestore` 门禁） | `BackupManagementViewModel`、`BackupManagementView`；进度经 `GET /api/v1/backup/status` 每 1s 轮询（服务端读 `sys.dm_exec_requests.percent_complete`）；引擎 `SqlServerBackupService` 以 `SemaphoreSlim(1,1)` 串行化 | 备份/恢复期间 `IsOperationRunning` 守卫命令重入，按钮由谓词/守卫禁用 |
 | 部署上传 | **确定型进度条** `UploadProgress`（0→100） | `DeploymentView.xaml`、`DeploymentViewModel` | 唯一确定型进度 |
 | 读卡 / 后台轮询 | 读卡：`Host.SetBusy(true, "正在读取身份证...")` + 重复请求忽略（`IsReading`）；轮询：无阻塞提示（静默刷新） | `CardReaderViewModel.ManualReadCardAsync`；挂号 30s `PeriodicTimer`、Sysadmin 面板 30s `Task.Delay` | 轮询失败不打断用户 |
 
@@ -162,7 +162,7 @@
 | 会话不活跃 | 30 分钟（生产 5 分钟），检查间隔 30s | `Shell/appsettings.json` |
 | 读卡器连接 / 读取 | 5s / 10s | `Shell/appsettings.json` |
 | 重试策略（客户端） | Token 刷新：最多 3 次指数退避（1s/2s/…，仅网络/服务端错误可重试）；登出：最多 3 次（1s / 5s / 15s） | `TokenRefreshHandler`、`LogoutService` |
-| SQL 备份命令 | 120s | `LocalDbBackupService` |
+| SQL 备份/恢复命令 | 无超时（`CommandTimeout=0`，大库备份/恢复不限时）；进度轮询 500ms | `SqlServerBackupService` |
 
 取消机制：`CancellationTokenSource` 用于搜索防抖、自动读卡、登录后台初始化、挂号自动刷新、SignalR 轮询（15s）、Sysadmin 面板轮询（30s）、健康监控（仅 Dispose 时取消）。**启动管道未传 `CancellationToken`**（`pipeline.ExecuteAsync()` 使用默认 token）→ 启动过程无法取消。
 

@@ -1,5 +1,5 @@
 # 服务端架构（模块结构 SSOT）
-> 版本: v2.5 | 日期: 2026-09-17
+> 版本: v2.6 | 日期: 2026-09-22
 
 ## 概述
 
@@ -324,12 +324,22 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 ### 备份服务
 
-> 对应 [NFR-AVAIL-001](../02-requirements/12-nfr.md)。
+> 对应 [NFR-AVAIL-001](../02-requirements/12-nfr.md)（保留 7 天，双端一致）。
 
-| 数据库 | 备份方式 | 频率 | 保留期 |
-|--------|---------|------|--------|
-| SQL Server (远程) | SQL Server Agent 自动全量备份 | 每日 | 30 天 |
-| SQL Server LocalDB (本地) | 标准 SQL Server 备份策略 | 按需 | 按需 |
+**双宿主共享引擎**（B-06，2026-09-22）：`LYBT.Infrastructure/Services/Backup/` 由远程 `LYBT.WebAPI` 与嵌入式 `LYBT.LocalWebAPI` 经 `AddBackupServices(configuration, defaultBackupDirectory)` 共用——同一 `IBackupService`（`SqlServerBackupService`）对本机 SQL Server / LocalDB 执行 T-SQL 备份与恢复，避免「本地专用服务 + 远程靠 SQL Server Agent」的双轨实现（ADR-0010/0023）。
+
+| 宿主 | 备份方式 | 频率 | 保留期 | 存储位置 |
+|--------|---------|------|--------|---------|
+| SQL Server（远程 WebAPI） | 应用层自动全量备份（登录触发；可开启宿主每日调度 `BackupSchedulerService`） | 登录触发 + 24 小时间隔判定 | 7 天（`Backup:RetentionDays`） | `Backup:Directory`（默认 `{应用基目录}/backup`） |
+| SQL Server LocalDB（嵌入式 LocalWebAPI） | 应用层自动全量备份（登录触发，同一引擎） | 登录触发 + 24 小时间隔判定 | 7 天（最多 7 个文件） | `Backup:Directory`（默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`） |
+
+- **类型**：全量（`BACKUP DATABASE … WITH INIT, FORMAT[, COMPRESSION]`）/ 差异（`WITH DIFFERENTIAL`，需现有全量基准）/ 恢复前保护性备份（`Kind=PreRestore`，失败不阻断恢复）
+- **加密（可选）**：文件级 AES-256-CBC + HMAC-SHA256（encrypt-then-MAC，PBKDF2-SHA256 210000 迭代），落盘 `*.bak.enc`；口令＝请求参数 → `Backup:EncryptionPassword`
+- **清单**：每个备份旁挂 `{文件名}.manifest.json`（稳定 Id/类型/大小/压缩/加密/库名/差异基准）；历史 `.bak` 无清单时 Id 由文件名确定性派生
+- **恢复**：整库 `RESTORE DATABASE … WITH REPLACE`（差异先基准全量 `NORECOVERY` 再差异 `RECOVERY`）或选择性恢复（临时库 `<db>_LYBT_SELRESTORE` + `WITH MOVE` 后按表/记录回写，外键以 `WITH NOCHECK` 重启、需人工 `DBCC CHECKCONSTRAINTS`）；恢复后需重启应用
+- **清理**：超期文件由 `POST /api/v1/backup/cleanup` 删除，保护最新全量备份及其差异链
+- **进度**：轮询 `sys.dm_exec_requests.percent_complete`，经 `BackupJobTracker` 暴露于 `GET /api/v1/backup/status`
+- **API/权限**：`BaseBackupController`（类级 `[Authorize]` + 逐方法 `SysAdminOnly`；`auto` 仅需认证），双端同路由 `/api/v1/backup`——详见 [04-api-reference/15-backup.md](../04-api-reference/15-backup.md) 与 [13b-api-endpoints.md §3.12](13b-api-endpoints.md)
 
 ---
 
@@ -371,6 +381,7 @@ Server 端采用 ASP.NET Core OutputCache（标签分组）+ IMemoryCache（高�
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v2.6 | 2026-09-22 | **备份服务章节重写（B-06）**：原表「远程 30 天 / 本地按需」与 [NFR-AVAIL-001](../02-requirements/12-nfr.md) 的「7 天」矛盾——改为双宿主共享引擎（`IBackupService`/`SqlServerBackupService` + 双端 `BaseBackupController`，同路由 `/api/v1/backup`）、保留 7 天、备份目录 `Backup:Directory` 默认值、全量/差异/加密/选择性恢复/清理/进度要点 |
 | v2.5 | 2026-09-17 | **模块清单 SSOT 对齐**：「6 逻辑/8 物理」→ 6 个物理 csproj；模块名 Auth/Users/Herbs/Formula/Registration → Identity/Catalog/Patients/MedicalCases/Registrations/Reports；独立 DbContext 清单改为实际 5 个 |
 | v2.4 | 2026-08-07 | WebApi 文档完整性审计修复 |
 | v2.3 | 2026-08-05 | 文档与代码全面对齐（14 项） |

@@ -71,11 +71,6 @@ namespace LYBT.Desktop.Infrastructure.Constants
         public const int MaxFileUploadSizeMB = 10;
 
         /// <summary>
-        /// 备份文件保留天数（T7-1: NFR-AVAIL-001 对齐——原 30 天遗留，需求/NFR 均为 7 天）
-        /// </summary>
-        public const int BackupRetentionDays = 7;
-
-        /// <summary>
         /// 日志文件保留天数
         /// </summary>
         public const int LogRetentionDays = 7;
@@ -118,10 +113,7 @@ namespace LYBT.Desktop.Infrastructure.Constants
         /// （<c>CredentialStorage</c>/<c>DpapiPhotoStorageService</c>/<c>UsernameStorageService</c>/
         /// <c>LoginViewModel</c>/<c>SystemSettingsService</c>），此处收敛为单一常量。</para>
         /// </remarks>
-        public static string UserDataDirectory => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "LYBT",
-            "Desktop");
+        public static string UserDataDirectory => AppDataPaths.DesktopDataDirectory;
 
 
         /// <summary>

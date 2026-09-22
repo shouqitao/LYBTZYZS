@@ -52,6 +52,7 @@ TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/auth/login \
 | [诊断](12-diagnostics.md) | 日志级别调整 | 4 | AdminOrSuperAdmin |
 | [报表](13-reports.md) | 收入/就诊/药材统计 | 3 | DoctorOrAdmin |
 | [部署](14-deploy.md) | 更新包上传+服务重启 | 2 | SysAdminOnly |
+| [备份/恢复](15-backup.md) | 备份列表/状态/表清单/创建/恢复/删除/清理/自动备份 | 8 | 已认证 + 管理操作 SysAdminOnly（`auto` 仅需认证） |
 
 > **策略说明**：策略常量定义见 `PolicyConstants.cs`（8 项：`AdminBusinessOnly`、`DoctorOnly`、`DoctorOrAdmin`、`AdminOrSuperAdmin`、`SysAdminOnly`、`DoctorOrReceptionist`、`ReceptionistOnly`、`DoctorOrAdminOrReceptionist`）。K1 已修复：`DoctorOrReceptionist` 注册含 SuperAdmin/Admin/Doctor/Receptionist。
 

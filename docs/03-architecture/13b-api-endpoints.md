@@ -1,5 +1,5 @@
 # LYBTZYZS API 端点
-> 版本: v1.1 | 日期: 2026-09-17
+> 版本: v1.2 | 日期: 2026-09-22
 
 > 由 [13-project-master-plan.md §三](13-project-master-plan.md) 拆出（2026-08-04 规则体系优化 E-03）。端点按模块组织。
 >
@@ -167,3 +167,18 @@
 | POST | /upload | 上传更新包 |
 | POST | /restart | 重启服务 |
 | ~~GET~~ | ~~/version~~ | ~~版本检查~~（**❌ 缺失**） |
+
+## 3.12 数据备份/恢复 (Backup) — `api/v1/backup`
+
+> 双端同路由（远程 `LYBT.WebAPI` 与本地 `LYBT.LocalWebAPI` 均继承 `BaseBackupController`；B-06 / US-SHELL-013）。共享引擎 `IBackupService`（`SqlServerBackupService`）：远程对 SQL Server、本地对 LocalDB。权限：类级 `[Authorize]`（仅要求已认证）+ 管理操作逐方法 `SysAdminOnly`，`POST /auto` 为登录触发的自动备份（仅需认证）。详细请求/响应见 [04-api-reference/15-backup.md](../04-api-reference/15-backup.md)。
+
+| 方法 | 端点 | 功能 |
+|------|------|------|
+| GET | / | 备份文件列表（按备份时间倒序） |
+| GET | /status | 备份状态（上次备份/文件数/总大小/目录/保留天数/进行中作业与进度） |
+| GET | /tables | 可选择性恢复的表清单（含记录数与是否支持记录级选择） |
+| POST | / | 创建备份（全量/差异，可选压缩与文件级加密） |
+| POST | /{id}/restore | 恢复指定备份（整库覆盖或按表/记录选择性回写；默认恢复前自动保护性备份） |
+| DELETE | /{id} | 删除备份文件（被差异备份引用的全量拒绝删除） |
+| POST | /cleanup | 清理超过保留期的备份（保护最新全量与差异链） |
+| POST | /auto | 自动备份（登录后触发；距上次备份未满间隔时为空操作） |

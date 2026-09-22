@@ -9,7 +9,7 @@
 
 **US 清单**：原 7 US（US-SHELL-001~007），合并去除 2 个冗余后 5 US + SHELL-010~019 补充。**v1.0 有效 = 13 US**（原 5 + 补充 8）；另有 US-SHELL-012 = v2.0（不计入 Platform 43），US-SHELL-015 = 撤销（并入 013）。完整列表：001, 003, 004, 005, 007, 010(v1.0), 011(v1.0), 012(v2.0), 013(v1.0, 含原 015), 014(v1.0), ~~015~~(撤销), 016(v1.0), 017(v1.0), 018(v1.0), 019(v1.0)。
 
-**双模式总则**：`SwitchingApiClient` 将 localhost:5300 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程（本机部署的远程 WebAPI 如 localhost:5000 仍走远程路由，仅 5300 端口视为本地）；`LocalWebAPI` 复用全部服务端模块的 Service 层；`LocalDbBackupService` 仅本地模式运行。
+**双模式总则**：`SwitchingApiClient` 将 localhost:5300 请求路由到嵌入式 `LocalWebAPI`，否则走 Refit 远程（本机部署的远程 WebAPI 如 localhost:5000 仍走远程路由，仅 5300 端口视为本地）；`LocalWebAPI` 复用全部服务端模块的 Service 层；备份/恢复由**双端共享**的 `IBackupService`（`SqlServerBackupService`，`/api/v1/backup`）提供——远程宿主对本机 SQL Server、本地宿主对嵌入式 LocalDB 执行同一套 T-SQL 备份引擎（旧 Desktop 专用 `ILocalDbBackupService` 已于 B-06 迁移移除）。
 
 **依赖**：
 
@@ -273,26 +273,33 @@
 
 **角色**: sysadmin
 **优先级**: Should
-**状态**: ✅ 已实现（T7: ILocalDbBackupService + 备份管理 UI + 登录自动备份）
+**状态**: ✅ 已实现（2026-09-22 B-06：共享 SQL Server 备份引擎 + 双端 `BackupController`——全量/差异/加密/选择性恢复/删除/清理/进度；旧 `ILocalDbBackupService` 已迁移移除）
 
-**作为** sysadmin，**我想要** 从备份恢复 LocalDB 数据库，并查看备份状态/手动触发备份，**以便** 系统崩溃后能自助恢复数据、掌握数据保护情况。
+**作为** sysadmin，**我想要** 对当前数据库（远程 SQL Server 或本地 LocalDB）执行备份与恢复，并查看备份状态/手动触发备份，**以便** 系统崩溃后能自助恢复数据、掌握数据保护情况。
 
 **验收标准**:
 
-- [ ] 显示本地备份文件列表（保留 7 天，含日期/大小）
-- [ ] **备份状态展示**（原 015 并入）：上次备份时间、备份文件数量、总大小
-- [ ] **手动备份按钮**（原 015 并入）：sysadmin 可手动触发备份（不限于登录时自动备份），备份进行中显示进度指示，失败时显示错误原因
-- [ ] 选择备份文件后执行恢复（`RESTORE DATABASE`）
-- [ ] 恢复前弹框确认"将覆盖当前数据库，是否继续"
-- [ ] 恢复完成后提示重启应用
+- [x] 显示备份文件列表（保留 7 天，含日期/大小）
+- [x] **备份状态展示**（原 015 并入）：上次备份时间、备份文件数量、总大小
+- [x] **手动备份按钮**（原 015 并入）：sysadmin 可手动触发备份（不限于登录时自动备份），备份进行中显示进度指示，失败时显示错误原因
+- [x] 选择备份文件后执行恢复（`RESTORE DATABASE`）
+- [x] 恢复前弹框确认"将覆盖当前数据库，是否继续"
+- [x] 恢复完成后提示重启应用
 
 **业务规则**:
 
-1. LocalDB 备份路径：`%AppData%/LYBTZYZS/Backup/`（已实现）。
-2. 远程 SQL Server 备份依赖 SQL Server Agent（应用层不控制，提供运维手册）。
-3. 恢复操作仅 sysadmin 可执行。
+1. **备份目录**：`Backup:Directory`（可配置）——本地默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`（`AppDataPaths.DesktopDataDirectory` 为唯一权威），远程默认 `{应用基目录}/backup`；每个备份旁挂 `{文件名}.manifest.json` 侧车清单（稳定 Id/类型/大小/压缩/加密/数据库名/差异基准），无清单的历史遗留 `.bak` 由文件名确定性派生 Id。
+2. **备份类型**：全量（`BACKUP DATABASE … WITH INIT, FORMAT[, COMPRESSION]`）与差异（`WITH DIFFERENTIAL`，依赖最近一次全量备份，无基准报错）；恢复前默认自动保护性备份（`Kind=PreRestore`，失败不阻断恢复但结果返回 Warning）。**压缩能力探测**：SQL Server Express / LocalDB 不支持 `WITH COMPRESSION`，请求压缩时自动降级为未压缩（结果 `warning` 与消息提示，`isCompressed=false`），不使备份失败。
+3. **可选文件级加密**：AES-256-CBC + HMAC-SHA256（encrypt-then-MAC，PBKDF2-SHA256 210000 迭代），加密后文件为 `*.bak.enc`；口令来源＝请求参数 → `Backup:EncryptionPassword`。
+4. **恢复**：整库 `RESTORE DATABASE … WITH REPLACE`（差异备份自动先还原基准全量 `NORECOVERY` 再差异 `RECOVERY`），单用户切换 + `SqlConnection.ClearAllPools()`；选择性恢复先还原到临时库 `<db>_LYBT_SELRESTORE`（`RESTORE FILELISTONLY` + `WITH MOVE`），再按表/记录（`SelectiveRestoreTableDto.Ids`，仅支持含 `Id` 列的表）回写当前库，回写期间临时禁用全部外键并以 `WITH NOCHECK` 重新启用（**不校验**，结果提示可执行 `DBCC CHECKCONSTRAINTS`），最后删除临时库。
+5. **保留期清理**：`Backup:RetentionDays`（默认 7 天）；保护最新全量备份及被差异备份引用的基准全量，删除被差异引用的全量备份会被拒绝。
+6. **自动备份**：两条触发路径共用 `Backup:AutoBackup:IntervalHours`（默认 24 小时，未满间隔为空操作）——① 桌面登录成功后 fire-and-forget 调用 `POST /api/v1/backup/auto`（NFR-AVAIL-001「登录成功后自动备份」）；② `BackupSchedulerService` 宿主定时任务（仅 `Backup:AutoBackup:Enabled=true` 时启动，默认关闭）。
+7. **权限**：管理操作（列表/状态/表清单/创建/恢复/删除/清理）仅 sysadmin（`SysAdminOnly`）；`POST auto` 仅要求已认证；恢复完成后需**重启应用**（桌面提示）。
+8. **双端同路由**：远程与本地均继承 `BaseBackupController`（ADR-0010/0023），端点为 `GET /api/v1/backup`、`GET /api/v1/backup/status`、`GET /api/v1/backup/tables`、`POST /api/v1/backup`、`POST /api/v1/backup/{id}/restore`、`DELETE /api/v1/backup/{id}`、`POST /api/v1/backup/cleanup`、`POST /api/v1/backup/auto`；远程备份不再依赖 SQL Server Agent 的独占路径（运维手册仅作补充）。
 
-**实现参考**: 现有 `ILocalDbBackupService`（备份）+ 新增恢复 UI
+**实现参考**: `LYBT.Infrastructure/Services/Backup/`（`IBackupService`/`SqlServerBackupService`/`BackupFileEncryption`/`BackupManifestStore`/`BackupJobTracker`/`BackupSchedulerService`/`BackupPaths`）+ `LYBT.Infrastructure/Web/BaseBackupController` + 双端 `BackupController`（`/api/v1/backup`）+ Desktop `BackupManagementView`/`BackupManagementViewModel`
+
+**文档**: [04-api-reference/15-backup.md](../04-api-reference/15-backup.md)｜[06-operations/06-backup-recovery.md](../06-operations/06-backup-recovery.md)
 
 ---
 
@@ -661,6 +668,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
-| v1.1 | 2026-09-18 | US-SHELL-003 状态→✅ N5 已实现（RequiredModules 含 ClinicalModule，AC 相关项标 ✅）；US-SHELL-005 状态细分——N1/N3/N4/N5✅ / N2⚠️部分完成 / N6🔴待收敛 | 前端设计文档漂移 P0：状态列与导航切片代码实施进度对齐 |
+| v1.3 | 2026-09-22 | US-SHELL-013 由「T7 ILocalDbBackupService」校准为 B-06 交付态：状态/愿景/AC 全量更新（6 项 AC→[x]）+ 业务规则 8 条重写（备份目录 `Backup:Directory`、全量/差异、AES-256 加密、整库/选择性恢复与外键 NOCHECK 提示、保留期清理、登录触发 + 24h 间隔的自动备份、权限、双端同路由 8 端点）；双模式总则改述备份引擎双端共享（旧 `ILocalDbBackupService` 迁移移除） | B-06 数据备份/恢复交付，文档既有的「本地 LocalDB 专用 + 远程依赖 SQL Server Agent」表述与实现（双宿主共享引擎）矛盾 |
 | v1.2 | 2026-09-18 | US-SHELL-005 进度再校准——N1 生产方 MedicalCaseNav 工厂补齐✅、N2 参数消费✅、N6 对话框核心收敛✅（UserNotificationService/NotificationService/Control/VM MessageBox 已替换；ToastService 兜底保留） | 导航参数契约迁移 P1 + N6 MessageBox 清理代码批次后状态列同步 |
+| v1.1 | 2026-09-18 | US-SHELL-003 状态→✅ N5 已实现（RequiredModules 含 ClinicalModule，AC 相关项标 ✅）；US-SHELL-005 状态细分——N1/N3/N4/N5✅ / N2⚠️部分完成 / N6🔴待收敛 | 前端设计文档漂移 P0：状态列与导航切片代码实施进度对齐 |
 | v1.0 | 2026-06-28 | Split from 11-platform.md into focused module | 文档结构优化 S4 批次 3 |

@@ -214,7 +214,7 @@ public static class ApiServiceCollectionExtensions
                         ["errorCode"] = ErrorCode.RateLimitExceeded.ToFormattedString(),
                         ["retryAfter"] = retryAfter
                     })
-                    .ExecuteAsync(httpContext, cancellationToken);
+                    .ExecuteAsync(httpContext);
             };
 
             // R-4: 登录端点速率限制——从 SecurityOptions.RateLimiting.LoginLimit 读取

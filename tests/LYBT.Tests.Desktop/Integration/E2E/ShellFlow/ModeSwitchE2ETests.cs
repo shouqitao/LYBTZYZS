@@ -466,5 +466,6 @@ public class ModeSwitchE2ETests : E2ETestBase
         public LYBT.Desktop.Contracts.ApiClient.IApiClientDeploy Deploy => throw Unsupported();
         public LYBT.Desktop.Contracts.ApiClient.IApiClientDiagnostics Diagnostics => throw Unsupported();
         public LYBT.Desktop.Contracts.ApiClient.IApiClientConfiguration Configuration => throw Unsupported();
+        public LYBT.Desktop.Contracts.ApiClient.IApiClientBackup Backup => throw Unsupported();
     }
 }

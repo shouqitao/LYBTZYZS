@@ -8,6 +8,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.Backup;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.Validation;
 using LYBT.LocalWebAPI.Auth;
@@ -134,6 +135,9 @@ public static class LocalWebApiProgram
         builder.Services.AddScoped<IDbContextAccessor, DbContextAccessor>();
         builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
+        // B-06: 数据库备份/恢复（共享引擎；本地默认备份目录 %LOCALAPPDATA%\LYBT\Desktop\Backup，可经 Backup:Directory 覆盖）
+        builder.Services.AddBackupServices(builder.Configuration, BackupPaths.DesktopDefaultDirectory);
+
         builder
             .Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
             {
@@ -187,7 +191,7 @@ public static class LocalWebApiProgram
                         ["errorCode"] = ErrorCode.RateLimitExceeded.ToFormattedString(),
                         ["retryAfter"] = retryAfter
                     })
-                    .ExecuteAsync(httpContext, cancellationToken);
+                    .ExecuteAsync(httpContext);
             };
 
             // 登录/刷新：按来源 IP 分区，5 次/分钟（与 Remote 的 Login 策略同维度）

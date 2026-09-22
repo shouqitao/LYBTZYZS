@@ -45,6 +45,7 @@ public sealed class RefitApiClient : IApiClient, IDisposable
     private IApiClientDeploy? _deploy;
     private IApiClientDiagnostics? _diagnostics;
     private IApiClientConfiguration? _configuration;
+    private IApiClientBackup? _backup;
 
     /// <summary>
     /// 初始化 <see cref="RefitApiClient"/> 的新实例。
@@ -103,6 +104,10 @@ public sealed class RefitApiClient : IApiClient, IDisposable
     /// <inheritdoc />
     public IApiClientConfiguration Configuration => _configuration ??= new ConfigurationApiClient(
         RestService.For<IConfigurationApi>(_httpClient, _refitSettings));
+
+    /// <inheritdoc />
+    public IApiClientBackup Backup => _backup ??= new BackupApiClient(
+        RestService.For<IBackupApi>(_httpClient, _refitSettings));
     /// <summary>
     /// 释放惰性创建的 Refit 代理（不释放共享 HttpClient——由外部 handler 链管理，ADR-0021）。
     /// </summary>
@@ -118,5 +123,6 @@ public sealed class RefitApiClient : IApiClient, IDisposable
         _deploy = null;
         _diagnostics = null;
         _configuration = null;
+        _backup = null;
     }
 }

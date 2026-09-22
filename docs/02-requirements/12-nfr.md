@@ -1,6 +1,6 @@
 # 非功能需求 (Non-Functional Requirements)
 
-> 版本: v2.0 | 日期: 2026-08-20 | 状态: 重建
+> 版本: v2.3 | 日期: 2026-09-22 | 状态: 重建
 
 ## 概述
 
@@ -104,17 +104,20 @@ Desktop 应用典型内存占用 ~90-160 MB（WPF + Prism + 数据 + 缓存 < 5 
 
 | 数据库 | 备份方式 | 频率 | 保留期 | 存储位置 |
 |--------|---------|------|--------|---------|
-| SQL Server（远程） | 自动全量备份 | 每日 | 7 天 | 服务器本地磁盘 |
-| SQL Server LocalDB（本地） | 登录成功后自动备份 | 每次登录 | 7 天（最多 7 个文件） | `%AppData%/LYBTZYZS/Backup/` |
+| SQL Server（远程） | 应用层自动全量备份（登录触发；可开启宿主每日调度） | 登录触发 + 24 小时间隔判定 | 7 天 | `Backup:Directory`（默认 `{应用基目录}/backup`） |
+| SQL Server LocalDB（本地） | 应用层自动全量备份（登录触发，与远程同一引擎） | 登录触发 + 24 小时间隔判定 | 7 天（最多 7 个文件） | `%LOCALAPPDATA%\LYBT\Desktop\Backup` |
 
-- **远程备份**: SQL Server Agent 或维护计划，文件命名 `LYBTDB_{yyyyMMdd}.bak`
-- **本地备份**: Desktop 本地模式登录成功后通过 T-SQL `BACKUP DATABASE` 执行（实现: `ILocalDbBackupService` / `LocalDbBackupService`），fire-and-forget 不阻塞用户操作，超过 7 天的文件自动删除
+- **双端共享引擎（2026-09-22 B-06）**: `LYBT.Infrastructure/Services/Backup/`（`IBackupService` → `SqlServerBackupService`）经双端 `BackupController`（`/api/v1/backup`）暴露——远程宿主对本机 SQL Server、本地宿主对嵌入式 LocalDB 执行同一套 T-SQL `BACKUP DATABASE` / `RESTORE DATABASE`（含差异备份、可选 AES-256 文件级加密、整库/选择性恢复、保留期清理）；旧 Desktop 专用 `ILocalDbBackupService` 已迁移移除
+- **触发语义修正**: 自动备份由「登录成功后 fire-and-forget 调用 `POST /api/v1/backup/auto`」触发，实际写入受 `Backup:AutoBackup:IntervalHours`（默认 24 小时）间隔判定约束，未满间隔为空操作。**原「每次登录」措辞已废弃**——同一行要求「7 天最多 7 个文件」，逐次登录会产生远超 7 个文件；改为「登录触发 + 24 小时间隔判定」后两个约束自洽
+- **服务端计划备份**: `BackupSchedulerService` 宿主定时任务仅在 `Backup:AutoBackup:Enabled=true` 时启动（默认关闭），供服务端每日自动全量备份按需开启
+- **保留与清理**: `Backup:RetentionDays`（默认 7 天）到点由清理任务删除；清理保护最新全量备份及其差异链，删除被差异备份引用的全量备份会被拒绝
+- **进度可见**: 备份/恢复期间轮询 `sys.dm_exec_requests.percent_complete`，经 `BackupJobTracker` 暴露于 `GET /api/v1/backup/status`（`IsOperationRunning`/`OperationKind`/`PhaseMessage`/`ProgressPercent`/`OperationStartedAt`/`LastError`），UI 轮询显示
 
 **验收标准**:
-- [x] LocalDB 备份通过 BACKUP DATABASE T-SQL 执行
+- [x] 备份通过 `BACKUP DATABASE` T-SQL 执行（双端同一引擎）
 - [x] 备份 fire-and-forget，登录后不阻塞
-- [x] 超过 7 天的备份文件自动删除
-- [ ] 远程 SQL Server 备份文件可成功还原（运维手册）
+- [x] 超过 7 天的备份文件自动删除（保护最新全量与差异链）
+- [x] 备份文件可成功还原（应用层 `POST /api/v1/backup/{id}/restore`，双端同路由）
 
 ### NFR-AVAIL-002: 故障恢复目标
 
@@ -126,9 +129,11 @@ Desktop 应用典型内存占用 ~90-160 MB（WPF + Prism + 数据 + 缓存 < 5 
 
 **恢复优先级**: 本地模式降级（即时）> 从备份还原（1h 内）> 重新部署（1h 内）
 
+> **应用层恢复（2026-09-22 B-06）**: 「从备份还原」不再只靠运维手工执行——双端 `POST /api/v1/backup/{id}/restore` 提供应用内整库/选择性恢复（sysadmin 操作，恢复完成后需重启应用）；RPO 24 小时由 NFR-AVAIL-001 的「登录触发 + 24 小时间隔判定」自动备份直接支撑。
+
 **验收标准**:
 - [ ] 服务器不可达时，手动切换本地模式后 < 30 秒可继续使用核心功能
-- [ ] SQL Server 备份还原流程有文档化操作手册
+- [x] SQL Server 备份还原流程有文档化操作手册（[06-operations/06-backup-recovery.md](../06-operations/06-backup-recovery.md) + 应用内恢复端点与 API 文档 [04-api-reference/15-backup.md](../04-api-reference/15-backup.md)）
 
 ### NFR-AVAIL-003: 数据库重试与容错
 
@@ -292,3 +297,4 @@ Server 端（ASP.NET Core）理论上跨平台，但当前部署目标为 Window
 | 2026-06-15 | v2.0 | 重建：新增可维护性与兼容性维度；修正 DPAPI 范围（仅照片/密码/令牌，IdCardNumber/PhoneNumber 明文）；稳定 NFR ID 以支持交叉引用；SQLite 废弃说明 |
 | 2026-06-25 | v2.1 | 修正跨文档不一致：AccessToken 2h→30min；备份保留 30d→7d；RTO 30min→1h |
 | 2026-06-28 | v2.2 | 文档对齐：AccessToken 有效期以配置为准（base 480/Dev·Test 60/Prod 30 分钟，`JwtService.cs:110`，非硬编码）；与 02-auth/03-users 密码策略统一 |
+| 2026-09-22 | v2.3 | **B-06 数据备份/恢复交付同步**：NFR-AVAIL-001 重写——双端共享备份引擎（远程 SQL Server / 本地 LocalDB 同路由 8 端点）、备份目录 `Backup:Directory`（本地默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`，修订原 `%AppData%/LYBTZYZS/Backup/`）、保留 7 天、差异备份/加密/选择性恢复/进度；**「每次登录」→「登录触发 + 24 小时间隔判定」**（与同行「7 天最多 7 个文件」自洽）；NFR-AVAIL-002 补应用层恢复端点 + 还原手册验收项闭环 | B-06 交付 + 需求内部矛盾修正（登录频次与保留容量的数量级冲突） |

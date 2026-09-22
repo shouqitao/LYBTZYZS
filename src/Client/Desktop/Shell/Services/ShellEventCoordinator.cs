@@ -1,10 +1,10 @@
+using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Navigation;
-using LYBT.Desktop.Infrastructure.Services.Backup;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Shell.Services.Login;
 public class ShellEventCoordinator : IDisposable
 {
     private readonly IShellEventServices _services;
-    private readonly ILocalDbBackupService _localDbBackupService;
+    private readonly IApiClient _apiClient;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
     private readonly EventSubscriptionManager _eventSubscriptions;
@@ -33,11 +33,11 @@ public class ShellEventCoordinator : IDisposable
     public ShellEventCoordinator(
         IShellEventServices services,
         IEventAggregator eventAggregator,
-        ILocalDbBackupService localDbBackupService,
+        IApiClient apiClient,
         ILogger<ShellEventCoordinator> logger)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
-        _localDbBackupService = localDbBackupService ?? throw new ArgumentNullException(nameof(localDbBackupService));
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _eventSubscriptions = new EventSubscriptionManager(eventAggregator);
@@ -73,13 +73,18 @@ public class ShellEventCoordinator : IDisposable
 
                     _services.NavigationManager.NavigationItems = _services.NavigationManager.BuildNavigationItems(args.User.Role);
 
-                    // T7-1 (NFR-AVAIL-001): 登录成功后自动备份 LocalDB（fire-and-forget 不阻塞 + 清理旧备份）
+                    // B-06（NFR-AVAIL-001）：登录成功后触发自动备份（fire-and-forget 不阻塞登录）。
+                    // 服务端按 Backup:AutoBackup:IntervalHours 判定间隔，未满间隔为空操作——
+                    // 因此同一日内多次登录只产生一份备份（对齐「7 天最多 7 个文件」）。
                     _ = Task.Run(async () =>
                     {
                         try
                         {
-                            await _localDbBackupService.BackupAsync();
-                            await _localDbBackupService.CleanupOldBackupsAsync();
+                            var backup = await _apiClient.Backup.AutoBackupAsync();
+                            if (backup.Success && backup.Data?.AffectedCount > 0)
+                            {
+                                _logger.LogInformation("[BACKUP] 登录自动备份完成: {Message}", backup.Data.Message);
+                            }
                         }
                         catch (Exception ex)
                         {

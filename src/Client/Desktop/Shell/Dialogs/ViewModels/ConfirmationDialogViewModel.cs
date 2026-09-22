@@ -107,16 +107,15 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         {
             if (parameters == null) return;
 
-            // 从参数中读取配置（PascalCase 键 — DialogParams）
-            var p = LYBT.Desktop.Infrastructure.Services.DialogParams;
-            Title = GetDialogParameter(parameters, p.Title, "确认操作");
-            Message = GetDialogParameter(parameters, p.Message, "确定要执行此操作吗？");
-            IconSource = GetDialogParameter(parameters, p.IconSource, "/Assets/Icons/warning.png");
-            ConfirmButtonText = GetDialogParameter(parameters, p.ConfirmButtonText, "确认");
-            CancelButtonText = GetDialogParameter(parameters, p.CancelButtonText, "取消");
-            ShowDeleteOptions = GetDialogParameter(parameters, p.ShowDeleteOptions, false);
-            ShowNoButton = GetDialogParameter(parameters, p.ShowNoButton, false);
-            NoButtonText = GetDialogParameter(parameters, p.NoButtonText, "否");
+            // 从参数中读取配置（PascalCase 键 — DialogParams 为键常量静态类）
+            Title = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Title, "确认操作");
+            Message = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Message, "确定要执行此操作吗？");
+            IconSource = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.IconSource, "/Assets/Icons/warning.png");
+            ConfirmButtonText = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.ConfirmButtonText, "确认");
+            CancelButtonText = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.CancelButtonText, "取消");
+            ShowDeleteOptions = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.ShowDeleteOptions, false);
+            ShowNoButton = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.ShowNoButton, false);
+            NoButtonText = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.NoButtonText, "否");
 
             Logger.LogInformation("ConfirmationDialog - 打开对话框，标题：{Title}，显示删除选项：{ShowDeleteOptions}，三选项：{ShowNoButton}",
                 Title, ShowDeleteOptions, ShowNoButton);

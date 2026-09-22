@@ -1,11 +1,12 @@
 // ---------------------------------------------------------------------------
 // BackupE2ETests — US-SYS-002 备份/部署运维面（HTTP 可测部分）
 // ---------------------------------------------------------------------------
-// 备份本体（ILocalDbBackupService）为桌面本地文件服务：T-SQL BACKUP DATABASE 到
-// %AppData%/LYBTZYZS/Backup/，依赖固定 LYBTDesktop 库 + IEmbeddedLocalWebApiService
-// 编排停止/重启内嵌服务器——在「不 mock」约束下无法对测试库执行（连接串硬编码），
+// 备份本体（B-06 起）为 LocalWebAPI 宿主侧共享引擎（LYBT.Infrastructure.Services.Backup），
+// 经 /api/v1/backup/* 暴露——备份文件创建/列出/恢复/删除与权限边界的 HTTP 断言见
+// Integration/LocalApi/BackupLocalApiTests.cs，引擎自身的 T-SQL 行为见
+// tests/LYBT.Tests.Server/Unit/Backup/SqlServerBackupServiceTests.cs。
 // 本文件覆盖其 HTTP 运维兄弟面：部署（DeployController，SysAdminOnly）的权限边界与
-// 本地模式优雅降级。备份文件的创建/列出/恢复由 Shell 侧 LocalDbBackupService 单测覆盖。
+// 本地模式优雅降级。
 // ---------------------------------------------------------------------------
 
 using System.Net;

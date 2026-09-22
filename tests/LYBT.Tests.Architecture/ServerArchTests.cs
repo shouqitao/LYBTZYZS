@@ -98,6 +98,9 @@ public class ServerArchTests
             .DoNotHaveName("BaseRegistrationsController")
             .And()
             .DoNotHaveName("BaseUsersController")
+            // B-06: 备份/恢复双端共享基类（远程 WebAPI + 本地 LocalWebAPI 同源，路由/权限唯一来源）
+            .And()
+            .DoNotHaveName("BaseBackupController")
             .Should()
             .ResideInNamespaceEndingWith("Controllers")
             .GetResult();

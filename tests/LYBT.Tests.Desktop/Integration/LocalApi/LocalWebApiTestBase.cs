@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -33,6 +34,12 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
     private string _connectionString = null!;
     private WebApplication? _app;
 
+    /// <summary>本次测试宿主的数据库名（B-06：备份状态 DatabaseName 断言）</summary>
+    protected string CurrentDatabaseName => _dbName;
+
+    /// <summary>本次测试宿主的临时备份目录（B-06：InitializeAsync 生成，DisposeAsync 清理）</summary>
+    protected string BackupDirectoryPath { get; private set; } = string.Empty;
+
     private const string TestJwtSecret = "LYBT-LocalWebAPI-Secret-Key-2024-DoNotUseInProduction";
 
     protected HttpClient Client { get; private set; } = null!;
@@ -59,6 +66,11 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
         builder.Configuration["DefaultPasswords:AdminPassword"] = "Admin@123456";
         builder.Configuration["DefaultPasswords:NewUserPassword"] = "User@123456";
         builder.Configuration["DefaultPasswords:ForceChangeOnFirstLogin"] = "false";
+
+        // B-06：备份目录隔离——覆盖 Backup:Directory 到本次测试专属临时目录，
+        // 避免测试写入开发者真实 %LOCALAPPDATA%\LYBT\Desktop\Backup（DisposeAsync 尽力清理）
+        BackupDirectoryPath = Path.Combine(Path.GetTempPath(), "lybt_test_backup_" + Guid.NewGuid().ToString("N"));
+        builder.Configuration["Backup:Directory"] = BackupDirectoryPath;
 
         builder.WebHost.ConfigureKestrel(options =>
         {
@@ -128,6 +140,20 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
             .Options;
         await using var context = new AppDbContext(options);
         await context.Database.EnsureDeletedAsync();
+
+        // B-06：清理本次测试的临时备份目录（尽力而为——句柄占用/权限失败不影响测试结论）
+        if (!string.IsNullOrEmpty(BackupDirectoryPath))
+        {
+            try
+            {
+                if (Directory.Exists(BackupDirectoryPath))
+                    Directory.Delete(BackupDirectoryPath, recursive: true);
+            }
+            catch
+            {
+                // 清理失败交由系统临时目录兜底
+            }
+        }
     }
 
     protected async Task<string> GetTokenAsync(string userName, string password)

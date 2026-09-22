@@ -1,5 +1,5 @@
 # Desktop UI/UX 详细设计文档
-> 版本: v2.1 | 日期: 2026-09-13 | 基于: R01→R22 22 轮独立调研 + R23 综合
+> 版本: v2.2 | 日期: 2026-09-22 | 基于: R01→R22 22 轮独立调研 + R23 综合
 > 模型: DeepSeek V4 Flash | 状态: 定版（数量与页面清单已对齐代码，2026-09-13）| 覆盖: View 30 / Control 33 / Dialog 7 / ViewModel 55（XAML 合计 82 = 视图 71 + 资源模板 11）+ 147 个 US
 
 > **计数口径**（代码实际 `src/Client/Desktop`，排除 bin/obj）: **View 30** = 页面/导航级 `*/Views/*.xaml`（含角色台 `Roles/*/Views/`、`Reports/Views/`、`Receptionist/Views/`，以及 Shell 的 MainWindow/AppShell/HeaderControl/SideNavControl/FooterControl/AccountSettingsView）；**Control 33** = 内嵌组件 `*/Controls/*.xaml`（共享设计系统 16 + 模块内嵌 17，`Shell/Controls/AccountSettingsControl` 归此）；**Dialog 7** = `*/Dialogs/**/*.xaml`（经 `RegisterDialog` 注册，Shell 的 3 个位于 `Dialogs/Views/`）；**Root 1** = `Shell/App.xaml`（应用级资源，非视图）；**ViewModel 55** = VM 文件数（每文件 1 个 VM 类型）。注: `Auth/Views/ServerConfigView.xaml`、`Auth/Views/FirstRunSetupView.xaml` 物理位于 `Views/`（按路径计入 View），但经 `RegisterDialog` 作为**对话框**注册；`Shell/Controls/AccountSettingsControl.xaml` 位于 `Controls/`，但其宿主 `AccountSettingsView` 计入 View。
@@ -97,7 +97,7 @@
 Login → SysadminHomeView [Tab: 配置|服务端配置(仅远程)|备份恢复(仅本地)]
   ├─ Tab 配置 → ConfigCenter（诊所/会话/连接/安全/功能开关 5 节）+ CardReaderDiagnostics（读卡诊断）
   ├─ Tab 服务端配置 → ServerConfigSectionViewModel (6 节 API, IsRemoteMode 可见)
-  ├─ Tab 备份恢复 → BackupManagementView (IsLocalMode 可见, 二次确认+倒计时)
+  ├─ Tab 备份恢复 → BackupManagementView (IsLocalMode 可见；远程模式经侧栏「备份管理」/首页卡片进入同一 View，二次确认+倒计时)
   └─ 快捷入口 → UserManagementView | LogLevelControlView | DeploymentView | SecurityAuditLogView
 ```
 
@@ -284,9 +284,16 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 - `UserManagementView`（薄包装 View，无独立 VM）: 内嵌 `UserMasterDetailControl`（`UsersModule` 经 `ViewModelLocationProvider.Register` 显式映射到 `UserMasterDetailViewModel`，因约定名不匹配）；Master-Detail，用户 CRUD 分级 `Sysadmin→Admin→Doctor/Receptionist` + 禁用/重置密码 `SysAdminOnly` + 批量二次确认 + 密码确认
 
 ### 4.17 运维首页/备份/部署/日志/安全审计
-- `SysadminHomeView`（VM `SysadminHomeViewModel`）: 3 个 Tab —— `配置`（`ConfigCenter`：诊所/会话/连接/安全/功能开关 5 节 + `RestartLocalServiceCommand`；并内嵌 `CardReaderDiagnostics` 读卡诊断 `RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`）、`服务端配置`（`IsRemoteMode` 可见，`ServerConfig` 节列表 `SaveSectionCommand` / `RestartServerCommand`）、`备份恢复`（`IsLocalMode` 可见，内嵌 `<views:BackupManagementView/>`）；并附 4 个快捷入口按钮（用户管理/日志级别/部署/安全审计）
+- `SysadminHomeView`（VM `SysadminHomeViewModel`）: 3 个 Tab —— `配置`（`ConfigCenter`：诊所/会话/连接/安全/功能开关 5 节 + `RestartLocalServiceCommand`；并内嵌 `CardReaderDiagnostics` 读卡诊断 `RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`）、`服务端配置`（`IsRemoteMode` 可见，`ServerConfig` 节列表 `SaveSectionCommand` / `RestartServerCommand`）、`备份恢复`（`IsLocalMode` 可见，内嵌 `<views:BackupManagementView/>`；远程模式由侧栏「备份管理」与首页「备份管理」卡片进入同一 View）；并附 4 个快捷入口按钮（用户管理/日志级别/部署/安全审计）
   - 三个**子 VM 无独立 XAML**（均为 `SysadminHomeView` 内嵌子 VM）: `ConfigurationCenterViewModel`、`ServerConfigSectionViewModel`、`CardReaderDiagnosticsViewModel` —— 对应早期清单中的 `ConfigExportImportView`(SY-07)、`ServerConfigPanelView`(SY-08)、`CardReaderDiagnosticsView`(SY-05) 三个**未建视图**（见 §4.23）
-- `BackupManagementView`: 上次备份/文件数/总大小 + 手动备份 `ProgressBar` + 文件列表 `DataGrid` + 恢复 `POST /backup/restore` 红警告+输入“确认恢复”+5s倒计时
+- `BackupManagementView`（`Roles/LYBT.Desktop.Admin/Sysadmin/Views/BackupManagementView.xaml`，VM `BackupManagementViewModel`；B-06 交付态，`NavigationCoordinator.ViewRoleAccess[BackupManagement] = [SuperAdmin]`）:
+  - **状态卡**: 上次备份 / 备份文件数 / 总大小 + 一行元信息（`BackupDirectory`｜`RetentionInfo`「保留 N 天」｜`AutoBackupInfo`「计划调度：每 N 小时」或「登录自动备份：间隔 N 小时（计划调度未启用）」）；操作进行中显示 `OperationPhase` + `ProgressBar`（`ProgressPercent`，VM 每秒轮询 `GET /api/v1/backup/status`）；`StatusMessage`/`ErrorMessage`（红）文本行
+  - **执行备份卡**: `压缩备份` / `加密备份` 复选框 + 加密口令 `TextBox`（仅加密勾选时可用）+ 三个按钮「立即全量备份」（`BackupFullCommand`）/「立即差异备份」（`BackupDifferentialCommand`，ToolTip 说明依赖最近全量）/「清理过期备份」（`CleanupCommand`）
+  - **文件列表卡**: 标题绑定 `RetentionInfo`（`备份文件（保留 N 天，超期自动清理）`）；`DataGrid` 列 = 文件名 / 类型（`KindText`：全量·差异·恢复前保护）/ 备份时间 / 大小 / 保护（压缩·加密·无）/ 基准（差异显示其全量基准，否则 `—`）；行按钮「刷新」`RefreshCommand`、「恢复所选备份」`OpenRestorePanelCommand`、「删除所选备份」`DeleteCommand`（删除前 `CommonDialogService` 确认）
+  - **恢复确认面板**（`IsRestorePanelVisible`，红字警告 + `RestoreTargetText`）: 警告文案「整库恢复将覆盖当前数据库的全部数据…恢复前会自动创建保护性备份，恢复完成后需重启应用」；单选「整库恢复 / 选择性恢复（表/记录）」+ 勾选「恢复前自动备份当前数据」（`CreatePreRestoreBackup`，默认勾选）+ 备份口令 `TextBox`（加密备份必填）；选择性恢复展开表清单 `DataGrid`（选择 / 表名 / 当前记录数 / 记录 Id 逗号分隔，留空=整表，非 `Id` 表该列只读）；确认区 = 倒计时文案 + 输入框「输入：确认恢复」+「执行恢复」（`ConfirmRestoreCommand`，需文本匹配且 `RestoreCountdown` 归零，5 秒倒计时）+「取消」
+  - **链路守卫**: `BackupFileDto.IsChainBroken`（差异基准缺失）的备份点「恢复所选备份」直接报错拒绝；恢复成功含 `Warning`（选择性恢复外键 `WITH NOCHECK` 未校验）时以警告弹框 + 状态文本呈现，并提示执行 `DBCC CHECKCONSTRAINTS`
+  - **数据面**: `IBackupManagementService` 门面 → `IApiClient.Backup`（DP10：VM 禁注入 IApiClient 子接口）；远程模式对服务端 SQL Server、本地模式对本机 LocalDB，路由由连接模式决定
+  - **登录自动备份**: 不在此 View——`ShellEventCoordinator` 登录成功后 fire-and-forget 调 `POST /api/v1/backup/auto`（不阻塞登录；间隔未满为空操作）
 - `DeploymentView`: 上传 `nupkg` `ProgressBar` + 类型校验 + `RELEASES` 预览 + 重启 `POST /deploy/restart`
 - `LogLevelControlView`: `LoggingLevelManager` 运行时 `ComboBox`，切 `Debug` 警告“30分钟后回退” + 定时器
 - `SecurityAuditLogView`: 见 §4.19
@@ -419,7 +426,8 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 | Herb/Formula Management | ✓ | | ✓ | ✓ | |
 | UserManagement | | | ✓ | ✓ | |
 | SystemSettings | | | ✓ | ✓ | |
-| BackupManagement / SecurityAuditLog | | | ✓ | ✓ | |
+| BackupManagement | | | | ✓ | **B-06 收紧**：原 Admin+SuperAdmin → 仅 SuperAdmin，对齐服务端 `SysAdminOnly`（备份/恢复为运维操作） |
+| SecurityAuditLog | | | ✓ | ✓ | |
 | LogLevelControl / Deployment | | | | ✓ | |
 | ReportsHome / AuditLog / MedicalCaseMasterDetail | ✓ | | ✓ | ✓ | |
 | Login | （匿名放行） | | | | 未列入 ViewRoleAccess |
@@ -527,7 +535,11 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 | 禁用用户 | /api/v1/users/{id}/toggle-status | POST | — | UserDetailDto | AdminOrSuperAdmin |
 | 配置 | /api/v1/configuration | GET/PUT | — | ConfigDto | SysAdminOnly |
 | 健康检查 | /health | GET | — | Healthy | AllowAnonymous |
-| 备份 | /api/v1/backup | POST/GET | — | BackupDto | SysAdminOnly |
+| 备份列表/状态/表清单 | /api/v1/backup · /backup/status · /backup/tables | GET | — | List<BackupFileDto> / BackupStatusDto / List<BackupTableDto> | SysAdminOnly |
+| 执行备份 | /api/v1/backup | POST | BackupCreateRequestDto | BackupOperationResultDto | SysAdminOnly |
+| 恢复备份 | /api/v1/backup/{id}/restore | POST | RestoreRequestDto | BackupOperationResultDto | SysAdminOnly |
+| 删除/清理备份 | /api/v1/backup/{id} · /backup/cleanup | DELETE / POST | — | BackupOperationResultDto | SysAdminOnly |
+| 登录自动备份 | /api/v1/backup/auto | POST | — | BackupOperationResultDto | 已认证 |
 
 ## 9. 共享控件复用矩阵
 > 与 §1.3 同源：仅列 `LYBT.Desktop.Controls` 的 16 个共享控件；模块内嵌控件（含 `WorkflowStepIndicator`）见 §1.3.1。

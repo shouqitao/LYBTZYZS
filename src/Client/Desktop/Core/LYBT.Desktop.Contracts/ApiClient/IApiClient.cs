@@ -48,4 +48,7 @@ public interface IApiClient
 
     /// <summary>系统配置端点（服务器配置，仅远程模式有意义）。</summary>
     IApiClientConfiguration Configuration { get; }
+
+    /// <summary>备份/恢复端点（B-06：备份列表/创建/恢复/删除/清理/自动备份；远程与本地模式同路由）。</summary>
+    IApiClientBackup Backup { get; }
 }

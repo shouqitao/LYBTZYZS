@@ -39,7 +39,8 @@ public class NavigationCoordinator : INavigationCoordinator
         [ViewNames.UserManagement] = [UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.LogLevelControl] = [UserRole.SuperAdmin],
         [ViewNames.Deployment] = [UserRole.SuperAdmin],
-        [ViewNames.BackupManagement] = [UserRole.Admin, UserRole.SuperAdmin],
+        // B-06: 备份/恢复为运维操作，服务端策略 SysAdminOnly——客户端守卫同步收紧为仅 SuperAdmin
+        [ViewNames.BackupManagement] = [UserRole.SuperAdmin],
         [ViewNames.SecurityAuditLog] = [UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.SystemSettings] = [UserRole.Admin, UserRole.SuperAdmin],
         // N1: 接诊/管理查看需要；业务上前台 StartVisit 必达（Doctor+Receptionist+Admin+SuperAdmin）

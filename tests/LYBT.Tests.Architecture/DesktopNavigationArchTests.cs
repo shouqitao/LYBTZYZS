@@ -176,7 +176,7 @@ public class DesktopNavigationArchTests
         foreach (var entry in accessDict!)
         {
             var entryType = entry.GetType();
-            var keyProp = entryType.GetProperty("Key")
+            var keyProp = (MemberInfo?)entryType.GetProperty("Key")
                           ?? entryType.GetField("Key");
             if (keyProp is null)
                 continue;

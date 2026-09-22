@@ -77,12 +77,11 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
             if (parameters == null) return;
 
             // PascalCase 键（DialogParams 统一契约；InputDialog 当前无业务调用点，预留）
-            var p = LYBT.Desktop.Infrastructure.Services.DialogParams;
-            Message = GetDialogParameter(parameters, p.Message, string.Empty);
-            Title = GetDialogParameter(parameters, p.Title, "输入");
-            InputValue = GetDialogParameter(parameters, p.DefaultValue, string.Empty);
-            Placeholder = GetDialogParameter(parameters, p.Placeholder, string.Empty);
-            IsRequired = GetDialogParameter(parameters, p.IsRequired, true);
+            Message = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Message, string.Empty);
+            Title = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Title, "输入");
+            InputValue = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.DefaultValue, string.Empty);
+            Placeholder = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.Placeholder, string.Empty);
+            IsRequired = GetDialogParameter(parameters, LYBT.Desktop.Infrastructure.Services.DialogParams.IsRequired, true);
 
             Logger.LogInformation("InputDialog - 打开对话框，标题：{Title}", Title);
         }

@@ -1,6 +1,7 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
+using LYBT.Infrastructure.Services.Backup;
 using LYBT.Infrastructure.Logging;
 using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Infrastructure.SharedKernel.Events;
@@ -128,6 +129,9 @@ public static class DatabaseServiceCollectionExtensions
 
         // P1-6（2026-08-14）: 下载主页服务（HTML 生成逻辑移出 DownloadController）
         services.AddScoped<LYBT.WebAPI.Services.IDownloadService, LYBT.WebAPI.Services.DownloadService>();
+
+        // B-06: 数据库备份/恢复（共享引擎；服务端默认备份目录 {应用基目录}/backup，可经 Backup:Directory 覆盖）
+        services.AddBackupServices(configuration, BackupPaths.HostDefaultDirectory);
 
         // Issue #1726 Phase 3: 数据库健康检查与启动诊断
         services.AddHealthChecks()

@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.12 | 日期: 2026-08-20 | 状态: ✅ R15/R16 修复——PRD/矩阵 US 总数统一为 154（Shell 节 14→20 行校正）
+> 版本: v1.15 | 日期: 2026-09-22 | 状态: ✅ R15/R16 修复——PRD/矩阵 US 总数统一为 154（Shell 节 14→20 行校正）；2026-09-22 B-06 交付后 US-SHELL-013 状态/关联 API/实现文件校准
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 154 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -183,7 +183,7 @@
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
 | US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
-| US-SHELL-013 | Should | — | — | ILocalDbBackupService + 恢复 UI | ILocalDbBackupService | S4/X3.2 | ✅ 已实现（T7: ILocalDbBackupService + 备份管理 UI + 登录自动备份） | N/A | ✅ |
+| US-SHELL-013 | Should | ADR-0010 | — | 双端 `/api/v1/backup`（列表/状态/表清单/创建/恢复/删除/清理/auto，8 端点） | SqlServerBackupService + BaseBackupController + BackupManagementView | S4/X3.2 | ✅ 已实现（2026-09-22 B-06：共享 SQL Server 备份引擎 + 双端 BackupController——全量/差异/加密/选择性恢复/删除/清理/进度；旧 ILocalDbBackupService 迁移移除，见 13c #146） | ✅ | ✅ |
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditController + SecurityAuditLogView | SysadminHome 安全审计卡 | A12 | ✅ 2026-08-29 查询 API + Desktop 页（仅远程） | ✅ | ✅ |
 | US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 | N/A | 🧲 |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + IdentitySeedData.ResolveSysAdminPassword（K4 环境变量读取） | IdentitySeedData.cs | — | ✅ 已实现 | ✅ | N/A |
@@ -317,3 +317,4 @@
 | 2026-06-28 | US-SHELL-018 补「双模式面板 + 服务端 Configuration API 依赖（ADR-0014）」注；关联 ADR 列补 ADR-0014 | sysadmin 配置设计 spec S7 文档更新 |
 | 2026-06-28 | 建立追溯矩阵（138 US × 8 列），整合 D1-D10 决策与 scenario-map 状态 | plan Task 1：追溯基础设施 |
 | 2026-06-28 | US-REPORT-001/002/003 ✅→🚧v1.0待实现（S1 降级）；REPORT 行/合计同步（✅102→99，🧲18→21） | 审计 S1：时间参数代码未实现，状态虚高修正 |
+| 2026-09-22 | **v1.15 B-06 备份/恢复交付状态校准**：US-SHELL-013 行更新——关联 ADR 补 ADR-0010；关联 API 由「ILocalDbBackupService + 恢复 UI」改为双端 `/api/v1/backup` 8 端点；实现文件改为 `SqlServerBackupService` + `BaseBackupController` + `BackupManagementView`；状态改「✅ 已实现（共享引擎 + 双端 BackupController）」；WebAPI 列 `N/A`→`✅`（远程宿主同样实现） | B-06 交付后原行「Desktop 专用 + WebAPI 不适用」已过时 |

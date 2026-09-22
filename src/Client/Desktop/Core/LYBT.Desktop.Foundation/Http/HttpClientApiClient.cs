@@ -36,6 +36,7 @@ public sealed class HttpClientApiClient : IApiClient, IDisposable
     private IApiClientDeploy? _deploy;
     private IApiClientDiagnostics? _diagnostics;
     private IApiClientConfiguration? _configuration;
+    private IApiClientBackup? _backup;
 
     /// <summary>
     /// 初始化 <see cref="HttpClientApiClient"/> 的新实例。
@@ -77,6 +78,9 @@ public sealed class HttpClientApiClient : IApiClient, IDisposable
 
     /// <inheritdoc />
     public IApiClientConfiguration Configuration => _configuration ??= new ConfigurationHttpApiClient(_httpClientFactory, _logger);
+
+    /// <inheritdoc />
+    public IApiClientBackup Backup => _backup ??= new BackupHttpApiClient(_httpClientFactory, _logger);
     /// <summary>
     /// 释放惰性子接口实例（不释放 IHttpClientFactory——由 DI 容器管理，ADR-0021）。
     /// </summary>
@@ -92,5 +96,6 @@ public sealed class HttpClientApiClient : IApiClient, IDisposable
         _deploy = null;
         _diagnostics = null;
         _configuration = null;
+        _backup = null;
     }
 }

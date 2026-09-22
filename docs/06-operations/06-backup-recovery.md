@@ -1,7 +1,9 @@
 # 备份与恢复指南
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.3 | 日期: 2026-09-22
 
 本文档定义 LYBT 系统的备份策略、恢复流程和灾难恢复方案，覆盖服务端 SQL Server 数据库、客户端 LocalDB 数据和服务端配置文件。
+
+> **应用内备份/恢复（B-06，2026-09-22）**：应用层已内置备份引擎——双端（远程 WebAPI / 桌面内嵌 LocalWebAPI）提供**同路由** `/api/v1/backup` 系列端点，由共享 `IBackupService`（`SqlServerBackupService`）执行 T-SQL `BACKUP DATABASE` / `RESTORE DATABASE`：远程宿主操作服务端 SQL Server，本地宿主操作本机 LocalDB。下文第 1 章的手工 SQL、SQL Server Agent 作业、PowerShell 计划任务与异地复制仍有效，但降级为**可选补充**——日常备份/恢复走应用内链路（保留 7 天、登录触发 + 24 小时间隔、可选加密与选择性恢复）。API 见 [04-api-reference/15-backup.md](../04-api-reference/15-backup.md)。
 
 > 部署架构见 [README.md](./README.md)；数据库运维见 [01-deployment.md](./01-deployment.md)。
 
@@ -11,16 +13,49 @@
 
 | 备份对象 | 位置 | 优先级 | 备份频率 |
 |----------|------|--------|----------|
-| SQL Server 生产数据库 | 服务端 SQL Server 实例 | **关键** | 每日全量 |
-| LocalDB 本地数据 | `%APPDATA%\LYBT\data\lybt-local.mdf` | 高 | 每次同步后 |
+| SQL Server 生产数据库 | 服务端 SQL Server 实例（应用内备份产出 `Backup:Directory` 下的 `.bak`） | **关键** | 登录触发 + 24 小时间隔（或开启宿主每日调度） |
+| LocalDB 本地数据 | `(localdb)\MSSQLLocalDB` 实例，库名取连接串 `InitialCatalog`；备份文件落 `%LOCALAPPDATA%\LYBT\Desktop\Backup` | 高 | 登录触发 + 24 小时间隔 |
 | 服务端配置 | `appsettings.json` + `appsettings.Production.json` | 高 | 变更时 |
-| Desktop 配置 | `%APPDATA%\LYBT\config\` | 中 | 变更时 |
+| Desktop 用户数据 | `%LOCALAPPDATA%\LYBT\Desktop\`（凭据/照片/系统设置/首次运行标记；**位于安装目录之外**，Velopack 更新/卸载不影响） | 中 | 变更时 |
 | 服务端日志 | `logs/` + `SystemLogs` 表 | 低 | 30天轮转（自动） |
 | Desktop 发布包 | `C:\Services\LYBT-releases\` | 中 | 版本发布时 |
+
+> **本地数据不复制 `.mdf`**：LocalDB 数据由实例管理，直接复制数据文件不可靠（实例锁 + 日志文件一致性）。备份统一经 T-SQL `BACKUP DATABASE`（应用内链路，见下）。
 
 ---
 
 ## 服务端备份
+
+### 0. 应用内备份/恢复（推荐，B-06）
+
+应用层内置备份引擎，双端（远程 WebAPI / 桌面内嵌 LocalWebAPI）**同路由同契约**，无需登录服务器即可操作。
+
+| 操作 | 端点 | 权限 |
+|------|------|------|
+| 备份列表 | `GET /api/v1/backup` | sysadmin |
+| 备份状态（上次备份/文件数/总大小/目录/保留天数/进行中进度） | `GET /api/v1/backup/status` | sysadmin |
+| 可选择性恢复的表清单 | `GET /api/v1/backup/tables` | sysadmin |
+| 创建备份（全量/差异，可选压缩/加密） | `POST /api/v1/backup` | sysadmin |
+| 恢复（整库或选择性） | `POST /api/v1/backup/{id}/restore` | sysadmin |
+| 删除备份 | `DELETE /api/v1/backup/{id}` | sysadmin |
+| 清理超期备份 | `POST /api/v1/backup/cleanup` | sysadmin |
+| 自动备份（登录触发） | `POST /api/v1/backup/auto` | 已认证 |
+
+**配置项**（`appsettings.json` 的 `Backup` 节）：
+
+| 键 | 默认 | 说明 |
+|----|------|------|
+| `Backup:Directory` | 服务端 `{应用基目录}/backup`；桌面 `%LOCALAPPDATA%\LYBT\Desktop\Backup` | 备份目录（绝对路径） |
+| `Backup:RetentionDays` | 7 | 保留天数（`cleanup` 与自动流程按此清理） |
+| `Backup:CompressByDefault` | true | 自动备份/恢复前保护性备份是否使用 SQL Server 备份压缩（手动备份由请求 `compress` 控制，DTO 默认 true） |
+| `Backup:EncryptByDefault` / `Backup:EncryptionPassword` | false / 空 | 恢复前保护性备份是否加密及默认口令（启用加密但无口令则报错；手动备份由请求 `encrypt`/`password` 控制） |
+| `Backup:AutoBackup:Enabled` | false | 是否启用宿主定时调度（`BackupSchedulerService`） |
+| `Backup:AutoBackup:IntervalHours` | 24 | 自动备份间隔；未满间隔的触发为空操作 |
+| `Backup:AutoBackup:Kind` / `Encrypt` / `InitialDelayMinutes` | Full / false / 2 | 调度备份类型、是否加密、启动后首次检查延迟 |
+
+**自动备份与登录触发**：桌面登录成功后 fire-and-forget 调用 `POST /api/v1/backup/auto`；服务端可另开 `Backup:AutoBackup:Enabled=true` 由宿主定时任务按 `IntervalHours` 执行。两条路径共用同一间隔判定（默认 24 小时）——**每次登录都触发调用，但未满间隔不会产生新文件**，因此 7 天保留期下最多 7 个自动备份文件（对齐 [NFR-AVAIL-001](../02-requirements/12-nfr.md)）。
+
+**备份类型与文件**：全量 `BACKUP DATABASE … WITH INIT, FORMAT[, COMPRESSION]`；差异 `WITH DIFFERENTIAL`（依赖最近一次全量，无基准则报错）；恢复前自动保护性备份（`Kind=PreRestore`，默认开启，失败不阻断恢复但返回 Warning）。**压缩能力**：SQL Server Express / LocalDB 不支持 `WITH COMPRESSION`——应用层探测实例 Edition 后自动降级为未压缩（结果 `warning` 与消息提示，`isCompressed=false`），不会使备份失败；下文的运维脚本/Agent 作业若部署在 Express 实例上同样需去掉 `COMPRESSION`。每个备份旁挂 `{文件名}.manifest.json` 侧车清单（稳定 Id/类型/大小/压缩/加密/库名/差异基准），列表中的 Id 跨列举稳定（历史 `.bak` 无清单时由文件名确定性派生），恢复/删除按 Id 定位。
 
 ### 1. SQL Server 全量备份
 
@@ -176,46 +211,53 @@ Get-ChildItem $source -Filter "*.bak" | Where-Object { $_.CreationTime -ge $week
 
 ---
 
-## 客户端备份
+## 客户端备份（本地模式 / LocalDB）
 
-### 1. LocalDB 数据文件
+### 1. 应用内备份（唯一推荐路径）
 
-客户端本地数据存储在 SQL Server LocalDB 的 `.mdf` 文件中：
+桌面客户端的本地库由**嵌入式 LocalWebAPI** 通过同一 `/api/v1/backup` 契约备份/恢复（`IBackupService` 引擎对本机 LocalDB 执行 T-SQL `BACKUP DATABASE`）。UI 入口：sysadmin → 备份恢复（`BackupManagementView`）。
 
-```
-%APPDATA%\LYBT\data\lybt-local.mdf    # 数据库主文件
-%APPDATA%\LYBT\data\lybt-local.ldf    # 日志文件
-```
+| 项 | 值 |
+|----|-----|
+| 备份目录 | `Backup:Directory`；未配置时默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`（`AppDataPaths.DesktopDataDirectory` 的 `Backup` 子目录，**位于应用安装目录之外**——Velopack 更新/卸载不会清理） |
+| 自动备份 | 登录成功后 fire-and-forget `POST /api/v1/backup/auto`；**受 24 小时间隔判定**（`Backup:AutoBackup:IntervalHours`），未满间隔为空操作 |
+| 保留期 | `Backup:RetentionDays`（默认 7 天）；清理会保护最新全量备份及其差异链 |
+| 可选加密 | `Encrypt=true` + 口令（请求参数 → `Backup:EncryptionPassword`），文件为 `*.bak.enc` |
+| 文件清单 | 每个备份旁挂 `{文件名}.manifest.json`（稳定 Id/类型/大小/压缩/加密/库名/差异基准） |
 
-**自动备份**：同步模块在每次成功同步后自动创建备份（配置于 `appsettings.json`）：
+配置示例（`appsettings.json`）：
 
 ```json
 {
-  "Sync": {
+  "Backup": {
+    "Directory": "",              // 空 = 默认 %LOCALAPPDATA%\LYBT\Desktop\Backup
+    "RetentionDays": 7,
+    "CompressByDefault": true,
+    "EncryptByDefault": false,
+    "EncryptionPassword": "",
     "AutoBackup": {
-      "Enabled": true,
-      "MaxBackups": 5
+      "Enabled": false,           // 桌面靠登录触发；宿主调度默认关
+      "IntervalHours": 24,
+      "Kind": "Full",
+      "Encrypt": false,
+      "InitialDelayMinutes": 2
     }
   }
 }
 ```
 
-**手动备份**：
+**手动触发**：UI「立即备份」按钮（可全量/差异，可选加密），或调用 `POST /api/v1/backup`。
 
-```powershell
-# 关闭 Desktop 客户端后复制
-$timestamp = Get-Date -Format "yyyyMMdd"
-Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup\lybt-local_$timestamp.mdf"
+> **不要复制 `.mdf`**：LocalDB 由实例管理数据/日志文件，直接复制不可靠。历史文档中的 `%APPDATA%\LYBT\data\lybt-local.mdf` 路径与 `Sync:AutoBackup{Enabled,MaxBackups}` 配置**均不存在于代码**（同步模块延期至 v2.0），已废止；本地库名取连接串 `InitialCatalog`（开发内嵌宿主默认 `LYBTDesktop`，LocalWebAPI 独立宿主配置为 `LYBTDB_Local`）。
+
+### 2. Desktop 用户数据备份
+
+```text
+%LOCALAPPDATA%\LYBT\Desktop\            # 用户数据根（凭据/照片/系统设置/首次运行标记）
+%LOCALAPPDATA%\LYBT\Desktop\Backup\     # 本地数据库备份（.bak / .bak.enc + *.manifest.json）
 ```
 
-### 2. Desktop 配置备份
-
-```
-%APPDATA%\LYBT\config\appsettings.json    # 客户端配置
-%APPDATA%\LYBT\config\connection.json     # 连接设置
-```
-
-迁移到新机器时复制整个 `%APPDATA%\LYBT\` 目录即可。
+迁移到新机器时复制整个 `%LOCALAPPDATA%\LYBT\Desktop\` 目录即可（含备份文件；数据库本体仍建议经 `POST /api/v1/backup/{id}/restore` 恢复而非拷贝文件）。
 
 ---
 
@@ -227,15 +269,40 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 
 **适用**：数据库损坏、误操作、数据丢失。
 
+**路径 A：应用内恢复（推荐，B-06）**
+
+```
+1. 以 sysadmin 登录
+   → GET /api/v1/backup            列出备份，取目标 Id
+   → GET /api/v1/backup/tables      （选择性恢复时才需要）
+
+2. 执行恢复（整库，默认恢复前自动备份当前数据）
+   → POST /api/v1/backup/{id}/restore
+     { "mode": "Full", "createPreRestoreBackup": true }
+
+3. 重启服务/应用
+   → 服务端：sc stop LYBT-API → sc start LYBT-API（或 IIS 回收应用池）
+   → 桌面：关闭并重新启动客户端（恢复完成后必须重启，见 UI 提示）
+
+4. 验证系统健康
+   → GET /api/v1/health/details（应返回 Healthy）
+```
+
+> **选择性恢复（`"mode": "Selective"`）**：先还原到临时库 `<db>_LYBT_SELRESTORE`，再按 `tables[].tableName`（仅支持含 `Id` 列的表）与可选 `tables[].ids` 回写当前库。回写期间**临时禁用全部外键**并在结束时以 `WITH NOCHECK` 重新启用——**约束不做校验**，若返回警告请执行 `DBCC CHECKCONSTRAINTS` 复核。恢复完成后同样需重启应用。
+
+**路径 B：手工 SQL（应用不可用/离线场景）**
+
 ```
 1. 停止 WebAPI 服务
    → sc stop LYBT-API （或 IIS 停止应用池）
 
 2. 确认备份文件可用
    → RESTORE VERIFYONLY FROM DISK = N'<备份路径>'
+   （加密备份为 *.bak.enc，需先经应用内解密或改用应用内恢复）
 
 3. 恢复数据库（覆盖现有）
    → RESTORE DATABASE [LYBTDB_Dev] FROM DISK = N'<备份路径>' WITH REPLACE
+   （差异备份：先还原基准全量 WITH NORECOVERY，再差异 WITH RECOVERY）
 
 4. 验证数据完整性
    → DBCC CHECKDB ([LYBTDB_Dev])
@@ -252,17 +319,25 @@ Copy-Item "$env:APPDATA\LYBT\data\lybt-local.mdf" "$env:APPDATA\LYBT\data\backup
 **适用**：本地数据丢失、LocalDB 损坏、机器更换。
 
 ```
-1. 关闭 Desktop 客户端
+1. 以 sysadmin 登录桌面客户端（本地模式）
+   → 打开 备份恢复 页（BackupManagementView），或调用本地 /api/v1/backup
 
-2. 替换数据文件
-   → 复制备份的 .mdf 文件到 %APPDATA%\LYBT\data\lybt-local.mdf
+2. 选择备份并恢复
+   → POST /api/v1/backup/{id}/restore
+     { "mode": "Full", "createPreRestoreBackup": true }
+   → 如需只回写个别表：先 GET /api/v1/backup/tables 取表清单，
+     再以 { "mode": "Selective", "tables": [ { "tableName": "...", "ids": [...] } ] } 恢复
+     （注意：外键以 WITH NOCHECK 重启、不校验，需人工复核）
 
-3. 如无备份但有远程同步历史
-   → 启动客户端 → 切换到远程模式 → 执行同步 → 数据从服务端下载
+3. 重启客户端
+   → 恢复完成后关闭并重新启动应用（引擎需独占单用户连接与连接池重置）
 
 4. 验证
    → 启动客户端 → 确认患者列表和医案数据完整
 ```
+
+> 备份文件位于 `%LOCALAPPDATA%\LYBT\Desktop\Backup`（或 `Backup:Directory` 指定目录）。
+> 不要用手工复制 `.mdf` 的方式恢复本地库。
 
 ### 场景 3：服务端完全重建
 
@@ -352,10 +427,10 @@ Write-Host "Patients returned: $($patients.data.Count)"
 
 | 场景 | RTO | RPO | 恢复方式 |
 |------|-----|-----|----------|
-| 数据库损坏 | < 1 小时 | < 24 小时 | 最近全量备份恢复 |
+| 数据库损坏 | < 1 小时 | < 24 小时 | 最近全量备份恢复（应用内 `POST /api/v1/backup/{id}/restore`；亦见场景 1 路径 B 手工 SQL） |
 | 服务器硬件故障 | < 4 小时 | < 24 小时 | 新服务器重建 + 备份恢复 |
-| 客户端数据丢失 | < 30 分钟 | < 1 天 | 同步下载或备份文件替换 |
-| 误删单条记录 | < 5 分钟 | 0 | API restore 端点 |
+| 客户端数据丢失 | < 30 分钟 | < 24 小时 | 应用内恢复本地备份（`%LOCALAPPDATA%\LYBT\Desktop\Backup`）；无备份时重建 |
+| 误删单条记录 | < 5 分钟 | 0 | API restore 端点（软删）或选择性恢复 |
 
 ---
 
@@ -366,3 +441,4 @@ Write-Host "Patients returned: $($patients.data.Count)"
 | 2026-06-12 | v1.0 | 初始版本 |
 | 2026-06-25 | v1.1 | 确认远程备份保留 7 天（与 NFR 一致）；确认 RTO < 1 小时 |
 | 2026-06-25 | v1.2 | 新增 PowerShell 自动备份脚本、异地备份策略、恢复后验证清单 |
+| 2026-09-22 | v1.3 | **B-06 应用内备份/恢复落地同步**：① 新增「服务端备份 §0 应用内备份/恢复」——双端同路由 `/api/v1/backup` 8 端点、`Backup` 配置节全键表、登录触发 + 24 小时间隔的自动备份语义、备份类型/清单/加密；② 客户端备份章节重写——**删除不存在的 `Sync:AutoBackup{Enabled,MaxBackups}` 配置与 `%APPDATA%\LYBT\data\*.mdf` 路径**，改述应用内链路（`Backup:Directory` 默认 `%LOCALAPPDATA%\LYBT\Desktop\Backup`、`Backup:RetentionDays`、`Backup:AutoBackup:*`）并明确「不要复制 .mdf」；③ 恢复流程——场景 1 拆为「路径 A 应用内恢复（含选择性恢复外键 `WITH NOCHECK` 不校验 + `DBCC CHECKCONSTRAINTS` 提示）」与「路径 B 手工 SQL」，场景 2 由「替换 .mdf」改为应用内恢复 + **恢复后必须重启应用**；④ 备份范围表与 RTO/RPO 表按新引擎修正（客户端数据丢失 RPO <1 天 → <24 小时） 原客户端章节描述的是从未实现的同步模块备份与虚假数据文件路径（`Sync:AutoBackup{Enabled,MaxBackups}`）——B-06 交付后应用层具备真实、可自助的备份/恢复能力，运维文档必须指向它 |
