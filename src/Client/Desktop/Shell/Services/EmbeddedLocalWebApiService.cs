@@ -15,23 +15,23 @@ namespace LYBT.Desktop.Shell.Services;
 /// </summary>
 public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, IDisposable
 {
-    private const string LocalConnectionString =
-        "Server=(localdb)\\MSSQLLocalDB;Database=LYBTDesktop;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
-
     private readonly ILogger<EmbeddedLocalWebApiService> _logger;
     private readonly IOptions<OfflineModeOptions> _offlineModeOptions;
     private readonly IOptions<DefaultPasswordOptions> _defaultPasswordOptions;
+    private readonly ILocalDatabaseSettingsService _localDatabaseSettings;
     private WebApplication? _app;
     private readonly object _lock = new();
 
     public EmbeddedLocalWebApiService(
         ILogger<EmbeddedLocalWebApiService> logger,
         IOptions<OfflineModeOptions> offlineModeOptions,
-        IOptions<DefaultPasswordOptions> defaultPasswordOptions)
+        IOptions<DefaultPasswordOptions> defaultPasswordOptions,
+        ILocalDatabaseSettingsService localDatabaseSettings)
     {
         _logger = logger;
         _offlineModeOptions = offlineModeOptions;
         _defaultPasswordOptions = defaultPasswordOptions;
+        _localDatabaseSettings = localDatabaseSettings;
     }
 
     public bool IsRunning => Volatile.Read(ref _app) != null;
@@ -60,7 +60,14 @@ public sealed class EmbeddedLocalWebApiService : IEmbeddedLocalWebApiService, ID
                 options.ForceChangeOnFirstLogin = passwords.ForceChangeOnFirstLogin;
             });
 
-            _app = LocalWebApiProgram.CreateApplication(builder, LocalConnectionString);
+            // B-07：数据库目标来自初始化向导配置（未配置时 = 历史默认 LocalDB/LYBTDesktop）。
+            // 只记录提供程序/实例/库名——口令与完整连接串永不进日志。
+            var databaseProfile = _localDatabaseSettings.Current;
+            _logger.LogInformation(
+                "[LOCAL-API] Database target: Provider={Provider}, Server={Server}, Database={Database}",
+                databaseProfile.Provider, databaseProfile.Server, databaseProfile.Database);
+
+            _app = LocalWebApiProgram.CreateApplication(builder, _localDatabaseSettings.BuildConnectionString());
             await LocalWebApiProgram.InitializeDatabaseAsync(_app);
 
             await _app.StartAsync(cancellationToken);

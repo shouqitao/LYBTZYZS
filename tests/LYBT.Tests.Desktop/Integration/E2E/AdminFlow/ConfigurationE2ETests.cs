@@ -17,7 +17,6 @@ using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Tests.Desktop.E2E.AdminFlow;
 
@@ -73,11 +72,10 @@ public class ConfigurationE2ETests : E2ETestBase
     /// <remarks>
     /// 已知缺口（登记见 13c）：① LocalWebAPI 的 /configuration/sections/ClinicSettings 被写入白名单拦下
     /// （ClinicSettings/FeatureToggles 不在 ConfigurationWritePolicy.AllowedSections）→ 本地端点 422，
-    /// 诊所信息只能走客户端文件链；② 生产读取方 ClinicSettingsService/ConfigurationCenterViewModel 注入的是
-    /// PrismConfigurationExtensions.RegisterOptions 在**启动时**绑定的静态 IOptions 快照 → 同进程内不会
-    /// 观察到重载后的新值（本测试以「重启语义」绑定验证文件链本身正确）；③ SystemSettingsViewModel（US-CFG-006 UI）
-    /// 经 IClinicSettingsService.SaveSettingsAsync 写入 <c>Directory.GetCurrentDirectory()/clinic-settings.json</c>，
-    /// 与 Shell 读取的 <c>AppContext.BaseDirectory/clinic-settings.json</c> 可能不是同一文件（仅当进程工作目录=程序目录时重合）。
+    /// 诊所信息只能走客户端文件链。
+    /// B-07 已修复 ②③：ClinicSettingsService 不再持有启动期 IOptions 快照，改为从 IConfiguration 实时绑定
+    /// （保存后同进程内立即可见）；SaveSettingsAsync 经 IClientConfigurationStore 节级原子写
+    /// <c>AppContext.BaseDirectory/clinic-settings.json</c>，与 Shell 读取路径一致（不再依赖进程工作目录）。
     /// </remarks>
     [Fact]
     public async Task UpdateClinicSettings_PersistsAndReloads()
@@ -131,9 +129,10 @@ public class ConfigurationE2ETests : E2ETestBase
             Assert.Equal(newAddress, live.Address);
             Assert.Equal(newPhone, live.Phone);
 
-            // 3) 消费方（ClinicSettingsService）按新值读取
+            // 3) 消费方（ClinicSettingsService）按新值读取（实时绑定 IConfiguration）
             var service = new ClinicSettingsService(
-                Options.Create(live),
+                configuration,
+                store,
                 NullLogger<ClinicSettingsService>.Instance);
             Assert.Equal(newName, service.ClinicName);
             Assert.Equal(newAddress, service.ClinicAddress);

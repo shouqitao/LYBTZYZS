@@ -1,27 +1,31 @@
-using System.IO;
-using System.Text.Json;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Configuration.Options.Client;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 诊所配置服务实现
-    /// D2: 从 clinic-settings.json 读取配置，支持热更新 (reloadOnChange)
-    /// SaveSettingsAsync 写入文件后，IConfiguration 自动重载
+    /// D2: 诊所信息配置化——读取走 <see cref="IConfiguration"/> 实时绑定（clinic-settings.json，
+    /// reloadOnChange 已启用），保存走 <see cref="IClientConfigurationStore"/> 节级原子写 + Reload，
+    /// 因此「保存即生效」，无需重启。
     /// </summary>
     public class ClinicSettingsService : IClinicSettingsService
     {
-        private readonly IOptions<ClinicSettingsOptions> _clinicOptions;
+        private readonly IConfiguration _configuration;
+        private readonly IClientConfigurationStore _configurationStore;
         private readonly ILogger<ClinicSettingsService> _logger;
 
-        private static readonly JsonSerializerOptions JsonWriteOptions = new()
+        public ClinicSettingsService(
+            IConfiguration configuration,
+            IClientConfigurationStore configurationStore,
+            ILogger<ClinicSettingsService> logger)
         {
-            WriteIndented = true,
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
+            _configuration = configuration;
+            _configurationStore = configurationStore;
+            _logger = logger;
+        }
 
         public string ClinicName => GetSettings().Name;
         public string ClinicAddress => GetSettings().Address;
@@ -30,41 +34,52 @@ namespace LYBT.Desktop.Infrastructure.Services
         public string LicenseNumber => GetSettings().LicenseNumber;
         public string Email => GetSettings().Email;
 
-        public ClinicSettingsService(
-            IOptions<ClinicSettingsOptions> clinicOptions,
-            ILogger<ClinicSettingsService> logger)
-        {
-            _clinicOptions = clinicOptions;
-            _logger = logger;
-        }
-
         /// <summary>
-        /// 获取当前诊所配置
+        /// 获取当前诊所配置（每次从 IConfiguration 实时绑定——保存后立即可见，支持热更新）
         /// </summary>
         public ClinicSettingsOptions GetSettings()
         {
-            return _clinicOptions.Value ?? new ClinicSettingsOptions();
+            return _configuration
+                       .GetSection(ClinicSettingsOptions.SectionName)
+                       .Get<ClinicSettingsOptions>()
+                   ?? new ClinicSettingsOptions();
         }
 
         /// <summary>
-        /// 保存诊所配置到 clinic-settings.json，写入后 IConfiguration 自动重载
+        /// 保存诊所配置：经 <see cref="IClientConfigurationStore"/> 节级原子写（写 clinic-settings.json
+        /// + .bak 备份 + IConfiguration.Reload），保留其他配置节。
         /// </summary>
         public async Task<bool> SaveSettingsAsync(ClinicSettingsOptions settings)
         {
+            if (settings is null)
+                return false;
+
             try
             {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clinic-settings.json");
-
-                var wrapper = new Dictionary<string, ClinicSettingsOptions>
+                var values = new Dictionary<string, object>
                 {
-                    [ClinicSettingsOptions.SectionName] = settings
+                    ["Name"] = settings.Name ?? string.Empty,
+                    ["Address"] = settings.Address ?? string.Empty,
+                    ["Phone"] = settings.Phone ?? string.Empty,
+                    ["Department"] = settings.Department ?? string.Empty,
+                    ["LicenseNumber"] = settings.LicenseNumber ?? string.Empty,
+                    ["Email"] = settings.Email ?? string.Empty
                 };
 
-                var json = JsonSerializer.Serialize(wrapper, JsonWriteOptions);
-                await File.WriteAllTextAsync(filePath, json);
+                // 节级覆盖会整体替换该节——时区非空时必须一并写入，否则静默丢失
+                if (!string.IsNullOrWhiteSpace(settings.Timezone))
+                    values["Timezone"] = settings.Timezone!;
 
-                _logger.LogInformation("诊所配置已保存到 {FilePath}", filePath);
-                return true;
+                var saved = await _configurationStore.SaveSectionAsync(ClinicSettingsOptions.SectionName, values);
+                if (saved)
+                {
+                    _logger.LogInformation(
+                        "诊所配置已保存（节 {Section}，文件 {FilePath}）",
+                        ClinicSettingsOptions.SectionName,
+                        _configurationStore.ResolveFilePath(ClinicSettingsOptions.SectionName));
+                }
+
+                return saved;
             }
             catch (Exception ex)
             {

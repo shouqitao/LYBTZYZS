@@ -144,8 +144,8 @@
                                    Foreground="White" HorizontalAlignment="Center" TextAlignment="Center">
                             <TextBlock.Effect><DropShadowEffect BlurRadius="8" Opacity="0.2" ShadowDepth="1" Color="Black" /></TextBlock.Effect>
                         </TextBlock>
-                        <!-- 副标题穿透点（pen 无内容，保持空位不占高） -->
-                        <TextBlock Text="中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="18"
+                        <!-- 副标题穿透点（pen 无内容，保持空位不占高）——B-07：由 ClinicSettings 派生的产品名 -->
+                        <TextBlock Text="{Binding SystemTitle, FallbackValue=凌隐宝堂中医诊所管理系统}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="18"
                                    FontWeight="Normal" Foreground="#F0DFC8"
                                    HorizontalAlignment="Center" Margin="0,6,0,0" />
 
@@ -160,7 +160,7 @@
 
                     <!-- 底部版权 -->
                     <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,22">
-                        <TextBlock Text="© 2026 中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                        <TextBlock Text="{Binding CopyrightText}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
                                    Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Opacity="0.9" />
                     </StackPanel>
                 </Grid>
@@ -179,7 +179,7 @@
                     <StackPanel Width="420" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="欢迎登录" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="24" FontWeight="Bold"
                                    Foreground="{StaticResource PenTextPrimaryBrush}" Margin="0,0,0,8" />
-                        <TextBlock Text="请使用您的账号登录中医诊所管理系统" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="14"
+                        <TextBlock Text="{Binding LoginHint}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="14"
                                    Foreground="{StaticResource PenTextSecondaryBrush}" Margin="0,0,0,24" />
 
                         <!-- 用户名 -->
@@ -280,7 +280,7 @@
                                    HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,4,0,0"
                                    Visibility="{Binding ErrorMessage, Converter={x:Static converters:Cvt.StringToVis}}" />
 
-                        <TextBlock Text="中医诊所管理系统 v1.0" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
+                        <TextBlock Text="{Binding VersionText}" FontFamily="Noto Sans SC, Microsoft YaHei UI" FontSize="12"
                                    Foreground="{StaticResource PenTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,12,0,0" Opacity="0.85" />
                     </StackPanel>
                 </Grid>

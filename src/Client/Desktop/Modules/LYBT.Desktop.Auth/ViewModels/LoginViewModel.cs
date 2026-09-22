@@ -1,7 +1,7 @@
-using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -26,31 +26,37 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IDialogService? _dialogService;
         private CancellationTokenSource? _cts;
 
+        /// <summary>默认诊所名（未配置 clinic-settings.json 时的回退）</summary>
+        private const string DefaultClinicName = "凌隐宝堂中医诊所";
+
         /// <summary>
-        /// 首次运行标记文件路径 (%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag)
+        /// 由诊所名派生产品名：诊所名已含「系统」时不再追加后缀。
+        /// 默认诊所名 → 「凌隐宝堂中医诊所管理系统」（产品名 SSOT 文本）。
         /// </summary>
-        private static readonly string FirstRunMarkerPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "LYBT", "Desktop", "first_run_done.flag");
-
-        private static bool IsFirstRun => !File.Exists(FirstRunMarkerPath);
-
-        private static void MarkFirstRunCompleted()
+        private static string BuildSystemTitle(string clinicName)
         {
-            try
-            {
-                var dir = Path.GetDirectoryName(FirstRunMarkerPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                File.WriteAllText(FirstRunMarkerPath, DateTime.UtcNow.ToString("O"));
-            }
-            catch
-            {
-                // 标记失败不阻塞使用
-            }
+            var name = string.IsNullOrWhiteSpace(clinicName) ? DefaultClinicName : clinicName.Trim();
+            return name.EndsWith("系统", StringComparison.Ordinal) ? name : $"{name}管理系统";
         }
+
+        /// <summary>
+        /// 品牌区大标题 - 诊所名可绑定配置（clinic-settings.json，IClinicSettingsService）
+        /// </summary>
+        public string ClinicName { get; }
+
+        /// <summary>
+        /// 产品名（B-07：由诊所配置驱动，默认诊所名 → 凌隐宝堂中医诊所管理系统）
+        /// </summary>
+        public string SystemTitle { get; }
+
+        /// <summary>版权行文本</summary>
+        public string CopyrightText { get; }
+
+        /// <summary>登录提示文本</summary>
+        public string LoginHint { get; }
+
+        /// <summary>版本行文本</summary>
+        public string VersionText { get; }
 
         #region 子 ViewModel
 
@@ -96,11 +102,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// 当前仅保存 UI 状态，自动登录执行链路未接入（预留）
         /// </summary>
         public bool IsAutoLogin { get; set; }
-
-        /// <summary>
-        /// 品牌区大标题 - 诊所名可绑定配置（clinic-settings.json，IClinicSettingsService）
-        /// </summary>
-        public string ClinicName { get; }
 
         public bool HasSavedPassword
         {
@@ -182,8 +183,14 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             // 品牌区大标题：诊所名可绑定配置，空值回退默认
             ClinicName = clinicSettingsService is null
-                ? "凌隐宝堂中医诊所"
-                : string.IsNullOrWhiteSpace(clinicSettingsService.ClinicName) ? "凌隐宝堂中医诊所" : clinicSettingsService.ClinicName;
+                ? DefaultClinicName
+                : string.IsNullOrWhiteSpace(clinicSettingsService.ClinicName) ? DefaultClinicName : clinicSettingsService.ClinicName;
+
+            // B-07: 产品名/版权/提示/版本行由诊所配置派生（原先 4 处硬编码「中医诊所管理系统」）
+            SystemTitle = BuildSystemTitle(ClinicName);
+            CopyrightText = $"© 2026 {SystemTitle}";
+            LoginHint = $"请使用您的账号登录{SystemTitle}";
+            VersionText = $"{SystemTitle} v{SystemConstants.ApplicationVersion}";
 
             // 创建子 VM（D3: DI 注入优先，手动 new 为测试/可选依赖回退）
             Credentials = credentials ?? new LoginCredentialsViewModel(services, usernameStorage, credentialVault);
@@ -208,7 +215,6 @@ namespace LYBT.Desktop.Auth.ViewModels
             try
             {
                 await Task.Delay(100, _cts?.Token ?? CancellationToken.None);
-                await MaybeShowFirstRunSetupAsync();
                 await Credentials.LoadSavedCredentialsAsync();
                 await ConnectionStatus.LoadApiStatusAsync();
                 await ConnectionStatus.DetectConnectionModeAsync();
@@ -220,38 +226,6 @@ namespace LYBT.Desktop.Auth.ViewModels
             finally
             {
                 LoginCommand.NotifyCanExecuteChanged(); // 初始化完成（可能已加载保存的凭证）后重新评估
-            }
-        }
-
-        private async Task MaybeShowFirstRunSetupAsync()
-        {
-            if (!IsFirstRun)
-            {
-                Logger.LogDebug("[VM] Login.FirstRun - 标记文件已存在，跳过向导");
-                return;
-            }
-
-            if (_dialogService is null)
-            {
-                Logger.LogWarning("[VM] Login.FirstRun - IDialogService 未注入，无法显示首次运行向导");
-                return;
-            }
-
-            try
-            {
-                await Services.UiThreadDispatcher.InvokeAsync(() =>
-                {
-                    Logger.LogInformation("[VM] Login.FirstRun - 显示首次运行配置向导");
-                    _dialogService.ShowDialog(nameof(Views.FirstRunSetupView), null, result =>
-                    {
-                        Logger.LogInformation("[VM] Login.FirstRun - 向导已关闭: {Result}", result.Result);
-                        MarkFirstRunCompleted();
-                    });
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "[VM] Login.FirstRun - 显示向导失败");
             }
         }
 

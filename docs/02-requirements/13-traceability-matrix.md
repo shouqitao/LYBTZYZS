@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.15 | 日期: 2026-09-22 | 状态: ✅ R15/R16 修复——PRD/矩阵 US 总数统一为 154（Shell 节 14→20 行校正）；2026-09-22 B-06 交付后 US-SHELL-013 状态/关联 API/实现文件校准
+> 版本: v1.16 | 日期: 2026-09-23 | 状态: ✅ B-07 交付——US-SHELL-011 由「🧲 v2.0 推迟」校准为 ✅ 已实现（5 步初始化向导）；2026-09-22 B-06 交付后 US-SHELL-013 状态/关联 API/实现文件校准（v1.15）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 154 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -181,7 +181,7 @@
 | US-SHELL-005 | Must | ADR-0006/0007 | — | NavigationCoordinator | NavigationCoordinator | — | ⚠️ 部分实现（N1/N2/N3/N4/N5 已实施✅——MedicalCaseNav 契约生产方工厂对齐/参数消费补齐/VM 禁直呼 RequestNavigate/后退 fallback 主页/角色菜单矩阵；N6 对话框核心已收敛✅——UserNotificationService/NotificationService/Control/VM MessageBox 已替换） | N/A | ⚠️ |
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ⚠️ 部分实现（双模路由✅/NO_REMOTE_URL 阻断✅；ERR-70506 未完成医案守卫仅日志未阻断——2026-09-14 E2E 取证 `ModeSwitchE2ETests`） | ⚠️ | ✅ |
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
-| US-SHELL-011 | Must | ADR-0006 | — | FirstRunSetupViewModel 扩展 | FirstRunSetupViewModel | S1/S2 | 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 且可手动配置，v1.0 优先核心诊疗） | N/A | 🧲 v2.0 |
+| US-SHELL-011 | Must | ADR-0006 | — | `InitializationWizardView`（`RegisterForNavigation` + `RegisterDialog`）+ `local-database.json` + `first_run_done.flag` | InitializationWizardViewModel + IInitialAdminService + ILocalDatabaseSettingsService + IFirstRunStateService | S1/S2 | ✅ 已实现（2026-09-23 B-07：5 步向导——欢迎+模式选择/模式配置（含测试连接）/诊所信息/初始 Admin/校验完成；sysadmin 登录后触发 + `SysadminHomeView` 手动入口；未完成不阻塞主界面，见 13c #147） | N/A | ✅ |
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
 | US-SHELL-013 | Should | ADR-0010 | — | 双端 `/api/v1/backup`（列表/状态/表清单/创建/恢复/删除/清理/auto，8 端点） | SqlServerBackupService + BaseBackupController + BackupManagementView | S4/X3.2 | ✅ 已实现（2026-09-22 B-06：共享 SQL Server 备份引擎 + 双端 BackupController——全量/差异/加密/选择性恢复/删除/清理/进度；旧 ILocalDbBackupService 迁移移除，见 13c #146） | ✅ | ✅ |
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditController + SecurityAuditLogView | SysadminHome 安全审计卡 | A12 | ✅ 2026-08-29 查询 API + Desktop 页（仅远程） | ✅ | ✅ |
@@ -281,14 +281,14 @@
 | MC | 20 | 17 | 0 | 3 | 0 | 0 |
 | REG | 8 | 7 | 0 | 0 | 1 | 0 |
 | PRINT | 4 | 4 | 0 | 0 | 0 | 0 |
-| Shell | 20 | 4 | 2 | 1 | 6 | 0 |
+| Shell | 20 | 5 | 2 | 1 | 5 | 0 |
 | CFG | 6 | 6 | 0 | 0 | 0 | 0 |
 | ERR | 8 | 6 | 2 | 0 | 0 | 0 |
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
 | REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
-| **合计** | **154** | **141** | **3** | **0** | **7** | **0** |
+| **合计** | **154** | **142** | **3** | **0** | **6** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 
@@ -303,6 +303,7 @@
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
+| 2026-09-23 | **v1.16 B-07 初始化向导交付状态校准**：US-SHELL-011 行由「🧲 v2.0 推迟 / 关联 API `FirstRunSetupViewModel 扩展` / 实现文件 `FirstRunSetupViewModel` / WebAPI `N/A` / Desktop `🧲 v2.0`」改为「✅ 已实现」——关联 API 列改 `InitializationWizardView`（`RegisterForNavigation` + `RegisterDialog`）+ `local-database.json` + `first_run_done.flag`；实现文件列改 `InitializationWizardViewModel` + `IInitialAdminService` + `ILocalDatabaseSettingsService` + `IFirstRunStateService`；Desktop 列 `🧲 v2.0`→`✅`；统计汇总 Shell ✅ 4→5 / 🧲 6→5，合计 ✅ 141→142 / 🧲 7→6 | B-07 交付 5 步初始化向导（sysadmin 登录后触发 + SysadminHome 手动入口，取代单屏 `FirstRunSetupView`），原行「v2.0 推迟」与实现矛盾 |
 | 2026-09-18 | **v1.13 前端设计文档漂移 P0 状态同步**：US-SHELL-003 状态列→✅ N5 已实现（RequiredModules 含 ClinicalModule）；US-SHELL-005 状态列→⚠️ 部分实现（N1/N3/N4/N5 已实施、N2 参数消费部分完成、N6 对话框待收敛）；Shell/合计统计同步（✅-1 ⚠️+1） | 代码-文档一致性红线：导航切片代码落地后需求状态列滞后 |
 | 2026-09-18 | **v1.14 导航参数契约 P1 + N6 MessageBox 清理后状态再校准**：US-SHELL-005 更新为 N1 生产方工厂补齐✅ / N2 参数消费✅ / N6 对话框核心收敛✅（ToastService 兜底保留） | 代码批次后状态列同步 |
 | 2026-08-20 | **v1.12 R15/R16 修复**：① Shell 节标题 14→20（实际 SHELL-001~025 活跃 20 行）；② 统计汇总表 Shell 13→20、合计 151→154；③ 覆盖描述 151→154 | R15/R16 审计结论：PRD/矩阵 US 总数矛盾修复 |

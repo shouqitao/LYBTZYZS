@@ -86,8 +86,11 @@ public static class ViewNames
 
     #region 认证视图
 
-    /// <summary>登录页面</summary>
+    /// <summary>登录视图</summary>
     public const string Login = "LoginView";
+
+    /// <summary>初始化向导（B-07 / US-SHELL-011：首次运行 + 系统管理手动重跑；同一视图可对话框/导航两种方式打开）</summary>
+    public const string InitializationWizard = "InitializationWizardView";
 
     #endregion
 

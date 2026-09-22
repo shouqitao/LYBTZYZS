@@ -1,8 +1,8 @@
 # Desktop UI/UX 详细设计文档
-> 版本: v2.2 | 日期: 2026-09-22 | 基于: R01→R22 22 轮独立调研 + R23 综合
+> 版本: v2.3 | 日期: 2026-09-23 | 基于: R01→R22 22 轮独立调研 + R23 综合
 > 模型: DeepSeek V4 Flash | 状态: 定版（数量与页面清单已对齐代码，2026-09-13）| 覆盖: View 30 / Control 33 / Dialog 7 / ViewModel 55（XAML 合计 82 = 视图 71 + 资源模板 11）+ 147 个 US
 
-> **计数口径**（代码实际 `src/Client/Desktop`，排除 bin/obj）: **View 30** = 页面/导航级 `*/Views/*.xaml`（含角色台 `Roles/*/Views/`、`Reports/Views/`、`Receptionist/Views/`，以及 Shell 的 MainWindow/AppShell/HeaderControl/SideNavControl/FooterControl/AccountSettingsView）；**Control 33** = 内嵌组件 `*/Controls/*.xaml`（共享设计系统 16 + 模块内嵌 17，`Shell/Controls/AccountSettingsControl` 归此）；**Dialog 7** = `*/Dialogs/**/*.xaml`（经 `RegisterDialog` 注册，Shell 的 3 个位于 `Dialogs/Views/`）；**Root 1** = `Shell/App.xaml`（应用级资源，非视图）；**ViewModel 55** = VM 文件数（每文件 1 个 VM 类型）。注: `Auth/Views/ServerConfigView.xaml`、`Auth/Views/FirstRunSetupView.xaml` 物理位于 `Views/`（按路径计入 View），但经 `RegisterDialog` 作为**对话框**注册；`Shell/Controls/AccountSettingsControl.xaml` 位于 `Controls/`，但其宿主 `AccountSettingsView` 计入 View。
+> **计数口径**（代码实际 `src/Client/Desktop`，排除 bin/obj）: **View 30** = 页面/导航级 `*/Views/*.xaml`（含角色台 `Roles/*/Views/`、`Reports/Views/`、`Receptionist/Views/`，以及 Shell 的 MainWindow/AppShell/HeaderControl/SideNavControl/FooterControl/AccountSettingsView）；**Control 33** = 内嵌组件 `*/Controls/*.xaml`（共享设计系统 16 + 模块内嵌 17，`Shell/Controls/AccountSettingsControl` 归此）；**Dialog 7** = `*/Dialogs/**/*.xaml`（经 `RegisterDialog` 注册，Shell 的 3 个位于 `Dialogs/Views/`）；**Root 1** = `Shell/App.xaml`（应用级资源，非视图）；**ViewModel 55** = VM 文件数（每文件 1 个 VM 类型）。注: `Auth/Views/ServerConfigView.xaml`、`Auth/Views/InitializationWizardView.xaml` 物理位于 `Views/`（按路径计入 View），但经 `RegisterDialog` 作为**对话框**注册（`InitializationWizardView` 另经 `RegisterForNavigation` 可导航——B-07 双入口）；`Shell/Controls/AccountSettingsControl.xaml` 位于 `Controls/`，但其宿主 `AccountSettingsView` 计入 View。
 
 > **R23 说明**: 本文档为 R01-R22 的去重合并与优先级排序后的综合产出，代码 vs 需求 vs 设计已交叉验证，差异已标注于 §10 问题清单。
 
@@ -181,8 +181,13 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 | 状态流转 | 初始→输入中→提交中→成功(导航)/失败(红 Snackbar “用户名或密码错误”/`423 锁定`) |
 | 异常 | 网络红 Snackbar“网络失败”；API 不可用 StatusBadge 红；锁定等 15min |
 
-### 4.2 首次运行向导 (`FirstRunSetupView.xaml`)
-5 步 `StepIndicator`：欢迎→系统检查→创建 SuperAdmin(`POST /auth/setup` + `InitialSetupToken`)→诊所信息→完成，`Next/Back` + 进度条，`TabIndex` 0-4，焦点首输入。
+### 4.2 首次初始化向导 (`InitializationWizardView.xaml`)
+- **路径/VM**: `Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml` + `ViewModels/InitializationWizardViewModel.cs`（基类 `ConnectionTestViewModelBase` ← `DialogViewModelBase : NavigableViewModelBase, IDialogAware`）；步骤枚举 `Models/InitializationWizardStep.cs`、校验清单项模型 `Models/WizardChecklistItemModel.cs`
+- **注册（双入口）**: `RegisterForNavigation<InitializationWizardView, InitializationWizardViewModel>`（可导航）+ `RegisterDialog<InitializationWizardView, InitializationWizardViewModel>`（模态）——同一 View/VM
+- **触发**: ① `ShellEventCoordinator.OnLoginSucceeded`——登录用户为 sysadmin 且 `IFirstRunStateService.IsFirstRun` 时弹出；② `SysadminHomeView` 手动入口（可随时重跑）
+- **5 步 `StepIndicator`**（`Next`/`Back`/完成按钮 + 进度条）: ① 欢迎 + 模式选择（本地全栈 / 远程服务器）② 模式相关配置——本地：数据库连接（LocalDB / SQL Server，`ILocalDatabaseSettingsService` + 「测试连接」`TestAsync`）；远程：服务器地址 + 「测试连接」（`CheckRemoteAvailableAsync`）③ 诊所信息（名称/科室/地址/电话，`ClinicSettingsService`）④ 初始管理员账号创建（用户名/姓名/密码/确认密码 → `IInitialAdminService.CreateAdminAsync`，`Role=Admin`；已存在同名账号可跳过）⑤ 配置校验清单 + 完成（写 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`）
+- **门控/时机**: 第 2 步远程分支须连接测试成功、第 4 步须创建成功方可继续；**所选模式在第 2 步「下一步」应用（先测试后切换）**，故第 4 步创建的 admin 落在所选后端；未完成不写标记且不阻塞进入主界面（下次登录再次提示）
+- **需求**: US-SHELL-011（B-07 交付，2026-09-23）；旧单屏 `FirstRunSetupView`/`FirstRunSetupViewModel` 已删除
 
 ### 4.3 服务器配置 (`ServerConfigView.xaml`)
 `API地址` 输入 + `TestConnection` + `Save` + `ConnectionStatusViewModel` 卡（`RemoteUrl` 自动探测 `UrlChanged→CheckRemoteAvailableAsync`）；`Save` 成功 `InfoCard` “✓ 已保存 12:34”。
@@ -284,7 +289,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 - `UserManagementView`（薄包装 View，无独立 VM）: 内嵌 `UserMasterDetailControl`（`UsersModule` 经 `ViewModelLocationProvider.Register` 显式映射到 `UserMasterDetailViewModel`，因约定名不匹配）；Master-Detail，用户 CRUD 分级 `Sysadmin→Admin→Doctor/Receptionist` + 禁用/重置密码 `SysAdminOnly` + 批量二次确认 + 密码确认
 
 ### 4.17 运维首页/备份/部署/日志/安全审计
-- `SysadminHomeView`（VM `SysadminHomeViewModel`）: 3 个 Tab —— `配置`（`ConfigCenter`：诊所/会话/连接/安全/功能开关 5 节 + `RestartLocalServiceCommand`；并内嵌 `CardReaderDiagnostics` 读卡诊断 `RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`）、`服务端配置`（`IsRemoteMode` 可见，`ServerConfig` 节列表 `SaveSectionCommand` / `RestartServerCommand`）、`备份恢复`（`IsLocalMode` 可见，内嵌 `<views:BackupManagementView/>`；远程模式由侧栏「备份管理」与首页「备份管理」卡片进入同一 View）；并附 4 个快捷入口按钮（用户管理/日志级别/部署/安全审计）
+- `SysadminHomeView`（VM `SysadminHomeViewModel`）: 3 个 Tab —— `配置`（`ConfigCenter`：诊所/会话/连接/安全/功能开关 5 节 + `RestartLocalServiceCommand`；并内嵌 `CardReaderDiagnostics` 读卡诊断 `RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`）、`服务端配置`（`IsRemoteMode` 可见，`ServerConfig` 节列表 `SaveSectionCommand` / `RestartServerCommand`）、`备份恢复`（`IsLocalMode` 可见，内嵌 `<views:BackupManagementView/>`；远程模式由侧栏「备份管理」与首页「备份管理」卡片进入同一 View）；并附 4 个快捷入口按钮（用户管理/日志级别/部署/安全审计）+ **初始化向导手动入口**（重跑 US-SHELL-011 5 步向导，见 §4.2；首次登录的自动触发由 `ShellEventCoordinator.OnLoginSucceeded` 负责）
   - 三个**子 VM 无独立 XAML**（均为 `SysadminHomeView` 内嵌子 VM）: `ConfigurationCenterViewModel`、`ServerConfigSectionViewModel`、`CardReaderDiagnosticsViewModel` —— 对应早期清单中的 `ConfigExportImportView`(SY-07)、`ServerConfigPanelView`(SY-08)、`CardReaderDiagnosticsView`(SY-05) 三个**未建视图**（见 §4.23）
 - `BackupManagementView`（`Roles/LYBT.Desktop.Admin/Sysadmin/Views/BackupManagementView.xaml`，VM `BackupManagementViewModel`；B-06 交付态，`NavigationCoordinator.ViewRoleAccess[BackupManagement] = [SuperAdmin]`）:
   - **状态卡**: 上次备份 / 备份文件数 / 总大小 + 一行元信息（`BackupDirectory`｜`RetentionInfo`「保留 N 天」｜`AutoBackupInfo`「计划调度：每 N 小时」或「登录自动备份：间隔 N 小时（计划调度未启用）」）；操作进行中显示 `OperationPhase` + `ProgressBar`（`ProgressPercent`，VM 每秒轮询 `GET /api/v1/backup/status`）；`StatusMessage`/`ErrorMessage`（红）文本行
@@ -333,12 +338,12 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 |6| `MessageDialog` | `Shell/Dialogs/Views/` | `MessageDialogViewModel` | `App.RegisterTypes` |
 |7| `InputDialog` | `Shell/Dialogs/Views/` | `InputDialogViewModel` | `App.RegisterTypes` |
 
-> 口径提示: `Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/FirstRunSetupView.xaml` 经 `AuthenticationModule.RegisterDialog` 注册为**对话框**，但物理位于 `Views/`，按封面口径计入 **View（+2）**、不计入 Dialog 7。
+> 口径提示: `Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/InitializationWizardView.xaml` 经 `AuthenticationModule.RegisterDialog` 注册为**对话框**（后者另经 `RegisterForNavigation` 可导航，B-07 双入口），但物理位于 `Views/`，按封面口径计入 **View（+2）**、不计入 Dialog 7。
 
 ### 4.22 未建视图对照表（引用真实承载者）
 | 清单代码 | 早期视图名 | 状态 | 真实承载者 |
 |----------|-----------|------|-----------|
-| W-01 | `InitializationWizardView` | `[未建视图]` | 首次运行承载者 = `FirstRunSetupView`（5 步向导，`AuthenticationModule.RegisterDialog`，需求 US-SHELL-011） |
+| W-01 | ~~`InitializationWizardView`~~ | ✅ **已建（2026-09-23 B-07）** | 见 §4.2：`Auth/Views/InitializationWizardView.xaml`（5 步初始化向导，`RegisterForNavigation` + `RegisterDialog` 双入口，需求 US-SHELL-011）；旧单屏 `FirstRunSetupView` 已删除 |
 | SY-05 | `CardReaderDiagnosticsView` | `[未建视图]` | `SysadminHomeView`「配置」Tab 内嵌子 VM `CardReaderDiagnosticsViewModel`（`RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`，无独立 XAML） |
 | SY-07 | `ConfigExportImportView` | `[未建视图]` | `SysadminHomeView` 内嵌子 VM `ConfigurationCenterViewModel`（配置导入导出为其能力，非独立页面） |
 | SY-08 | `ServerConfigPanelView` | `[未建视图]` | `SysadminHomeView`「服务端配置」Tab → 子 VM `ServerConfigSectionViewModel`（仅远程模式可见） |
@@ -352,7 +357,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 | # | View | 所在小节 | # | View | 所在小节 |
 |---|------|---------|---|------|---------|
 |1| `LoginView` | §4.1 |16| `SysadminHomeView` | §4.17 |
-|2| `FirstRunSetupView` | §4.2 |17| `BackupManagementView` | §4.17 |
+|2| `InitializationWizardView` | §4.2 |17| `BackupManagementView` | §4.17 |
 |3| `ServerConfigView` | §4.3 |18| `DeploymentView` | §4.17 |
 |4| `MainWindow` | §4.4 |19| `LogLevelControlView` | §4.17 |
 |5| `AppShell` | §4.4.1 |20| `SecurityAuditLogView` | §4.19 |
@@ -622,13 +627,14 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 | 53 | 封面/§4 数量口径与代码不符（v2.0 称 25 View + 24 Control + 51+ VM + 「17 页」） | 本轮修订（2026-09-13，依据代码实际 `src/Client/Desktop`） | P1 | 已修：封面 → **View 30 / Control 33 / Dialog 7 / ViewModel 55**（XAML 82 = 视图 71 + 资源模板 11），并在封面声明计数口径 |
 | 54 | §1.3 共享控件表**重复**列出 `BreadcrumbBar`、`UnifiedPaginationBar`（各两次），缺 `BaseDetailContainer`/`FormulaViewControl`/`HerbItemControl`，且混入模块控件 `WorkflowStepIndicator` | 本轮修订（同上） | P2 | 已修：去重 + 补全 `LYBT.Desktop.Controls` 16 个 + 模块内嵌 17 个另列 §1.3.1；§9 矩阵同源更新 |
 | 55 | §4 仅覆盖 17 页，未覆盖 `SecurityAuditLogView`/`MedicalCaseManagementView`/`AccountSettingsView`/`AppShell`/`HeaderControl`/`SideNavControl`/`FooterControl` 等 | 本轮修订（同上） | P1 | 已修：§4 覆盖全部 30 View（新增 §4.4.1/§4.18/§4.19/§4.20），并补 §4.21 对话框清单、§4.23 覆盖核对表 |
-| 56 | 8 个视图名在代码中不存在（`InitializationWizardView`/`CardReaderDiagnosticsView`/`ConfigExportImportView`/`ServerConfigPanelView`/`SessionTimeoutWarningDialog`/`UnfinishedCaseDialog`/`PrintPreviewDialog`/`RegistrationCreateView`） | 本轮修订（同上） | P2 | 已修：§4.22 逐条标 `[未建视图]` 并给出真实承载者（W-01→`FirstRunSetupView`+US-SHELL-011；SY-05/07/08→`SysadminHomeView` 内嵌子 VM；DD-04→`UnsavedChangesDialog` 等） |
+| 56 | 7 个视图名在代码中不存在（`CardReaderDiagnosticsView`/`ConfigExportImportView`/`ServerConfigPanelView`/`SessionTimeoutWarningDialog`/`UnfinishedCaseDialog`/`PrintPreviewDialog`/`RegistrationCreateView`） | 本轮修订（同上；2026-09-23 B-07 复核） | P2 | 已修：§4.22 逐条标 `[未建视图]` 并给出真实承载者（SY-05/07/08→`SysadminHomeView` 内嵌子 VM；DD-04→`UnsavedChangesDialog` 等）。**B-07 复核**：原列 8 个中 `InitializationWizardView` 已真实落地 → 从名单移除并标 ✅（见 §4.2 / §4.22 W-01） |
 | 57 | §3/§4 引用与代码不符：内容区 Region 曾写作 `RegionNames.MainContent`（实际 `RegionNames.ContentRegion`）、`INavigationCoordinator.NavigateToMedicalCaseWorkspace(params)`（实际 `NavigateTo<TParams>`）、全局快捷键 `Ctrl+S/Ctrl+P/Esc`（实际见 `MainWindow.InputBindings`）、Sysadmin「Tab 配置/备份/日志/部署」（实际 3 Tab + 4 快捷入口）、侧栏分组曾写作「主页/业务/管理」（实际 `Group` = 临床/目录/管理） | 本轮修订（同上） | P2 | 已修：全文统一为代码实际口径 |
 
-| 58 | 品牌文案未统一：`LoginView.xaml` 硬编码「中医诊所管理系统」4 处（副标题/版本/版权/登录提示），权威名为「凌隐宝堂中医诊所管理系统」 | 本轮修订（2026-09-13 品牌核对） | P2 | 待修（代码侧文案统一，文档已按权威名表述） |
+| 58 | 品牌文案未统一：`LoginView.xaml` 硬编码「中医诊所管理系统」4 处（副标题/版本/版权/登录提示），权威名为「凌隐宝堂中医诊所管理系统」 | 本轮修订（2026-09-13 品牌核对） | P2 | **已修（2026-09-23 B-07）**：`LoginView.xaml` 4 处硬编码改为绑定 VM 属性，产品名由 `ClinicSettings.ClinicName` 驱动（默认诊所名 →「凌隐宝堂中医诊所管理系统」）；`designs/*.pen` 设计稿内的同名文案未随代码改动（见 §10 附录设计稿问题） |
 
 > 共 52 项去重后：P1 12 项，P2 40 项，无 P0；R01-R22 已交叉引用，去重合并完成。⚠️ 问题状态应以 13c-current-status.md 为准（本文档为设计时统计）。
 > 本轮（v2.1, 2026-09-13）新增 **#53-#58**（6 项，依据代码实际 `src/Client/Desktop`）: #53-#57 为文档-代码对齐修订（已闭合），#58 为品牌核对新发现项（代码侧待修）。
+> **本轮（v2.3, 2026-09-23，B-07）**：#56 名单中 `InitializationWizardView` 已落地（从「不存在」名单移除，§4.2/§4.22 同步）；#58 代码侧硬编码品牌已由 B-07 修复（`LoginView.xaml` 改绑 VM 属性，产品名由 `ClinicSettings.ClinicName` 驱动）。
 
 ## 11. 实施建议
 1. **P1 优先**（12 项，2 周）：权限细分 4 项 + 表单/绑定 3 项 + 保存/会话 3 项 + 设计对齐 2 项

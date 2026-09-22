@@ -1,5 +1,5 @@
 # 平台壳程序 (Shell)
-> 版本: v1.0 | 日期: 2026-08-20
+> 版本: v1.4 | 日期: 2026-09-23
 
 > Shell 采用 Prism 8.1.97 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
 
@@ -212,32 +212,38 @@
 
 ---
 
-## US-SHELL-011: 首次初始化向导（5 步强制）
+## US-SHELL-011: 首次初始化向导（5 步）
 
 **角色**: sysadmin
 **优先级**: Must
-**状态**: 🧲 v2.0 推迟（B4 决策 I-4：仅 Sysadmin 使用且可手动配置，v1.0 优先保证核心诊疗）
+**状态**: ✅ 已实现（2026-09-23 B-07——5 步向导 `InitializationWizardView` + `InitializationWizardViewModel`；sysadmin 登录后触发 + `SysadminHomeView` 手动入口；旧单屏 `FirstRunSetupView` 已删除）
 
-**作为** sysadmin，**我想要** 首次登录后走初始化向导，**以便** 一站式完成系统配置（改密/诊所/模式/admin），不需手动改文件。
+**作为** sysadmin，**我想要** 首次登录后走 5 步初始化向导，**以便** 一站式完成模式选择/连接配置/诊所信息/初始管理员创建，不需手动改配置文件。
 
 **验收标准**:
 
-- [ ] sysadmin 首次登录后强制进入向导，不可跳过
-- [ ] Step 1: 强制修改默认密码（`ForceChangeOnFirstLogin=true`）
-- [ ] Step 2: 填写诊所信息（名称/科室/地址/电话），驱动处方打印标题
-- [ ] Step 3: 选择远程/本地模式（测试远程连通性或跳过用本地）
-- [ ] Step 4: 创建首个 admin 账号（用户名 + 临时密码）
-- [ ] Step 5: 完成提示"请以 admin 登录继续配置用户/药材" → 注销 sysadmin
-- [ ] 向导未完成，sysadmin 无法进入主界面
+- [x] 5 步向导（步骤枚举 `InitializationWizardStep`）：① 欢迎 + 模式选择（本地全栈 / 远程服务器）② 模式相关配置（本地：数据库连接，LocalDB / SQL Server；远程：服务器地址）——两分支均含「测试连接」③ 诊所信息（名称/科室/地址/电话）④ 初始管理员账号创建（用户名/姓名/密码/确认密码，「创建管理员」）⑤ 配置校验清单 + 完成（写入首次运行标记）
+- [x] 上一步/下一步/完成按钮 + 步骤指示器 1-5；按步骤门控——**第 2 步远程分支须连接测试成功方可继续**，**第 4 步须创建管理员成功方可继续**
+- [x] **模式应用时机**：第 2 步「下一步」时应用所选模式（先测试后切换——远程须先 `CheckRemoteAvailableAsync` 通过），后续步骤（管理员创建）因此作用于所选后端
+- [x] **触发①（登录后）**：`ShellEventCoordinator.OnLoginSucceeded`——登录用户为 sysadmin 且 `IFirstRunStateService.IsFirstRun` 时弹出向导（管理员创建需要 sysadmin 会话，故不再在登录前弹出）
+- [x] **触发②（手动）**：系统管理（`SysadminHomeView`）手动入口，可随时重新运行向导
+- [x] **完成标记**：写 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`（与既有实现同路径，既有安装的「已完成」状态延续）；未完成不写标记 → 下次登录再次提示（**不阻塞进入主界面**）
+- [x] 同一 View/VM 双入口：`RegisterForNavigation`（可导航）+ `RegisterDialog`（模态对话框）——一份实现两种呈现
 
 **业务规则**:
 
-1. `IdentitySeedData` 改为只种子 sysadmin（不种子 admin），admin 由 sysadmin 在向导中手动创建。
-2. 默认密码随机生成并显示一次，首登强制改。
-3. JWT 密钥首次启动生成随机密钥（替代硬编码）。
-4. 向导 UI 参考业界最佳实践。
+1. 向导 View/VM 位于 Auth 模块（`Modules/LYBT.Desktop.Auth/{Views,ViewModels}/`），VM 派生既有的 `ConnectionTestViewModelBase`（复用连接测试 + 模式选择基类能力；组件分解见 [ADR-0006](../03-architecture/decisions/0006-component-decomposition-pattern.md)）。
+2. **模式切换时机**：向导只在第 2 步「下一步」应用所选模式，且**先测试后切换**；因此第 4 步创建的 admin 落在所选后端（本地 LocalDB / 远程 SQL Server）。
+3. **初始管理员**：`IInitialAdminService`（DP10 门面，封装 `IApiClientIdentity.CreateUserAsync` → `Role = UserRole.Admin`）；已存在同名账号时提示并可跳过该步。
+4. **首次运行标记**：`IFirstRunStateService` 读写 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`（`AppDataPaths.DesktopDataDirectory` 为唯一权威）；检测方（登录成功协调器）与写入方（向导）共用该服务；未完成不写标记，不阻塞主界面。
+5. **本地数据库配置**：`ILocalDatabaseSettingsService` 持久化 `%LOCALAPPDATA%\LYBT\Desktop\local-database.json`（默认 LocalDB `(localdb)\MSSQLLocalDB` + 库 `LYBTDesktop`；SQL Server 分支支持 Windows 认证或 User ID/Password + `Encrypt=True`）；口令以 **DPAPI（CurrentUser）加密 + Base64** 存储，JSON 中不含明文；嵌入式 LocalWebAPI 宿主消费该配置构造连接串。
+6. **诊所信息**：`ClinicSettingsService.SaveSettingsAsync` 改走 `IClientConfigurationStore.SaveSectionAsync`（原子写 + `.bak` + `IConfiguration.Reload`），`GetSettings()` 改读实时 `IConfiguration`——修正此前写入进程当前目录导致配置丢失的缺陷；诊所名同时驱动处方打印标题与登录页产品名。
+7. 不再在登录前弹出（管理员创建需 sysadmin 会话）；旧单屏 `FirstRunSetupView`/`FirstRunSetupViewModel` 已删除，避免两个并行的首次运行入口。
 
-**实现参考**: 扩展现有 `FirstRunSetupViewModel`（Auth 模块），或新建 `InitializationWizard`
+**双模式差异**:
+模式差异：远程: 第 2 步填服务器地址，须 `CheckRemoteAvailableAsync` 通过才可继续；本地: 第 2 步配置数据库连接（LocalDB / SQL Server，含「测试连接」），初始管理员创建在本机 LocalDB
+
+**实现参考**: `Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml` + `ViewModels/InitializationWizardViewModel.cs`（基类 `ConnectionTestViewModelBase`）、`Services/IInitialAdminService.cs`、`Core/LYBT.Desktop.Contracts/Services/{ILocalDatabaseSettingsService,IFirstRunStateService}.cs`、`Shell/Services/ShellEventCoordinator.cs`、`Shell/Services/EmbeddedLocalWebApiService.cs`（消费 `ILocalDatabaseSettingsService.Current`）
 
 ---
 
@@ -668,6 +674,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| v1.4 | 2026-09-23 | US-SHELL-011 由「🧲 v2.0 推迟（B4 决策 I-4）」校准为 B-07 交付态：标题「首次初始化向导（5 步强制）」→「首次初始化向导（5 步）」；状态→✅ 已实现（2026-09-23 B-07）；AC 6 条重写为 7 条交付项（5 步内容/步骤门控/模式应用时机/双触发/完成标记/双入口）；业务规则 4 条重写为 7 条（向导归属与基类、先测试后切换、`IInitialAdminService`、`IFirstRunStateService` 完成标记、`ILocalDatabaseSettingsService` 本地库配置、诊所信息原子写、取消登录前弹出 + 旧 `FirstRunSetupView` 删除）；补充「双模式差异」与实现参考 | B-07 交付：5 步向导取代单屏 `FirstRunSetupView`（sysadmin 登录后触发 + SysadminHome 手动入口），原「v2.0 推迟」表述与实现矛盾 |
 | v1.3 | 2026-09-22 | US-SHELL-013 由「T7 ILocalDbBackupService」校准为 B-06 交付态：状态/愿景/AC 全量更新（6 项 AC→[x]）+ 业务规则 8 条重写（备份目录 `Backup:Directory`、全量/差异、AES-256 加密、整库/选择性恢复与外键 NOCHECK 提示、保留期清理、登录触发 + 24h 间隔的自动备份、权限、双端同路由 8 端点）；双模式总则改述备份引擎双端共享（旧 `ILocalDbBackupService` 迁移移除） | B-06 数据备份/恢复交付，文档既有的「本地 LocalDB 专用 + 远程依赖 SQL Server Agent」表述与实现（双宿主共享引擎）矛盾 |
 | v1.2 | 2026-09-18 | US-SHELL-005 进度再校准——N1 生产方 MedicalCaseNav 工厂补齐✅、N2 参数消费✅、N6 对话框核心收敛✅（UserNotificationService/NotificationService/Control/VM MessageBox 已替换；ToastService 兜底保留） | 导航参数契约迁移 P1 + N6 MessageBox 清理代码批次后状态列同步 |
 | v1.1 | 2026-09-18 | US-SHELL-003 状态→✅ N5 已实现（RequiredModules 含 ClinicalModule，AC 相关项标 ✅）；US-SHELL-005 状态细分——N1/N3/N4/N5✅ / N2⚠️部分完成 / N6🔴待收敛 | 前端设计文档漂移 P0：状态列与导航切片代码实施进度对齐 |

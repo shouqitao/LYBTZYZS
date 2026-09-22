@@ -1,12 +1,15 @@
 using LYBT.Desktop.Contracts.ApiClient;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Navigation;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Shell.Services.Login;
 
@@ -20,6 +23,8 @@ public class ShellEventCoordinator : IDisposable
 {
     private readonly IShellEventServices _services;
     private readonly IApiClient _apiClient;
+    private readonly IDialogService _dialogService;
+    private readonly IFirstRunStateService _firstRunStateService;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
     private readonly EventSubscriptionManager _eventSubscriptions;
@@ -34,10 +39,14 @@ public class ShellEventCoordinator : IDisposable
         IShellEventServices services,
         IEventAggregator eventAggregator,
         IApiClient apiClient,
+        IDialogService dialogService,
+        IFirstRunStateService firstRunStateService,
         ILogger<ShellEventCoordinator> logger)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        _firstRunStateService = firstRunStateService ?? throw new ArgumentNullException(nameof(firstRunStateService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _eventSubscriptions = new EventSubscriptionManager(eventAggregator);
@@ -105,6 +114,10 @@ public class ShellEventCoordinator : IDisposable
                             _logger.LogError(ex, "背景模块预加载失败");
                         }
                     });
+
+                    // B-07（US-SHELL-011）：首次运行 → sysadmin 登录后弹出初始化向导。
+                    // 置于登录后（而非登录前）是因为向导第 4 步创建管理员账号需要 sysadmin 会话。
+                    TryShowInitializationWizard(args.User.Role);
 
                     _logger.LogInformation("登录成功UI更新完成 [用户: {Username}]", args.User.UserName);
 
@@ -182,6 +195,32 @@ public class ShellEventCoordinator : IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "用户资料更新事件处理异常");
+        }
+    }
+
+    /// <summary>
+    /// B-07（US-SHELL-011）：首次运行时为 sysadmin 弹出初始化向导。
+    /// 未完成不写标记（<see cref="IFirstRunStateService"/>）——下次登录再次提示，但不阻塞进入主界面。
+    /// </summary>
+    private void TryShowInitializationWizard(UserRole role)
+    {
+        if (role != UserRole.SuperAdmin || !_firstRunStateService.IsFirstRun)
+            return;
+
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { LYBT.Desktop.Auth.ViewModels.InitializationWizardViewModel.FirstRunParameterKey, true }
+            };
+
+            _logger.LogInformation("[WIZARD] 首次运行：弹出初始化向导");
+            _dialogService.ShowDialog(ViewNames.InitializationWizard, parameters, result =>
+                _logger.LogInformation("[WIZARD] 初始化向导已关闭: {Result}", result.Result));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[WIZARD] 显示初始化向导失败（不阻塞登录）");
         }
     }
 

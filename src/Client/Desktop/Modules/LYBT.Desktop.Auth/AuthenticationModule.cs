@@ -1,3 +1,4 @@
+using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Auth.Views;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,9 @@ namespace LYBT.Desktop.Auth
         {
             // Services由Core_New/Services统一注册，不在Module中注册
 
+            // B-07: 初始管理员账号门面（DP10——向导 VM 不注入 IApiClient 子接口）
+            containerRegistry.Register<IInitialAdminService, Services.InitialAdminService>();
+
             // 注册视图模型
             containerRegistry.Register<LoginViewModel>();
 
@@ -36,14 +40,18 @@ namespace LYBT.Desktop.Auth
             containerRegistry.Register<LoginCredentialsViewModel>();
             containerRegistry.Register<ConnectionStatusViewModel>();
 
+            // 初始化向导（B-07：同一 View/VM 双入口——对话框 + 导航页）
+            containerRegistry.Register<InitializationWizardViewModel>();
+
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<LoginView>();
+            containerRegistry.RegisterForNavigation<InitializationWizardView>();
 
             // 服务器配置对话框
             containerRegistry.RegisterDialog<Views.ServerConfigView, ViewModels.ServerConfigViewModel>();
 
-            // 首次运行配置向导
-            containerRegistry.RegisterDialog<Views.FirstRunSetupView, ViewModels.FirstRunSetupViewModel>();
+            // 初始化向导对话框（首次运行 / 系统管理手动重跑）
+            containerRegistry.RegisterDialog<Views.InitializationWizardView, ViewModels.InitializationWizardViewModel>();
         }
     }
 }

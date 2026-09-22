@@ -1,5 +1,5 @@
 # Desktop UI 需求文档
-> 版本: v1.3 | 日期: 2026-09-22（审计修正；事实校准与计数口径见 §九）
+> 版本: v1.4 | 日期: 2026-09-23（B-07 首次初始化向导；审计修正与计数口径见 §九）
 
 > **基于**: [desktop-design-spec.md](./desktop-design-spec.md) + [desktop-view-inventory.md](../compose/specs/desktop-view-inventory.md)（v0.1，落差已在本文件标注）+ `../../designs/*.pen` 设计稿 **36** 个
 >
@@ -19,7 +19,7 @@
 | 4 | `../../designs/medical-case.pen` | `MedicalCaseWorkspaceView` | D | P0 | ✅ 已实现 |
 | 5 | `../../designs/registration.pen` | `RegistrationListView` | R/D | P0 | ✅ 已实现 |
 | 6 | `../../designs/admin-home.pen` | `AdminHomeView` | A | P0 | ✅ 已实现 |
-| 7 | `../../designs/first-run.pen` | `FirstRunSetupView`（以 Dialog 注册） | S | P0 | ⚠️ 部分实现（仅基础框架） |
+| 7 | `../../designs/first-run.pen` | `InitializationWizardView` | S | P0 | ✅ 已实现（2026-09-23 B-07：5 步初始化向导；`RegisterForNavigation` + `RegisterDialog` 双入口） |
 | 8 | `../../designs/reports.pen` | `ReportsHomeView` | A/D | P1 | ⚠️ 部分实现（3/8 端点） |
 | 9 | `../../designs/user-management.pen` | `UserManagementView`（薄包装 → `UserMasterDetailControl`） | A | P1 | ✅ 已实现 |
 | 10 | `../../designs/sysadmin-home.pen` | `SysadminHomeView` | S | P1 | ✅ 已实现 |
@@ -76,12 +76,13 @@
 
 ### 1.3 首次初始化向导
 - **设计稿**: `../../designs/first-run.pen` ✅
-- **代码**: `FirstRunSetupView.xaml` ⚠️ 部分实现（仅基础框架）
-- **注册方式**: 以**对话框**注册（`AuthenticationModule` → `RegisterDialog<FirstRunSetupView, FirstRunSetupViewModel>`）；按 `Views/` 路径口径计入 View 计数（见 §九）
-- **功能**: 5 步向导：改密→诊所信息→连接模式→创建 Admin→完成
-- **交互**: 步骤指示器（1-2-3-4-5），上一步/下一步按钮，表单验证，提交中 `IsBusy` 遮罩
+- **代码**: `InitializationWizardView.xaml` ✅ 已实现（2026-09-23 B-07；VM `InitializationWizardViewModel`，基类 `ConnectionTestViewModelBase`）
+- **注册方式**: **双入口**——`RegisterForNavigation<InitializationWizardView, InitializationWizardViewModel>`（可导航）+ `RegisterDialog<InitializationWizardView, InitializationWizardViewModel>`（模态对话框），同一 View/VM；按 `Views/` 路径口径计入 View 计数（见 §九）
+- **触发**: ① `ShellEventCoordinator.OnLoginSucceeded`——登录用户为 sysadmin 且 `IFirstRunStateService.IsFirstRun` 时弹出（管理员创建需要 sysadmin 会话，故不在登录前弹出）；② `SysadminHomeView` 手动入口，可随时重新运行
+- **功能**: 5 步向导：① 欢迎 + 模式选择（本地全栈 / 远程服务器）② 模式相关配置（本地：数据库连接 LocalDB / SQL Server；远程：服务器地址）——均含「测试连接」③ 诊所信息（名称/科室/地址/电话）④ 初始管理员账号创建（用户名/姓名/密码/确认密码，「创建管理员」；已存在同名账号时可跳过）⑤ 配置校验清单 + 完成（写入 `%LOCALAPPDATA%\LYBT\Desktop\first_run_done.flag`）
+- **交互**: 步骤指示器（1-2-3-4-5），上一步/下一步/完成按钮，表单验证，提交中 `IsBusy` 遮罩；第 2 步远程分支须连接测试成功、第 4 步须创建成功方可继续；模式在第 2 步「下一步」应用（先测试后切换）
 - **US**: US-SHELL-011
-- **优先级**: P0（需完善 5 步 UI）
+- **优先级**: P0
 
 ### 1.4 服务端连接配置
 - **设计稿**: `../../designs/server-config.pen` ✅
@@ -305,7 +306,7 @@
 
 | # | 界面 | 状态 | 需要操作 |
 |---|------|------|---------|
-| 1 | `FirstRunSetupView` | ⚠️ 部分实现 | 需完善 5 步向导 UI |
+| 1 | `InitializationWizardView` | ✅ 已实现（2026-09-23 B-07） | 5 步初始化向导已交付（模式选择/模式配置+测试连接/诊所信息/初始管理员/校验完成） |
 | 2 | `ReportsHomeView` | ⚠️ 仅 3/8 端点 | 需扩展趋势/绩效报表 |
 | 3 | `SecurityAuditLogView` | ✅ 已实现 | 安全审计日志（2026-08-29） |
 | 4 | 数据导入导出（`data-import-export.pen`） | ⚠️ 部分实现 | JSON 导入导出已由 `SystemSettingsView` 承载；独立配置导入导出页为 `[未建视图]` |
@@ -344,7 +345,7 @@
 | **ViewModel** | **55** | `*ViewModel.cs` 文件数（每文件 1 个 VM 类型） |
 | **XAML 合计** | **82** | = 视图 **71** + 资源/模板 **11**（`Core/LYBT.Desktop.Controls/Themes`、`.../Converters`、`Core/LYBT.Desktop.Printing/Templates`，不计入视图） |
 
-> **路径口径例外**：`Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/FirstRunSetupView.xaml` 物理位于 `Views/`，但经 `RegisterDialog` 作为**对话框**注册——按路径计为 View，按注册方式计为 Dialog；两类文档中均已注明。
+> **路径口径例外**：`Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/InitializationWizardView.xaml` 物理位于 `Views/`，但经 `RegisterDialog` 作为**对话框**注册（`InitializationWizardView` 另经 `RegisterForNavigation` 可导航）——按路径计为 View，按注册方式计为 Dialog；两类文档中均已注明。
 
 ### 其他校准口径
 
@@ -381,7 +382,7 @@
 | 界面 | 路径 | 类型 / 注册 |
 |------|------|------------|
 | `LoginView` | `Modules/LYBT.Desktop.Auth/Views/LoginView.xaml` | View（导航） |
-| `FirstRunSetupView` | `Modules/LYBT.Desktop.Auth/Views/FirstRunSetupView.xaml` | View（**Dialog 注册**） |
+| `InitializationWizardView` | `Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml` | View（导航 + **Dialog 注册**，双入口） |
 | `ServerConfigView` | `Modules/LYBT.Desktop.Auth/Views/ServerConfigView.xaml` | View（**Dialog 注册**） |
 
 ### MedicalCase / Registrations
@@ -424,4 +425,4 @@
 | `FormulaManagementView` | `Roles/LYBT.Desktop.Clinical/Views/FormulaManagementView.xaml` | View（导航，薄包装） |
 | `ReceptionistHomeView` | `Roles/LYBT.Desktop.Clinical/Receptionist/Views/ReceptionistHomeView.xaml` | View（导航，Receptionist 首页） |
 
-> 合计：View **30**（Shell 6 + Auth 3 + MedicalCase/Registrations 4 + Admin/Sysadmin 8 + Clinical/Receptionist 9）+ Dialog **7** = **37** 个界面；另有 Root **1**（`Shell/App.xaml`）。**不存在** `InitializationWizardView`、`CardReaderDiagnosticsView`、`ConfigExportImportView`、`ServerConfigPanelView`、`SessionTimeoutWarningDialog`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 等视图（历史清单中的名称，均标注为 `[未建视图]`，其能力由上表真实承载者提供）。
+> 合计：View **30**（Shell 6 + Auth 3 + MedicalCase/Registrations 4 + Admin/Sysadmin 8 + Clinical/Receptionist 9）+ Dialog **7** = **37** 个界面；另有 Root **1**（`Shell/App.xaml`）。**不存在** `CardReaderDiagnosticsView`、`ConfigExportImportView`、`ServerConfigPanelView`、`SessionTimeoutWarningDialog`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 等视图（历史清单中的名称，均标注为 `[未建视图]`，其能力由上表真实承载者提供）。**注（2026-09-23 B-07）**：`InitializationWizardView` 已从「不存在」名单移除——该视图已真实落地（见 §1.3、Auth 索引表），旧单屏 `FirstRunSetupView` 已删除。

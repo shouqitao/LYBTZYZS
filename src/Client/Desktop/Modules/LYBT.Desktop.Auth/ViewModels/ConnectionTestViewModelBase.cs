@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Auth.ViewModels;
 
 /// <summary>
 /// 连接测试对话框基类（A-31-C5-4 收敛）
-/// ServerConfigViewModel / FirstRunSetupViewModel 的 TestConnectionAsync 状态机 ~95% 同构，
+/// ServerConfigViewModel / InitializationWizardViewModel 的 TestConnectionAsync 状态机 ~95% 同构，
 /// 统一 RemoteUrl/TestStatus/TestStatusMessage/IsNotTesting + TestConnection 命令。
 /// 子类差异：FirstRun 额外维护 IsRemoteAvailable（OnTestCompleted 覆写联动）。
 /// </summary>

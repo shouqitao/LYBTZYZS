@@ -82,6 +82,8 @@ public class ShellViewModelBindingTests
                 Substitute.For<IShellEventServices>(),
                 new Prism.Events.EventAggregator(),
                 Substitute.For<IApiClient>(),
+                Substitute.For<Prism.Services.Dialogs.IDialogService>(),
+                Substitute.For<IFirstRunStateService>(),
                 Substitute.For<Microsoft.Extensions.Logging.ILogger<ShellEventCoordinator>>());
             _shell.Events.Returns(events);
 

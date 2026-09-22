@@ -1,0 +1,629 @@
+<UserControl
+    x:Class="LYBT.Desktop.Auth.Views.InitializationWizardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Controls.Converters;assembly=LYBT.Desktop.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:viewmodels="clr-namespace:LYBT.Desktop.Auth.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:InitializationWizardViewModel}"
+    d:DesignHeight="640"
+    d:DesignWidth="600"
+    prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
+    mc:Ignorable="d">
+
+    <Grid Width="580">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  0: 标题栏  -->
+            <RowDefinition Height="Auto" />
+            <!--  1: 步骤指示  -->
+            <RowDefinition Height="*" />
+            <!--  2: 步骤内容  -->
+            <RowDefinition Height="Auto" />
+            <!--  3: 按钮栏  -->
+        </Grid.RowDefinitions>
+
+        <!--  标题栏  -->
+        <Border
+            Grid.Row="0"
+            Padding="20,14"
+            Background="{DynamicResource MaterialDesign.Brush.Primary}">
+            <StackPanel>
+                <TextBlock
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource MaterialDesign.Brush.Background}"
+                    Text="初始化向导" />
+                <TextBlock
+                    Margin="0,4,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource MaterialDesign.Brush.Background}"
+                    Opacity="0.85"
+                    Text="五步完成系统初始化：连接模式 → 连接配置 → 诊所信息 → 管理员账号 → 校验完成" />
+            </StackPanel>
+        </Border>
+
+        <!--  步骤指示  -->
+        <Border
+            Grid.Row="1"
+            Padding="20,10"
+            Background="{DynamicResource MaterialDesign.Brush.Paper}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                    Text="{Binding StepIndicator}" />
+                <TextBlock
+                    Margin="12,0,0,0"
+                    FontSize="13"
+                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                    Text="{Binding StepTitle}" />
+            </StackPanel>
+        </Border>
+
+        <!--  步骤内容  -->
+        <ScrollViewer
+            Grid.Row="2"
+            MaxHeight="420"
+            Padding="24,18"
+            VerticalScrollBarVisibility="Auto">
+            <Grid>
+
+                <!--  Step 1：欢迎 + 模式选择  -->
+                <StackPanel Visibility="{Binding IsStep1, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <TextBlock
+                        Margin="0,0,0,12"
+                        FontSize="13"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="请选择系统的部署方式；本步骤决定下一步需要填写的连接配置。"
+                        TextWrapping="Wrap" />
+
+                    <RadioButton
+                        Margin="0,4,0,0"
+                        Content="本地全栈（本机内置服务 + 本地数据库，无需服务器）"
+                        FontSize="13"
+                        GroupName="WizardMode"
+                        IsChecked="{Binding IsLocalModeSelected}" />
+                    <TextBlock
+                        Margin="22,4,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="适用于单机使用：数据保存在本机数据库，随装随用。"
+                        TextWrapping="Wrap" />
+
+                    <RadioButton
+                        Margin="0,16,0,0"
+                        Content="远程服务器（连接局域网 / 公网 WebAPI + SQL Server）"
+                        FontSize="13"
+                        GroupName="WizardMode"
+                        IsChecked="{Binding IsRemoteModeSelected}" />
+                    <TextBlock
+                        Margin="22,4,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="适用于多机协作：所有终端共用一台服务器上的数据。"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!--  Step 2：连接配置  -->
+                <Grid Visibility="{Binding IsStep2, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  本地分支  -->
+                    <StackPanel Visibility="{Binding IsLocalModeSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <TextBlock
+                            Margin="0,0,0,10"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="本地数据库连接" />
+
+                        <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                            <RadioButton
+                                Content="SQL Server LocalDB（默认）"
+                                FontSize="13"
+                                GroupName="WizardProvider"
+                                IsChecked="{Binding IsLocalDbProvider}" />
+                            <RadioButton
+                                Margin="24,0,0,0"
+                                Content="SQL Server 实例"
+                                FontSize="13"
+                                GroupName="WizardProvider"
+                                IsChecked="{Binding IsSqlServerProvider}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            Margin="0,0,0,6"
+                            FontSize="12"
+                            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                            Text="实例地址" />
+                        <TextBox
+                            Height="38"
+                            Padding="12,0"
+                            VerticalContentAlignment="Center"
+                            FontSize="13"
+                            Text="{Binding LocalServer, UpdateSourceTrigger=PropertyChanged}"
+                            ToolTip="LocalDB：(localdb)\MSSQLLocalDB；SQL Server：主机\实例 或 主机,端口" />
+
+                        <TextBlock
+                            Margin="0,12,0,6"
+                            FontSize="12"
+                            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                            Text="数据库名" />
+                        <TextBox
+                            Height="38"
+                            Padding="12,0"
+                            VerticalContentAlignment="Center"
+                            FontSize="13"
+                            Text="{Binding LocalDatabaseName, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <CheckBox
+                            Margin="0,12,0,0"
+                            Content="使用 Windows 集成认证"
+                            FontSize="13"
+                            IsChecked="{Binding UseWindowsAuthentication}" />
+
+                        <StackPanel
+                            Margin="0,8,0,0"
+                            IsEnabled="{Binding UseWindowsAuthentication, Converter={x:Static converters:Cvt.InverseBool}}">
+                            <TextBlock
+                                Margin="0,0,0,6"
+                                FontSize="12"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                                Text="SQL Server 登录名" />
+                            <TextBox
+                                Height="38"
+                                Padding="12,0"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                Text="{Binding LocalUserId, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock
+                                Margin="0,12,0,6"
+                                FontSize="12"
+                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                                Text="密码（本机 DPAPI 加密保存）" />
+                            <PasswordBox
+                                Height="38"
+                                Padding="12,0"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                behaviors:PasswordBoxHelper.BoundPassword="{Binding LocalPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                MinWidth="96"
+                                Padding="16,8"
+                                Command="{Binding TestLocalDatabaseCommand}"
+                                Content="测试连接"
+                                Cursor="Hand"
+                                FontSize="13" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Text="{Binding LocalTestMessage}"
+                                TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding LocalTestSucceeded}" Value="True">
+                                                <Setter Property="Foreground" Value="#228B22" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+
+                    <!--  远程分支  -->
+                    <StackPanel Visibility="{Binding IsRemoteModeSelected, Converter={x:Static converters:Cvt.BoolToVis}}">
+                        <TextBlock
+                            Margin="0,0,0,6"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="服务器地址（含端口）" />
+                        <TextBox
+                            Height="38"
+                            Padding="12,0"
+                            VerticalContentAlignment="Center"
+                            FontSize="13"
+                            Text="{Binding RemoteUrl, UpdateSourceTrigger=PropertyChanged}"
+                            ToolTip="例如：http://192.168.1.10:5000 或 https://clinic-api.example.com" />
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                MinWidth="96"
+                                Padding="16,8"
+                                Command="{Binding TestConnectionCommand}"
+                                Content="测试连接"
+                                Cursor="Hand"
+                                FontSize="13"
+                                IsEnabled="{Binding IsNotTesting}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Text="{Binding TestStatusMessage}"
+                                TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.BodyLight}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding TestStatus}" Value="Testing">
+                                                <Setter Property="Foreground" Value="#5B8FA8" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TestStatus}" Value="Success">
+                                                <Setter Property="Foreground" Value="#228B22" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TestStatus}" Value="Failed">
+                                                <Setter Property="Foreground" Value="#E65100" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+
+                        <Border
+                            Margin="0,14,0,0"
+                            Padding="14,10"
+                            Background="#E0F7FA"
+                            BorderBrush="#5B8FA8"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <TextBlock
+                                FontSize="12"
+                                Text="服务器地址需可访问且已部署 LYBT WebAPI；切换远程前会先探测可用性，不可达时保持当前模式。"
+                                TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!--  Step 3：诊所信息  -->
+                <StackPanel Visibility="{Binding IsStep3, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        FontSize="13"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="诊所信息用于登录页品牌、处方打印标题与报表抬头。"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="诊所名称 *" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding ClinicName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="科室" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding ClinicDepartment, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="地址" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding ClinicAddress, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="联系电话" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding ClinicPhone, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <!--  Step 4：初始管理员账号  -->
+                <StackPanel Visibility="{Binding IsStep4, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        FontSize="13"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="系统仅自动创建 sysadmin；业务管理员（admin）需在此创建，或使用已有同名账号。"
+                        TextWrapping="Wrap" />
+
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="用户名（3-32 位字母/数字/下划线）" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding AdminUserName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="姓名" />
+                    <TextBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding AdminRealName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="密码（至少 8 位，含大小写字母、数字与特殊字符）" />
+                    <PasswordBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        behaviors:PasswordBoxHelper.BoundPassword="{Binding AdminPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,12,0,6"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="确认密码" />
+                    <PasswordBox
+                        Height="38"
+                        Padding="12,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        behaviors:PasswordBoxHelper.BoundPassword="{Binding AdminConfirmPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel Margin="0,14,0,0" Orientation="Horizontal">
+                        <Button
+                            MinWidth="120"
+                            Padding="16,8"
+                            Command="{Binding CreateAdminCommand}"
+                            Content="创建管理员账号"
+                            Cursor="Hand"
+                            FontSize="13" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                            Text="{Binding AdminMessage}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  Step 5：校验清单  -->
+                <StackPanel Visibility="{Binding IsStep5, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <TextBlock
+                        Margin="0,0,0,10"
+                        FontSize="13"
+                        Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                        Text="请确认以下配置；全部通过后点击「完成」写入首次运行标记。"
+                        TextWrapping="Wrap" />
+
+                    <ItemsControl ItemsSource="{Binding ValidationItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Margin="0,0,0,8"
+                                    Padding="12,10"
+                                    Background="{DynamicResource MaterialDesign.Brush.Paper}"
+                                    CornerRadius="6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="{Binding Title}" />
+                                            <TextBlock
+                                                Margin="0,2,0,0"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                                                Text="{Binding Detail}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Text="{Binding StatusText}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#E65100" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPassed}" Value="True">
+                                                            <Setter Property="Foreground" Value="#228B22" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border
+                        Margin="0,6,0,0"
+                        Padding="14,10"
+                        Background="#E0F7FA"
+                        BorderBrush="#5B8FA8"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                        <TextBlock
+                            FontSize="12"
+                            Text="完成后可随时从「系统管理 → 初始化向导」重新运行本向导；未完成关闭不会写入标记，下次登录将再次提示。"
+                            TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+
+                <!--  错误提示  -->
+                <TextBlock
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource ValidationErrorBrush}"
+                    Text="{Binding ErrorMessage}"
+                    TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+        </ScrollViewer>
+
+        <!--  按钮栏  -->
+        <Border
+            Grid.Row="3"
+            Padding="20,12"
+            Background="{DynamicResource MaterialDesign.Brush.Paper}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    Command="{Binding CancelWizardCommand}"
+                    Content="稍后配置"
+                    Cursor="Hand"
+                    FontSize="13">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="#5B8FA8" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button
+                    Grid.Column="1"
+                    MinWidth="80"
+                    Padding="16,8"
+                    Command="{Binding BackCommand}"
+                    Content="上一步"
+                    Cursor="Hand"
+                    FontSize="14"
+                    IsEnabled="{Binding CanGoBack}" />
+
+                <Button
+                    Grid.Column="2"
+                    MinWidth="80"
+                    Margin="12,0,0,0"
+                    Padding="16,8"
+                    Command="{Binding NextCommand}"
+                    Content="下一步"
+                    Cursor="Hand"
+                    FontSize="14"
+                    Visibility="{Binding IsStep5, Converter={x:Static converters:Cvt.InverseBoolToVis}}" />
+
+                <Button
+                    Grid.Column="3"
+                    MinWidth="80"
+                    Margin="12,0,0,0"
+                    Padding="16,8"
+                    Command="{Binding FinishCommand}"
+                    Content="完成"
+                    Cursor="Hand"
+                    FontSize="14"
+                    Visibility="{Binding IsStep5, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Background}" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!--  忙碌遮罩  -->
+        <Grid
+            Grid.Row="0"
+            Grid.RowSpan="4"
+            Background="#20000000"
+            Visibility="{Binding IsBusy, Converter={x:Static converters:Cvt.BoolToVis}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar
+                    Width="180"
+                    Height="4"
+                    IsIndeterminate="True" />
+                <TextBlock
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="13"
+                    Foreground="{DynamicResource MaterialDesign.Brush.BodyLight}"
+                    Text="{Binding StatusMessage}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

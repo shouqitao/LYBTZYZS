@@ -117,6 +117,12 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     private void NavigateToBackupManagement() => NavigateTo(ViewNames.BackupManagement);
 
     /// <summary>
+    /// 导航到初始化向导（B-07：可随时重新运行首次运行向导）
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToInitializationWizard() => NavigateTo(ViewNames.InitializationWizard);
+
+    /// <summary>
     /// 导航到指定视图
     /// </summary>
     private void NavigateTo(string viewName)

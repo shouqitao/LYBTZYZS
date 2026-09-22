@@ -1,6 +1,6 @@
 # Desktop View 全景图 — 代码对齐的 View / Control / Dialog 清单
 
-> 版本: v1.0 | 日期: 2026-09-13 | 状态: 已对齐代码（2026-09-13）
+> 版本: v1.1 | 日期: 2026-09-23 | 状态: 已对齐代码（2026-09-23 B-07：`FirstRunSetupView` → `InitializationWizardView` 同步）
 > 事实源: 代码实际（`src/Client/Desktop` 全量扫描，排除 `bin/`、`obj/`）
 > 关联: [desktop-layout-framework.md](../../07-ui-ux/desktop-layout-framework.md)（三栏框架 SSOT）、[desktop-ui-detailed-design.md](../../07-ui-ux/desktop-ui-detailed-design.md)（页面详细规格）
 > 品牌: 凌隐宝堂中医诊所（系统名「凌隐宝堂中医诊所管理系统」）
@@ -22,7 +22,7 @@
 
 > XAML 合计 **82** = 视图 **71**（View 30 + Control 33 + Dialog 7 + Root 1）+ 资源/模板 **11**。
 >
-> **口径例外（路径计为 View，实际按对话框使用）**：`Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/FirstRunSetupView.xaml` 物理位于 `Views/`，但经 `RegisterDialog` 作为**对话框**注册——本文按路径口径计入 View 表，同时在「对话框清单」中以调用方视角列出。
+> **口径例外（路径计为 View，实际按对话框使用）**：`Auth/Views/ServerConfigView.xaml` 与 `Auth/Views/InitializationWizardView.xaml` 物理位于 `Views/`，两者均经 `RegisterDialog` 作为**对话框**注册（`InitializationWizardView` 同时经 `RegisterForNavigation` 可导航——B-07 双入口）；本文按路径口径计入 View 表，同时在「对话框清单」中以调用方视角列出。
 
 ---
 
@@ -58,7 +58,7 @@
 |---|---------|------|------|---------|----------|----------|
 | A-01 | **LoginView** | `src/Client/Desktop/Modules/LYBT.Desktop.Auth/Views/LoginView.xaml` | 登录页（用户名 + 密码 + 模式选择/服务器配置入口） | `LoginViewModel` | 启动流程导航至 `LoginRegion`（`AuthenticationModule.RegisterForNavigation`） | US-AUTH-001 |
 | A-02 | **ServerConfigView** | `src/Client/Desktop/Modules/LYBT.Desktop.Auth/Views/ServerConfigView.xaml` | 服务器地址配置（远程模式）——**经 `RegisterDialog` 作对话框使用** | `ServerConfigViewModel` | `LoginViewModel.OpenSettings` → `ShowDialog(nameof(ServerConfigView))` | US-SHELL-007 |
-| A-03 | **FirstRunSetupView** | `src/Client/Desktop/Modules/LYBT.Desktop.Auth/Views/FirstRunSetupView.xaml` | 首次运行配置向导——**经 `RegisterDialog` 作对话框使用**（US-SHELL-011 的 5 步强制向导为待实现（v2.0）） | `FirstRunSetupViewModel` | `LoginViewModel` 首次运行分支 → `ShowDialog(nameof(FirstRunSetupView))` | US-SHELL-011 |
+| A-03 | **InitializationWizardView** | `src/Client/Desktop/Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml` | 首次初始化向导（5 步：欢迎+模式选择 / 模式配置（含「测试连接」）/ 诊所信息 / 初始管理员 / 校验+完成）——**`RegisterForNavigation`（可导航）+ `RegisterDialog`（模态）双入口**，第 5 步写 `first_run_done.flag` | `InitializationWizardViewModel`（基类 `ConnectionTestViewModelBase`） | ① `ShellEventCoordinator.OnLoginSucceeded`（sysadmin + `IFirstRunStateService.IsFirstRun`）② `SysadminHomeView` 手动入口 | US-SHELL-011 |
 
 ### MedicalCase 模块（3）
 
@@ -128,7 +128,7 @@
 | DD-03 | **UnsavedChangesDialog** | `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Dialogs/UnsavedChangesDialog.xaml` | 未保存修改确认（保存/放弃/取消） | `UnsavedChangesDialogViewModel` | `WorkspaceNavigationHandler`（离开工作台守卫） | BR-002 |
 | DD-04 | **RegistrationCreateDialog** | `src/Client/Desktop/Modules/LYBT.Desktop.Registrations/Dialogs/RegistrationCreateDialog.xaml` | 新建挂号（选患者 → 选医生 → 确认 → Waiting） | `RegistrationCreateDialogViewModel` | `RegistrationListViewModel.CreateRegistrationCommand` | US-REG-001 |
 
-> **口径注**：`Auth/Views/ServerConfigView` 与 `Auth/Views/FirstRunSetupView` 也经 `RegisterDialog` 作对话框使用，但按路径口径计入 View 表（见「计数声明」口径例外）。
+> **口径注**：`Auth/Views/ServerConfigView` 与 `Auth/Views/InitializationWizardView` 也经 `RegisterDialog` 作对话框使用（后者另经 `RegisterForNavigation` 可导航，B-07），但按路径口径计入 View 表（见「计数声明」口径例外）。
 
 ---
 
@@ -190,7 +190,7 @@
 
 | 原编号 | 原条目 | 现状 | 能力归属（代码实际） |
 |--------|--------|------|----------------------|
-| W-01 | `InitializationWizardView` | `[未建视图]` | 首次初始化向导由 `Auth/Views/FirstRunSetupView`（对话框）承载；US-SHELL-011 的 5 步强制向导状态为待实现（v2.0 推迟；仅 Sysadmin 且可手动配置） |
+| W-01 | ~~`InitializationWizardView`~~ | ✅ **已建（2026-09-23 B-07）** | 首次初始化向导 = `Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml`（5 步，`RegisterForNavigation` + `RegisterDialog` 双入口，US-SHELL-011）；旧单屏 `FirstRunSetupView` 已删除 |
 | SY-05 | `CardReaderDiagnosticsView` | `[未建视图]` | 读卡器诊断面板内嵌于 `SysadminHomeView`（子 VM `CardReaderDiagnosticsViewModel`，US-SHELL-019 已落地），非独立导航页 |
 | SY-07 | `ConfigExportImportView` | `[未建视图]` | 无承载页面：US-SHELL-016（配置导出/导入）为待实现；业务数据 JSON 导入导出已分散在各 MasterDetail 页面 |
 | SY-08 | `ServerConfigPanelView` | `[未建视图]` | 服务端配置面板内嵌于 `SysadminHomeView`「服务端配置」Tab（子 VM `ServerConfigSectionViewModel`，仅远程模式，US-SHELL-018 / ADR-0014） |
@@ -413,7 +413,7 @@ LoginView（A-01）
 
 | # | 操作 | 原标签 | 建议标签 | 依据 |
 |---|------|--------|----------|------|
-| D2-01 | 删 | `★ InitializationWizardView&#xa;5步强制向导` | —（删除；改由 `FirstRunSetupView` 对话框承载） | `[未建视图]`；US-SHELL-011 待实现（v2.0） |
+| D2-01 | 改 | `★ InitializationWizardView&#xa;5步强制向导` | `★ InitializationWizardView&#xa;5步初始化向导（已建，2026-09-23 B-07）` | `Auth/Views/InitializationWizardView.xaml`；US-SHELL-011 已实现（原「`[未建视图]`；改由 `FirstRunSetupView` 承载」结论作废） |
 | D2-02 | 删 | `PendingQueueView&#xa;待诊队列&#xa;(实时推送 + QuickVisit)` | `PatientSelectionView&#xa;患者选择 + 待诊队列 + 读卡` | `PendingQueueView` 已合并 |
 | D2-03 | 删 | `CardReaderDiagnostics&#xa;读卡器诊断` | `SysadminHomeView&#xa;配置中心 › 读卡器诊断（内嵌）` | 同 D1-01 |
 | D2-04 | 删 | `ConfigExportImport&#xa;配置导入导出` | —（删除；US-SHELL-016 未实现） | 无承载页面 |
@@ -427,7 +427,7 @@ LoginView（A-01）
 | D2-12 | 改 | `RegistrationListView&#xa;挂号创建 + 取消` | `RegistrationListView&#xa;挂号队列（创建经 RegistrationCreateDialog）` | `RegistrationListViewModel.CreateRegistrationCommand` |
 | D2-13 | 增 | — | `RegistrationCreateDialog&#xa;新建挂号（对话框）` | 同 D1-09 |
 | D2-14 | 改 | `★ SysadminHomeView&#xa;（配置中心主页）` | `★ SysadminHomeView&#xa;（运维设置主页：配置中心 + 功能入口卡片）` | `SysadminHomeView.xaml` |
-| D2-15 | 改 | `Step1: 改密码 → … → Step5: 完成注销` | `（US-SHELL-011 5 步向导待实现（v2.0）；当前 FirstRunSetupView 仅首次运行配置）` | 追溯矩阵 US-SHELL-011 状态 |
+| D2-15 | 改 | `Step1: 改密码 → … → Step5: 完成注销` | `Step1: 欢迎+模式选择 → Step2: 模式配置（含「测试连接」）→ Step3: 诊所信息 → Step4: 初始管理员 → Step5: 校验+完成` | `InitializationWizardViewModel`（`InitializationWizardStep` 5 步）；US-SHELL-011 已实现（2026-09-23 B-07） |
 | D2-16 | 改 | `角色 → 模块加载矩阵（RoleRegistry）` | `角色 → 模块加载矩阵（RoleRegistry）+ 侧栏导航矩阵（NavigationManager）` | `RoleDefinition.RequiredModules` + `BuildNavigationItems` |
 
 ---

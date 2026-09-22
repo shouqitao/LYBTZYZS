@@ -33,6 +33,8 @@ public class NavigationCoordinator : INavigationCoordinator
     {
         [ViewNames.AdminHome] = [UserRole.Admin],
         [ViewNames.SysadminHome] = [UserRole.SuperAdmin],
+        // B-07: 初始化向导——首次运行/系统管理重跑，运维操作仅 SuperAdmin
+        [ViewNames.InitializationWizard] = [UserRole.SuperAdmin],
         [ViewNames.ClinicalHome] = [UserRole.Doctor],
         [ViewNames.ReceptionistHome] = [UserRole.Receptionist],
         [ViewNames.ClinicalWorkspace] = [UserRole.Doctor],
