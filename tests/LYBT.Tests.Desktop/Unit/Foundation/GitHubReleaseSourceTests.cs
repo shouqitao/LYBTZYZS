@@ -37,9 +37,9 @@ public class GitHubReleaseSourceTests
     /// <summary>vpk pack 产出的馈源清单（releases.win.json）样本。</summary>
     private const string ManifestJson = """
     {"Assets":[
-      {"PackageId":"LYBTZYZS","Version":"1.0.1","Type":"Full","FileName":"LYBTZYZS-1.0.1-full.nupkg","SHA1":"FBC08263C0E51261F368443E85C34C348C459DF6","SHA256":"F79AAD9D7219CCB695888A8ACB991FBBE2018013B6220E2B737BBEB52F6E72A3","Size":123958638},
-      {"PackageId":"LYBTZYZS","Version":"1.0.1","Type":"Delta","FileName":"LYBTZYZS-1.0.1-delta.nupkg","SHA1":"2467B5026FE336D6DE0A5F894849D3E2BDC771BA","SHA256":"37F3BBE5EE1004D5E52CAD6AC8B01A984029D169A2825E28B6BFF3E14EC7424D","Size":1574253},
-      {"PackageId":"LYBTZYZS","Version":"1.0.0","Type":"Full","FileName":"LYBTZYZS-1.0.0-full.nupkg","SHA1":"070FF02FE23DB0E73272BE13BCEBB36B984AD9FA","SHA256":"2C53C55E25036A3D832C7720C157A6ABB83A47DD6701DE5CFD7D0D398C6FBC32","Size":123958482}
+      {"PackageId":"LYBTZYZS","Version":"0.0.2","Type":"Full","FileName":"LYBTZYZS-0.0.2-full.nupkg","SHA1":"FBC08263C0E51261F368443E85C34C348C459DF6","SHA256":"F79AAD9D7219CCB695888A8ACB991FBBE2018013B6220E2B737BBEB52F6E72A3","Size":123958638},
+      {"PackageId":"LYBTZYZS","Version":"0.0.2","Type":"Delta","FileName":"LYBTZYZS-0.0.2-delta.nupkg","SHA1":"2467B5026FE336D6DE0A5F894849D3E2BDC771BA","SHA256":"37F3BBE5EE1004D5E52CAD6AC8B01A984029D169A2825E28B6BFF3E14EC7424D","Size":1574253},
+      {"PackageId":"LYBTZYZS","Version":"0.0.1","Type":"Full","FileName":"LYBTZYZS-0.0.1-full.nupkg","SHA1":"070FF02FE23DB0E73272BE13BCEBB36B984AD9FA","SHA256":"2C53C55E25036A3D832C7720C157A6ABB83A47DD6701DE5CFD7D0D398C6FBC32","Size":123958482}
     ]}
     """;
 
@@ -48,16 +48,16 @@ public class GitHubReleaseSourceTests
     [
       {
         "url": "https://api.github.com/repos/owner/repo/releases/{{(prerelease ? 1003 : 1002)}}",
-        "html_url": "https://github.com/owner/repo/releases/tag/{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}",
+        "html_url": "https://github.com/owner/repo/releases/tag/{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}",
         "assets_url": "https://api.github.com/repos/owner/repo/releases/{{(prerelease ? 1003 : 1002)}}/assets",
         "upload_url": "https://uploads.github.com/repos/owner/repo/releases/{{(prerelease ? 1003 : 1002)}}/assets{?name,label}",
         "id": {{(prerelease ? 1003 : 1002)}},
         "node_id": "RE_{{(prerelease ? 1003 : 1002)}}",
-        "tag_name": "{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}",
+        "tag_name": "{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}",
         "target_commitish": "master",
         "draft": false,
         "prerelease": {{(prerelease ? "true" : "false")}},
-        "name": "{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}",
+        "name": "{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}",
         "body": "release notes",
         "created_at": "2026-09-16T10:00:00Z",
         "published_at": "2026-09-16T10:00:00Z",
@@ -70,17 +70,17 @@ public class GitHubReleaseSourceTests
             "created_at": "2026-09-16T10:00:00Z",
             "content_type": "application/json",
             "state": "uploaded",
-            "browser_download_url": "https://github.com/owner/repo/releases/download/{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}/releases.{{Channel}}.json"
+            "browser_download_url": "https://github.com/owner/repo/releases/download/{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}/releases.{{Channel}}.json"
           },
           {
             "url": "https://api.github.com/repos/owner/repo/releases/assets/3002",
             "id": 3002,
-            "name": "LYBTZYZS-{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}-full.nupkg",
+            "name": "LYBTZYZS-{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}-full.nupkg",
             "size": 123958638,
             "created_at": "2026-09-16T10:00:00Z",
             "content_type": "application/octet-stream",
             "state": "uploaded",
-            "browser_download_url": "https://github.com/owner/repo/releases/download/{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}/LYBTZYZS-{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}-full.nupkg"
+            "browser_download_url": "https://github.com/owner/repo/releases/download/{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}/LYBTZYZS-{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}-full.nupkg"
           }
         ]
       }
@@ -164,8 +164,8 @@ public class GitHubReleaseSourceTests
         var feed = await source.GetReleaseFeed(new NullVelopackLogger(), "LYBTZYZS", Channel, null, null);
 
         var versions = feed.Assets.Select(a => a.Version.ToString()).Distinct().ToList();
-        versions.Should().Contain("1.0.1");
-        versions.Should().Contain("1.0.0");
+        versions.Should().Contain("0.0.2");
+        versions.Should().Contain("0.0.1");
         feed.Assets.Should().OnlyContain(a => a.PackageId == "LYBTZYZS");
     }
 
@@ -205,7 +205,7 @@ public class GitHubReleaseSourceTests
 
         await source.GetReleaseFeed(new NullVelopackLogger(), "LYBTZYZS", Channel, null, null);
 
-        requested.Should().NotContain(url => url.Contains("v1.1.0-rc1", StringComparison.Ordinal),
+        requested.Should().NotContain(url => url.Contains("v0.0.3-rc1", StringComparison.Ordinal),
             "prerelease=false 时不得拉取预发布 tag 的资产");
     }
 }

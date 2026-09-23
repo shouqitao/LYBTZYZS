@@ -11,16 +11,16 @@
 
 ### 版本号规则
 
-遵循语义化版本 `MAJOR.MINOR.PATCH`（如 `1.2.3`），记录于 `VERSION` 文件。
+遵循语义化版本 `MAJOR.MINOR.PATCH`（如 `0.0.2`）。**版本单源 = `Directory.Build.props` 的 `<VersionPrefix>`**（见 `12-desktop-release.md §0`）——安装包版本与程序集/关于页版本同源；部署目录可另存 `VERSION` 文本便于人工核对，但它不是权威来源。
 
 ### 发布包结构
 
 ```
 C:\Services\LYBT-releases\
-├── v1.2.3\                    # 当前版本
+├── v0.0.2\                    # 当前版本
 │   ├── LYBT.WebAPI\           # 服务端发布包
 │   └── LYBT.Desktop\          # 客户端发布包
-├── v1.2.2\                    # 前一版本（回滚保留）
+├── v0.0.1\                    # 前一版本（回滚保留）
 └── rollback.json              # 回滚元数据
 ```
 
@@ -128,10 +128,10 @@ curl -s http://60.190.215.86:5000/health
 dotnet publish src/Client/Desktop/Shell/App.csproj -c Release -r win-x64
 
 # 2. 复制到发布目录
-Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-releases\v1.2.3\LYBT.Desktop\" -Recurse
+Copy-Item "bin\Release\win-x64\publish\*" "C:\Services\LYBT-releases\v0.0.2\LYBT.Desktop\" -Recurse
 
 # 3. 各客户端从共享目录安装
-# \\SERVER\LYBT-releases\v1.2.3\LYBT.Desktop\setup.exe
+# \\SERVER\LYBT-releases\v0.0.2\LYBT.Desktop\setup.exe
 ```
 
 ### 客户端回滚

@@ -34,7 +34,7 @@ public class SystemConfigurationServiceTests : IDisposable
     private static Dictionary<string, string?> BuildBaseline() => new()
     {
         ["App:Name"] = "LYBTZYZS",
-        ["App:Version"] = "1.0.0",
+        ["App:Version"] = "0.0.1",
         ["App:Environment"] = "Development",
         ["Session:TimeoutMinutes"] = "120",
         ["Jwt:SecretKey"] = "ThisIsASecretKeyThatIsAtLeast32CharsLong!!",

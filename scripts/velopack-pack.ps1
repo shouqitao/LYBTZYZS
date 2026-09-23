@@ -14,7 +14,8 @@
     「安装包版本 == 应用内日志/关于页版本」。
 
 .PARAMETER Version
-    SemVer 版本号，如 1.0.1。省略时取 Directory.Build.props 的 VersionPrefix。
+    SemVer 版本号，如 0.0.2。省略时取 Directory.Build.props 的 VersionPrefix；
+    显式传入时必须与 VersionPrefix 同 major.minor 且不低于它（版本策略见 12-desktop-release.md §0）。
 
 .PARAMETER Channel
     Velopack 通道名（默认 win）。不同通道互不串更新。
@@ -26,8 +27,8 @@
     打包前清空输出目录（会丢弃历史包 → 无法生成增量包）。
 
 .EXAMPLE
-    pwsh scripts/velopack-pack.ps1 -Version 1.0.1
-    pwsh scripts/velopack-pack.ps1 -Version 1.0.1 -Msi
+    pwsh scripts/velopack-pack.ps1 -Version 0.0.2
+    pwsh scripts/velopack-pack.ps1 -Version 0.0.2 -Msi
 
 .NOTES
     前置：dotnet tool install -g vpk
@@ -55,18 +56,32 @@ try {
     $shellProject = "src/Client/Desktop/Shell/LYBT.Desktop.Shell.csproj"
     $iconPath = "src/Client/Desktop/Shell/Assets/Icons/App/app.ico"
 
-    # ---- 1. 解析版本号 ----
+    # ---- 1. 解析版本号（单源 = Directory.Build.props 的 VersionPrefix） ----
+    $props = Get-Content "Directory.Build.props" -Raw
+    if ($props -notmatch '<VersionPrefix>([^<]+)</VersionPrefix>') {
+        throw "Directory.Build.props 中没有 VersionPrefix——版本单源缺失，拒绝打包"
+    }
+    $versionPrefix = $Matches[1].Trim()
+
     if (-not $Version) {
-        $props = Get-Content "Directory.Build.props" -Raw
-        if ($props -match '<VersionPrefix>([^<]+)</VersionPrefix>') {
-            $Version = $Matches[1].Trim()
-        }
-        else {
-            throw "未指定 -Version，且 Directory.Build.props 中没有 VersionPrefix"
-        }
+        $Version = $versionPrefix
     }
     if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-        throw "版本号必须为 SemVer 三段式（如 1.0.1），当前：$Version"
+        throw "版本号必须为 SemVer 三段式（如 0.0.1），当前：$Version"
+    }
+
+    # 版本策略（docs/06-operations/12-desktop-release.md §0）：单源 VersionPrefix 决定「当前版本线」——
+    # ① 显式 -Version 不得低于 VersionPrefix；② 不得偏离 VersionPrefix 的 major.minor 线
+    #    （升到 0.1.x/1.0.x 前必须先改 VersionPrefix，否则打包会被这里拦下）。
+    # 两条都由单源推导，不在脚本里硬编码任何版本号。
+    $versionValue = [version]$Version
+    $prefixValue = [version]$versionPrefix
+    if ($versionValue -lt $prefixValue) {
+        throw "显式 -Version $Version 低于版本单源 VersionPrefix $versionPrefix（Directory.Build.props）"
+    }
+    if ($versionValue.Major -ne $prefixValue.Major -or $versionValue.Minor -ne $prefixValue.Minor) {
+        throw "版本线不符：-Version $Version 的 major.minor 与版本单源 VersionPrefix $versionPrefix 不一致。" +
+        "升版本线必须先更新 Directory.Build.props 的 VersionPrefix（版本策略见 docs/06-operations/12-desktop-release.md §0）"
     }
 
     Write-Host "==> 打包 LYBTZYZS Desktop v$Version (channel=$Channel, runtime=$Runtime)"
@@ -149,8 +164,9 @@ try {
     Write-Host "==> 增量包: $(if ($hasDelta) { '已生成' } else { '未生成（输出目录内无更早版本——首次发版属正常）' })"
     Write-Host "==> 下一步："
     Write-Host "    · 自建更新源：把 $OutputDir 整体同步到 FeedUrl 指向的目录（需可被 HTTP 目录访问）"
-    Write-Host "    · Gitee Releases：为版本打 tag 后上传 $OutputDir 内的 releases.$Channel.json 与 *.nupkg"
+    Write-Host "    · GitHub Releases（主渠道）：为版本打 tag 后上传 $OutputDir 内的 releases.$Channel.json 与 *.nupkg"
     Write-Host "      （releases.$Channel.json 是必须的清单资产——Velopack 的 git 源据此枚举包）"
+    Write-Host "    · Gitee Releases（可选镜像渠道）：同上" 
 }
 finally {
     Pop-Location

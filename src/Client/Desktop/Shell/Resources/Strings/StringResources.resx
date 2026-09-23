@@ -72,9 +72,6 @@
   <data name="Initializing" xml:space="preserve">
     <value>正在初始化...</value>
   </data>
-  <data name="Version" xml:space="preserve">
-    <value>版本 1.0.0</value>
-  </data>
   <data name="Copyright" xml:space="preserve">
     <value>© 2025 凌隐宝堂. All rights reserved.</value>
   </data>
@@ -98,9 +95,6 @@
   </data>
   <data name="ClinicSlogan" xml:space="preserve">
     <value>传承经典 · 数字化诊疗</value>
-  </data>
-  <data name="VersionInfo" xml:space="preserve">
-    <value>Version 1.0.0.0</value>
   </data>
   <data name="UserLogin" xml:space="preserve">
     <value>用户登录</value>

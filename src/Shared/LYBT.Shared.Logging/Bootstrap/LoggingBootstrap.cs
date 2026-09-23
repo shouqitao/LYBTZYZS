@@ -74,7 +74,9 @@ public static class LoggingBootstrap
     /// <summary>US-LOG-008: 程序集信息版本（AssemblyInformationalVersion——SDK 注入含 +commit SHA 后缀）</summary>
     public static string GetInformationalVersion()
     {
-        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        // 读本程序集（版本单源 Directory.Build.props 对全解决方案生效，各程序集一致）；
+        // 不用 Assembly.GetEntryAssembly()——测试宿主下会读出 testhost 的版本。
+        var assembly = typeof(LoggingBootstrap).Assembly;
         var version = assembly.GetName().Version?.ToString() ?? "Unknown";
         return assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? version;
     }

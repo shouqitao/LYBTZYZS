@@ -83,7 +83,7 @@ LocalWebAPI 提供 11 个控制器，共 112 个端点。所有端点位于 `htt
 {
   "status": "Healthy",
   "timestamp": "...",
-  "version": "1.0.0-local",
+  "version": "0.0.1",
   "database": { "connected": true, "provider": "...", "responseMs": 12 },
   "statistics": { "totalUsers": 3 }
 }

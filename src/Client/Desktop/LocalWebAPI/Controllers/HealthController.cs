@@ -4,6 +4,7 @@ using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Web;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Health;
+using LYBT.Shared.Models.Primitives;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -70,7 +71,7 @@ public class HealthController : BaseApiController
         {
             Status = status,
             Timestamp = DateTime.UtcNow,
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0",
+            Version = AppVersion.Current,
             Database = status == "Healthy" ? "Connected" : "Disconnected",
             DbResponseMs = dbResult.Duration,
             Statistics = new HealthStatistics { TotalUsers = userCount }

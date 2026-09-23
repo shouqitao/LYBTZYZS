@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Shared.Configuration.Options.Server;
 
@@ -16,10 +17,10 @@ public sealed class AppInfoOptions
     public string Name { get; set; } = "LYBTZYZS";
 
     /// <summary>
-    /// 应用版本
+    /// 应用版本（默认取程序集元数据；单源 = Directory.Build.props 的 VersionPrefix）
     /// </summary>
     [Required]
-    public string Version { get; set; } = "1.0.0";
+    public string Version { get; set; } = AppVersion.Current;
 
     /// <summary>
     /// 运行环境

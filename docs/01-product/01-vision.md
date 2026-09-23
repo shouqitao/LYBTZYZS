@@ -122,7 +122,9 @@
 
 ## 系统边界
 
-### v1.0 范围（当前版本）
+### 首个发布范围（当前阶段 `0.0.x`）
+
+> 版本单源与阶段门禁见 [`06-operations/12-desktop-release.md §0`](../06-operations/12-desktop-release.md)——当前阶段强制 `0.0.x`，历史 `1.0.x` 发布号已作废。
 
 v1.0 包含 10 个模块。详细的模块划分、用户故事数量及核心能力见 [`02-requirements/01-prd.md`](../02-requirements/01-prd.md)。
 

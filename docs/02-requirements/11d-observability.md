@@ -266,7 +266,7 @@
 
 **验收标准**:
 - [ ] 启动首条日志含：版本号（AssemblyInformationalVersion）+ Commit SHA（如有）+ 环境名 + PID
-- [ ] 格式如：`[启动] LYBT.WebAPI v1.0.0 (commit abc1234) env=Production pid=12345`
+- [ ] 格式如：`[启动] LYBT.WebAPI v0.0.1 (commit abc1234) env=Production pid=12345`
 - [ ] 版本信息从 `AssemblyInformationalVersion` 读取（已含 Commit 哈希，见 DiagnosticsController 先例）
 - [ ] Server 与 Desktop 均记录
 

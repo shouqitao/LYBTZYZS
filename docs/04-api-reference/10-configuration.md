@@ -24,7 +24,7 @@
 ```json
 {
   "App:Name": "凌隐宝堂中医诊所管理系统",
-  "App:Version": "1.0.0",
+  "App:Version": "0.0.1",
   "Jwt:SecretKey": "***",
   "Jwt:Issuer": "LYBTZYZS",
   "Jwt:Audience": "LYBTZYZS-Client",

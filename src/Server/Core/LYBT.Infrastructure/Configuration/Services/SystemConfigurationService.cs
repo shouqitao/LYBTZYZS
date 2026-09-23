@@ -8,6 +8,7 @@ using LYBT.Infrastructure.Configuration.Security;
 using LYBT.Infrastructure.Configuration.Stores;
 using LYBT.Infrastructure.Configuration.Validation;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Primitives;
 
 namespace LYBT.Infrastructure.Configuration.Services;
 
@@ -36,7 +37,7 @@ public class SystemConfigurationService : ISystemConfigurationService
 
         // Return safe, non-sensitive configuration items
         config["App:Name"] = _configuration["App:Name"] ?? "LYBTZYZS";
-        config["App:Version"] = _configuration["App:Version"] ?? "1.0.0";
+        config["App:Version"] = _configuration["App:Version"] ?? AppVersion.Current;
         config["App:Environment"] = _configuration["App:Environment"] ?? "Production";
 
         _logger.LogInformation("[SVC] SystemConfiguration.GetConfiguration completed");

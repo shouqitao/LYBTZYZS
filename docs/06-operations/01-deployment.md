@@ -216,7 +216,7 @@ Swagger__Enabled=true
 
 ```powershell
 dotnet tool install -g vpk            # 一次性
-pwsh scripts/velopack-pack.ps1 -Version 1.0.1
+pwsh scripts/velopack-pack.ps1 -Version 0.0.2
 # 产物：dist/releases/ 下 Setup.exe + releases.win.json + *-full/-delta.nupkg + SHA256SUMS.txt
 ```
 

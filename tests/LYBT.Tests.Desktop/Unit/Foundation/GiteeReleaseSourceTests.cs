@@ -33,9 +33,9 @@ public class GiteeReleaseSourceTests
     /// <summary>vpk pack 产出的馈源清单（releases.win.json）样本。</summary>
     private const string ManifestJson = """
     {"Assets":[
-      {"PackageId":"LYBTZYZS","Version":"1.0.1","Type":"Full","FileName":"LYBTZYZS-1.0.1-full.nupkg","SHA1":"FBC08263C0E51261F368443E85C34C348C459DF6","SHA256":"F79AAD9D7219CCB695888A8ACB991FBBE2018013B6220E2B737BBEB52F6E72A3","Size":123958638},
-      {"PackageId":"LYBTZYZS","Version":"1.0.1","Type":"Delta","FileName":"LYBTZYZS-1.0.1-delta.nupkg","SHA1":"2467B5026FE336D6DE0A5F894849D3E2BDC771BA","SHA256":"37F3BBE5EE1004D5E52CAD6AC8B01A984029D169A2825E28B6BFF3E14EC7424D","Size":1574253},
-      {"PackageId":"LYBTZYZS","Version":"1.0.0","Type":"Full","FileName":"LYBTZYZS-1.0.0-full.nupkg","SHA1":"070FF02FE23DB0E73272BE13BCEBB36B984AD9FA","SHA256":"2C53C55E25036A3D832C7720C157A6ABB83A47DD6701DE5CFD7D0D398C6FBC32","Size":123958482}
+      {"PackageId":"LYBTZYZS","Version":"0.0.2","Type":"Full","FileName":"LYBTZYZS-0.0.2-full.nupkg","SHA1":"FBC08263C0E51261F368443E85C34C348C459DF6","SHA256":"F79AAD9D7219CCB695888A8ACB991FBBE2018013B6220E2B737BBEB52F6E72A3","Size":123958638},
+      {"PackageId":"LYBTZYZS","Version":"0.0.2","Type":"Delta","FileName":"LYBTZYZS-0.0.2-delta.nupkg","SHA1":"2467B5026FE336D6DE0A5F894849D3E2BDC771BA","SHA256":"37F3BBE5EE1004D5E52CAD6AC8B01A984029D169A2825E28B6BFF3E14EC7424D","Size":1574253},
+      {"PackageId":"LYBTZYZS","Version":"0.0.1","Type":"Full","FileName":"LYBTZYZS-0.0.1-full.nupkg","SHA1":"070FF02FE23DB0E73272BE13BCEBB36B984AD9FA","SHA256":"2C53C55E25036A3D832C7720C157A6ABB83A47DD6701DE5CFD7D0D398C6FBC32","Size":123958482}
     ]}
     """;
 
@@ -44,11 +44,11 @@ public class GiteeReleaseSourceTests
     [
       {
         "id": {{(prerelease ? 1003 : 1002)}},
-        "tag_name": "{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}",
+        "tag_name": "{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}",
         "target_commitish": "master",
         "draft": false,
         "prerelease": {{(prerelease ? "true" : "false")}},
-        "name": "{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}",
+        "name": "{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}",
         "body": "release notes",
         "created_at": "2026-09-16T10:00:00+08:00",
         "published_at": "2026-09-16T10:00:00+08:00",
@@ -58,14 +58,14 @@ public class GiteeReleaseSourceTests
             "name": "releases.{{Channel}}.json",
             "size": 700,
             "created_at": "2026-09-16T10:00:00+08:00",
-            "browser_download_url": "https://gitee.com/owner/repo/releases/download/{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}/releases.{{Channel}}.json"
+            "browser_download_url": "https://gitee.com/owner/repo/releases/download/{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}/releases.{{Channel}}.json"
           },
           {
             "id": 3002,
-            "name": "LYBTZYZS-{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}-full.nupkg",
+            "name": "LYBTZYZS-{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}-full.nupkg",
             "size": 123958638,
             "created_at": "2026-09-16T10:00:00+08:00",
-            "browser_download_url": "https://gitee.com/owner/repo/releases/download/{{(prerelease ? "v1.1.0-rc1" : "v1.0.1")}}/LYBTZYZS-{{(prerelease ? "1.1.0-rc1" : "1.0.1")}}-full.nupkg"
+            "browser_download_url": "https://gitee.com/owner/repo/releases/download/{{(prerelease ? "v0.0.3-rc1" : "v0.0.2")}}/LYBTZYZS-{{(prerelease ? "0.0.3-rc1" : "0.0.2")}}-full.nupkg"
           }
         ]
       }
@@ -137,8 +137,8 @@ public class GiteeReleaseSourceTests
         var feed = await source.GetReleaseFeed(new NullVelopackLogger(), "LYBTZYZS", Channel, null, null);
 
         var versions = feed.Assets.Select(a => a.Version.ToString()).Distinct().ToList();
-        versions.Should().Contain("1.0.1");
-        versions.Should().Contain("1.0.0");
+        versions.Should().Contain("0.0.2");
+        versions.Should().Contain("0.0.1");
         feed.Assets.Should().OnlyContain(a => a.PackageId == "LYBTZYZS");
     }
 

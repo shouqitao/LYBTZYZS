@@ -22,7 +22,7 @@
 
 ```bash
 head -1 logs/bootstrap-YYYYMMDD.log
-# 预期: [启动] LYBT.WebAPI v1.0.0+21cc2ecbe... (commit 21cc2ecbe...) env=Production pid=12345
+# 预期: [启动] LYBT.WebAPI v0.0.1+21cc2ecbe... (commit 21cc2ecbe...) env=Production pid=12345
 ```
 
 - 版本含 `+commit SHA`（SDK 注入）——**对照服务器日志 vs 本地 publish 版本**

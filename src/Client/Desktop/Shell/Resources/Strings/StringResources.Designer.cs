@@ -474,23 +474,7 @@ namespace LYBT.Desktop.Resources.Strings {
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Version 1.0.0.0.
-        /// </summary>
-        internal static string VersionInfo {
-            get {
-                return ResourceManager.GetString("VersionInfo", resourceCulture);
-            }
-        }
         
-        /// <summary>
-        ///   Looks up a localized string similar to 版本 1.0.0.
-        /// </summary>
-        internal static string Version {
-            get {
-                return ResourceManager.GetString("Version", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to 凌隐宝堂中医诊所诊疗系统.

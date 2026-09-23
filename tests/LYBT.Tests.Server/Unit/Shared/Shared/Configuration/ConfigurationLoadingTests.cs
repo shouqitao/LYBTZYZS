@@ -386,7 +386,8 @@ public class ConfigurationLoadingTests
     {
         var options = new AppInfoOptions();
         options.Name.Should().Be("LYBTZYZS");
-        options.Version.Should().Be("1.0.0");
+        options.Version.Should().Be(LYBT.Shared.Models.Primitives.AppVersion.Current,
+            "版本单源 = Directory.Build.props VersionPrefix（程序集元数据），不得硬编码发布号");
         options.Environment.Should().Be("Development");
     }
 
@@ -461,7 +462,7 @@ public class ConfigurationLoadingTests
 
             // AppInfo 配置
             ["App:Name"] = "LYBTZYZS",
-            ["App:Version"] = "1.0.0",
+            ["App:Version"] = "0.0.1",
             ["App:Environment"] = "Development"
         };
 
