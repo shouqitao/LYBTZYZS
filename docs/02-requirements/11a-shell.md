@@ -251,7 +251,7 @@
 
 **角色**: 所有用户
 **优先级**: Should
-**状态**: ✅ 已实现（2026-09-16，B-09：原标「v2.0 规划」，实际随 B-08 一并落地——`DesktopUpdateService`（Velopack 1.2.0 UpdateManager）+ `DesktopUpdateStartupStep`（Order 400 后台检查，非阻塞）+ `VelopackApp.Build().Run()` 生命周期接入 + 更新源可配置为自建静态目录或 Gitee Releases（`GiteeReleaseSource`）；开发态默认关闭不触网；未通过 Velopack 安装时自动降级为不可用且不影响启动）
+**状态**: ✅ 已实现（2026-09-16，B-09：原标「v2.0 规划」，实际随 B-08 一并落地——`DesktopUpdateService`（Velopack 1.2.0 UpdateManager）+ `DesktopUpdateStartupStep`（Order 400 后台检查，非阻塞）+ `VelopackApp.Build().Run()` 生命周期接入 + 更新源可配置为自建静态目录（`SourceKind=Server`，默认）、GitHub Releases（`SourceKind=GitHub`，主渠道，`GitHubReleaseSource`，2026-09-23 新增）或 Gitee Releases（`SourceKind=Gitee`，可选镜像，`GiteeReleaseSource`）；开发态默认关闭不触网；未通过 Velopack 安装时自动降级为不可用且不影响启动）
 
 **作为** 用户，**我想要** Desktop 自动检查更新并一键升级，**以便** 始终使用最新版本而不需手动操作。
 

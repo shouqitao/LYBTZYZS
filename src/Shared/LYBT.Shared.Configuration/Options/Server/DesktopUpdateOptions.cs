@@ -31,8 +31,9 @@ public sealed class DesktopUpdateOptions
     public string? FeedUrl { get; set; }
 
     /// <summary>
-    /// 更新源类型（见 <see cref="UpdateSourceKinds"/>）：<c>Server</c>（默认，<see cref="FeedUrl"/> 静态目录）
-    /// 或 <c>Gitee</c>（Gitee Releases，需配 <see cref="GiteeRepoUrl"/>）。
+    /// 更新源类型（见 <see cref="UpdateSourceKinds"/>）：<c>Server</c>（默认，<see cref="FeedUrl"/> 静态目录）、
+    /// <c>Gitee</c>（Gitee Releases，需配 <see cref="GiteeRepoUrl"/>）或
+    /// <c>GitHub</c>（GitHub Releases，需配 <see cref="GitHubRepoUrl"/>）。
     /// </summary>
     public string SourceKind { get; set; } = UpdateSourceKinds.Server;
 
@@ -50,6 +51,21 @@ public sealed class DesktopUpdateOptions
     /// 是否接受 Gitee 上的预发布（prerelease）版本
     /// </summary>
     public bool GiteePrerelease { get; set; }
+
+    /// <summary>
+    /// GitHub 仓库地址（<see cref="UpdateSourceKinds.GitHub"/> 时必填），如 https://github.com/owner/repo
+    /// </summary>
+    public string? GitHubRepoUrl { get; set; }
+
+    /// <summary>
+    /// GitHub 访问令牌（私有仓库必填；公开仓库可空——可空时匿名访问，受匿名速率限制 60 次/小时/IP）
+    /// </summary>
+    public string? GitHubToken { get; set; }
+
+    /// <summary>
+    /// 是否接受 GitHub 上的预发布（prerelease）版本
+    /// </summary>
+    public bool GitHubPrerelease { get; set; }
 }
 
 /// <summary>
@@ -60,6 +76,9 @@ public static class UpdateSourceKinds
     /// <summary>静态目录更新源（<see cref="DesktopUpdateOptions.FeedUrl"/> 指向 /releases/ 目录）</summary>
     public const string Server = "Server";
 
-    /// <summary>Gitee Releases 更新源</summary>
+    /// <summary>Gitee Releases 更新源（可选镜像渠道）</summary>
     public const string Gitee = "Gitee";
+
+    /// <summary>GitHub Releases 更新源（主渠道——仓库 origin 为 GitHub）</summary>
+    public const string GitHub = "GitHub";
 }

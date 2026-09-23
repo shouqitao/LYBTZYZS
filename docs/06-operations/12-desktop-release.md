@@ -53,13 +53,51 @@ pwsh scripts/velopack-pack.ps1 -Version 1.0.1 -Msi
 
 ## 4. 发布（更新源）
 
+> **渠道现状（2026-09-23）**：仓库主远端 `origin` = GitHub（SSH），Gitee 为镜像。
+> 因此**公网分发主渠道为方式 C（GitHub Releases）**；方式 B（Gitee）保留为**可选镜像渠道**；
+> 方式 A（自建静态目录）仍是内网/离线诊所与默认配置（`SourceKind=Server`）。
+
 ### 方式 A：自建静态目录（默认，`SourceKind=Server`）
 
 把 `dist/releases/` **整体**同步到 `DesktopUpdate:FeedUrl` 指向的目录（HTTP 可目录访问），例如
 `http://<host>:5000/releases/`。前提：WebAPI 已启用 `/releases/` 静态服务
 （`DesktopUpdate:Enabled` + `ReleasesPath`）。
 
-### 方式 B：Gitee Releases（`SourceKind=Gitee`）
+### 方式 C：GitHub Releases（`SourceKind=GitHub`，主渠道）
+
+GitHub 仓库：`https://github.com/shouqitao/LYBTZYZS`。
+
+1. 为版本打 tag（如 `v1.0.1`）并创建 Release（`gh release create v1.0.1 ...` 或网页操作）。
+2. **必须上传** `releases.<channel>.json`（默认 `releases.win.json`）为 Release 资产——
+   Velopack 的 git 源**不**直接读取 `*-full.nupkg`，而是先取该清单资产，
+   再依清单里的 `FileName` 逐个下载包。缺该资产时客户端日志会报
+   `Could not find asset called 'releases.win.json'`，表现为「检查不到更新」。
+3. 同时上传清单中列出的 `*.nupkg`（`-full` 与 `-delta`）。
+4. 客户端配置：
+
+```json
+"DesktopUpdate": {
+  "Enabled": true,
+  "SourceKind": "GitHub",
+  "GitHubRepoUrl": "https://github.com/shouqitao/LYBTZYZS",
+  "GitHubToken": "",
+  "GitHubPrerelease": false
+}
+```
+
+> **API 与字段差异（`GitHubReleaseSource`）**：GitHub REST API 主机是 **`api.github.com`**
+> （`https://api.github.com/repos/{owner}/{repo}/releases`），**不是** `{host}/api/...`——
+> 与 Gitee 的 `{host}/api/v5/` 拼法不同，两者不可互换；列表分页 GitHub 用 `per_page`/`page`
+> （Gitee 走 `page`/`limit`）。资产下载地址两者**同名字段** `assets[].browser_download_url`
+> （GitHub 为 `https://github.com/{owner}/{repo}/releases/download/{tag}/{name}`），
+> 而 `assets[].url` 是 API 资源地址、**不用于下载**；`tag_name` / `prerelease` / `assets[]`
+> 三个字段名与 Gitee 一致（Gitee OpenAPI v5 刻意对齐 GitHub 命名）。
+>
+> **私有仓库注意**：私有仓库需配 `GitHubToken`（PAT）；令牌随客户端分发等于公开令牌——
+> 因此**公网分发请使用公开仓库**（公开仓库匿名可读，受 GitHub 匿名速率限制 60 次/小时/IP，
+> 客户端检查间隔默认 60 分钟，不会触及上限）。
+
+### 方式 B：Gitee Releases（可选镜像渠道，`SourceKind=Gitee`）
 
 Gitee 仓库：`https://gitee.com/shouqitao/LYBTZYZS`。
 
@@ -102,9 +140,18 @@ Gitee 仓库：`https://gitee.com/shouqitao/LYBTZYZS`。
   "Enabled": true,
   "CheckIntervalMinutes": 60,
   "SourceKind": "Server",
-  "FeedUrl": "http://<host>:5000/releases/"
+  "FeedUrl": "http://<host>:5000/releases/",
+  "GitHubRepoUrl": "https://github.com/shouqitao/LYBTZYZS",
+  "GitHubToken": "",
+  "GitHubPrerelease": false,
+  "GiteeRepoUrl": "https://gitee.com/shouqitao/LYBTZYZS",
+  "GiteeAccessToken": "",
+  "GiteePrerelease": false
 }
 ```
+
+> `SourceKind` 默认 `Server`（方式 A）；切到公网 Release 渠道时改为 `GitHub`（主，方式 C）
+> 或 `Gitee`（镜像，方式 B）——三个渠道的字段可同时保留在配置里，只由 `SourceKind` 决定生效项。
 
 开发态 `appsettings.json` 默认 `Enabled: false`（不触网）。
 未通过 Velopack 安装（开发直接运行、绿色解压）时更新能力自动降级为「不可用」并记 Warning，不影响启动。
@@ -159,7 +206,8 @@ WPF **不支持 `PublishTrimmed`**，运行时程序集无法安全裁剪；因�
 ```powershell
 dotnet tool install -g vpk
 pwsh scripts/velopack-pack.ps1 -Version $env:RELEASE_VERSION
-# 随后把 dist/releases 同步到更新源（方式 A）或用 Gitee OpenAPI 上传 Release 资产（方式 B）
+# 随后把 dist/releases 同步到更新源（方式 A）、用 gh CLI 上传 GitHub Release 资产（方式 C，主渠道）
+# 或用 Gitee OpenAPI 上传 Release 资产（方式 B，镜像渠道）
 ```
 
 > 当前仓库未配置 CI（发布机器手动执行）；Gitee Go 的凭据/审批链未在本环境验证，

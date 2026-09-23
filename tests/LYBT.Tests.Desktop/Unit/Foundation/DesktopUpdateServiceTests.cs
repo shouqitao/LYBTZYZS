@@ -104,6 +104,51 @@ public class DesktopUpdateServiceTests
     }
 
     [Fact]
+    public async Task CheckForUpdates_GitHubWithoutRepoUrl_ReturnsNull()
+    {
+        // SourceKind=GitHub 但缺仓库地址 → 视为未配置，不发起任何请求
+        var service = CreateService(new DesktopUpdateOptions
+        {
+            Enabled = true,
+            SourceKind = UpdateSourceKinds.GitHub,
+            GitHubRepoUrl = null,
+        });
+
+        var result = await service.CheckForUpdatesAsync();
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void SourceFactory_GitHubKind_ReturnsGitHubReleaseSource()
+    {
+        var factory = new UpdateSourceFactory(Substitute.For<ILogger<UpdateSourceFactory>>());
+
+        var source = factory.Create(new DesktopUpdateOptions
+        {
+            SourceKind = UpdateSourceKinds.GitHub,
+            GitHubRepoUrl = "https://github.com/owner/repo",
+        });
+
+        source.Should().BeOfType<GitHubReleaseSource>();
+    }
+
+    [Fact]
+    public void SourceFactory_GitHubKind_WithoutRepoUrl_ReturnsNull()
+    {
+        var factory = new UpdateSourceFactory(Substitute.For<ILogger<UpdateSourceFactory>>());
+
+        var source = factory.Create(new DesktopUpdateOptions
+        {
+            SourceKind = UpdateSourceKinds.GitHub,
+            GitHubRepoUrl = "  ",
+            FeedUrl = "https://example.com/releases/",
+        });
+
+        source.Should().BeNull("缺 GitHubRepoUrl 视为未配置，不得回落到其它源");
+    }
+
+    [Fact]
     public void SourceFactory_UnknownKind_FallsBackToServerKind()
     {
         var factory = new UpdateSourceFactory(Substitute.For<ILogger<UpdateSourceFactory>>());

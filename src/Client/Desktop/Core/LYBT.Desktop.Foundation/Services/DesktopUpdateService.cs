@@ -10,8 +10,8 @@ namespace LYBT.Desktop.Foundation.Services;
 /// Desktop 自动更新服务（US-SHELL-010/012: Velopack 1.2.0 UpdateManager——检查/下载/应用）。
 /// </summary>
 /// <remarks>
-/// <para>更新源由 <see cref="IUpdateSourceFactory"/> 按配置构造：自建静态目录（<c>FeedUrl</c>）或
-/// Gitee Releases（<c>GiteeRepoUrl</c>）。</para>
+/// <para>更新源由 <see cref="IUpdateSourceFactory"/> 按配置构造：自建静态目录（<c>FeedUrl</c>）、
+/// GitHub Releases（<c>GitHubRepoUrl</c>）或 Gitee Releases（<c>GiteeRepoUrl</c>，镜像渠道）。</para>
 /// <para>检查结果会被缓存：下载与应用复用同一次检查得到的 <see cref="UpdateInfo"/>，
 /// 避免「检查→下载→应用」触发三次馈源往返，也避免馈源在两次调用之间变化导致应用错版本。</para>
 /// </remarks>

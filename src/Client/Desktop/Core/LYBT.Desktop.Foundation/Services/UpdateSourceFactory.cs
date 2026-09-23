@@ -2,7 +2,7 @@
 // IUpdateSourceFactory / UpdateSourceFactory — 依据配置选择 Velopack 更新源
 // ---------------------------------------------------------------------------
 // 抽出工厂的目的：① 让「源选择」可被单测覆盖（不必联网）；② DesktopUpdateService
-// 不直接 new 具体源，便于后续新增渠道（自建静态目录 / Gitee / 其它托管）。
+// 不直接 new 具体源，便于后续新增渠道（自建静态目录 / GitHub / Gitee / 其它托管）。
 // ---------------------------------------------------------------------------
 
 using LYBT.Shared.Configuration.Options.Server;
@@ -60,6 +60,25 @@ public sealed class UpdateSourceFactory : IUpdateSourceFactory
             }
 
             return new GiteeReleaseSource(options.GiteeRepoUrl, options.GiteeAccessToken, options.GiteePrerelease);
+        }
+
+        if (string.Equals(options.SourceKind, UpdateSourceKinds.GitHub, StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(options.GitHubRepoUrl))
+            {
+                _logger.LogWarning(
+                    "[UPDATE] SourceKind=GitHub 但未配置 DesktopUpdate:GitHubRepoUrl——自动更新停用");
+                return null;
+            }
+
+            // 公开仓库可匿名访问（受匿名速率限制）；私有仓库必须带 token
+            if (string.IsNullOrWhiteSpace(options.GitHubToken))
+            {
+                _logger.LogInformation(
+                    "[UPDATE] 未配置 DesktopUpdate:GitHubToken——按公开仓库匿名访问 GitHub Releases");
+            }
+
+            return new GitHubReleaseSource(options.GitHubRepoUrl, options.GitHubToken, options.GitHubPrerelease);
         }
 
         if (string.IsNullOrWhiteSpace(options.FeedUrl))
