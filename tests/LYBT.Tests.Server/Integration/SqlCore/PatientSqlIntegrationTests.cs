@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Server._Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -15,9 +17,28 @@ namespace LYBT.Tests.Server.Integration.SqlCore;
 public class PatientSqlIntegrationTests : IntegrationTestBase
 {
     protected override DbContext CreateContext()
-        => new AppDbContext(TestDbFactory.CreateOptions<AppDbContext>(ConnectionString));
+        => new AppDbContext(TestDbFactory.CreateOptions<AppDbContext>(ConnectionString), CreateOperatorAccessor());
 
     private static readonly Guid OperatorId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+    /// <summary>
+    /// 带操作者声明的 HttpContext 访问器：审计自动化（<c>DbContextAuditExtensions.SetAuditFields</c>）
+    /// 以「环境上下文操作者」为准强制写 UpdatedBy（防伪冒），无 HttpContext 时归属 System 用户
+    /// （AppDbContext.GetCurrentUserId 的 P1-3 兜底）。本测试要验证「软删除/恢复由当前操作者留痕」，
+    /// 故显式提供声明为 <see cref="OperatorId"/> 的上下文。
+    /// </summary>
+    private static IHttpContextAccessor CreateOperatorAccessor()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, OperatorId.ToString())
+            ], authenticationType: "Test"))
+        };
+
+        return new HttpContextAccessor { HttpContext = httpContext };
+    }
 
     [Fact]
     public async Task Create_GetById_Update_ShouldPersistThroughSqlServer()

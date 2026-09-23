@@ -176,7 +176,7 @@ public class HerbRepositoryTests : IDisposable
     [Fact]
     public async Task GetPagedAsync_WithKeywordMatchingMultiple_ReturnsAllMatches()
     {
-        // Arrange - 创建多个包含"草"的药材
+        // Arrange - 创建多个含"草"的药材（"草" 均为后缀，用于验证前缀语义）
         var herbs = new List<Herb>
         {
             CreateTestHerb("甘草", "GC", "内蒙古"),
@@ -188,14 +188,28 @@ public class HerbRepositoryTests : IDisposable
         await _context.Herbs.AddRangeAsync(herbs);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await _sut.GetPagedAsync(1, 20, "草", null);
+        // Act - 名称前缀匹配（US-HERB-001「按名称、拼音首字母筛选」；P2-7 前缀匹配走索引）
+        var byNamePrefix = await _sut.GetPagedAsync(1, 20, "甘", null);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Items.Should().HaveCount(3);
-        result.TotalCount.Should().Be(3);
-        result.Items.Should().OnlyContain(h => h.Name.Contains("草"));
+        byNamePrefix.Should().NotBeNull();
+        byNamePrefix.Items.Should().ContainSingle();
+        byNamePrefix.Items.Single().Name.Should().Be("甘草");
+        byNamePrefix.TotalCount.Should().Be(1);
+
+        // Act - 拼音首字母前缀匹配（"GC" → 甘草）
+        var byPinYin = await _sut.GetPagedAsync(1, 20, "GC", null);
+
+        // Assert
+        byPinYin.Items.Should().ContainSingle();
+        byPinYin.Items.Single().Name.Should().Be("甘草");
+
+        // Act - 非前缀关键词（"草" 是名称后缀）不匹配——锁定「前缀匹配」为有意设计（索引友好），非缺陷
+        var bySuffix = await _sut.GetPagedAsync(1, 20, "草", null);
+
+        // Assert
+        bySuffix.Items.Should().BeEmpty();
+        bySuffix.TotalCount.Should().Be(0);
     }
 
     [Fact]

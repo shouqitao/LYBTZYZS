@@ -28,7 +28,8 @@ public class ReceptionistLocalTests : LocalWebApiTestBase
         };
 
         var response = await Client.PostAsJsonAsync("/api/v1/patients", input);
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(HttpStatusCode.Created, $"服务端响应体：{body}");
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
         json.GetProperty("success").GetBoolean().Should().BeTrue();

@@ -87,6 +87,13 @@ public class MedicalCaseHistoryQueryTests : IDisposable
         var recent = CreateCase(doctor, DateTime.UtcNow.AddDays(-1), patientId);
         await _context.SaveChangesAsync();
 
+        // 审计自动化（DbContextAuditExtensions.SetAuditFields）在 Added 状态**强制覆盖** CreatedAt/UpdatedAt，
+        // 故实体初始值无效——保存后回填历史时间线（Modified 仅强制 UpdatedAt，CreatedAt 保留）。
+        old.CreatedAt = DateTime.UtcNow.AddDays(-10);
+        mid.CreatedAt = DateTime.UtcNow.AddDays(-3);
+        recent.CreatedAt = DateTime.UtcNow.AddDays(-1);
+        await _context.SaveChangesAsync();
+
         var result = await _service.GetPatientRecentMedicalCasesAsync(patientId, count: 2);
 
         result!.Should().HaveCount(2);

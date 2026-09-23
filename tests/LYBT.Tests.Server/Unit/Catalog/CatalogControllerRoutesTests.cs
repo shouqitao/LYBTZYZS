@@ -37,26 +37,36 @@ public class CatalogControllerRoutesTests
     [Fact]
     public void FormulaActionRoutes_UseAbsolutePath_NoDoubleVersion()
     {
-        var methods = FormulaControllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(m => m.GetCustomAttributes(true)
-                .OfType<HttpMethodAttribute>()
-                .Any(a => a.Template?.Contains("formulas") == true))
-            .ToList();
-
-        methods.Should().NotBeEmpty("formulas 动作路由应存在");
-
-        foreach (var method in methods)
+        // N-03（2026-08-14）路由声明统一后：类级 Route 承载 version 占位符，动作级路由为相对路径。
+        // 真正的不变量是「version 占位符全链只出现一次」——动作路由若再声明 {version} 会与类级前缀
+        // 拼接出重复 version 参数（原 CatalogController 启动崩溃的根因）。
+        foreach (var (name, controllerType, classRoute) in new[]
+                 {
+                     ("Herbs", HerbControllerType, "api/v{version:apiVersion}/herbs"),
+                     ("Formulas", FormulaControllerType, "api/v{version:apiVersion}/formulas")
+                 })
         {
-            foreach (var attr in method.GetCustomAttributes(true).OfType<HttpMethodAttribute>())
-            {
-                if (attr.Template?.Contains("formulas") != true) continue;
+            var declared = controllerType.GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>();
+            declared.Should().NotBeNull($"{name} 控制器必须有类级路由");
+            declared!.Template.Should().Be(classRoute);
+            CountVersionPlaceholders(classRoute).Should().Be(1, "类级路由是 version 占位符的唯一来源");
 
-                // 绝对路径（/ 开头）——覆盖类级 herbs 前缀，version 参数仅一次
-                attr.Template.Should().StartWith("/api/v{version:apiVersion}/formulas",
-                    $"{method.Name} 路由必须为绝对路径（防 version 参数重复启动崩溃）");
-                attr.Template!.Split("{version", StringSplitOptions.None).Length.Should().BeLessThanOrEqualTo(2,
-                    $"{method.Name} 路由不得出现 version 参数重复（{attr.Template}）");
+            var actions = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .SelectMany(m => m.GetCustomAttributes(true).OfType<HttpMethodAttribute>()
+                    .Where(a => a.Template != null)
+                    .Select(a => (Method: m.Name, Template: a.Template!)))
+                .ToList();
+
+            actions.Should().NotBeEmpty($"{name} 控制器应有带路由模板的动作");
+
+            foreach (var (method, template) in actions)
+            {
+                CountVersionPlaceholders(template).Should().Be(0,
+                    $"{name}.{method} 动作路由 {template} 不得再声明 version 占位符（会与类级前缀重复）");
             }
         }
     }
+
+    private static int CountVersionPlaceholders(string template) =>
+        template.Split("{version", StringSplitOptions.None).Length - 1;
 }

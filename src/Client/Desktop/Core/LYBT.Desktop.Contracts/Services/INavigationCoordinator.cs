@@ -17,12 +17,14 @@ public interface INavigationCoordinator
     /// </summary>
     /// <param name="viewName">视图名称（建议使用ViewNames常量）</param>
     /// <param name="parameters">导航参数（键值对形式）</param>
+    /// <remarks>
+    /// 导航参数契约 SSOT 为 <c>*Nav</c> 工厂（<c>MedicalCaseNav</c>/<c>PatientManagementNav</c>/<c>RegistrationListNav</c>）
+    /// 返回的 <see cref="Dictionary{TKey,TValue}"/>——字典经本重载透传。
+    /// <b>禁止</b>再提供泛型重载 <c>NavigateTo&lt;TParams&gt;</c>：C# 重载解析会把 <c>Dictionary&lt;string,object&gt;</c>
+    /// 实参优先绑定到泛型重载（恒等转换优于接口转换），其「按属性反射展开」的实现会把 Dictionary 自身的
+    /// Comparer/Count/Keys/Values 当作导航参数，导致目标 VM 取不到契约键（2026-09-23 存量缺陷根因）。
+    /// </remarks>
     Task NavigateTo(string viewName, IDictionary<string, object>? parameters = null);
-
-    /// <summary>
-    /// 导航到指定视图（强类型参数）
-    /// </summary>
-    Task NavigateTo<TParams>(string viewName, TParams parameters) where TParams : class;
 
     /// <summary>
     /// 导航到当前角色主页

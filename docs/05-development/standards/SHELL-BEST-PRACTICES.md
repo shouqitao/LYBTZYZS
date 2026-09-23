@@ -6,8 +6,20 @@
 ### 1.1 使用 ViewNames 常量
 所有导航必须使用 `ViewNames` 常量，禁止硬编码字符串。
 
-### 1.2 使用强类型导航参数
-优先使用 `NavigateTo<TParams>` 泛型重载，而非 `Dictionary<string, object>`。
+### 1.2 使用强类型导航参数（*Nav 工厂）
+导航参数契约 SSOT 为 `*Nav` 工厂返回的字典：`MedicalCaseNav`（`ForExistingCase`/`ForNewCase`）、
+`PatientManagementNav`、`RegistrationListNav`——键名为 `public const string` 契约键，消费端按契约键读取
+（架构守卫 `NavParams_ContractKeys_ConsumedByTargetViewModel` 守护）。
+
+```csharp
+var navParams = MedicalCaseNav.ForExistingCase(medicalCaseId, patient, returnView: ViewNames.RegistrationList);
+_ = _navigationCoordinator.NavigateTo(ViewNames.MedicalCaseWorkspace, navParams);
+```
+
+> **禁止**再引入 `NavigateTo<TParams>` 泛型重载（2026-09-23 已删除）：C# 重载解析会把
+> `Dictionary<string, object>` 实参优先绑定到泛型重载（恒等转换优于接口转换），其「按属性反射展开」
+> 的实现会把 Dictionary 自身的 `Comparer/Count/Keys/Values` 当作导航参数 → 目标 VM 取不到契约键
+> （接诊跳转医案工作台等链路参数全失）。导航参数一律走字典重载 `NavigateTo(string, IDictionary<string, object>?)`。
 
 ### 1.3 导航失败处理
 `NavigationCoordinator.NavigateTo` 内部已处理异常，调用方无需额外 try-catch。
