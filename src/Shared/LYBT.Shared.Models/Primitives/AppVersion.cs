@@ -7,7 +7,8 @@ namespace LYBT.Shared.Models.Primitives;
 /// <para><b>版本单源 = <c>Directory.Build.props</c> 的 <c>&lt;VersionPrefix&gt;</c></b>：SDK 会把它写进程序集元数据
 /// （<see cref="AssemblyInformationalVersionAttribute"/> = VersionPrefix[+后缀]，<c>AssemblyVersion</c> = VersionPrefix.0）。
 /// 本类只**读取元数据**，不出现任何硬编码版本号——发布号散落各处必然与单源漂移。</para>
-/// <para>版本策略见 <c>docs/06-operations/12-desktop-release.md §0</c>（当前阶段强制 0.0.x）。</para>
+/// <para>版本标准见 <c>docs/00-governance/05-versioning-standard.md</c>：§1 单一版本源（本类即「运行时展示一律读程序集元数据」的落点）、
+/// §2 当前阶段强制 0.0.x。</para>
 /// </summary>
 public static class AppVersion
 {

@@ -8,8 +8,8 @@ namespace LYBT.Tests.Architecture;
 
 /// <summary>
 /// 版本单源守卫（2026-09-24 确立，防复发）。
-/// <para>版本策略见 <c>docs/06-operations/12-desktop-release.md §0</c>：单源 = <c>Directory.Build.props</c> 的
-/// <c>&lt;VersionPrefix&gt;</c>（当前 0.0.x）；历史 <c>1.0.x/1.1.0/2.0.0</c> 全部作废。
+/// <para>标准 = <c>docs/00-governance/05-versioning-standard.md</c>：§1 单一版本源（代码/配置/测试禁止产品版本字面量）、
+/// §4.1 机器门禁（<c>InformationalVersion</c> 前缀 == <c>VersionPrefix</c>）；历史 <c>1.0.x/1.1.0/2.0.0</c> 全部作废。
 /// 本组守卫防止发布号重新散落回代码/资源：凡能从程序集元数据推导的，一律推导。</para>
 /// </summary>
 public class VersionSingleSourceTests
@@ -65,6 +65,7 @@ public class VersionSingleSourceTests
 
         informational.Should().NotBeNullOrWhiteSpace("SDK 会把 VersionPrefix 写进 InformationalVersion");
         // 允许 CI/打包注入构建元数据后缀（0.0.1+<sha>），但版本号主体必须就是单源
+        // 标准 §4.1：InformationalVersion 前缀（+ 构建元数据之前的部分）== VersionPrefix
         informational!.Split('+')[0].Should().Be(VersionPrefix);
     }
 

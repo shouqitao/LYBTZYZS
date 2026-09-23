@@ -14,8 +14,8 @@
     「安装包版本 == 应用内日志/关于页版本」。
 
 .PARAMETER Version
-    SemVer 版本号，如 0.0.2。省略时取 Directory.Build.props 的 VersionPrefix；
-    显式传入时必须与 VersionPrefix 同 major.minor 且不低于它（版本策略见 12-desktop-release.md §0）。
+    SemVer 版本号。**推荐省略**——省略即取版本单源 Directory.Build.props 的 VersionPrefix（标准 §1）。
+    显式传入时：不得低于 VersionPrefix（标准 §4.2），且必须与它同 major.minor（标准 §3「版本号只在发布时刻修改：先改 VersionPrefix」）。
 
 .PARAMETER Channel
     Velopack 通道名（默认 win）。不同通道互不串更新。
@@ -27,8 +27,8 @@
     打包前清空输出目录（会丢弃历史包 → 无法生成增量包）。
 
 .EXAMPLE
-    pwsh scripts/velopack-pack.ps1 -Version 0.0.2
-    pwsh scripts/velopack-pack.ps1 -Version 0.0.2 -Msi
+    pwsh scripts/velopack-pack.ps1                 # 版本取单源 VersionPrefix（推荐）
+    pwsh scripts/velopack-pack.ps1 -Version 0.0.2 -Msi   # 显式版本：须 >= 单源且同 major.minor
 
 .NOTES
     前置：dotnet tool install -g vpk
@@ -70,7 +70,8 @@ try {
         throw "版本号必须为 SemVer 三段式（如 0.0.1），当前：$Version"
     }
 
-    # 版本策略（docs/06-operations/12-desktop-release.md §0）：单源 VersionPrefix 决定「当前版本线」——
+    # 版本标准 docs/00-governance/05-versioning-standard.md：§4.2 显式 -Version 不得低于 VersionPrefix；
+    # §3 版本线由单源决定（版本号只在发布时刻修改，先改 VersionPrefix）——
     # ① 显式 -Version 不得低于 VersionPrefix；② 不得偏离 VersionPrefix 的 major.minor 线
     #    （升到 0.1.x/1.0.x 前必须先改 VersionPrefix，否则打包会被这里拦下）。
     # 两条都由单源推导，不在脚本里硬编码任何版本号。
@@ -81,7 +82,7 @@ try {
     }
     if ($versionValue.Major -ne $prefixValue.Major -or $versionValue.Minor -ne $prefixValue.Minor) {
         throw "版本线不符：-Version $Version 的 major.minor 与版本单源 VersionPrefix $versionPrefix 不一致。" +
-        "升版本线必须先更新 Directory.Build.props 的 VersionPrefix（版本策略见 docs/06-operations/12-desktop-release.md §0）"
+        "升版本线必须先更新 Directory.Build.props 的 VersionPrefix（见 docs/00-governance/05-versioning-standard.md §3）"
     }
 
     Write-Host "==> 打包 LYBTZYZS Desktop v$Version (channel=$Channel, runtime=$Runtime)"

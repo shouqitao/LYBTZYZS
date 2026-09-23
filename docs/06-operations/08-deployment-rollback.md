@@ -11,7 +11,7 @@
 
 ### 版本号规则
 
-遵循语义化版本 `MAJOR.MINOR.PATCH`（如 `0.0.2`）。**版本单源 = `Directory.Build.props` 的 `<VersionPrefix>`**（见 `12-desktop-release.md §0`）——安装包版本与程序集/关于页版本同源；部署目录可另存 `VERSION` 文本便于人工核对，但它不是权威来源。
+遵循语义化版本 `MAJOR.MINOR.PATCH`（如 `0.0.2`）。**版本单源 = `Directory.Build.props` 的 `<VersionPrefix>`**（见 [版本号标准](../00-governance/05-versioning-standard.md) §1）——安装包版本与程序集/关于页版本同源；部署目录可另存 `VERSION` 文本便于人工核对，但它不是权威来源。
 
 ### 发布包结构
 
