@@ -17,7 +17,7 @@
 | 技术栈 | .NET 8 / WPF Prism / ASP.NET Core / EF Core / SQL Server |
 | 架构 | 3-Layer (Server) + MVVM (Desktop) + Dual-Mode (Remote+Local) |
 | 代码库 | D:\source\repos\LYBTZYZS |
-| 分支 | master → GitHub (github.com/shouqitao/LYBTZYZS) 主｜Gitee 镜像 |
+| 分支 | master → GitHub (github.com/shouqitao/LYBTZYZS) |
 | 数据库 | Remote: SQL Server (LYBTDB_Dev) / Local: LocalDB (LYBTDesktop) |
 | Server 模块 | 6 个 (Catalog/Identity/MedicalCases/Patients/Registration/Reports) |
 | Desktop 模块 | 7 个 + 3 个 Core 层 |

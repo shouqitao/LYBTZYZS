@@ -131,4 +131,4 @@ dotnet ef migrations add <Name> --project src/Server/Core/LYBT.Infrastructure --
 
 ## Git
 
-Remote=GitHub(`github.com/shouqitao/LYBTZYZS.git` SSH) 镜像=Gitee(`gitee.com/shouqitao/LYBTZYZS.git`)｜Branch=`master`｜Commit 英文 `feat/fix/docs/refactor/test(模块): 描述`
+Remote=GitHub(`github.com/shouqitao/LYBTZYZS.git` SSH，唯一推送目标)｜Branch=`master`｜Commit 英文 `feat/fix/docs/refactor/test(模块): 描述`

@@ -12,7 +12,7 @@
 - **双模式**：Remote（WebAPI + SQL Server）+ Local（LocalWebAPI + LocalDB）
 - **代码库**：D:\source\repos\LYBTZYZS
 - **分支**：master
-- **远程**：GitHub（github.com/shouqitao/LYBTZYZS.git，SSH 主）＋ Gitee（gitee.com/shouqitao/LYBTZYZS.git，镜像）
+- **远程**：GitHub（github.com/shouqitao/LYBTZYZS.git，SSH，唯一推送目标）
 
 ## 你的角色
 

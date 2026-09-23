@@ -127,7 +127,7 @@ src/
 
 ## Git
 
-- **Remote**: [GitHub](https://github.com/shouqitao/LYBTZYZS)（主）/ [Gitee](https://gitee.com/shouqitao/LYBTZYZS)（镜像）
+- **Remote**: [GitHub](https://github.com/shouqitao/LYBTZYZS)
 - **Branch**: `master`
 - **Commit**: `feat(模块): 描述` / `fix(模块): 描述` / `docs:` / `refactor:`
 
