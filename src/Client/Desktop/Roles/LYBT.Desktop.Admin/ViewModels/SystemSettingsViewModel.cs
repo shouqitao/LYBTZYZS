@@ -22,6 +22,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         private readonly ISystemSettingsService _settingsService;
         private readonly IClinicSettingsService _clinicSettingsService;
         private readonly IServerConfigurationService _serverConfigurationService;
+        private readonly IFileDialogService _fileDialogService;
 
         #endregion
 
@@ -141,12 +142,14 @@ namespace LYBT.Desktop.Admin.ViewModels
             IViewModelServices services,
             ISystemSettingsService settingsService,
             IClinicSettingsService clinicSettingsService,
-            IServerConfigurationService serverConfigurationService)
+            IServerConfigurationService serverConfigurationService,
+            IFileDialogService fileDialogService)
             : base(services)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
             _serverConfigurationService = serverConfigurationService ?? throw new ArgumentNullException(nameof(serverConfigurationService));
+            _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
 
             PageTitle = "诊所设置";
         }
@@ -288,17 +291,12 @@ namespace LYBT.Desktop.Admin.ViewModels
         {
             try
             {
-                var dialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Title = "选择备份路径",
-                    Filter = "所有文件 (*.*)|*.*",
-                    CheckFileExists = false,
-                    CheckPathExists = true
-                };
+                // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择备份路径」）
+                var filePath = _fileDialogService.ShowOpenFileDialog("所有文件 (*.*)|*.*", string.Empty);
 
-                if (dialog.ShowDialog() == true)
+                if (filePath != null)
                 {
-                    BackupPath = System.IO.Path.GetDirectoryName(dialog.FileName) ?? string.Empty;
+                    BackupPath = System.IO.Path.GetDirectoryName(filePath) ?? string.Empty;
                     Logger.LogDebug("备份路径已设置为: {BackupPath}", BackupPath);
                 }
             }

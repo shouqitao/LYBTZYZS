@@ -39,8 +39,9 @@ public class HerbMasterDetailViewModelTests : DesktopTestBase, IDisposable
             IHerbStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
             HerbDetailModelMapper herbMapper,
+            IFileDialogService fileDialogService,
             HerbEditorViewModel herbEditor)
-            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbMapper, herbEditor)
+            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbMapper, fileDialogService, herbEditor)
         {
         }
 
@@ -68,6 +69,7 @@ public class HerbMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _statusHandler,
             _cacheManager,
             new HerbDetailModelMapper(),
+            Substitute.For<IFileDialogService>(),
             _herbEditor);
     }
 

@@ -17,17 +17,17 @@
 
 **角色**: 前台/医生/管理员
 **优先级**: Must
-**状态**: ⚠️ 部分实现（姓名/拼音码筛选 ✅；**电话筛选 ❌ 500**——2026-09-14 取证：仓库 `GetPagedAsync` 的 keyword 谓词含 `PhoneNumber.Contains(kw)`，PhoneNumber 为 AES-GCM 加密列 → EF 生成 `LIKE @p ESCAPE N'<密文>'` → SQL Server「invalid escape character … LIKE predicate」；远程用例 `RemoteApi/DoctorRoleTests.SearchPatients_ByKeyword`（关键词「张」）稳定复现，本地亦按关键词复现。登记见 `13c` #137③a/#139）
+**状态**: ✅ 已实现（2026-09-23 修复电话筛选 500：加密列 `Contains` → SQL「invalid escape character」；改走 **HMAC 盲索引**精确匹配，见业务规则 5/6）
 
 **作为** 诊所工作人员，**我想要** 分页查询患者列表并支持关键字与拼音搜索，**以便** 快速定位患者档案。
 
 **验收标准**:
 
-- [ ] 支持分页参数（pageIndex、pageSize）
-- [ ] 支持按姓名、电话、拼音首字母筛选
-- [ ] 返回总数与分页数据
-- [ ] 非管理员仅返回 `IsEnabled=true` 的患者
-- [ ] 所有 DoctorOrReceptionist 角色均可访问（含 Receptionist）
+- [x] 支持分页参数（pageIndex、pageSize）
+- [x] 支持按姓名、电话、拼音首字母筛选（姓名/拼音首字母为**前缀**匹配；电话为**完整号码精确**匹配——加密列无法前缀/片段匹配，口径见业务规则 6）
+- [x] 返回总数与分页数据
+- [x] 非管理员仅返回 `IsEnabled=true` 的患者
+- [x] 所有 DoctorOrReceptionist 角色均可访问（含 Receptionist）
 
 **业务规则**:
 
@@ -35,6 +35,9 @@
 2. 拼音搜索基于 `PinyinAbbreviation`（如 "dg" 匹配 "张三" 等拼音首字母为 ZS 的患者——注：实际为姓名拼音首字母）
 3. 非管理员可见性由全局查询过滤器 + 角色判断联合实现
 4. **非管理员可见性（模块规则）**：Doctor/Receptionist 仅可见 `IsEnabled=true` 的患者；Admin/SuperAdmin 可见全部（含禁用）
+5. **敏感字段检索（R-6 盲索引，2026-09-23）**：`PhoneNumber`/`IdNumber` 经 AES-GCM **非确定性**加密（随机 nonce），SQL 等值/`LIKE` 均无法命中——密文写入时另存确定性 `HMAC-SHA256` 盲索引列（`PhoneSearchHash`/`IdCardHash`，与加密同密钥，`SensitiveDataHashHelper`），检索与查重一律走盲索引等值匹配；存量数据由宿主启动回填（`DatabaseInitializationService` / `LocalWebApiSeedData`）。
+6. **检索口径**：姓名/拼音首字母 = 前缀匹配（索引友好）；电话 = 完整号码精确匹配（盲索引不可做前缀/片段）。历史实现曾对加密列做 `Contains`，EF 将参数一并加密后生成 `LIKE @p ESCAPE N'<密文>'`，密文含非法转义字符时 SQL Server 报「invalid escape character … LIKE predicate」→ **患者搜索 500**（含按姓名关键词检索，因同一谓词命中电话分支）；该口径已于 2026-09-23 按本规则收敛，不再存在 500 隐患。
+7. **电话唯一性**（US-PAT-003/004）：查重 `ExistsByPhoneAsync` 同样走 `PhoneSearchHash` 等值（原加密列比较因随机 nonce 恒不相等 → 查重形同虚设）。DB 唯一约束为独立数据治理项（存量重复数据会使迁移失败）。
 
 
 **实现参考**: `PatientsController.cs` (HttpGet list), `IPatientService`

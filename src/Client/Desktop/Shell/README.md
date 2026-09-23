@@ -45,14 +45,13 @@ Shell/
 ├── Resources/Strings/                   # 本地化资源
 ├── Services/
 │   ├── AppStartupOrchestrator.cs
-│   ├── DialogHostService.cs
 │   ├── EmbeddedLocalWebApiService.cs
 │   ├── MenuManager.cs
 │   ├── NavigationManager.cs
+│   ├── ShellDialogHelper.cs             # 对话框辅助（IDialogManager + IToastService，禁 MessageBox 双轨）
 │   ├── ShellEventCoordinator.cs
 │   ├── ShellLogoutService.cs            # 登出唯一入口（活跃医案离开守卫 + 确认）
 │   ├── SidebarStateManager.cs           # 侧栏展开/宽度 SSOT（宿主与侧栏共用）
-│   ├── SnackbarService.cs
 │   ├── StatusBarManager.cs
 │   ├── ThemeService.cs
 │   ├── Bootstrap/
@@ -95,7 +94,7 @@ Shell/
 | **HeaderControl/HeaderViewModel** | 顶部应用栏 48 | 按 framework 7 子元素 (品牌块36+标题17+弹性+分隔1×20+用户icon26+姓名13+角色12)，用户区点击打开个人资料 |
 | **SideNavControl/SideNavViewModel** | 左侧导航 240/64 | 汉堡40+分组标题11+菜单38 r10 选中primary，收拢仅图标居中；C+矩阵 4角色×3项；深色模式+退出在底部。展开态/宽度代理 `ISidebarStateManager`（SSOT，与宿主 Ctrl+M 同源），深色模式代理 `IThemeService` |
 | **FooterControl/FooterViewModel** | 底部状态栏 32 | 暖灰顶部描边，左组 API 状态（图标/颜色/文本均绑定 `ApiStatusIcon/ApiStatusColor/ApiStatusText`——随真实健康状态，禁止硬编码）+ 连接模式 gap16，右时间；Tick 订阅已从 MainWindow 迁移 |
-| **AppShell** | 纯 UserControl 组合 | Header(48)+SideNav(列宽绑宿主 VM 的 `SidebarWidth` 代理)+ContentRegion唯一+Footer(32)，DialogHost 包裹 AppShell (R13 T-03) |
+| **AppShell** | 纯 UserControl 组合 | Header(48)+SideNav(列宽绑宿主 VM 的 `SidebarWidth` 代理)+ContentRegion唯一+Footer(32)；对话框统一走 Prism——原 MDIX `DialogHost Identifier="RootDialog"` 包裹层全仓零消费者，已于 2026-09-23 删除（`MainWindow.xaml` 仅保留 Snackbar 宿主） |
 | **ShellConstants** | 常量 SSOT | `SidebarCollapsedWidth=64` `SidebarExpandedWidth=240`，XAML/VM 均引用 |
 | **SidebarStateManager** : ISidebarStateManager | 侧栏状态 SSOT（P1 修复） | `IsSidebarExpanded/SidebarWidth/IsNavTextVisible/Toggle`；宿主与侧栏 VM 均为只读代理，消除双份状态不同步 |
 | **ShellLogoutService** : IShellLogoutService | 登出唯一入口（既有审查 #34 修复） | `RequestLogoutAsync`：活跃医案 → `RequestLeaveAsync` 守卫；无则二次确认；返回 `LogoutOutcome`（LoggedOut/Cancelled/Failed）。宿主与侧栏退出按钮共用 |
@@ -128,8 +127,7 @@ Shell/
 | **MessageDialogViewModel** | 五行配色 | Success/Error/Warning/Info 四种类型，配色：木青/火赤/土黄/水黑 |
 | **InputDialogViewModel** | 输入验证 | IsRequired 必填校验 |
 | **ThemeService** | 持久化偏好 | 主题持久化到 theme-preference.json，基于 MaterialDesign PaletteHelper |
-| **SnackbarService** | 轻量提示 | 全局 Snackbar 消息推送 |
-| **DialogHostService** | 模态对话框 | 封装 MaterialDesign DialogHost 弹窗服务 |
+| **ShellDialogHelper** | 对话框辅助（N6 收敛） | 统一走 `IDialogManager`（Prism MDIX Dialog）+ `IToastService`（成功/错误走 Toast，警告/确认走对话框），禁止 MessageBox 双轨 |
 | **AccountSettingsViewModel** | INavigationAware | 个人资料 + 密码修改，验证规则：8+ 位、一致性检查、不允许重复旧密码 |
 | **NativeMethods** | P/Invoke | FindWindow/SetForegroundWindow/ShowWindow/ActivateExistingWindow（单实例窗口激活）、GetConsoleWindow/SetConsoleOutputCP（控制台编码） |
 

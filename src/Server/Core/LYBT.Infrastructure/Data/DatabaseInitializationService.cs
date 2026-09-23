@@ -105,8 +105,8 @@ public class DatabaseInitializationService
                 _logger.LogInformation("AutoCreateOnStartup = false，跳过系统管理员自动创建");
             }
 
-            // R-6: 存量患者 IdCardHash 回填（幂等——仅处理 null hash）
-            await BackfillPatientIdCardHashesAsync();
+            // R-6: 存量患者 HMAC 盲索引回填（IdCardHash + PhoneSearchHash，幂等——仅处理 null 列）
+            await BackfillPatientSearchHashesAsync();
         }
         catch (Exception ex)
         {
@@ -116,10 +116,10 @@ public class DatabaseInitializationService
     }
 
     /// <summary>
-    /// 回填存量患者 IdCardHash（R-6 盲索引）。
-    /// 迁移仅加列；密文 IdNumber 无法在 SQL 内计算 HMAC，需应用层解密后回填。
+    /// 回填存量患者 HMAC 盲索引（R-6）：<c>IdCardHash</c>（身份证）与 <c>PhoneSearchHash</c>（手机号）。
+    /// 迁移仅加列；密文无法在 SQL 内计算 HMAC，需应用层解密后回填。幂等——仅处理仍为 null 的列。
     /// </summary>
-    private async Task BackfillPatientIdCardHashesAsync()
+    private async Task BackfillPatientSearchHashesAsync()
     {
         try
         {
@@ -127,7 +127,8 @@ public class DatabaseInitializationService
                 return;
 
             var candidates = await _context.Patients
-                .Where(p => p.IdCardHash == null && p.IdNumber != null)
+                .Where(p => (p.IdCardHash == null && p.IdNumber != null)
+                            || (p.PhoneSearchHash == null && p.PhoneNumber != null))
                 .ToListAsync();
 
             if (candidates.Count == 0)
@@ -136,23 +137,43 @@ public class DatabaseInitializationService
             var updated = 0;
             foreach (var patient in candidates)
             {
-                var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
-                if (hash == null)
-                    continue;
-                patient.IdCardHash = hash;
-                updated++;
+                var changed = false;
+
+                if (patient.IdCardHash == null)
+                {
+                    var idHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
+                    if (idHash != null)
+                    {
+                        patient.IdCardHash = idHash;
+                        changed = true;
+                    }
+                }
+
+                if (patient.PhoneSearchHash == null)
+                {
+                    var phoneHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.PhoneNumber?.Trim());
+                    if (phoneHash != null)
+                    {
+                        patient.PhoneSearchHash = phoneHash;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                    updated++;
             }
 
             if (updated > 0)
             {
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("R-6: 已回填 {Count} 条患者 IdCardHash 盲索引", updated);
+                _logger.LogInformation("R-6: 已回填 {Count} 条患者 HMAC 盲索引（IdCardHash/PhoneSearchHash）", updated);
             }
         }
         catch (Exception ex)
         {
-            // 回填失败不阻断启动——GetByIdNumberAsync 对 null-hash 行仍有回退扫描
-            _logger.LogWarning(ex, "R-6: 患者 IdCardHash 回填失败（查询将回退内存比对，直至回填成功）");
+            // 回填失败不阻断启动——GetByIdNumberAsync 对 null-hash 行仍有回退扫描；
+            // 关键词检索的手机号分支在回填完成前仅命中新数据（旧数据仍可按姓名/拼音检索）
+            _logger.LogWarning(ex, "R-6: 患者 HMAC 盲索引回填失败（查询将回退内存比对，直至回填成功）");
         }
     }
 

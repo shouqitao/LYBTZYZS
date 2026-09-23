@@ -67,7 +67,7 @@
 
 ### 1.2 主界面
 - **设计稿**: `../../designs/main-window.pen` ✅
-- **代码**: `MainWindow.xaml` ✅ 已实现（宿主：`LoginRegion` + `DialogHost(AppShell)` + `Snackbar`；`ContentRegion` 唯一且在 `AppShell` 内）
+- **代码**: `MainWindow.xaml` ✅ 已实现（宿主：`LoginRegion` + `AppShell` + `Snackbar`；`ContentRegion` 唯一且在 `AppShell` 内；2026-09-23 移除无消费者的 MDIX `DialogHost` 包裹层）
 - **功能**: 顶部应用栏 `HeaderControl`（品牌 + 用户信息 + **个人资料入口**，h48）；左侧可折叠 `SideNavControl`（展开 240 / 收拢 64）；右侧 `ContentRegion` 工作台；底部 `FooterControl`（API 状态 + 连接模式 + 时间，h32）
 - **侧栏内容（代码实际）**: 承载**角色导航矩阵**——`NavigationManager.BuildNavigationItems` 按角色生成，每角色 **3 项 = 标题「主页」+ 2 个业务入口**，`NavigationItem.Group` 取值为**「临床」/「目录」/「管理」**（Doctor：主页·临床 / 患者选择·临床 / 医案工作台·临床；Receptionist：主页·临床 / 新建挂号·临床 / 患者管理·临床；Admin：主页·临床 / 用户管理·管理 / 药材·验方·目录；SuperAdmin：主页·临床 / 备份管理·管理 / 部署管理·管理）；**底部固定区为全局操作**：深色模式切换 + 退出（`IShellLogoutService`，含活跃医案守卫）
 - **交互**: 侧栏折叠/展开（`Ctrl+M`，汉堡按钮与快捷键同源）、菜单项图标+文字、角色感知导航项；全局快捷键 `Ctrl+N`/`Ctrl+Shift+C`/`F1`/`Ctrl+,`/`Alt+←`/`Alt+→`/`Alt+Home`

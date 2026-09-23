@@ -739,6 +739,10 @@ namespace LYBT.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("PhoneSearchHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<string>("PinYinCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -771,6 +775,10 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.HasIndex("PhoneNumber")
                         .HasDatabaseName("IX_Patient_Phone");
+
+                    b.HasIndex("PhoneSearchHash")
+                        .HasDatabaseName("IX_Patients_PhoneSearchHash")
+                        .HasFilter("[IsDeleted] = 0 AND [PhoneSearchHash] IS NOT NULL");
 
                     b.ToTable("Patients", (string)null);
                 });

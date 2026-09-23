@@ -24,23 +24,25 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     /// <inheritdoc/>
     public override async Task<Patient> AddAsync(Patient entity, CancellationToken cancellationToken = default)
     {
-        EnsureIdCardHash(entity);
+        EnsureSearchHashes(entity);
         return await base.AddAsync(entity, cancellationToken);
     }
 
     /// <inheritdoc/>
     public override async Task<Patient> UpdateAsync(Patient entity, CancellationToken cancellationToken = default)
     {
-        EnsureIdCardHash(entity);
+        EnsureSearchHashes(entity);
         return await base.UpdateAsync(entity, cancellationToken);
     }
 
     /// <summary>
-    /// 计算并写入 IdCardHash（R-6 盲索引）。IdNumber 为空时清空 hash。
+    /// 计算并写入 HMAC 盲索引列（R-6）：<see cref="Patient.IdCardHash"/>（身份证）与
+    /// <see cref="Patient.PhoneSearchHash"/>（手机号）。对应明文为空时清空 hash。
     /// </summary>
-    private static void EnsureIdCardHash(Patient entity)
+    private static void EnsureSearchHashes(Patient entity)
     {
         entity.IdCardHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(entity.IdNumber);
+        entity.PhoneSearchHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(entity.PhoneNumber?.Trim());
     }
 
     /// <inheritdoc/>
@@ -58,12 +60,18 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
-            // P2-7: 前缀匹配走索引（Name/PinYinCode）；手机号保留 Contains（用户常按尾号/片段搜索）
+            // P2-7: 姓名/拼音码前缀匹配走索引；手机号走 HMAC 盲索引**精确匹配**
+            // （2026-09-23 修复：原 `p.PhoneNumber.Contains(kw)` 作用在 AES-GCM 加密列上，
+            //  EF 把参数也加密后生成 `LIKE @p ESCAPE N'<密文>'`，密文含非法转义字符时 SQL 报
+            //  「invalid escape character」→ 患者搜索 500。加密列无法前缀/片段匹配，
+            //  按 US-PAT-001「按姓名、电话、拼音首字母筛选」口径改为完整手机号精确匹配。）
             var kw = keyword.Trim();
+            var phoneHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(kw);
+
             query = query.Where(p =>
                 EF.Functions.Like(p.Name, $"{kw}%") ||
                 (p.PinYinCode != null && EF.Functions.Like(p.PinYinCode, $"{kw}%")) ||
-                (p.PhoneNumber != null && p.PhoneNumber.Contains(kw)));
+                (phoneHash != null && p.PhoneSearchHash == phoneHash));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -89,9 +97,17 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
             return false;
+
+        // R-6（2026-09-23 修复）：PhoneNumber 为非确定性加密列，`p.PhoneNumber == phoneNumber` 会被 EF
+        // 翻译为「密文 = 本次加密后的密文」，因随机 nonce 永不相等 → 电话查重恒为 false（重复患者静默放行）。
+        // 改走 HMAC 盲索引精确匹配。
+        var phoneHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(phoneNumber.Trim());
+        if (phoneHash == null)
+            return false;
+
         return await _context.Patients
             .AsNoTracking()
-            .AnyAsync(p => !p.IsDeleted && p.PhoneNumber == phoneNumber && (!excludeId.HasValue || p.Id != excludeId.Value), cancellationToken);
+            .AnyAsync(p => !p.IsDeleted && p.PhoneSearchHash == phoneHash && (!excludeId.HasValue || p.Id != excludeId.Value), cancellationToken);
     }
 
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)

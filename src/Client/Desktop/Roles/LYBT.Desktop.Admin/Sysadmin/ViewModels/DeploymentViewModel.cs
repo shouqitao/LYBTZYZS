@@ -4,7 +4,6 @@ using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using System.IO;
 using System.Net.Http;
 
@@ -17,6 +16,7 @@ public partial class DeploymentViewModel : NavigableViewModelBase
 {
     private readonly IDeploymentService _deploymentService;
     private readonly INavigationCoordinator _navigationCoordinator;
+    private readonly IFileDialogService _fileDialogService;
 
     [ObservableProperty] private string _statusMessage = string.Empty;
 
@@ -38,23 +38,24 @@ public partial class DeploymentViewModel : NavigableViewModelBase
     [NotifyCanExecuteChangedFor(nameof(UploadCommand))]
     private string? _selectedFileName;
 
-    public DeploymentViewModel(IViewModelServices services, IDeploymentService deploymentService, INavigationCoordinator navigationCoordinator)
+    public DeploymentViewModel(IViewModelServices services, IDeploymentService deploymentService, INavigationCoordinator navigationCoordinator, IFileDialogService fileDialogService)
         : base(services)
     {
         _deploymentService = deploymentService;
         _navigationCoordinator = navigationCoordinator;
+        _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
         PageTitle = "部署管理";
     }
 
     [RelayCommand]
     private void SelectFile()
     {
-        var dialog = new OpenFileDialog { Filter = "ZIP 文件|*.zip", Title = "选择更新包" };
-        if (dialog.ShowDialog() == true)
-        {
-            SelectedFileName = dialog.FileName;
-            StatusMessage = $"已选择: {Path.GetFileName(dialog.FileName)}";
-        }
+        // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择更新包」）
+        var filePath = _fileDialogService.ShowOpenFileDialog("ZIP 文件|*.zip", ".zip");
+        if (filePath == null) return;
+
+        SelectedFileName = filePath;
+        StatusMessage = $"已选择: {Path.GetFileName(filePath)}";
     }
 
     [RelayCommand(CanExecute = nameof(CanUpload))]

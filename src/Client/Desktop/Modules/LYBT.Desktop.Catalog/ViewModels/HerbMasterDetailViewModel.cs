@@ -32,6 +32,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private readonly IHerbStatusHandler _statusHandler;
         private readonly IDesktopCacheManager _cacheManager;
         private readonly HerbDetailModelMapper _herbMapper;
+        private readonly IFileDialogService _fileDialogService;
 
         /// <summary>药材编辑子 VM</summary>
         public HerbEditorViewModel HerbEditor { get; }
@@ -62,6 +63,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IHerbStatusHandler statusHandler,
             IDesktopCacheManager cacheManager,
             HerbDetailModelMapper herbMapper,
+            IFileDialogService fileDialogService,
             HerbEditorViewModel herbEditor)
             : base(viewModelServices, masterDetailServices)
         {
@@ -69,6 +71,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _herbMapper = herbMapper ?? throw new ArgumentNullException(nameof(herbMapper));
+            _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
             HerbEditor = herbEditor ?? throw new ArgumentNullException(nameof(herbEditor));
 
             PageTitle = "药材管理";
@@ -360,16 +363,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
         [RelayCommand]
         private async Task ImportHerbsAsync()
         {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "JSON 文件|*.json",
-                Title = "选择药材导入文件"
-            };
-            if (dialog.ShowDialog() != true) return;
+            // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择药材导入文件」）
+            var filePath = _fileDialogService.ShowOpenFileDialog("JSON 文件|*.json", ".json");
+            if (filePath == null) return;
 
             try
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var json = await File.ReadAllTextAsync(filePath);
                 var request = JsonSerializer.Deserialize<HerbBatchImportInputDto>(json, ImportJsonOptions);
                 if (request?.Herbs == null || request.Herbs.Count == 0)
                 {
@@ -396,12 +396,12 @@ namespace LYBT.Desktop.Catalog.ViewModels
             }
             catch (JsonException ex)
             {
-                Logger.LogError(ex, "解析药材导入文件失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "解析药材导入文件失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "批量导入药材失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "批量导入药材失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入药材", ex), "操作失败");
             }
         }

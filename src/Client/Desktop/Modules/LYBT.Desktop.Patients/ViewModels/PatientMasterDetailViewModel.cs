@@ -34,6 +34,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IDesktopCacheManager _cacheManager;
         private readonly PatientMapper _patientMapper;
         private readonly PatientExcelService _patientExcelService;
+        private readonly IFileDialogService _fileDialogService;
 
         // Child ViewModels
         private readonly PatientCardReaderViewModel _cardReaderViewModel;
@@ -89,6 +90,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             PatientMapper patientMapper,
             // B-12: 患者导入导出 Excel 化（后端 JSON 契约不变——前端负责 .xlsx 转换）
             PatientExcelService patientExcelService,
+            IFileDialogService fileDialogService,
             // Child ViewModels
             PatientCardReaderViewModel cardReaderViewModel,
             PatientEditorViewModel patientEditor)
@@ -99,6 +101,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _patientMapper = patientMapper ?? throw new ArgumentNullException(nameof(patientMapper));
             _patientExcelService = patientExcelService ?? throw new ArgumentNullException(nameof(patientExcelService));
+            _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
 
             // Child ViewModels
             _cardReaderViewModel = cardReaderViewModel ?? throw new ArgumentNullException(nameof(cardReaderViewModel));
@@ -399,17 +402,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         [RelayCommand]
         private async Task ImportPatientsAsync()
         {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "Excel 文件|*.xlsx",
-                Title = "选择患者导入文件"
-            };
-            if (dialog.ShowDialog() != true) return;
+            // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择患者导入文件」）
+            var filePath = _fileDialogService.ShowOpenFileDialog("Excel 文件|*.xlsx", ".xlsx");
+            if (filePath == null) return;
 
             try
             {
                 PatientBatchImportInputDto request;
-                await using (var stream = File.OpenRead(dialog.FileName))
+                await using (var stream = File.OpenRead(filePath))
                 {
                     request = _patientExcelService.ParseImportFile(stream);
                 }
@@ -439,12 +439,12 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
             catch (InvalidDataException ex)
             {
-                Logger.LogError(ex, "解析患者导入文件失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "解析患者导入文件失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync($"文件格式错误：{ex.Message}", "导入失败");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "批量导入患者失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "批量导入患者失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入患者", ex), "操作失败");
             }
         }

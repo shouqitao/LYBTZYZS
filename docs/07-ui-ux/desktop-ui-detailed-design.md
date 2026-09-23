@@ -324,7 +324,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 - **路径/VM**: `AccountSettingsView` 为 10 行薄包装（`<controls:AccountSettingsControl/>`，无 `AutoWireViewModel`）；VM `AccountSettingsViewModel` 在 `App.xaml.cs` **显式** `Register` + `RegisterForNavigation<Views.AccountSettingsView>()`
 - **布局**: 头部头像（`CurrentUser.RealName` 首字）+ 姓名 + 角色 → 编辑区（姓名 `EditRealName` / 手机号 `EditPhoneNumber` / 邮箱 `EditEmail`）→ 只读区（用户名/角色/注册时间/最后登录）
 - **交互/命令**: `SaveProfileCommand`（`CanSaveProfile` 门控）、`ChangePasswordCommand`、`GoBackCommand`
-- **入口**: 顶栏 `HeaderControl` 用户区 `EditProfileCommand`（提示 `个人资料 (Ctrl+,)`）；模态承载于 `MainWindow` 的 `materialDesign:DialogHost Identifier="RootDialog"`
+- **入口**: 顶栏 `HeaderControl` 用户区 `EditProfileCommand`（提示 `个人资料 (Ctrl+,)`）；模态统一走 Prism 对话框（`ShellDialogHelper` → `IDialogManager`；2026-09-23 移除无消费者的 MDIX `RootDialog` 包裹层）
 - **API**: `[待确认]`（资料保存/改密端点未在文档既有 §8 中登记）
 
 ### 4.21 对话框清单（Dialog 7 个）

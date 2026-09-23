@@ -64,6 +64,17 @@ namespace LYBT.Entities.Patients
         [SensitiveData(SensitiveDataType.ContactInfo, MaskingMode = MaskingMode.Partial)]
         public string? PhoneNumber { get; set; }
 
+        /// <summary>
+        /// 手机号 HMAC-SHA256 盲索引（R-6，2026-09-23 补）。
+        /// PhoneNumber 经 AES-GCM 非确定性加密（随机 nonce），SQL 等值与 <c>LIKE</c> 均无法命中——
+        /// 原关键词检索对加密列做 <c>Contains</c> 会被 EF 翻译为 <c>LIKE @p ESCAPE N'&lt;密文&gt;'</c>，
+        /// 部分关键词密文含非法转义字符 → SQL「invalid escape character」→ 患者搜索 500。
+        /// 本列存确定性 HMAC 供索引**精确匹配**（完整手机号检索与查重）；由 PatientRepository 在
+        /// Add/Update 时自动计算，业务层不读写。
+        /// </summary>
+        [StringLength(64)]
+        public string? PhoneSearchHash { get; set; }
+
         /// <summary>患者状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;

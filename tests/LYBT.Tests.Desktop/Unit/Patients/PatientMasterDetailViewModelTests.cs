@@ -107,6 +107,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _cacheManager,
             _patientMapper,
             _patientExcelService,
+            Substitute.For<IFileDialogService>(),
             _cardReaderViewModel,
             _patientEditor
         );
@@ -137,6 +138,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _cacheManager,
                 _patientMapper,
                 _patientExcelService,
+                Substitute.For<IFileDialogService>(),
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -157,6 +159,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _cacheManager,
                 _patientMapper,
                 _patientExcelService,
+                Substitute.For<IFileDialogService>(),
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -177,6 +180,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 null!,
                 _patientMapper,
                 _patientExcelService,
+                Substitute.For<IFileDialogService>(),
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -197,6 +201,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _cacheManager,
                 _patientMapper,
                 _patientExcelService,
+                Substitute.For<IFileDialogService>(),
                 null!,
                 _patientEditor
             );
@@ -217,6 +222,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _cacheManager,
                 _patientMapper,
                 null!,
+                Substitute.For<IFileDialogService>(),
                 _cardReaderViewModel,
                 _patientEditor
             );
@@ -237,6 +243,7 @@ public class PatientMasterDetailViewModelTests : DesktopTestBase, IDisposable
                 _cacheManager,
                 _patientMapper,
                 _patientExcelService,
+                Substitute.For<IFileDialogService>(),
                 _cardReaderViewModel,
                 null!
             );

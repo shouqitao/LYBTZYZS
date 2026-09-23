@@ -38,11 +38,7 @@
 
         <!-- Post-login Shell -->
         <Grid Visibility="{Binding IsLoggedIn, Converter={x:Static converters:Cvt.BoolToVis}}">
-            <materialDesign:DialogHost
-                DialogTheme="Inherit"
-                Identifier="RootDialog">
-                <shell:AppShell/>
-            </materialDesign:DialogHost>
+            <shell:AppShell/>
 
             <!-- C1 fix: Snackbar provides ISnackbarMessageQueue for SnackbarService DI resolution -->
             <materialDesign:Snackbar x:Name="MainSnackbar"

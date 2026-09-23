@@ -1,6 +1,6 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.17 | 日期: 2026-09-23 | 状态: ✅ 收尾批次交付——US-SHELL-016 由「🧲 v1.0 待实现」校准为 ✅ 已实现（配置导出/导入 `ConfigExportImportView` + `IConfigurationPackageService`）；新增 US-AUTH-014（会话超时预警 ✅）；2026-09-23 B-07 交付后 US-SHELL-011 校准为 ✅（v1.16）
+> 版本: v1.18 | 日期: 2026-09-23 | 状态: ✅ 收尾批次 2——US-PAT-001 由「⚠️ 部分实现（电话筛选 500）」校准为 ✅ 已实现（R-6 手机号盲索引 `PhoneSearchHash` 等值＝完整号码精确匹配；姓名/拼音保持前缀）；US-PAT-003/004 补查重实效注（修复前加密列等值恒不命中）；US-ERR-006/007 校准 409 生产者已恢复（异常实体缺口与 ProblemDetails/ApiResponse 双轨仍在，状态维持 ⚠️）；上批 v1.17 收尾批次（US-SHELL-016 校准为 ✅ + 新增 US-AUTH-014）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
 > **覆盖**：全部 155 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
@@ -72,10 +72,10 @@
 
 | US-PAT-014 | Must | — | — | GET /patients/by-id-number/{idNumber} | PatientsController.cs:296 | — | ✅ 已实现（R3-补：身份证号查询） | ✅ | ✅ |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
-| US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs（GetPagedAsync） | R7 | ⚠️ 部分实现（姓名/拼音码筛选✅；电话筛选 500——加密列 `PhoneNumber.Contains` 使 EF 生成 `LIKE … ESCAPE N'<密文>'`，2026-09-14 远程/本地复现） | ⚠️ | ✅ |
+| US-PAT-001 | Must | ADR-0010 | Flow 2 | GET /patients | PatientsController.cs（GetPagedAsync） | R7 | ✅ 已实现（2026-09-23 修复：电话分支原对加密列做 `Contains` → EF 生成 `LIKE … ESCAPE N'<密文>'` → SQL「invalid escape character」500，改走 **R-6 手机号盲索引** `PhoneSearchHash`（HMAC-SHA256）等值＝**完整号码精确匹配**；姓名/拼音首字母保持前缀匹配，见 13c #150） | ✅ | ✅ |
 | US-PAT-002 | Must | ADR-0010 | — | GET /patients/{id} | PatientsController.cs:65 | — | ✅ 已实现 | ✅ | ✅ |
-| US-PAT-003 | Must | ADR-0010 | Flow 1 | POST /patients | PatientsController.cs:89 | R3 | ✅ 已实现（电话唯一查重） | ✅ | ✅ |
-| US-PAT-004 | Must | ADR-0010 | — | PUT /patients/{id} | PatientsController.cs:114 | — | ✅ 已实现（更新电话唯一查重） | ✅ | ✅ |
+| US-PAT-003 | Must | ADR-0010 | Flow 1 | POST /patients | PatientsController.cs:89 | R3 | ✅ 已实现（电话唯一查重——2026-09-23 起经 `PhoneSearchHash` 盲索引等值生效，重复→409；修复前加密列等值因随机 nonce 恒不命中而实质失效） | ✅ | ✅ |
+| US-PAT-004 | Must | ADR-0010 | — | PUT /patients/{id} | PatientsController.cs:114 | — | ✅ 已实现（更新电话唯一查重——同 US-PAT-003，2026-09-23 起走 `PhoneSearchHash` 盲索引等值，排除自身） | ✅ | ✅ |
 | US-PAT-005 | Must | ADR-0001 | — | DELETE /patients/{id} | PatientsController.cs:146 | — | ✅ 已实现（引用检查 CountMedicalCasesAsync） | ✅ | ✅ |
 | US-PAT-006 | Must | — | — | POST /patients/{id}/toggle-status | PatientsController.cs:175 | — | ✅ 已实现 | ✅ | ✅ |
 | US-PAT-007 | Should | — | — | POST /patients/{id}/restore | PatientsController.cs:197 | A10 | ✅ 已实现 | ✅ | ✅ |
@@ -221,8 +221,8 @@
 | US-ERR-003 | Should | — | — | DesktopExceptionHandler | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 | US-ERR-004 | Should | ADR-0004 | — | AsyncLocalCorrelationIdProvider | CorrelationIdEnricher | S3 | ✅ 已实现 | ✅ | ✅ |
 | US-ERR-005 | Must | — | — | Business/SystemExceptionHandler | BusinessExceptionHandler | — | ✅ 已实现 | ✅ | N/A |
-| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（2026-09-17 R-2：Server+Local 异常路径均统一 ProblemDetails；模型校验 400 ProblemDetails 含 errors 字段字典；控制器已知业务失败仍 ApiResponse；本地无 409 生产者。E2E `ExceptionMappingE2ETests`） | ⚠️ | N/A |
-| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失；409 分支无生产者——电话唯一查重因 AES-GCM 非确定性加密恒不命中。E2E `ExceptionMappingE2ETests`） | ⚠️ | ⚠️ |
+| US-ERR-006 | Should | — | — | ValidationException | BusinessExceptionHandler | — | ⚠️ 部分实现（2026-09-17 R-2：Server+Local 异常路径均统一 ProblemDetails；模型校验 400 ProblemDetails 含 errors 字段字典；控制器已知业务失败仍 ApiResponse；409 生产者＝患者电话唯一查重（双端同源 Handler + `HandleResult(useAuthMapping:true)`，2026-09-23 盲索引修复后恢复可达）。E2E `ExceptionMappingE2ETests`） | ⚠️ | N/A |
+| US-ERR-007 | Should | — | — | AppException 体系 | LYBT.Shared.ExceptionHandling | — | ⚠️ 部分实现（仅 3 种异常实体；Conflict/Unauthorized/ApiException/Factory 缺失；409 分支生产者＝患者电话唯一查重——2026-09-23 盲索引修复后恢复可达，此前因 AES-GCM 非确定性加密等值恒不命中而无生产者。E2E `ExceptionMappingE2ETests`） | ⚠️ | ⚠️ |
 | US-ERR-008 | Should | — | — | ErrorSeverity/ErrorCategory | DesktopExceptionHandler | — | ✅ 已实现 | N/A | ✅ |
 
 ## 十二、平台基础设施 — Logging & Audit（US-LOG × 7）
@@ -304,6 +304,7 @@
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
+| 2026-09-23 | **v1.18 收尾批次 2 状态校准（患者电话盲索引）**：① **US-PAT-001 ⚠️→✅**——状态列由「⚠️ 部分实现（姓名/拼音✅；电话筛选 500）」改为「✅ 已实现」，注明 R-6 手机号盲索引 `PhoneSearchHash`（HMAC-SHA256 等值＝完整号码精确匹配；姓名/拼音保持前缀，见 13c #150）；② **US-PAT-003/004 补实效注**——查重自 2026-09-23 起经 `PhoneSearchHash` 等值生效（修复前加密列等值因随机 nonce 恒不命中而实质失效）；③ **US-ERR-006/007 校准**——「409 分支/本地无生产者」的成因（电话查重恒不命中）已消除，409 分支恢复可达；异常实体缺口（Conflict/Unauthorized/ApiException/Factory）与双轨（模型校验 ProblemDetails vs 控制器业务失败 ApiResponse）仍在，故两行状态维持 ⚠️；④ 统计汇总不变（PAT 14/0/0/0/0、ERR 6/2/0/0/0、合计 144/3/0/5/0） | 收尾批次 2 修复加密列 `LIKE @p ESCAPE N'<密文>'` 致患者搜索 500（13c #150）；矩阵状态列必须与代码实测一致——查重恒 false 时 US-PAT-003/004 属「名义 ✅、实质失效」，本次按实测校准 |
 | 2026-09-23 | **v1.17 收尾批次交付状态校准**：① US-SHELL-016 行由「🧲 v1.0 待实现 / 关联 API `导出/导入 JSON 按钮` / 实现文件 `SysadminHomeView` / Desktop `🧲`」改为「✅ 已实现」——关联 API 改 `ConfigExportImportView` + `IConfigurationPackageService`（单 JSON 配置包）；实现文件改 `ConfigExportImportViewModel.cs` + `ConfigurationPackageService.cs`；Desktop 列 `🧲`→`✅`；② 新增 **US-AUTH-014**（会话超时预警）行——`ISessionTimeoutMonitor` + `ShowDialog("SessionTimeoutWarningDialog")`，状态 ✅ 已实现，Desktop `✅` / WebAPI `N/A`；§一 标题「US-AUTH × 13」→「× 14」；③ 统计汇总 AUTH 13→14（✅ 12→13）、Shell ✅ 5→6 / 🧲 5→4、合计 154→155 / ✅ 142→144 / 🧲 6→5 | 收尾批次交付 US-SHELL-016（配置导出/导入独立页 + 配置包服务，密钥永不导出、权限快照只校验不应用）+ 新增 US-AUTH-014（会话超时预警），原行状态与实现矛盾 |
 | 2026-09-23 | **v1.16 B-07 初始化向导交付状态校准**：US-SHELL-011 行由「🧲 v2.0 推迟 / 关联 API `FirstRunSetupViewModel 扩展` / 实现文件 `FirstRunSetupViewModel` / WebAPI `N/A` / Desktop `🧲 v2.0`」改为「✅ 已实现」——关联 API 列改 `InitializationWizardView`（`RegisterForNavigation` + `RegisterDialog`）+ `local-database.json` + `first_run_done.flag`；实现文件列改 `InitializationWizardViewModel` + `IInitialAdminService` + `ILocalDatabaseSettingsService` + `IFirstRunStateService`；Desktop 列 `🧲 v2.0`→`✅`；统计汇总 Shell ✅ 4→5 / 🧲 6→5，合计 ✅ 141→142 / 🧲 7→6 | B-07 交付 5 步初始化向导（sysadmin 登录后触发 + SysadminHome 手动入口，取代单屏 `FirstRunSetupView`），原行「v2.0 推迟」与实现矛盾 |
 | 2026-09-18 | **v1.13 前端设计文档漂移 P0 状态同步**：US-SHELL-003 状态列→✅ N5 已实现（RequiredModules 含 ClinicalModule）；US-SHELL-005 状态列→⚠️ 部分实现（N1/N3/N4/N5 已实施、N2 参数消费部分完成、N6 对话框待收敛）；Shell/合计统计同步（✅-1 ⚠️+1） | 代码-文档一致性红线：导航切片代码落地后需求状态列滞后 |

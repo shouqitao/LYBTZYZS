@@ -56,23 +56,38 @@ public static class LocalWebApiSeedData
 
         await context.SaveChangesAsync();
 
-        // R-6: 存量患者 IdCardHash 回填（迁移后一次性；新数据经 PatientRepository 写入时已带 hash）
-        await BackfillPatientIdCardHashesAsync(context);
+        // R-6: 存量患者 HMAC 盲索引回填（迁移后一次性；新数据经 PatientRepository 写入时已带 hash）
+        await BackfillPatientSearchHashesAsync(context);
     }
 
-    private static async Task BackfillPatientIdCardHashesAsync(AppDbContext context)
+    /// <summary>
+    /// 回填存量患者 HMAC 盲索引（R-6）：<c>IdCardHash</c>（身份证）与 <c>PhoneSearchHash</c>（手机号，2026-09-23 补）。
+    /// 幂等——仅处理仍为 null 的列。
+    /// </summary>
+    private static async Task BackfillPatientSearchHashesAsync(AppDbContext context)
     {
         var candidates = await context.Patients
-            .Where(p => p.IdCardHash == null && p.IdNumber != null)
+            .Where(p => (p.IdCardHash == null && p.IdNumber != null)
+                        || (p.PhoneSearchHash == null && p.PhoneNumber != null))
             .ToListAsync();
         if (candidates.Count == 0)
             return;
 
         foreach (var patient in candidates)
         {
-            var hash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
-            if (hash != null)
-                patient.IdCardHash = hash;
+            if (patient.IdCardHash == null)
+            {
+                var idHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.IdNumber);
+                if (idHash != null)
+                    patient.IdCardHash = idHash;
+            }
+
+            if (patient.PhoneSearchHash == null)
+            {
+                var phoneHash = SensitiveDataHashHelper.ComputeHmacSha256Hex(patient.PhoneNumber?.Trim());
+                if (phoneHash != null)
+                    patient.PhoneSearchHash = phoneHash;
+            }
         }
 
         await context.SaveChangesAsync();

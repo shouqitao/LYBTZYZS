@@ -128,6 +128,7 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _statusHandler,
             _herbSearchProvider,
             _cacheManager,
+            Substitute.For<IFileDialogService>(),
             _formulaEditor);
 
     [Fact]

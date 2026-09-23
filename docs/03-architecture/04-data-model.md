@@ -204,6 +204,7 @@ graph TB
 | IdNumber | string(50) | 否 | 身份证号 (敏感, `[SensitiveData(IdentityInfo, Partial)]`) |
 | IdCardHash | string(64) | 否 | 身份证号 HMAC-SHA256 盲索引（R-6，`IX_Patients_IdCardHash`；由仓储写入） |
 | PhoneNumber | string(20) | 否 | 手机号 (敏感, `[SensitiveData(ContactInfo, Partial)]`) |
+| PhoneSearchHash | string(64) | 否 | 手机号 HMAC-SHA256 盲索引（R-6，2026-09-23 补，`IX_Patients_PhoneSearchHash`；由仓储写入，检索/查重走本列） |
 | Status | CommonStatus | 是 | 状态 (PAT-D05: 禁用主要场景为患者已故; 禁用后禁止创建新医案) |
 
 **基类字段** (BaseEntity): Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy, RowVersion, IsDeleted
@@ -446,6 +447,7 @@ graph TB
 | IX_Formulas_Name | Formulas | Name | **筛选唯一索引** | P1-8 补，过滤唯一 `[IsDeleted]=0`（同 Herb） |
 | IX_Patients_IdNumber | Patients | IdNumber | **筛选唯一索引** | P1-20 补，`[IsDeleted]=0 AND [IdNumber] IS NOT NULL` |
 | IX_Patients_IdCardHash | Patients | IdCardHash | **筛选唯一索引** | R-6 盲索引，`[IsDeleted]=0 AND [IdCardHash] IS NOT NULL` |
+| IX_Patients_PhoneSearchHash | Patients | PhoneSearchHash | **筛选索引（非唯一）** | R-6 手机号盲索引（2026-09-23），`[IsDeleted]=0 AND [PhoneSearchHash] IS NOT NULL`；唯一性由服务层 `ExistsByPhoneAsync` 保障 |
 
 ## 实体验证约束
 
@@ -514,6 +516,7 @@ Patient 实体的以下字段标记为敏感数据，日志脱敏 + 落库 AES-G
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-09-23 | v2.5 | **R-6 手机号盲索引**：Patient 增 `PhoneSearchHash`（HMAC-SHA256 of 归一化手机号，`IX_Patients_PhoneSearchHash` 非唯一筛选索引）；关键词检索的电话分支与 `ExistsByPhoneAsync` 由「加密列 `Contains`/等值」改为盲索引等值——修复加密列 `LIKE @p ESCAPE N'<密文>'` 致患者搜索 500、以及电话查重因随机 nonce 恒不相等而形同虚设；启动回填存量（`DatabaseInitializationService` / `LocalWebApiSeedData`）。 |
 | 2026-09-17 | v2.4 | **实体代码对齐**：User.PasswordHash 标注 Identity PBKDF2（非 BCrypt）+ 补 MustChangeOnNextLogin；Prescription.Discount decimal(5,4)→decimal(3,2)；MedicalCasePrintLog 标「已实现」；AuthSession 补 UserAgent/RevokedReason/Status；ER 图移除代码不存在的 RefreshToken；实体路径改 `src/Shared/LYBT.Entities` |
 | 2026-08-20 | v2.2 | **P0-7 Patient 简化对齐**：Patient 20+ 字段裁剪为 7 字段（Name/PinYinCode/Gender/BirthDate/IdNumber/PhoneNumber/Status + BaseEntity），与 `PatientModel.cs` 代码 SSOT 对齐；敏感数据 Address/AllergyHistory/MedicalHistory 等延期至 v2.0。 |
 | 2026-09-17 | v2.3 | **R-6 盲索引**：Patient 增 `IdCardHash`（HMAC-SHA256 of IdNumber，`IX_Patients_IdCardHash`），`GetByIdNumberAsync` 由全表内存比对改为索引精确匹配；启动回填存量。 |

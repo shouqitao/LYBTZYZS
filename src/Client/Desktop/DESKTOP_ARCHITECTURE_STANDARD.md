@@ -1730,7 +1730,7 @@ private async Task ImportDataAsync()
 | HeaderControl / HeaderViewModel | `Shell/Views/HeaderControl.xaml` `Shell/ViewModels/HeaderViewModel.cs` | h48 fill `$primary` padding `[0,24]` 7 子元素 | 品牌块36×36 `$accent` r10「医」20/700 + 标题17/600白 + 弹性 + 分隔1×20白30% + 用户icon 26 + 姓名13/600白 + 角色12 `#D9C7C1`；用户区可点击 `EditProfileCommand` | — |
 | SideNavControl / SideNavViewModel | `Shell/Views/SideNavControl.xaml` `Shell/ViewModels/SideNavViewModel.cs` | 展开240 收拢64 fill `$primary-dark` | 汉堡h40居中 + 分组标题11/600 `#C9B8A6`（仅展开） + 菜单h38 r10 选中`$primary` gap12 + 底部固定区（分割线+深色模式+退出）；C+矩阵 4角色×3项 | `ShellConstants.SidebarCollapsedWidth=64` `SidebarExpandedWidth=240` |
 | FooterControl / FooterViewModel | `Shell/Views/FooterControl.xaml` `Shell/ViewModels/FooterViewModel.cs` | h32 暖灰 顶部描边 `#E9DFD7`1 padding `[0,24]` | 左组 API 状态（`ApiStatusIcon`/`ApiStatusColor`/`ApiStatusText` 三者同绑定——文本随真实健康状态变化，禁止硬编码「已连接」）+ 连接模式12 `#8D6E63` gap16，右时间12；Tick 订阅已从 MainWindow 迁移 | — |
-| AppShell | `Shell/Views/AppShell.xaml` | 无 VM，纯组合 | Header(48) + Grid( SideNav(240/64，列宽绑**宿主 VM 的 SidebarWidth 代理**，来自 `ISidebarStateManager`) + 右列[ContentRegion唯一 + Footer32])；`DialogHost Identifier=RootDialog` 包裹 AppShell (R13 T-03) | 引用 ShellConstants |
+| AppShell | `Shell/Views/AppShell.xaml` | 无 VM，纯组合 | Header(48) + Grid( SideNav(240/64，列宽绑**宿主 VM 的 SidebarWidth 代理**，来自 `ISidebarStateManager`) + 右列[ContentRegion唯一 + Footer32])；对话框统一走 Prism（2026-09-23 移除无消费者的 MDIX `DialogHost Identifier=RootDialog` 包裹层） | 引用 ShellConstants |
 | ShellConstants | `Shell/ShellConstants.cs` | — | 侧栏宽度 SSOT | 64 / 240 |
 | SidebarStateManager | `Shell/Services/SidebarStateManager.cs` | — | 侧栏展开态/宽度 SSOT（`ISidebarStateManager` 单例）——宿主与侧栏 VM 均为代理，消除 P1 双份状态不同步 | 64 / 240 推导 |
 | ShellLogoutService | `Shell/Services/ShellLogoutService.cs` | — | 登出唯一入口：活跃医案 `RequestLeaveAsync` 守卫 + 二次确认 → `PerformLogoutAsync`；宿主与侧栏退出按钮共用（修复既有审查 #34） | `LogoutOutcome` |
@@ -1747,7 +1747,7 @@ private async Task ImportDataAsync()
 
 - 顶部 48 七子元素、左侧 240/64、菜单 38 r10、底部 32 等均逐项对齐 `desktop-layout-framework.md`。
 - 角色×菜单矩阵已在 `NavigationManager.BuildNavigationItems` 落地 C+（Doctor 3 等）。
-- `MainWindow` 仅保留 LoginRegion + DialogHost(AppShell) + Snackbar，`ContentRegion` 保持唯一，业务 View 零改动。
+- `MainWindow` 仅保留 LoginRegion + AppShell + Snackbar（2026-09-23 移除无消费者的 DialogHost 包裹层），`ContentRegion` 保持唯一，业务 View 零改动。
 
 ### 13.4 对话框（Dialog）规范
 

@@ -34,6 +34,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private readonly IFormulaStatusHandler _statusHandler;
         private readonly IHerbSearchProvider _herbSearchProvider;
         private readonly IDesktopCacheManager _cacheManager;
+        private readonly IFileDialogService _fileDialogService;
 
         /// <summary>验方编辑子 VM</summary>
         public FormulaEditorViewModel FormulaEditor { get; }
@@ -106,6 +107,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IFormulaStatusHandler statusHandler,
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager,
+            IFileDialogService fileDialogService,
             FormulaEditorViewModel formulaEditor)
             : base(viewModelServices, masterDetailServices)
         {
@@ -113,6 +115,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             _statusHandler = statusHandler ?? throw new ArgumentNullException(nameof(statusHandler));
             _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+            _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
             FormulaEditor = formulaEditor ?? throw new ArgumentNullException(nameof(formulaEditor));
 
             PageTitle = "验方管理";
@@ -629,16 +632,13 @@ namespace LYBT.Desktop.Catalog.ViewModels
         [RelayCommand]
         private async Task ImportFormulasAsync()
         {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "JSON 文件|*.json",
-                Title = "选择验方导入文件"
-            };
-            if (dialog.ShowDialog() != true) return;
+            // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择验方导入文件」）
+            var filePath = _fileDialogService.ShowOpenFileDialog("JSON 文件|*.json", ".json");
+            if (filePath == null) return;
 
             try
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var json = await File.ReadAllTextAsync(filePath);
                 var request = JsonSerializer.Deserialize<FormulaBatchImportInputDto>(json, ImportJsonOptions);
                 if (request?.Formulas == null || request.Formulas.Count == 0)
                 {
@@ -665,12 +665,12 @@ namespace LYBT.Desktop.Catalog.ViewModels
             }
             catch (JsonException ex)
             {
-                Logger.LogError(ex, "解析验方导入文件失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "解析验方导入文件失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "批量导入验方失败: {File}", dialog.FileName);
+                Logger.LogError(ex, "批量导入验方失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入验方", ex), "操作失败");
             }
         }
