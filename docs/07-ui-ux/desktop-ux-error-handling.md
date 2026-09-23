@@ -176,7 +176,7 @@
 | `NetworkError` | 网络连接失败，请检查网络后重试 | ❌（`canRetry: true`） |
 | `ServerError` | 服务暂时不可用，请稍后重试 | ❌ |
 
-会话不活跃过期：`HandleSessionExpiredAsync()` → Toast「您的会话因长时间未操作已过期，请重新登录。」→ `PerformLogoutAsync()`。配置口径：`InactivityTimeoutMinutes = 30`（生产 `appsettings.Production.json` 为 5）、`WarningBeforeTimeoutMinutes = 0`（**无到期前预警**）、`ActivityCheckIntervalSeconds = 30`。
+会话不活跃过期：`HandleSessionExpiredAsync()` → Toast「您的会话因长时间未操作已过期，请重新登录。」→ `PerformLogoutAsync()`。配置口径：`InactivityTimeoutMinutes = 30`（生产 `appsettings.Production.json` 为 5）、`WarningBeforeTimeoutMinutes = 2`（**到期前 2 分钟弹出 `SessionTimeoutWarningDialog`**，倒计时 + 「续期」/「退出」；「续期」= `IUserActivityTracker.ResetActivity()` + 尽力 `ITokenLifecycleService.TryRefreshTokenAsync()`；2026-09-23 由 0 改为 2，0 仍表示关闭预警）、`ActivityCheckIntervalSeconds = 30`。
 
 > 登出失败重试：`LogoutService` 最多 3 次，延迟 1s / 5s / 15s；登出入口统一为 `IShellLogoutService.RequestLogoutAsync()`（含活跃医案守卫），侧栏与 `MainWindowViewModel.LogoutCommand` 同源。
 

@@ -1,5 +1,5 @@
 # 桌面端架构
-> 版本: v1.1 | 日期: 2026-09-17
+> 版本: v1.2 | 日期: 2026-09-23
 
 > ⚠️ 本文档超 400 行（约 870 行）。**TL;DR**：WPF + Prism.DryIoc + CommunityToolkit.Mvvm；Shell→Roles→Modules→Core 四层；双模式经 `SwitchingApiClient` 切 Remote Refit / Local HttpClient。**权威**：本文为 Desktop 架构当前态；业务规则见 `02-requirements/`，进程级 ViewModel 设计见 `07-ui-ux/viewmodel-layer-design.md`。建议优先阅读「概述 + 架构图 + 层结构」，细节按需检索。
 
@@ -963,7 +963,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 | **FirstRun 5 步向导** | `desktop-ui-requirements §1.3` P0：改密→诊所→连接→创建 Admin→完成 | `FirstRunSetupView` 仅基础框架（`FirstRunSetupViewModel` 仅步骤 1-2 完整） | **B4 决策 I-4：推迟到 v2.0**（`13-traceability-matrix` SHELL-011 `🧲 v2.0`） |
 | **Reports 趋势/绩效** | `ReportsHomeView` P1：8 端点含趋势/绩效排行 | 仅 `daily` 3 端点；`ReportsHomeView` 仅 3/8 能力 | **B4 决策 I-3：推迟到 v2.0**（`13-traceability-matrix` REPORT-004 `🧲 v2.0`） |
 | **安全审计日志** | `desktop-ui-requirements §七-3` ✅ 已实现（2026-08-29） | SecurityAuditLogView 已完成 | — |
-| **数据导入导出** | `desktop-ui-requirements §七-4` ⚠️ 部分实现 | JSON 导入导出已实现；独立 ConfigExportImportView 待新建 | — |
+| **数据导入导出** | `desktop-ui-requirements §七-4` ✅ 已实现（2026-09-23） | 独立 `ConfigExportImportView`（US-SHELL-016）已建；业务数据 JSON 导入导出仍在各 MasterDetail | — |
 
 ---
 
@@ -976,6 +976,7 @@ public void ConfirmNavigationRequest(NavigationContext ctx, Action<bool> continu
 
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
+| 2026-09-23 | v1.2 | **已知实现缺口表「数据导入导出」由 ⚠️ 部分实现 → ✅ 已实现**——独立 `ConfigExportImportView` + `IConfigurationPackageService` 已交付（US-SHELL-016 收尾批次）；业务数据 JSON 导入导出仍在各 MasterDetail |
 | 2026-06-28 | v1.9 | **spec S3 批次2 提炼（989→~620 行）**：事件目录删 Publisher/Subscriber 无信息列改为单表汇总；客户端异常处理/错误消息/追踪码/启动诊断/账户设置（US-ERR-003~008/006/007/US-SHELL-006/007）改链接到 11c-error-handling.md/11a-shell.md；同步 UI 架构 v2.0 段外移到 sync-protocol.md；菜单完整层级改链接保留可见性矩阵。变更历史见 git log。 |
 | 2026-06-28 | v1.8 | **N1 + ADR-0012 对齐**: 模块清单/架构图/Clinical 模块清单清除 Sync（v2.0）; SyncEvents/Sync UI 架构加 🧲 v2.0 标; Item 类继承对齐 ADR-0012（新代码用 `[ObservableProperty]`，禁 BindableBase）; Prism 9.0→8.1.97 |
 

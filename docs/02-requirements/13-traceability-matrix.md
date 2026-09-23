@@ -1,9 +1,9 @@
 # 需求追溯矩阵 (Traceability Matrix)
 
-> 版本: v1.16 | 日期: 2026-09-23 | 状态: ✅ B-07 交付——US-SHELL-011 由「🧲 v2.0 推迟」校准为 ✅ 已实现（5 步初始化向导）；2026-09-22 B-06 交付后 US-SHELL-013 状态/关联 API/实现文件校准（v1.15）
+> 版本: v1.17 | 日期: 2026-09-23 | 状态: ✅ 收尾批次交付——US-SHELL-016 由「🧲 v1.0 待实现」校准为 ✅ 已实现（配置导出/导入 `ConfigExportImportView` + `IConfigurationPackageService`）；新增 US-AUTH-014（会话超时预警 ✅）；2026-09-23 B-07 交付后 US-SHELL-011 校准为 ✅（v1.16）
 >
 > **用途**：建立「需求 → 设计 → 实现」的双向追溯基础设施。本矩阵是 v1.0 范围冻结、变更影响分析、缺口补全追踪的权威索引。
-> **覆盖**：全部 154 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
+> **覆盖**：全部 155 个 User Story（US）+ 13 个 ADR + 5 个业务 Flow + 54 个访谈问题点。
 > **「访谈问题点」列说明（2026-08-11 标注）**：该列为早期需求访谈（R1-R13）的历史索引，仅作来源追溯，与当前开发无直接关联——不维护其对应关系。
 > **数据来源**：各模块 US 正文的「优先级 / 状态 / 实现参考 / 双模式端点」+ D1-D10 决策记录（2026-06-28 对账，已归档）+ 场景功能映射（✅⚠️🔴）。
 
@@ -28,7 +28,7 @@
 
 ---
 
-## 一、认证与会话（US-AUTH × 13）
+## 一、认证与会话（US-AUTH × 14）
 
 | US ID | 优先级 | 关联 ADR | 关联 Flow | 关联 API | 实现文件 | 访谈问题点 | 状态 | WebAPI | Desktop |
 | ------- | :---: | ------ | ------ | ------ | ------ | ------ | ------ | :---: | :---: |
@@ -45,6 +45,7 @@
 | US-AUTH-011 | Must | ADR-0005 | — | AuthService.cs 保留名校验 | AuthService.cs | — | ✅ 已实现（保留用户名清单） | ✅ | N/A |
 | US-AUTH-012 | Must | ADR-0002/0009/0010 | Flow 3 | LocalWebAPI/AuthController.cs | LocalWebAPI/Controllers/AuthController.cs:19 | D19 | ✅ 已实现 | ✅ | ✅ |
 | US-AUTH-013 | Must | ADR-0010 | Flow 3 | 本地限流中间件 | LocalWebAPI/Controllers/AuthController.cs:19 | — | ✅ 已实现（本地限流） | ✅ | N/A |
+| US-AUTH-014 | Should | — | — | `ISessionTimeoutMonitor` + `ShowDialog("SessionTimeoutWarningDialog")` | SessionTimeoutMonitor.cs + SessionTimeoutWarningDialogViewModel.cs | — | ✅ 已实现（2026-09-23 收尾批次：不活动预警 mm:ss 倒计时 + 续期/退出；见 13c #149） | N/A | ✅ |
 
 > **注**：02-auth.md 的 US-AUTH-000「首次登录初始化向导」与 US-SHELL-011「首次初始化向导」为同一功能，归属 Shell 模块（见 §九），本段不单列。
 
@@ -185,7 +186,7 @@
 | US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
 | US-SHELL-013 | Should | ADR-0010 | — | 双端 `/api/v1/backup`（列表/状态/表清单/创建/恢复/删除/清理/auto，8 端点） | SqlServerBackupService + BaseBackupController + BackupManagementView | S4/X3.2 | ✅ 已实现（2026-09-22 B-06：共享 SQL Server 备份引擎 + 双端 BackupController——全量/差异/加密/选择性恢复/删除/清理/进度；旧 ILocalDbBackupService 迁移移除，见 13c #146） | ✅ | ✅ |
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditController + SecurityAuditLogView | SysadminHome 安全审计卡 | A12 | ✅ 2026-08-29 查询 API + Desktop 页（仅远程） | ✅ | ✅ |
-| US-SHELL-016 | Could | — | — | 导出/导入 JSON 按钮 | SysadminHomeView | X3.2 | 🧲 v1.0 待实现 | N/A | 🧲 |
+| US-SHELL-016 | Could | — | — | `ConfigExportImportView` + `IConfigurationPackageService`（单 JSON 配置包） | ConfigExportImportViewModel.cs + ConfigurationPackageService.cs | X3.2 | ✅ 已实现（2026-09-23 收尾批次：导出/导入单 JSON 包，密钥永不导出，权限快照只校验不应用，见 13c #149） | N/A | ✅ |
 | US-SHELL-017 | Must | ADR-0005/0008 | — | SystemAdminOptions + IdentitySeedData.ResolveSysAdminPassword（K4 环境变量读取） | IdentitySeedData.cs | — | ✅ 已实现 | ✅ | N/A |
 | US-SHELL-018 | Must | ADR-0006/0014 | — | SysadminHomeView | SysadminHomeView.xaml + ConfigurationCenterViewModel.cs + ServerConfigSectionViewModel.cs | S3 | ✅ 10/10 AC（Phase 1-3 + 读卡器组经 US-SHELL-019 完成） | ✅ | ✅ |
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | CardReaderDiagnosticsService.cs + CardReaderDiagnosticsViewModel.cs | S3 | ✅ 已实现（8/8 AC：厂家选择/探测/读卡测试/固件（驱动未暴露→提示）/手动参数覆盖/持久化/医生无感；串口测试=USB 链路握手——HD100 无独立串口协议）——**硬件实测待办（2026-08-11 标注：华大 HD100 硬件到位后，sysadmin 配置中心→读卡器诊断→实测 9 AC；单测 4/4 已过）** | N/A | ✅ |
@@ -273,7 +274,7 @@
 
 | 域 | US 数 | ✅已实现 | ⚠️部分实现 | 🔴代码待对齐 | 🧲v1.0待实现 | v2.0 |
 | ------ | :---: | :---: | :---: | :---: | :---: | :---: |
-| AUTH | 13 | 12 | 1 | 0 | 0 | 0 |
+| AUTH | 14 | 13 | 1 | 0 | 0 | 0 |
 | USER | 12 | 12 | 0 | 0 | 0 | 0 |
 | PAT | 14 | 14 | 0 | 0 | 0 | 0 |
 | HERB | 13 | 11 | 1 | 1 | 0 | 0 |
@@ -281,14 +282,14 @@
 | MC | 20 | 17 | 0 | 3 | 0 | 0 |
 | REG | 8 | 7 | 0 | 0 | 1 | 0 |
 | PRINT | 4 | 4 | 0 | 0 | 0 | 0 |
-| Shell | 20 | 5 | 2 | 1 | 5 | 0 |
+| Shell | 20 | 6 | 2 | 1 | 4 | 0 |
 | CFG | 6 | 6 | 0 | 0 | 0 | 0 |
 | ERR | 8 | 6 | 2 | 0 | 0 | 0 |
 | LOG | 7 | 7 | 0 | 0 | 0 | 0 |
 | SYS | 9 | 9 | 0 | 0 | 0 | 0 |
 | CARD | 2 | 1 | 1 | 0 | 0 | 0 |
 | REPORT | 4 | 4 | 0 | 0 | 0 | 0 |
-| **合计** | **154** | **142** | **3** | **0** | **6** | **0** |
+| **合计** | **155** | **144** | **3** | **0** | **5** | **0** |
 
 > R2-补 全量重扫（2026-08-11 v1.2）：状态列同步 T4/T5/T7/T8/P1-P3 修复（40 处校准）。🔴 5 项 = MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-018（配置中心未实现）；⚠️ 7 项 = AUTH-002（本地锁定显式关闭）+ HERB-006（服务端 Excel 解析路径）+ SHELL-007（双模切换守卫）+ ERR-006/007（异常体系）+ CARD-002（降级链已移除）；🧲 7 项 = REG-002（QuickVisit 待接线）+ SHELL-011/012/016/019 等规划项。> R2 校准（2026-08-11）：状态列同步至代码实际（依据 R1 矩阵 + T4 修复）。🔴 10 项 = FORM-003/004/010（丢药材/降级缺失）+ MC-008/009/018（历史聚合/批量详情缺失）+ HERB-005（删除无引用检查）+ SHELL-013（备份恢复全无）+ CFG-004（FeatureToggle 消失）等；🧲 7 项 = REG-002 QuickVisit 待接线 + SHELL-011/016/018/019/012 等规划项；⚠️ 30 项为有代码但缺关键面（权限过滤/服务端守卫/AC 校验等，详见 R1 矩阵报告）。
 
@@ -303,6 +304,7 @@
 
 | 日期 | 变更 | 原因 |
 | ------ | ------ | ------ |
+| 2026-09-23 | **v1.17 收尾批次交付状态校准**：① US-SHELL-016 行由「🧲 v1.0 待实现 / 关联 API `导出/导入 JSON 按钮` / 实现文件 `SysadminHomeView` / Desktop `🧲`」改为「✅ 已实现」——关联 API 改 `ConfigExportImportView` + `IConfigurationPackageService`（单 JSON 配置包）；实现文件改 `ConfigExportImportViewModel.cs` + `ConfigurationPackageService.cs`；Desktop 列 `🧲`→`✅`；② 新增 **US-AUTH-014**（会话超时预警）行——`ISessionTimeoutMonitor` + `ShowDialog("SessionTimeoutWarningDialog")`，状态 ✅ 已实现，Desktop `✅` / WebAPI `N/A`；§一 标题「US-AUTH × 13」→「× 14」；③ 统计汇总 AUTH 13→14（✅ 12→13）、Shell ✅ 5→6 / 🧲 5→4、合计 154→155 / ✅ 142→144 / 🧲 6→5 | 收尾批次交付 US-SHELL-016（配置导出/导入独立页 + 配置包服务，密钥永不导出、权限快照只校验不应用）+ 新增 US-AUTH-014（会话超时预警），原行状态与实现矛盾 |
 | 2026-09-23 | **v1.16 B-07 初始化向导交付状态校准**：US-SHELL-011 行由「🧲 v2.0 推迟 / 关联 API `FirstRunSetupViewModel 扩展` / 实现文件 `FirstRunSetupViewModel` / WebAPI `N/A` / Desktop `🧲 v2.0`」改为「✅ 已实现」——关联 API 列改 `InitializationWizardView`（`RegisterForNavigation` + `RegisterDialog`）+ `local-database.json` + `first_run_done.flag`；实现文件列改 `InitializationWizardViewModel` + `IInitialAdminService` + `ILocalDatabaseSettingsService` + `IFirstRunStateService`；Desktop 列 `🧲 v2.0`→`✅`；统计汇总 Shell ✅ 4→5 / 🧲 6→5，合计 ✅ 141→142 / 🧲 7→6 | B-07 交付 5 步初始化向导（sysadmin 登录后触发 + SysadminHome 手动入口，取代单屏 `FirstRunSetupView`），原行「v2.0 推迟」与实现矛盾 |
 | 2026-09-18 | **v1.13 前端设计文档漂移 P0 状态同步**：US-SHELL-003 状态列→✅ N5 已实现（RequiredModules 含 ClinicalModule）；US-SHELL-005 状态列→⚠️ 部分实现（N1/N3/N4/N5 已实施、N2 参数消费部分完成、N6 对话框待收敛）；Shell/合计统计同步（✅-1 ⚠️+1） | 代码-文档一致性红线：导航切片代码落地后需求状态列滞后 |
 | 2026-09-18 | **v1.14 导航参数契约 P1 + N6 MessageBox 清理后状态再校准**：US-SHELL-005 更新为 N1 生产方工厂补齐✅ / N2 参数消费✅ / N6 对话框核心收敛✅（ToastService 兜底保留） | 代码批次后状态列同步 |

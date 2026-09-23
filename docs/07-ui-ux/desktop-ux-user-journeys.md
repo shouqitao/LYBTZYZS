@@ -1,6 +1,6 @@
 # Desktop 用户旅程（UX User Journeys）
 
-> 版本: v1.0 | 日期: 2026-09-13 | 依据: 代码实际（src/Client/Desktop）+ 事实清单口径
+> 版本: v1.1 | 日期: 2026-09-23 | 依据: 代码实际（src/Client/Desktop）+ 事实清单口径
 
 > **计数口径（全文统一）**：View **30**（页面/导航级 XAML：`*/Views/*.xaml`，含 `Roles/*/Views/`、`Reports/Views/`、Shell 的 MainWindow/AppShell/Header/SideNav/Footer/AccountSettingsView）、Control **33**（`*/Controls/*.xaml` 内嵌组件）、Dialog **7**（`*/Dialogs/**/*.xaml`，经 `RegisterDialog` 注册）、Root 1（`Shell/App.xaml`）；ViewModel 文件 **55**；XAML 合计 **82** = 视图 71 + 资源/模板 11。
 
@@ -102,7 +102,7 @@
 | 9 | 备份管理 | `BackupManagementView` | 侧栏「备份管理」 | 备份/恢复命令 | `BackupManagementViewModel` |
 | 10 | 收尾 | `SideNavControl` | 侧栏底部 | `LogoutCommand` | `SideNavViewModel` |
 
-> 步骤 2–4 的 `CardReaderDiagnosticsViewModel` / `ConfigurationCenterViewModel` / `ServerConfigSectionViewModel` **只有 VM 没有独立 View**，是 `SysadminHomeView` 的内嵌子 VM；历史上文档中的 `CardReaderDiagnosticsView`(SY-05)、`ConfigExportImportView`(SY-07)、`ServerConfigPanelView`(SY-08) 在代码中**不存在**。
+> 步骤 2–4 的 `CardReaderDiagnosticsViewModel` / `ConfigurationCenterViewModel` / `ServerConfigSectionViewModel` **只有 VM 没有独立 View**，是 `SysadminHomeView` 的内嵌子 VM；历史上文档中的 `CardReaderDiagnosticsView`(SY-05)、`ServerConfigPanelView`(SY-08) 在代码中**不存在**。**注（2026-09-23 收尾批次）**：`ConfigExportImportView`(SY-07) 已落地为**独立视图**（US-SHELL-016，`SysadminHomeView` 第 7 个功能卡「配置导入导出」→ `ViewNames.ConfigExportImport`，`ViewRoleAccess` = SuperAdmin）；会话超时预警对话框 `SessionTimeoutWarningDialog`（US-AUTH-014，`Shell/Dialogs/Views/`）亦已落地。
 
 ---
 

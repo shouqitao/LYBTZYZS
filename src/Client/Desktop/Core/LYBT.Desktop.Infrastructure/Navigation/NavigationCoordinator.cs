@@ -44,6 +44,8 @@ public class NavigationCoordinator : INavigationCoordinator
         // B-06: 备份/恢复为运维操作，服务端策略 SysAdminOnly——客户端守卫同步收紧为仅 SuperAdmin
         [ViewNames.BackupManagement] = [UserRole.SuperAdmin],
         [ViewNames.SecurityAuditLog] = [UserRole.Admin, UserRole.SuperAdmin],
+        // US-SHELL-016: 配置导入导出含连接/本地库等运维配置，与备份恢复同级——仅 SuperAdmin
+        [ViewNames.ConfigExportImport] = [UserRole.SuperAdmin],
         [ViewNames.SystemSettings] = [UserRole.Admin, UserRole.SuperAdmin],
         // N1: 接诊/管理查看需要；业务上前台 StartVisit 必达（Doctor+Receptionist+Admin+SuperAdmin）
         [ViewNames.MedicalCaseWorkspace] = [UserRole.Doctor, UserRole.Receptionist, UserRole.Admin, UserRole.SuperAdmin],
@@ -58,6 +60,12 @@ public class NavigationCoordinator : INavigationCoordinator
         [ViewNames.ReportsHome] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
         [ViewNames.AuditLog] = [UserRole.Doctor, UserRole.Admin, UserRole.SuperAdmin],
     };
+
+    /// <summary>
+    /// 视图 → 允许角色映射的只读快照（US-SHELL-016：配置包导出/导入一致性校验的编译期权限基线）。
+    /// 与导航守卫同源，避免权限定义出现第二份拷贝。
+    /// </summary>
+    public static IReadOnlyDictionary<string, UserRole[]> RoleAccessSnapshot => ViewRoleAccess;
 
     public NavigationCoordinator(
         INavigationServices services,

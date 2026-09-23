@@ -123,6 +123,10 @@ public partial class App : PrismApplication
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog, Dialogs.ViewModels.ConfirmationDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.MessageDialog, Dialogs.ViewModels.MessageDialogViewModel>();
         containerRegistry.RegisterDialog<Dialogs.Views.InputDialog, Dialogs.ViewModels.InputDialogViewModel>();
+        // US-AUTH-014：会话超时预警对话框 + 监控器（登录成功后启动，剩余时间进入警告窗口时弹出）
+        containerRegistry.RegisterDialog<Dialogs.Views.SessionTimeoutWarningDialog, Dialogs.ViewModels.SessionTimeoutWarningDialogViewModel>();
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Services.ISessionTimeoutMonitor,
+            LYBT.Desktop.Shell.Services.Session.SessionTimeoutMonitor>();
         containerRegistry.Register<ViewModels.AccountSettingsViewModel>();
         containerRegistry.RegisterForNavigation<Views.AccountSettingsView>();
 

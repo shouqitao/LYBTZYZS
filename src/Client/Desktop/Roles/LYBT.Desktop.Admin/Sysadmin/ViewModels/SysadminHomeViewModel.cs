@@ -123,6 +123,12 @@ public partial class SysadminHomeViewModel : NavigableViewModelBase
     private void NavigateToInitializationWizard() => NavigateTo(ViewNames.InitializationWizard);
 
     /// <summary>
+    /// 导航到配置导入导出（US-SHELL-016）
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToConfigExportImport() => NavigateTo(ViewNames.ConfigExportImport);
+
+    /// <summary>
     /// 导航到指定视图
     /// </summary>
     private void NavigateTo(string viewName)

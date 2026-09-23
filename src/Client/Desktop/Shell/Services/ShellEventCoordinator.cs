@@ -25,6 +25,8 @@ public class ShellEventCoordinator : IDisposable
     private readonly IApiClient _apiClient;
     private readonly IDialogService _dialogService;
     private readonly IFirstRunStateService _firstRunStateService;
+    private readonly IApplicationTickService _applicationTickService;
+    private readonly ISessionTimeoutMonitor _sessionTimeoutMonitor;
     private readonly ILogger<ShellEventCoordinator> _logger;
 
     private readonly EventSubscriptionManager _eventSubscriptions;
@@ -41,12 +43,16 @@ public class ShellEventCoordinator : IDisposable
         IApiClient apiClient,
         IDialogService dialogService,
         IFirstRunStateService firstRunStateService,
+        IApplicationTickService applicationTickService,
+        ISessionTimeoutMonitor sessionTimeoutMonitor,
         ILogger<ShellEventCoordinator> logger)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         _firstRunStateService = firstRunStateService ?? throw new ArgumentNullException(nameof(firstRunStateService));
+        _applicationTickService = applicationTickService ?? throw new ArgumentNullException(nameof(applicationTickService));
+        _sessionTimeoutMonitor = sessionTimeoutMonitor ?? throw new ArgumentNullException(nameof(sessionTimeoutMonitor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _eventSubscriptions = new EventSubscriptionManager(eventAggregator);
@@ -59,6 +65,7 @@ public class ShellEventCoordinator : IDisposable
         _services.LoginCoordinator.LoginSucceeded += OnLoginSucceeded;
         _services.ActivityTracker.SessionExpired += OnSessionExpired;
         _services.LoginState.LogoutRequested += OnLogoutRequested;
+        _sessionTimeoutMonitor.LogoutRequested += OnSessionTimeoutLogoutRequested;
 
         _eventSubscriptions.Subscribe<AuthEvents.PasswordChangedEvent, PasswordChangedPayload>(OnPasswordChanged);
         _eventSubscriptions.Subscribe<AuthEvents.ProfileUpdatedEvent, ProfileUpdatedPayload>(OnProfileUpdated);
@@ -77,6 +84,9 @@ public class ShellEventCoordinator : IDisposable
                     _services.LoginState.ApplyLoginSuccess(args.User);
 
                     _services.Navigation.ClearLoginRegion();
+                    // 统一定时服务（每秒 Tick）此前从未启动 → UserActivityTracker.OnTick 永不触发（不活跃过期形同虚设）。
+                    // 必须在 UI 线程启动：ApplicationTickService 构造期捕获 DispatcherTimer 的 Dispatcher。
+                    _applicationTickService.Start();
                     _services.ActivityTracker.StartTracking();
                     _ = _services.TokenLifecycle.StartMonitoringFromStorageAsync();
 
@@ -115,6 +125,9 @@ public class ShellEventCoordinator : IDisposable
                         }
                     });
 
+                    // US-AUTH-014：登录成功后启动会话超时预警监控（登出/会话过期时停止）
+                    _sessionTimeoutMonitor.Start();
+
                     // B-07（US-SHELL-011）：首次运行 → sysadmin 登录后弹出初始化向导。
                     // 置于登录后（而非登录前）是因为向导第 4 步创建管理员账号需要 sysadmin 会话。
                     TryShowInitializationWizard(args.User.Role);
@@ -139,6 +152,7 @@ public class ShellEventCoordinator : IDisposable
     {
         try
         {
+            _sessionTimeoutMonitor.Stop();
             _services.LoginState.HandleSessionExpiredAsync()
                 .SafeFireAndForget(ex => _logger.LogError(ex, "会话过期处理异常"));
         }
@@ -146,6 +160,16 @@ public class ShellEventCoordinator : IDisposable
         {
             _logger.LogError(ex, "会话过期处理异常");
         }
+    }
+
+    /// <summary>
+    /// US-AUTH-014：会话超时预警对话框请求结束会话（用户「退出」，或对话框打开期间会话过期）。
+    /// 复用既有会话过期链路（提示 + 自动登出 → LogoutRequested → 清导航 + 回登录页）。
+    /// </summary>
+    private void OnSessionTimeoutLogoutRequested(object? sender, EventArgs e)
+    {
+        _logger.LogInformation("[SESSION] 会话超时预警对话框请求结束会话，转入既有登出链路");
+        OnSessionExpired(sender, e);
     }
 
     private void OnPasswordChanged(PasswordChangedPayload payload)
@@ -267,6 +291,7 @@ public class ShellEventCoordinator : IDisposable
 
     private void OnLogoutRequested(object? sender, EventArgs e)
     {
+        _sessionTimeoutMonitor.Stop();
         _services.NavigationManager.NavigationItems.Clear();
         _services.Navigation.ClearHistory();
         _services.Navigation.ClearContentRegion();
@@ -278,6 +303,8 @@ public class ShellEventCoordinator : IDisposable
         _services.LoginCoordinator.LoginSucceeded -= OnLoginSucceeded;
         _services.ActivityTracker.SessionExpired -= OnSessionExpired;
         _services.LoginState.LogoutRequested -= OnLogoutRequested;
+        _sessionTimeoutMonitor.LogoutRequested -= OnSessionTimeoutLogoutRequested;
+        _sessionTimeoutMonitor.Stop();
         _services.ActivityTracker.StopTracking();
         _eventSubscriptions.Dispose();
     }

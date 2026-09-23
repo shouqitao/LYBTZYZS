@@ -1,6 +1,6 @@
 # Desktop View 全景图 — 代码对齐的 View / Control / Dialog 清单
 
-> 版本: v1.1 | 日期: 2026-09-23 | 状态: 已对齐代码（2026-09-23 B-07：`FirstRunSetupView` → `InitializationWizardView` 同步）
+> 版本: v1.2 | 日期: 2026-09-23 | 状态: 已对齐代码（2026-09-23 收尾批次：`ConfigExportImportView` + `SessionTimeoutWarningDialog` 落地；B-07：`FirstRunSetupView` → `InitializationWizardView` 同步）
 > 事实源: 代码实际（`src/Client/Desktop` 全量扫描，排除 `bin/`、`obj/`）
 > 关联: [desktop-layout-framework.md](../../07-ui-ux/desktop-layout-framework.md)（三栏框架 SSOT）、[desktop-ui-detailed-design.md](../../07-ui-ux/desktop-ui-detailed-design.md)（页面详细规格）
 > 品牌: 凌隐宝堂中医诊所（系统名「凌隐宝堂中医诊所管理系统」）
@@ -186,15 +186,15 @@
 
 ## 未建视图与能力归属（历史条目收编）
 
-原 v0.1 清单中的以下条目**在代码中不存在独立视图**；其能力若已由别处承载，按下表归属说明，统一标注 `[未建视图]` / `已合并`：
+原 v0.1 清单中的以下条目**在代码中不存在独立视图**；其能力若已由别处承载，按下表归属说明，统一标注 `[未建视图]` / `已合并`（后续批次已真实落地的条目改标 ✅）：
 
 | 原编号 | 原条目 | 现状 | 能力归属（代码实际） |
 |--------|--------|------|----------------------|
 | W-01 | ~~`InitializationWizardView`~~ | ✅ **已建（2026-09-23 B-07）** | 首次初始化向导 = `Modules/LYBT.Desktop.Auth/Views/InitializationWizardView.xaml`（5 步，`RegisterForNavigation` + `RegisterDialog` 双入口，US-SHELL-011）；旧单屏 `FirstRunSetupView` 已删除 |
 | SY-05 | `CardReaderDiagnosticsView` | `[未建视图]` | 读卡器诊断面板内嵌于 `SysadminHomeView`（子 VM `CardReaderDiagnosticsViewModel`，US-SHELL-019 已落地），非独立导航页 |
-| SY-07 | `ConfigExportImportView` | `[未建视图]` | 无承载页面：US-SHELL-016（配置导出/导入）为待实现；业务数据 JSON 导入导出已分散在各 MasterDetail 页面 |
+| SY-07 | ~~`ConfigExportImportView`~~ | ✅ **已建（2026-09-23 收尾批次）** | 配置包导出/导入 = `Roles/LYBT.Desktop.Admin/Sysadmin/Views/ConfigExportImportView.xaml`（VM `ConfigExportImportViewModel`；`ViewNames.ConfigExportImport` + `SysadminModule.RegisterForNavigation`；`SysadminHomeView` 第 7 个功能卡「配置导入导出」；US-SHELL-016）；业务数据 JSON 导入导出仍分散在各 MasterDetail 页面 |
 | SY-08 | `ServerConfigPanelView` | `[未建视图]` | 服务端配置面板内嵌于 `SysadminHomeView`「服务端配置」Tab（子 VM `ServerConfigSectionViewModel`，仅远程模式，US-SHELL-018 / ADR-0014） |
-| AD-01 | `SessionTimeoutWarningDialog` | `[未建视图]` | 会话超时仅存在配置项（`ConfigurationCenterViewModel.WarningBeforeTimeoutMinutes`）与常量（`SystemConstants.SessionTimeoutMinutes`），无倒计时对话框；US-AUTH-005 的提醒机制待产品确认 |
+| AD-01 | ~~`SessionTimeoutWarningDialog`~~ | ✅ **已建（2026-09-23 收尾批次）** | 会话超时预警 = `Shell/Dialogs/Views/SessionTimeoutWarningDialog.xaml`（VM `SessionTimeoutWarningDialogViewModel`，`Shell/App.xaml.cs` `RegisterDialog`）+ `Shell/Services/Session/SessionTimeoutMonitor.cs`（US-AUTH-014）；mm:ss 倒计时 + 「续期」/「退出」 |
 | DD-04 | `UnfinishedCaseDialog` | `[未建视图]` | 未完成医案处理由 `PendingQueueViewModel`（挂起医案继续/新建分支）与 `UnsavedChangesDialog` 共同承载 |
 | DD-05 | `PrintPreviewDialog` | `[未建视图]` | 处方预览由 `Core/LYBT.Desktop.Printing/Services/PrescriptionPreviewWindowBuilder` 以代码构建窗口（无 XAML 对话框），打印经 `PrescriptionPrintExecutor` |
 | DOC-02 | `PendingQueueView` | **已合并** | XAML 已删除；队列 UI 内嵌 `PatientSelectionView`，`PendingQueueViewModel` 保留为子 VM |
@@ -396,7 +396,7 @@ LoginView（A-01）
 |---|------|--------|----------|------|
 | D1-01 | 删 | `CardReaderDiagnosticsView` | —（删除；能力已内嵌） | 无独立视图；`SysadminHomeView` 内嵌 `CardReaderDiagnosticsViewModel` |
 | D1-02 | 删 | `PendingQueueView` | —（删除；已合并） | XAML 已删；队列 UI 内嵌 `PatientSelectionView` |
-| D1-03 | 删 | `配置导入导出` | —（删除；无承载） | `ConfigExportImportView` 未建（US-SHELL-016 待实现） |
+| D1-03 | 改 | `配置导入导出` | `ConfigExportImportView（配置导入导出，2026-09-23 已建）` | 独立视图已落地（US-SHELL-016）——drawio 节点应**保留并改名**（原「删」结论作废） |
 | D1-04 | 改 | `侧边栏: 账户 / 主题 / 退出` | `侧栏: 角色导航矩阵（主页+业务入口）+ 底部（主题/退出）；个人资料在顶栏` | `SideNavControl` 绑定 `GroupedNavigationItems`；`HeaderViewModel.EditProfileCommand` |
 | D1-05 | 改 | `ClinicalHomeView（临床工作台）` | `ClinicalWorkspaceView（医生首页）` | `DoctorRoleDefinition.HomeViewName = ViewNames.ClinicalWorkspace` |
 | D1-06 | 增 | — | `ClinicalHomeView（保留；非医生首页，fallback）` | `RoleRegistry.DefaultHomeView` |
@@ -416,7 +416,7 @@ LoginView（A-01）
 | D2-01 | 改 | `★ InitializationWizardView&#xa;5步强制向导` | `★ InitializationWizardView&#xa;5步初始化向导（已建，2026-09-23 B-07）` | `Auth/Views/InitializationWizardView.xaml`；US-SHELL-011 已实现（原「`[未建视图]`；改由 `FirstRunSetupView` 承载」结论作废） |
 | D2-02 | 删 | `PendingQueueView&#xa;待诊队列&#xa;(实时推送 + QuickVisit)` | `PatientSelectionView&#xa;患者选择 + 待诊队列 + 读卡` | `PendingQueueView` 已合并 |
 | D2-03 | 删 | `CardReaderDiagnostics&#xa;读卡器诊断` | `SysadminHomeView&#xa;配置中心 › 读卡器诊断（内嵌）` | 同 D1-01 |
-| D2-04 | 删 | `ConfigExportImport&#xa;配置导入导出` | —（删除；US-SHELL-016 未实现） | 无承载页面 |
+| D2-04 | 改 | `ConfigExportImport&#xa;配置导入导出` | `ConfigExportImportView&#xa;配置导入导出（已建，2026-09-23）` | 独立视图已落地（US-SHELL-016）——**保留节点**（原「删」结论作废） |
 | D2-05 | 删 | `PrintPreviewDialog&#xa;打印预览` | `处方预览窗口（代码构建，无 XAML）` | `PrescriptionPreviewWindowBuilder` |
 | D2-06 | 改 | `★ ClinicalWorkspaceView&#xa;（诊疗主界面 — 最核心的View）` | `★ ClinicalWorkspaceView&#xa;（医生首页 / 诊疗主界面）` | `RoleRegistry` 注册 |
 | D2-07 | 改 | `+ ClinicalHomeView&#xa;(临床工作台)` | `ClinicalHomeView（保留；非医生首页，仅 fallback）` | 同 D1-06 |
@@ -437,6 +437,6 @@ LoginView（A-01）
 1. **`InputDialog`（SD-02）**：已注册但代码中无调用点——保留或下线？
 2. **`SystemSettingsView`（ADM-03）需求依据**：诊所设置（`clinic-settings.json` 热更新）在需求库未定位到 US 编号——是否需要补立 US？
 3. **`MedicalCaseMasterDetailView`（M-03）入口**：代码仅见 `WorkspaceNavigationHandler` 导航进入，是否有其他入口待确认。
-4. **会话超时提醒（原 AD-01）**：US-AUTH-005 的 30 秒倒计时对话框在代码中不存在，提醒机制是否已有替代方案待产品确认。
+4. ~~**会话超时提醒（原 AD-01）**：US-AUTH-005 的 30 秒倒计时对话框在代码中不存在，提醒机制是否已有替代方案待产品确认。~~ **已闭环（2026-09-23 收尾批次）**：`SessionTimeoutWarningDialog`（`Shell/Dialogs/Views/`）+ `SessionTimeoutMonitor`（`Shell/Services/Session/`）已落地——US-AUTH-014，默认提前 `ClientSession:WarningBeforeTimeoutMinutes`（2 分钟）弹 mm:ss 倒计时 + 「续期」/「退出」，0 = 关闭。原「US-AUTH-005」归属有误（US-AUTH-005 实为令牌验证）。
 5. **侧栏矩阵条目数差异**：设计 SSOT [desktop-layout-framework.md](../../07-ui-ux/desktop-layout-framework.md) §角色×菜单矩阵每角色列出 4~8 项，代码 `NavigationManager.BuildNavigationItems` 每角色仅生成 3 项（主页 + 2 业务入口，标注为「C+ 角色矩阵」）——以代码为准还是补齐设计矩阵，待确认。
 6. **`ClinicalHomeView`（DOC-09）去留**：当前仅作 `RoleRegistry.DefaultHomeView` fallback，是否保留。

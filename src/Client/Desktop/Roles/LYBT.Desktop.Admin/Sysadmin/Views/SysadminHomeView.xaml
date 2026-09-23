@@ -405,6 +405,20 @@
                             </StackPanel>
                         </Button>
                     </Border>
+
+                    <!-- 卡片7: 配置导入导出（US-SHELL-016） -->
+                    <Border Margin="0,0,12,0" Style="{StaticResource FunctionCardStyle}">
+                        <Button Command="{Binding NavigateToConfigExportImportCommand}" Style="{StaticResource MaterialDesignFlatButton}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ImportExport"
+                                                          Width="40" Height="40"
+                                                          HorizontalAlignment="Center"
+                                                          Margin="0,0,0,12"
+                                                          Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="配置导入导出" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
                 </StackPanel>
 
                 <!-- 状态卡片 -->

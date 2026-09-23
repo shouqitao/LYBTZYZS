@@ -17,7 +17,7 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 | Directory | Purpose |
 |-----------|---------|
 | LYBT.Tests.Server/ | Server 单元测试 — 359 方法/571 用例，EF InMemory + 手写 fake，零 mock（AntiMock 规则强制）；全量 **847/847 pass**（2026-09-23 实测） |
-| LYBT.Tests.Desktop/ | Desktop 测试 — 1006 用例，纯 VM 单元测试（NSubstitute mock，无 DB）+ LocalWebAPI 控制器集成测试（LocalDB）+ E2E（本地模式自举；RemoteApi 需 localhost:5000，未启动则 Skip）；全量 **982/0 失败/24 Skip**（2026-09-23 实测，25m40s） |
+| LYBT.Tests.Desktop/ | Desktop 测试 — 1038 用例，纯 VM 单元测试（NSubstitute mock，无 DB）+ LocalWebAPI 控制器集成测试（LocalDB）+ E2E（本地模式自举；RemoteApi 需 localhost:5000，未启动则 Skip）；全量 **1014/0 失败/24 Skip**（2026-09-23 实测，25m40s） |
 | LYBT.Tests.Architecture/ | Architecture guard tests — **107/107 pass**（2026-09-23 实测），enforcing dependency rules, naming conventions, anti-mock policies |
 | postman/ | Postman/Newman API test collections |
 

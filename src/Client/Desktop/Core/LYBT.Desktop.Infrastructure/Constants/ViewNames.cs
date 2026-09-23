@@ -108,6 +108,9 @@ public static class ViewNames
     /// <summary>安全审计日志查看（US-SHELL-014；非医案 AuditLog）</summary>
     public const string SecurityAuditLog = "SecurityAuditLogView";
 
+    /// <summary>配置导入导出（US-SHELL-016；仅系统管理员）</summary>
+    public const string ConfigExportImport = "ConfigExportImportView";
+
     #endregion
 
 }

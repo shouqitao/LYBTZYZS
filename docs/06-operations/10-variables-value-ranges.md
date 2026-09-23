@@ -32,7 +32,7 @@
 |--------|------|--------|------|------|
 | `Session:TimeoutMinutes` | int | `120` | 5-480 | Server WebAPI 会话超时（分钟） |
 | `ClientSession:InactivityTimeoutMinutes` | int | `30` | 5-120 | Desktop Shell 不活动超时（分钟，appsettings.json 实际键） |
-| `ClientSession:WarningBeforeTimeoutMinutes` | int | `0` | 0-10 | 超时前预警（分钟） |
+| `ClientSession:WarningBeforeTimeoutMinutes` | int | `2` | 0-10 | 超时前预警（分钟）——大于 0 时 Shell 在剩余时间进入该窗口弹出会话超时提醒（「续期」/「退出」）；0 = 关闭预警（2026-09-23 由 0 改为 2） |
 
 ## 数据库配置
 

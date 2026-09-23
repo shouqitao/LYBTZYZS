@@ -1,5 +1,5 @@
 # Desktop UI/UX 详细设计文档
-> 版本: v2.3 | 日期: 2026-09-23 | 基于: R01→R22 22 轮独立调研 + R23 综合
+> 版本: v2.4 | 日期: 2026-09-23 | 基于: R01→R22 22 轮独立调研 + R23 综合
 > 模型: DeepSeek V4 Flash | 状态: 定版（数量与页面清单已对齐代码，2026-09-13）| 覆盖: View 30 / Control 33 / Dialog 7 / ViewModel 55（XAML 合计 82 = 视图 71 + 资源模板 11）+ 147 个 US
 
 > **计数口径**（代码实际 `src/Client/Desktop`，排除 bin/obj）: **View 30** = 页面/导航级 `*/Views/*.xaml`（含角色台 `Roles/*/Views/`、`Reports/Views/`、`Receptionist/Views/`，以及 Shell 的 MainWindow/AppShell/HeaderControl/SideNavControl/FooterControl/AccountSettingsView）；**Control 33** = 内嵌组件 `*/Controls/*.xaml`（共享设计系统 16 + 模块内嵌 17，`Shell/Controls/AccountSettingsControl` 归此）；**Dialog 7** = `*/Dialogs/**/*.xaml`（经 `RegisterDialog` 注册，Shell 的 3 个位于 `Dialogs/Views/`）；**Root 1** = `Shell/App.xaml`（应用级资源，非视图）；**ViewModel 55** = VM 文件数（每文件 1 个 VM 类型）。注: `Auth/Views/ServerConfigView.xaml`、`Auth/Views/InitializationWizardView.xaml` 物理位于 `Views/`（按路径计入 View），但经 `RegisterDialog` 作为**对话框**注册（`InitializationWizardView` 另经 `RegisterForNavigation` 可导航——B-07 双入口）；`Shell/Controls/AccountSettingsControl.xaml` 位于 `Controls/`，但其宿主 `AccountSettingsView` 计入 View。
@@ -290,7 +290,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 
 ### 4.17 运维首页/备份/部署/日志/安全审计
 - `SysadminHomeView`（VM `SysadminHomeViewModel`）: 3 个 Tab —— `配置`（`ConfigCenter`：诊所/会话/连接/安全/功能开关 5 节 + `RestartLocalServiceCommand`；并内嵌 `CardReaderDiagnostics` 读卡诊断 `RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`）、`服务端配置`（`IsRemoteMode` 可见，`ServerConfig` 节列表 `SaveSectionCommand` / `RestartServerCommand`）、`备份恢复`（`IsLocalMode` 可见，内嵌 `<views:BackupManagementView/>`；远程模式由侧栏「备份管理」与首页「备份管理」卡片进入同一 View）；并附 4 个快捷入口按钮（用户管理/日志级别/部署/安全审计）+ **初始化向导手动入口**（重跑 US-SHELL-011 5 步向导，见 §4.2；首次登录的自动触发由 `ShellEventCoordinator.OnLoginSucceeded` 负责）
-  - 三个**子 VM 无独立 XAML**（均为 `SysadminHomeView` 内嵌子 VM）: `ConfigurationCenterViewModel`、`ServerConfigSectionViewModel`、`CardReaderDiagnosticsViewModel` —— 对应早期清单中的 `ConfigExportImportView`(SY-07)、`ServerConfigPanelView`(SY-08)、`CardReaderDiagnosticsView`(SY-05) 三个**未建视图**（见 §4.23）
+  - 三个**子 VM 无独立 XAML**（均为 `SysadminHomeView` 内嵌子 VM）: `ConfigurationCenterViewModel`（配置中心 Tab）、`ServerConfigSectionViewModel`（服务端配置 Tab）、`CardReaderDiagnosticsViewModel`（读卡器诊断）——对应早期清单中的 `ServerConfigPanelView`(SY-08)、`CardReaderDiagnosticsView`(SY-05) 两个**未建视图**（见 §4.22）；`ConfigExportImportView`(SY-07) 已于 2026-09-23 收尾批次改为**独立视图**（见 §4.24）
 - `BackupManagementView`（`Roles/LYBT.Desktop.Admin/Sysadmin/Views/BackupManagementView.xaml`，VM `BackupManagementViewModel`；B-06 交付态，`NavigationCoordinator.ViewRoleAccess[BackupManagement] = [SuperAdmin]`）:
   - **状态卡**: 上次备份 / 备份文件数 / 总大小 + 一行元信息（`BackupDirectory`｜`RetentionInfo`「保留 N 天」｜`AutoBackupInfo`「计划调度：每 N 小时」或「登录自动备份：间隔 N 小时（计划调度未启用）」）；操作进行中显示 `OperationPhase` + `ProgressBar`（`ProgressPercent`，VM 每秒轮询 `GET /api/v1/backup/status`）；`StatusMessage`/`ErrorMessage`（红）文本行
   - **执行备份卡**: `压缩备份` / `加密备份` 复选框 + 加密口令 `TextBox`（仅加密勾选时可用）+ 三个按钮「立即全量备份」（`BackupFullCommand`）/「立即差异备份」（`BackupDifferentialCommand`，ToolTip 说明依赖最近全量）/「清理过期备份」（`CleanupCommand`）
@@ -302,7 +302,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 - `DeploymentView`: 上传 `nupkg` `ProgressBar` + 类型校验 + `RELEASES` 预览 + 重启 `POST /deploy/restart`
 - `LogLevelControlView`: `LoggingLevelManager` 运行时 `ComboBox`，切 `Debug` 警告“30分钟后回退” + 定时器
 - `SecurityAuditLogView`: 见 §4.19
-- 未建视图（`CardReaderDiagnosticsView` / `ConfigExportImportView` / `ServerConfigPanelView`）对照见 §4.22
+- 未建视图（`CardReaderDiagnosticsView` / `ServerConfigPanelView`）对照见 §4.22；收尾批次新增的独立视图/对话框（`ConfigExportImportView` / `SessionTimeoutWarningDialog`）见 §4.24
 
 ### 4.18 医案管理列表 (`Roles/LYBT.Desktop.Clinical/Views/MedicalCaseManagementView.xaml`)
 - **路径/VM**: 薄包装 View（无独立 VM），设计期 `d:DataContext = MedicalCaseMasterDetailViewModel`；运行时由内嵌控件解析
@@ -345,9 +345,9 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 |----------|-----------|------|-----------|
 | W-01 | ~~`InitializationWizardView`~~ | ✅ **已建（2026-09-23 B-07）** | 见 §4.2：`Auth/Views/InitializationWizardView.xaml`（5 步初始化向导，`RegisterForNavigation` + `RegisterDialog` 双入口，需求 US-SHELL-011）；旧单屏 `FirstRunSetupView` 已删除 |
 | SY-05 | `CardReaderDiagnosticsView` | `[未建视图]` | `SysadminHomeView`「配置」Tab 内嵌子 VM `CardReaderDiagnosticsViewModel`（`RunDiagnosticsCommand` / `SaveSettingsCommand` / `ReportLines`，无独立 XAML） |
-| SY-07 | `ConfigExportImportView` | `[未建视图]` | `SysadminHomeView` 内嵌子 VM `ConfigurationCenterViewModel`（配置导入导出为其能力，非独立页面） |
+| SY-07 | ~~`ConfigExportImportView`~~ | ✅ **已建（2026-09-23 收尾批次）** | 见 §4.24：`Roles/LYBT.Desktop.Admin/Sysadmin/Views/ConfigExportImportView.xaml`（VM `ConfigExportImportViewModel`；`ViewNames.ConfigExportImport` + `SysadminModule.RegisterForNavigation`；`SysadminHomeView` 第 7 个功能卡；US-SHELL-016） |
 | SY-08 | `ServerConfigPanelView` | `[未建视图]` | `SysadminHomeView`「服务端配置」Tab → 子 VM `ServerConfigSectionViewModel`（仅远程模式可见） |
-| AD-01 | `SessionTimeoutWarningDialog` | `[未建视图]` | `[待确认]` —— 现存 7 个 Dialog 中无会话超时提示实现 |
+| AD-01 | ~~`SessionTimeoutWarningDialog`~~ | ✅ **已建（2026-09-23 收尾批次）** | 见 §4.24：`Shell/Dialogs/Views/SessionTimeoutWarningDialog.xaml`（VM `SessionTimeoutWarningDialogViewModel`，`Shell/App.xaml.cs` `RegisterDialog`）+ `Shell/Services/Session/SessionTimeoutMonitor.cs`（US-AUTH-014） |
 | DD-04 | `UnfinishedCaseDialog` | `[未建视图]` | 未保存离开确认由 `UnsavedChangesDialog`（MedicalCase 模块）承载 |
 | DD-05 | `PrintPreviewDialog` | `[未建视图]` | 打印预览经 `IPrintService.PreviewAsync` → `PrescriptionPrintTemplate` FixedDocument（§4.10），非独立对话框 |
 | — | `RegistrationCreateView` | `[未建视图]` | 实际为对话框 `RegistrationCreateDialog`（§4.21） |
@@ -373,6 +373,19 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 |15| `SystemSettingsView` | §4.16 |30| `UserManagementView` | §4.16 |
 
 > 合计 **30**（= 封面 View 口径）。`PendingQueueView` 已于 2026-08-29 删除、不计入。
+
+### 4.24 收尾批次新增视图 / 对话框（2026-09-23）
+
+> 本节补充 §4.23 覆盖核对表（30 View + 7 Dialog）之外的**收尾批次**新增界面；封面/§4.23 的计数口径暂未随之调整（与 B-07 处理 `InitializationWizardView` 时一致）。
+
+- **`ConfigExportImportView`**（`Roles/LYBT.Desktop.Admin/Sysadmin/Views/ConfigExportImportView.xaml`，VM `ConfigExportImportViewModel`；US-SHELL-016）:
+  - **注册/入口**: `SysadminModule.RegisterForNavigation<ConfigExportImportView>`（`ViewNames.ConfigExportImport`）+ 显式注册 VM；`NavigationCoordinator.ViewRoleAccess[ConfigExportImport] = [SuperAdmin]`；唯一入口为 `SysadminHomeView` 第 7 个功能卡「配置导入导出」（`NavigateToConfigExportImportCommand`）
+  - **导出**: 选择保存位置（`IFileDialogService.ShowSaveFileDialog`）→ `IConfigurationPackageService.ExportAsync` 生成**单个缩进 camelCase JSON 配置包**（节 `packageVersion`/`exportedAt`/`application`/`clinicSettings`/`connection`/`rolePermissions`/`featureToggles`）；**密钥永不导出**（无 `Jwt:SecretKey`/`DefaultPasswords`/数据库口令——写占位 `***`/令牌）
+  - **导入**: 选择文件（`IFileDialogService.ShowOpenFileDialog`）→ 二次确认 → 校验（JSON 解析失败或 `packageVersion` 缺失/不受支持 → 中文拒绝 + **零服务调用**）→ 应用诊所信息（`IClinicSettingsService`）/连接（`IConnectionSettingsService` + `ILocalDatabaseSettingsService`，**保留当前口令**）/功能开关（`IClientConfigurationStore`）→ 报告「已应用 / 已跳过 / 需重启」（`RequiresRestart`）；`rolePermissions` 只与当前程序比对一致性并报告差异，**绝不应用**
+  - **状态/提示**: 结果以报告行呈现；提示一律走 `IToastService`（禁 MessageBox）
+- **`SessionTimeoutWarningDialog`**（`Shell/Dialogs/Views/SessionTimeoutWarningDialog.xaml`，VM `SessionTimeoutWarningDialogViewModel : DialogViewModelBase`；US-AUTH-014）:
+  - **注册/触发**: `Shell/App.xaml.cs` `RegisterDialog<SessionTimeoutWarningDialog, SessionTimeoutWarningDialogViewModel>`（与既有 3 个 Shell 对话框并列）；由 `Shell/Services/Session/SessionTimeoutMonitor`（`ISessionTimeoutMonitor`）在剩余不活动时间 > 0 且 ≤ `ClientSession:WarningBeforeTimeoutMinutes`（默认 2 分钟，0=关闭）时经 Prism `ShowDialog("SessionTimeoutWarningDialog")` 弹出；监控器随登录成功启动、登出/会话过期停止（`ShellEventCoordinator`）
+  - **内容/交互**: mm:ss 剩余时间倒计时（每秒刷新）+ 「续期」（`ResetActivity()` + 尽力 `TryRefreshTokenAsync()` → close OK）/「退出」（close Cancel）；对话框打开期间会话真正过期 → close Abort（不残留于登录页之上）；每个不活动窗口最多弹一次
 
 ## 5. 跨页数据流 / 导航契约
 
@@ -627,14 +640,15 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 | 53 | 封面/§4 数量口径与代码不符（v2.0 称 25 View + 24 Control + 51+ VM + 「17 页」） | 本轮修订（2026-09-13，依据代码实际 `src/Client/Desktop`） | P1 | 已修：封面 → **View 30 / Control 33 / Dialog 7 / ViewModel 55**（XAML 82 = 视图 71 + 资源模板 11），并在封面声明计数口径 |
 | 54 | §1.3 共享控件表**重复**列出 `BreadcrumbBar`、`UnifiedPaginationBar`（各两次），缺 `BaseDetailContainer`/`FormulaViewControl`/`HerbItemControl`，且混入模块控件 `WorkflowStepIndicator` | 本轮修订（同上） | P2 | 已修：去重 + 补全 `LYBT.Desktop.Controls` 16 个 + 模块内嵌 17 个另列 §1.3.1；§9 矩阵同源更新 |
 | 55 | §4 仅覆盖 17 页，未覆盖 `SecurityAuditLogView`/`MedicalCaseManagementView`/`AccountSettingsView`/`AppShell`/`HeaderControl`/`SideNavControl`/`FooterControl` 等 | 本轮修订（同上） | P1 | 已修：§4 覆盖全部 30 View（新增 §4.4.1/§4.18/§4.19/§4.20），并补 §4.21 对话框清单、§4.23 覆盖核对表 |
-| 56 | 7 个视图名在代码中不存在（`CardReaderDiagnosticsView`/`ConfigExportImportView`/`ServerConfigPanelView`/`SessionTimeoutWarningDialog`/`UnfinishedCaseDialog`/`PrintPreviewDialog`/`RegistrationCreateView`） | 本轮修订（同上；2026-09-23 B-07 复核） | P2 | 已修：§4.22 逐条标 `[未建视图]` 并给出真实承载者（SY-05/07/08→`SysadminHomeView` 内嵌子 VM；DD-04→`UnsavedChangesDialog` 等）。**B-07 复核**：原列 8 个中 `InitializationWizardView` 已真实落地 → 从名单移除并标 ✅（见 §4.2 / §4.22 W-01） |
+| 56 | 5 个视图名在代码中不存在（`CardReaderDiagnosticsView`/`ServerConfigPanelView`/`UnfinishedCaseDialog`/`PrintPreviewDialog`/`RegistrationCreateView`） | 本轮修订（同上；2026-09-23 B-07 + 收尾批次复核） | P2 | 已修：§4.22 逐条标 `[未建视图]` 并给出真实承载者（SY-05/08→`SysadminHomeView` 内嵌子 VM；DD-04→`UnsavedChangesDialog` 等）。**B-07 复核**：原列 8 个中 `InitializationWizardView` 已真实落地 → 从名单移除并标 ✅（见 §4.2 / §4.22 W-01）。**收尾批次复核（2026-09-23）**：`ConfigExportImportView`（US-SHELL-016）与 `SessionTimeoutWarningDialog`（US-AUTH-014）已真实落地 → 从名单移除并标 ✅（见 §4.22 SY-07 / AD-01、§4.24） |
 | 57 | §3/§4 引用与代码不符：内容区 Region 曾写作 `RegionNames.MainContent`（实际 `RegionNames.ContentRegion`）、`INavigationCoordinator.NavigateToMedicalCaseWorkspace(params)`（实际为字典重载 `NavigateTo(string, IDictionary<string, object>?)`；**2026-09-23 已删除泛型重载 `NavigateTo<TParams>`——它会静默吞掉 `Dictionary` 载荷并展开 Dictionary 自身属性，见 `05-development/standards/SHELL-BEST-PRACTICES.md` §1.2**）、全局快捷键 `Ctrl+S/Ctrl+P/Esc`（实际见 `MainWindow.InputBindings`）、Sysadmin「Tab 配置/备份/日志/部署」（实际 3 Tab + 4 快捷入口）、侧栏分组曾写作「主页/业务/管理」（实际 `Group` = 临床/目录/管理） | 本轮修订（同上） | P2 | 已修：全文统一为代码实际口径 |
 
-| 58 | 品牌文案未统一：`LoginView.xaml` 硬编码「中医诊所管理系统」4 处（副标题/版本/版权/登录提示），权威名为「凌隐宝堂中医诊所管理系统」 | 本轮修订（2026-09-13 品牌核对） | P2 | **已修（2026-09-23 B-07）**：`LoginView.xaml` 4 处硬编码改为绑定 VM 属性，产品名由 `ClinicSettings.ClinicName` 驱动（默认诊所名 →「凌隐宝堂中医诊所管理系统」）；`designs/*.pen` 设计稿内的同名文案未随代码改动（见 §10 附录设计稿问题） |
+| 58 | 品牌文案未统一：`LoginView.xaml` 硬编码「中医诊所管理系统」4 处（副标题/版本/版权/登录提示），权威名为「凌隐宝堂中医诊所管理系统」 | 本轮修订（2026-09-13 品牌核对） | P2 | **已修（2026-09-23 B-07）**：`LoginView.xaml` 4 处硬编码改为绑定 VM 属性，产品名由 `ClinicSettings.ClinicName` 驱动（默认诊所名 →「凌隐宝堂中医诊所管理系统」）。**收尾批次（2026-09-23）**：`designs/*.pen` 设计稿内同名文案已统一为「凌隐宝堂中医诊所管理系统」（见 `13c #149`） |
 
 > 共 52 项去重后：P1 12 项，P2 40 项，无 P0；R01-R22 已交叉引用，去重合并完成。⚠️ 问题状态应以 13c-current-status.md 为准（本文档为设计时统计）。
 > 本轮（v2.1, 2026-09-13）新增 **#53-#58**（6 项，依据代码实际 `src/Client/Desktop`）: #53-#57 为文档-代码对齐修订（已闭合），#58 为品牌核对新发现项（代码侧待修）。
 > **本轮（v2.3, 2026-09-23，B-07）**：#56 名单中 `InitializationWizardView` 已落地（从「不存在」名单移除，§4.2/§4.22 同步）；#58 代码侧硬编码品牌已由 B-07 修复（`LoginView.xaml` 改绑 VM 属性，产品名由 `ClinicSettings.ClinicName` 驱动）。
+> **本轮（v2.4, 2026-09-23，收尾批次）**：#56 名单中 `ConfigExportImportView`（US-SHELL-016）与 `SessionTimeoutWarningDialog`（US-AUTH-014）已落地（从「不存在」名单移除，§4.17/§4.22 同步，新增 §4.24 描述）；#58 `designs/*.pen` 设计稿品牌文案已统一（见 `13c #149`）。
 
 ## 11. 实施建议
 1. **P1 优先**（12 项，2 周）：权限细分 4 项 + 表单/绑定 3 项 + 保存/会话 3 项 + 设计对齐 2 项

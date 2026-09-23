@@ -1,6 +1,6 @@
 # Desktop 二级界面设计清单
 
-> **日期**: 2026-09-13（首版）| **更新**: 2026-09-23（B-07：`FirstRunSetupView` → `InitializationWizardView` 更名同步）| **基准**: [desktop-design-tokens.md](./desktop-design-tokens.md)
+> **日期**: 2026-09-13（首版）| **更新**: 2026-09-23（B-07：`FirstRunSetupView` → `InitializationWizardView` 更名同步；收尾批次：`ConfigExportImportView` + `SessionTimeoutWarningDialog` 已建）| **基准**: [desktop-design-tokens.md](./desktop-design-tokens.md)
 > **范围**: 一级页面 + 二级界面 + 需求驱动新增页面；**逐项判定见 §F（View 30 + Dialog 7 全量）**
 > **计数口径**: View **30** / Control **33** / Dialog **7** / ViewModel **55**（XAML 合计 82 = 视图 71 + 资源模板 11）——定义见 §G
 
@@ -27,8 +27,9 @@
 | B3 | 历史复制 HistoryCopyDialog | 640×560 | 历史医案列表+预览+复制选项 | `../../designs/dialog-history-copy.pen` |
 | B4 | 未保存更改 UnsavedChangesDialog | 420×240 | 警告图标+保存/不保存/取消 | ⚠️ 无设计稿 `[待确认]` |
 | B5 | 通用对话框（确认/输入/消息合并设计） | 420×280 | 三种形态展示于一图 | `../../designs/dialog-common.pen` |
+| B6 | 会话超时预警 SessionTimeoutWarningDialog | 420×240 | 剩余时间 mm:ss 倒计时 + 「续期」/「退出」 | ⚠️ 无设计稿 `[待确认]` |
 
-> 说明：Shell 三个通用对话框为 `ConfirmationDialog` / `InputDialog` / `MessageDialog`（均在 `Shell/Dialogs/Views/`）。
+> 说明：Shell 三个通用对话框为 `ConfirmationDialog` / `InputDialog` / `MessageDialog`（均在 `Shell/Dialogs/Views/`）；会话超时预警对话框为 `SessionTimeoutWarningDialog`（`Shell/Dialogs/Views/`，2026-09-23 收尾批次落地，US-AUTH-014）。
 
 ## C. 编辑表单二级界面（代码已存在，必须设计）
 
@@ -45,7 +46,7 @@
 | # | 页面 | 需求来源 | 状态 |
 |---|------|---------|------|
 | D1 | 安全审计日志查看页 | US-SHELL-014 | ✅ **已建**：`SecurityAuditLogView`（2026-08-29），设计稿 `../../designs/security-audit-log.pen` |
-| D2 | 数据导入导出页（JSON） | US-SHELL-016 / 已定案 JSON 格式 | `[未建视图]`：JSON 导入导出能力当前由 `SystemSettingsView` 承载；独立页待建（设计稿 `../../designs/data-import-export.pen` 已有） |
+| D2 | 数据导入导出页（JSON） | US-SHELL-016 / 已定案 JSON 格式 | ✅ **已建（2026-09-23 收尾批次）**：`ConfigExportImportView`（`Roles/LYBT.Desktop.Admin/Sysadmin/Views/`，VM `ConfigExportImportViewModel`，`SysadminHomeView` 第 7 个功能卡「配置导入导出」）；业务数据 JSON 导入导出仍由各 MasterDetail 承载；设计稿 `../../designs/data-import-export.pen` |
 | D3 | 读卡器诊断面板 | US-CARD 系列 | ✅ **已建（非独立视图）**：面板内嵌于 `SysadminHomeView`，`CardReaderDiagnosticsViewModel` 为其子 VM；设计稿 `../../designs/cardreader-diagnostics.pen` |
 
 ## E. 详情查看类（并入主从布局详情面板，不单独出稿）
@@ -110,7 +111,7 @@ PatientViewControl / HerbViewControl / FormulaViewControl / UserViewControl
 | 37 | `MessageDialog` | ✅ | ✅ | 显式：`RegisterDialog<MessageDialog, MessageDialogViewModel>` | — | — | — | ⚠️ | — | ⚠️ 待补：键盘可达 |
 
 > **例外说明**：`InitializationWizardView` / `ServerConfigView` 物理位于 `Auth/Views/`（计为 View），但经 `RegisterDialog` 以对话框方式呈现（`InitializationWizardView` 另经 `RegisterForNavigation` 可导航）——两者在「绑定机制」列已注明。
-> **幽灵视图澄清**：`CardReaderDiagnosticsView`、`ConfigExportImportView`、`ServerConfigPanelView`、`SessionTimeoutWarningDialog`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 在代码中**不存在**——能力由上述真实承载者提供（读卡器诊断 → `SysadminHomeView` 内嵌；配置导入导出 → `SystemSettingsView`；新建挂号 → `RegistrationCreateDialog`）。**注（2026-09-23 B-07）**：`InitializationWizardView` 已从本清单移除——该视图已真实落地（`Auth/Views/InitializationWizardView.xaml`，5 步初始化向导，US-SHELL-011），旧单屏 `FirstRunSetupView` 已删除。
+> **幽灵视图澄清**：`CardReaderDiagnosticsView`、`ServerConfigPanelView`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 在代码中**不存在**——能力由上述真实承载者提供（读卡器诊断 → `SysadminHomeView` 内嵌；服务端配置 → `SysadminHomeView` 内嵌；新建挂号 → `RegistrationCreateDialog`）。**注（2026-09-23 B-07）**：`InitializationWizardView` 已从本清单移除——该视图已真实落地（`Auth/Views/InitializationWizardView.xaml`，5 步初始化向导，US-SHELL-011），旧单屏 `FirstRunSetupView` 已删除。**注（2026-09-23 收尾批次）**：`ConfigExportImportView`（`Admin/Sysadmin/Views/`，US-SHELL-016，见 §D D2）与 `SessionTimeoutWarningDialog`（`Shell/Dialogs/Views/`，US-AUTH-014，见 §B B6）已真实落地，从本名单移除。
 
 ---
 

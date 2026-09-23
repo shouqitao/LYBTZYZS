@@ -35,6 +35,8 @@ public class ShellViewModelBindingTests
     private readonly IDialogManager _dialogManager = Substitute.For<IDialogManager>();
     private readonly IShellLogoutService _logoutService = Substitute.For<IShellLogoutService>();
     private readonly IMenuManager _menu = Substitute.For<IMenuManager>();
+    private readonly IApplicationTickService _applicationTickService = Substitute.For<IApplicationTickService>();
+    private readonly ISessionTimeoutMonitor _sessionTimeoutMonitor = Substitute.For<ISessionTimeoutMonitor>();
     private readonly Prism.Commands.DelegateCommand _navigateBackCommand = new(() => { });
 
     public ShellViewModelBindingTests()
@@ -84,6 +86,8 @@ public class ShellViewModelBindingTests
                 Substitute.For<IApiClient>(),
                 Substitute.For<Prism.Services.Dialogs.IDialogService>(),
                 Substitute.For<IFirstRunStateService>(),
+                _applicationTickService,
+                _sessionTimeoutMonitor,
                 Substitute.For<Microsoft.Extensions.Logging.ILogger<ShellEventCoordinator>>());
             _shell.Events.Returns(events);
 

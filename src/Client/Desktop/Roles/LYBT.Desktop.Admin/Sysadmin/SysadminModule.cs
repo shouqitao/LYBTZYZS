@@ -27,6 +27,8 @@ public class SysadminModule : IModule
         containerRegistry.Register<ViewModels.DeploymentViewModel>();
         containerRegistry.Register<ViewModels.BackupManagementViewModel>();
         containerRegistry.Register<ViewModels.SecurityAuditLogViewModel>();
+        // US-SHELL-016: 配置导入导出
+        containerRegistry.Register<ViewModels.ConfigExportImportViewModel>();
 
         // 注册服务
         containerRegistry.Register<IAuthHealthService, Services.AuthHealthService>();
@@ -38,6 +40,8 @@ public class SysadminModule : IModule
         // ServerConfigSectionViewModel 依赖 IServerConfigurationService（原仅注册于 AdminModule）
         containerRegistry.Register<IServerConfigurationService, ServerConfigurationService>();
         containerRegistry.Register<ISecurityAuditQueryService, Services.SecurityAuditQueryService>();
+        // US-SHELL-016: 配置导入导出服务（导出/导入 JSON 配置包）
+        containerRegistry.Register<IConfigurationPackageService, Services.ConfigurationPackageService>();
 
         // 注册视图用于导航
         containerRegistry.RegisterForNavigation<Views.SysadminHomeView>();
@@ -45,5 +49,6 @@ public class SysadminModule : IModule
         containerRegistry.RegisterForNavigation<Views.DeploymentView>();
         containerRegistry.RegisterForNavigation<Views.BackupManagementView>();
         containerRegistry.RegisterForNavigation<Views.SecurityAuditLogView>();
+        containerRegistry.RegisterForNavigation<Views.ConfigExportImportView>();
     }
 }

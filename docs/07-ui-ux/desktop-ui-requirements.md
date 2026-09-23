@@ -1,5 +1,5 @@
 # Desktop UI 需求文档
-> 版本: v1.4 | 日期: 2026-09-23（B-07 首次初始化向导；审计修正与计数口径见 §九）
+> 版本: v1.5 | 日期: 2026-09-23（收尾批次：数据导入导出独立页 `ConfigExportImportView` 已建；B-07 首次初始化向导；审计修正与计数口径见 §九）
 
 > **基于**: [desktop-design-spec.md](./desktop-design-spec.md) + [desktop-view-inventory.md](../compose/specs/desktop-view-inventory.md)（v0.1，落差已在本文件标注）+ `../../designs/*.pen` 设计稿 **36** 个
 >
@@ -29,7 +29,7 @@
 | 14 | `../../designs/cardreader-diagnostics.pen` | 读卡器诊断面板（内嵌 `SysadminHomeView` 区块） | S | [待确认] | ✅ 已实现（非独立视图：`CardReaderDiagnosticsViewModel` 为 `SysadminHomeView` 内嵌子 VM） |
 | 15 | `../../designs/clinical-workspace.pen` | `ClinicalWorkspaceView`（Doctor 首页） | D | [待确认] | ✅ 已实现 |
 | 16 | `../../designs/components.pen` | 组件库（`Core/LYBT.Desktop.Controls` 共享控件 + `Shell/Controls/AccountSettingsControl`） | All | [待确认] | ✅ 已实现（非页面帧） |
-| 17 | `../../designs/data-import-export.pen` | 数据导入导出 | A/S | [待确认] | `[未建视图]`（JSON 导入导出已由 `SystemSettingsView` 承载；独立配置导入导出页待建） |
+| 17 | `../../designs/data-import-export.pen` | 数据导入导出（`ConfigExportImportView`） | A/S | [待确认] | ✅ 已实现（2026-09-23 收尾批次：独立 `ConfigExportImportView`，US-SHELL-016；业务数据 JSON 导入导出仍由各 MasterDetail 承载） |
 | 18 | `../../designs/deployment.pen` | `DeploymentView` | S | [待确认] | ✅ 已实现 |
 | 19 | `../../designs/dialog-common.pen` | `ConfirmationDialog` / `InputDialog` / `MessageDialog` | All | [待确认] | ✅ 已实现 |
 | 20 | `../../designs/dialog-formula-import.pen` | `FormulaImportDialog` | A/D | [待确认] | ✅ 已实现 |
@@ -134,7 +134,7 @@
 ### 3.1 运维设置
 - **设计稿**: `../../designs/sysadmin-home.pen` ✅
 - **代码**: `SysadminHomeView.xaml` ✅ 已实现（`SuperAdminRoleDefinition.HomeViewName`）
-- **功能**: 诊所信息/会话设置/连接设置/安全策略/功能开关/系统信息 + 备份恢复/远程部署/日志管理/安全审计/配置导入导出/服务端配置；**读卡器诊断面板内嵌于本页**（`CardReaderDiagnosticsViewModel` 为内嵌子 VM，无独立 View）
+- **功能**: 诊所信息/会话设置/连接设置/安全策略/功能开关/系统信息 + 备份恢复/远程部署/日志管理/安全审计/配置导入导出（独立页 `ConfigExportImportView`）/服务端配置；**读卡器诊断面板内嵌于本页**（`CardReaderDiagnosticsViewModel` 为内嵌子 VM，无独立 View）
 - **交互**: 卡片网格布局，每个卡片有图标+操作按钮
 - **US**: US-SHELL-018
 - **优先级**: P1
@@ -309,7 +309,7 @@
 | 1 | `InitializationWizardView` | ✅ 已实现（2026-09-23 B-07） | 5 步初始化向导已交付（模式选择/模式配置+测试连接/诊所信息/初始管理员/校验完成） |
 | 2 | `ReportsHomeView` | ⚠️ 仅 3/8 端点 | 需扩展趋势/绩效报表 |
 | 3 | `SecurityAuditLogView` | ✅ 已实现 | 安全审计日志（2026-08-29） |
-| 4 | 数据导入导出（`data-import-export.pen`） | ⚠️ 部分实现 | JSON 导入导出已由 `SystemSettingsView` 承载；独立配置导入导出页为 `[未建视图]` |
+| 4 | 数据导入导出（`data-import-export.pen`） | ✅ 已实现（2026-09-23 收尾批次） | 独立 `ConfigExportImportView`（US-SHELL-016）已交付；业务数据 JSON 导入导出仍由各 MasterDetail 承载 |
 | 5 | 读卡器诊断（`cardreader-diagnostics.pen`） | ✅ 已实现（内嵌） | 无独立 View，面板为 `SysadminHomeView` 内嵌区块（`CardReaderDiagnosticsViewModel`） |
 | 6 | `ClinicalHomeView` | ⚠️ 非首页 | 仅 fallback；无独立设计稿 |
 | 7 | `MedicalCaseMasterDetailView` | ⚠️ 缺设计稿 | 复用 `medical-case-management.pen` 主从面板 |
@@ -425,4 +425,4 @@
 | `FormulaManagementView` | `Roles/LYBT.Desktop.Clinical/Views/FormulaManagementView.xaml` | View（导航，薄包装） |
 | `ReceptionistHomeView` | `Roles/LYBT.Desktop.Clinical/Receptionist/Views/ReceptionistHomeView.xaml` | View（导航，Receptionist 首页） |
 
-> 合计：View **30**（Shell 6 + Auth 3 + MedicalCase/Registrations 4 + Admin/Sysadmin 8 + Clinical/Receptionist 9）+ Dialog **7** = **37** 个界面；另有 Root **1**（`Shell/App.xaml`）。**不存在** `CardReaderDiagnosticsView`、`ConfigExportImportView`、`ServerConfigPanelView`、`SessionTimeoutWarningDialog`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 等视图（历史清单中的名称，均标注为 `[未建视图]`，其能力由上表真实承载者提供）。**注（2026-09-23 B-07）**：`InitializationWizardView` 已从「不存在」名单移除——该视图已真实落地（见 §1.3、Auth 索引表），旧单屏 `FirstRunSetupView` 已删除。
+> 合计：View **30**（Shell 6 + Auth 3 + MedicalCase/Registrations 4 + Admin/Sysadmin 8 + Clinical/Receptionist 9）+ Dialog **7** = **37** 个界面；另有 Root **1**（`Shell/App.xaml`）。**不存在** `CardReaderDiagnosticsView`、`ServerConfigPanelView`、`UnfinishedCaseDialog`、`PrintPreviewDialog`、`PendingQueueView`、`RegistrationCreateView` 等视图（历史清单中的名称，均标注为 `[未建视图]`，其能力由上表真实承载者提供）。**注（2026-09-23 B-07）**：`InitializationWizardView` 已从「不存在」名单移除——该视图已真实落地（见 §1.3、Auth 索引表），旧单屏 `FirstRunSetupView` 已删除。**注（2026-09-23 收尾批次）**：`ConfigExportImportView`（`Admin/Sysadmin/Views/`，US-SHELL-016，见 §1.3 行 17 / §七 行 4）与 `SessionTimeoutWarningDialog`（`Shell/Dialogs/Views/`，US-AUTH-014）已真实落地，从「不存在」名单移除。

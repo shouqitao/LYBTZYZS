@@ -1,5 +1,5 @@
 # 平台壳程序 (Shell)
-> 版本: v1.4 | 日期: 2026-09-23
+> 版本: v1.5 | 日期: 2026-09-23
 
 > Shell 采用 Prism 8.1.97 模块化架构，作为 WPF 客户端宿主，负责应用全生命周期：单实例互斥锁（`Global\LYBTZYZS_Shell_Instance`）、启动闪屏、两阶段 Serilog 引导、按角色动态加载模块（`ApplicationBootstrapper.LoadModulesForRoleAsync`）、页面导航与菜单系统。
 
@@ -368,23 +368,33 @@
 
 **角色**: sysadmin
 **优先级**: Could
-**状态**: 🧲 v1.0 待实现
+**状态**: ✅ 已实现（2026-09-23 收尾批次——独立 `ConfigExportImportView` + `IConfigurationPackageService`）
 
 **作为** sysadmin，**我想要** 导出和导入系统配置，**以便** 重装后快速恢复配置、多机部署时统一配置。
 
 **验收标准**:
 
-- [ ] "导出配置"按钮：将 `appsettings.json` + `clinic-settings.json` 打包为 JSON 文件下载
-- [ ] "导入配置"按钮：选择 JSON 文件 → 覆盖当前配置 → 提示重启生效
-- [ ] 导入前校验文件格式，格式错误拒绝
+- [x] 「导出配置」：将客户端**可移植配置**打包为**单个缩进 camelCase JSON** 文件保存——节 `packageVersion`（"1.0"）/`exportedAt`/`application`/`clinicSettings`/`connection`（模式 + 远程地址 + 本地数据库元数据，口令写 `***`）/`rolePermissions`（快照）/`featureToggles`
+- [x] 「导入配置」：选择 JSON 文件 → 二次确认 → 校验并应用诊所信息/连接设置/功能开关 → 报告「已应用 / 已跳过 / 需重启」
+- [x] 导入前校验文件格式：JSON 解析失败或 `packageVersion` 缺失/不受支持 → 拒绝（中文消息，**零服务调用**）
+- [x] **密钥永不导出**：包内不含 `Jwt:SecretKey`、`DefaultPasswords`、数据库口令（占位 `***`）、任何访问/刷新令牌
+- [x] 角色权限快照（`rolePermissions`）导入时**只做一致性校验并报告差异，不应用**（角色权限为编译期 `ViewRoleAccess` / `IRoleDefinition`）
+- [x] 导入后需重启 Desktop 才生效的项（连接设置）在导入报告中标注 `RequiresRestart`
 
 **业务规则**:
 
-1. 配置文件路径：`appsettings.json` + `clinic-settings.json`。
-2. 导入后需要重启 Desktop 才生效（部分配置不支持热更新）。
-3. 导入时保留当前 `Jwt:SecretKey`（不覆盖安全密钥）。
+1. **配置包**：单个 JSON 文件（缩进 + camelCase；枚举经 `JsonStringEnumConverter` 按成员名写出）；节 `packageVersion`("1.0")/`exportedAt`/`application`/`clinicSettings`/`connection`/`rolePermissions`/`featureToggles`。
+2. **密钥边界（规则 3 的构造性保证）**：包内**永不包含** `Jwt:SecretKey`、`DefaultPasswords`、数据库口令（写占位 `***`）、访问/刷新令牌——密钥根本不随包传输，本机既有密钥自然保持不变，故导入侧无需「保留当前 `Jwt:SecretKey`」的特殊处理。
+3. **导入生效面**：诊所信息（`IClinicSettingsService`，即时生效）→ 连接设置（远程地址/模式经 `IConnectionSettingsService`、本地数据库 profile 经 `ILocalDatabaseSettingsService` 且**保留当前口令**，重启生效）→ 功能开关（`IClientConfigurationStore`，热更新）。
+4. **角色权限只校验不应用**：`rolePermissions` 是导出时的快照；导入仅与当前程序比对并报告差异（`NavigationCoordinator.ViewRoleAccess` + `IRoleDefinition` 为编译期定义，既不落盘也不可导入）。
+5. **校验先行**：JSON 解析失败或 `packageVersion` 缺失/不受支持 → 直接拒绝并给中文消息，不调用任何服务。
+6. **入口与权限**：`SysadminHomeView` 第 7 个功能卡「配置导入导出」（`NavigateToConfigExportImportCommand`）→ 导航到 `ConfigExportImportView`（`ViewNames.ConfigExportImport`，`SysadminModule.RegisterForNavigation`）；`NavigationCoordinator.ViewRoleAccess[ConfigExportImport]` = SuperAdmin。
+7. 业务数据的 JSON 导入导出（患者/药材/验方）**不在本 US**——仍由各 MasterDetail 页面承载。
 
-**实现参考**: SysadminHomeView 新增导入/导出按钮
+**双模式差异**:
+模式差异：远程/本地一致——配置包为 Desktop 客户端配置快照（含连接模式/远程地址/本地数据库元数据），与当前连接模式无关
+
+**实现参考**: `Roles/LYBT.Desktop.Admin/Sysadmin/Views/ConfigExportImportView.xaml` + `Sysadmin/ViewModels/ConfigExportImportViewModel.cs`（`RegisterForNavigation` + `SysadminModule` 显式注册）、`Roles/LYBT.Desktop.Admin/Services/IConfigurationPackageService.cs` + `Sysadmin/Services/ConfigurationPackageService.cs`、`Core/LYBT.Desktop.Contracts/Services/IFileDialogService.ShowOpenFileDialog`（导入选文件）、`Sysadmin/Views/SysadminHomeView.xaml`（第 7 个功能卡）
 
 ---
 
@@ -674,6 +684,7 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 | 版本 | 日期 | 变更 | 原因 |
 |------|------|------|------|
+| v1.5 | 2026-09-23 | US-SHELL-016 由「🧲 v1.0 待实现」校准为收尾批次交付态：状态→✅ 已实现；AC 3 条重写为 6 条交付项（单 JSON 包导出/导入应用与报告/格式校验先行/密钥永不导出/权限快照只校验不应用/重启标注）；业务规则 3 条重写为 7 条（配置包结构、密钥边界为规则 3 的构造性保证、导入生效面、权限只校验不应用、校验先行零服务调用、入口与 SuperAdmin 权限、业务数据导入导出不在本 US）；补充「双模式差异」与实现参考（`ConfigExportImportView` + `IConfigurationPackageService`） | 收尾批次交付独立 `ConfigExportImportView` + 配置包服务，原「打包 appsettings/clinic-settings」表述与实现（单 JSON 配置包 + 密钥永不导出）矛盾 |
 | v1.4 | 2026-09-23 | US-SHELL-011 由「🧲 v2.0 推迟（B4 决策 I-4）」校准为 B-07 交付态：标题「首次初始化向导（5 步强制）」→「首次初始化向导（5 步）」；状态→✅ 已实现（2026-09-23 B-07）；AC 6 条重写为 7 条交付项（5 步内容/步骤门控/模式应用时机/双触发/完成标记/双入口）；业务规则 4 条重写为 7 条（向导归属与基类、先测试后切换、`IInitialAdminService`、`IFirstRunStateService` 完成标记、`ILocalDatabaseSettingsService` 本地库配置、诊所信息原子写、取消登录前弹出 + 旧 `FirstRunSetupView` 删除）；补充「双模式差异」与实现参考 | B-07 交付：5 步向导取代单屏 `FirstRunSetupView`（sysadmin 登录后触发 + SysadminHome 手动入口），原「v2.0 推迟」表述与实现矛盾 |
 | v1.3 | 2026-09-22 | US-SHELL-013 由「T7 ILocalDbBackupService」校准为 B-06 交付态：状态/愿景/AC 全量更新（6 项 AC→[x]）+ 业务规则 8 条重写（备份目录 `Backup:Directory`、全量/差异、AES-256 加密、整库/选择性恢复与外键 NOCHECK 提示、保留期清理、登录触发 + 24h 间隔的自动备份、权限、双端同路由 8 端点）；双模式总则改述备份引擎双端共享（旧 `ILocalDbBackupService` 迁移移除） | B-06 数据备份/恢复交付，文档既有的「本地 LocalDB 专用 + 远程依赖 SQL Server Agent」表述与实现（双宿主共享引擎）矛盾 |
 | v1.2 | 2026-09-18 | US-SHELL-005 进度再校准——N1 生产方 MedicalCaseNav 工厂补齐✅、N2 参数消费✅、N6 对话框核心收敛✅（UserNotificationService/NotificationService/Control/VM MessageBox 已替换；ToastService 兜底保留） | 导航参数契约迁移 P1 + N6 MessageBox 清理代码批次后状态列同步 |

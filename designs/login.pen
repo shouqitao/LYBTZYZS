@@ -190,7 +190,7 @@
                       "id": "el5aG",
                       "name": "版权行",
                       "fill": "$text-secondary",
-                      "content": "© 2026 中医诊所管理系统",
+                      "content": "© 2026 凌隐宝堂中医诊所管理系统",
                       "fontFamily": "$font-body",
                       "fontSize": 12,
                       "fontWeight": "normal"
@@ -233,7 +233,7 @@
                       "id": "N1gsN",
                       "name": "欢迎副标题",
                       "fill": "$text-secondary",
-                      "content": "请使用您的账号登录中医诊所管理系统",
+                      "content": "请使用您的账号登录凌隐宝堂中医诊所管理系统",
                       "fontFamily": "$font-body",
                       "fontSize": 14,
                       "fontWeight": "normal"
@@ -548,7 +548,7 @@
                       "fill": "$text-secondary",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "中医诊所管理系统 v1.0+dfbd92c",
+                      "content": "凌隐宝堂中医诊所管理系统 v1.0+dfbd92c",
                       "textAlign": "center",
                       "fontFamily": "$font-body",
                       "fontSize": 12,

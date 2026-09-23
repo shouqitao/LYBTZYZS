@@ -33,6 +33,7 @@
 - [US-AUTH-011: 保留用户名拦截](#us-auth-011-保留用户名拦截)
 - [US-AUTH-012: 本地简化认证（1 年令牌）](#us-auth-012-本地简化认证1-年令牌)
 - [US-AUTH-013: 本地登录限流（5 次/分）](#us-auth-013-本地登录限流5-次分)
+- [US-AUTH-014: 会话超时预警（倒计时提醒 + 续期/退出）](#us-auth-014-会话超时预警倒计时提醒--续期退出)
 
 ## 业务规则
 
@@ -452,3 +453,36 @@
 **实现参考**: `LocalWebAPI/Controllers/AuthController.cs`, `LocalWebAPI/LocalWebApiProgram.cs`（`LocalLogin` / `ApiCalls` 策略）
 
 > **2026-09-16 修正**：本地限流维度由「全局固定窗口」改为**按来源 IP 分区**（满足 AC「限流基于客户端标识」），并补结构化 429（`ApiResponse` + `ErrorCode.RateLimitExceeded` + `retryAfter`，此前为空体）；同时补齐 `ApiCalls`（100 次/分/IP）策略——共享 `BaseUsersController` 的 batch-enable/disable 标注该策略名，缺失会使限流中间件按名解析失败（500）。
+
+---
+
+## US-AUTH-014: 会话超时预警（倒计时提醒 + 续期/退出）
+
+**角色**: 全部登录用户
+**优先级**: Should
+**状态**: ✅ 已实现（2026-09-23 收尾批次；此前仅设计清单登记 `SessionTimeoutWarningDialog`，无对应 US——补写本 US 作为需求权威）
+
+**作为** 已登录用户，**我想要** 在会话因长时间无操作即将结束前收到倒计时提醒，并可一键续期，**以便** 不因中途接电话/看诊而丢失未保存的工作。
+
+**验收标准**:
+
+- [x] 不活动剩余时间进入 `ClientSession:WarningBeforeTimeoutMinutes`（默认 2 分钟）窗口时，自动弹出会话超时提醒对话框
+- [x] 对话框显示剩余时间倒计时（每秒刷新，mm:ss）
+- [x] 「续期」：重置活动计时（`IUserActivityTracker.ResetActivity()`）并尽力刷新令牌（`ITokenLifecycleService.TryRefreshTokenAsync()`，失败仅记日志）→ 关闭对话框并回到正常使用
+- [x] 「退出」：立即按既有登出链路登出（清导航 + 回登录页）
+- [x] 会话在对话框打开期间真正过期时，对话框自动关闭（不得停留在登录页之上）
+- [x] 每个不活动窗口最多弹出一次（续期后剩余时间回升，自然重新武装）
+- [x] `WarningBeforeTimeoutMinutes = 0` 时关闭预警（不弹窗）
+
+**业务规则**:
+
+1. 预警针对 **不活动超时**（`ClientSession:InactivityTimeoutMinutes`，默认 30 分钟），不是令牌有效期（远程 JWT 480 分钟 / 本地 1 年）。
+2. 监控器（`ISessionTimeoutMonitor`）随登录成功启动、登出/会话过期停止；每秒轮询 `IUserActivityTracker.TimeUntilInactive`。
+3. 对话框为 MaterialDesign 卡片式模态（`RegisterDialog` + `DialogViewModelBase`，与既有 9 个对话框同机制，不引入第二套弹窗机制）。
+4. 续期只重置活动计时与刷新令牌，不改动会话时长配置（配置属 sysadmin 配置中心）。
+
+**双模式**: 远程/本地一致（均基于 Desktop 侧活动计时；本地模式令牌 1 年不构成约束）
+
+**实现参考**: `Shell/Dialogs/Views/SessionTimeoutWarningDialog.xaml`、`Shell/Dialogs/ViewModels/SessionTimeoutWarningDialogViewModel.cs`、`Shell/Services/Session/SessionTimeoutMonitor.cs`、`Shell/Services/ShellEventCoordinator.cs`（登录成功启动/登出停止）
+
+> **文档更正（2026-09-23）**：`13c-current-status.md`/`desktop-view-inventory.md` 曾把该对话框标注为「US-AUTH-005」，但 US-AUTH-005 实为**令牌验证**——本 US 为该对话框的权威需求来源。

@@ -17,4 +17,21 @@ public class FileDialogService : LYBT.Desktop.Contracts.Services.IFileDialogServ
 
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
+
+    /// <inheritdoc/>
+    public string? ShowOpenFileDialog(string filter, string defaultExt, string? fileName = null)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = filter,
+            DefaultExt = defaultExt,
+            CheckFileExists = true,
+            Multiselect = false
+        };
+
+        if (!string.IsNullOrWhiteSpace(fileName))
+            dialog.FileName = fileName;
+
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
 }
