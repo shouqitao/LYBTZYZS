@@ -54,7 +54,7 @@ FirstRunSetup 向导 → 配置远程 URL 或选择本地模式
 > 详细步骤（LocalDB/密码注入/端口/FAQ）见 **[docs/05-development/01-setup.md](docs/05-development/01-setup.md)**。需 **Windows** + VS 2022「.NET 桌面开发」工作负载。
 
 ```bash
-git clone https://gitee.com/shouqitao/LYBTZYZS.git
+git clone https://github.com/shouqitao/LYBTZYZS.git
 cd LYBTZYZS
 dotnet build LYBTZYZS.sln --no-incremental   # 门禁：0 错误 0 警告
 
@@ -127,7 +127,7 @@ src/
 
 ## Git
 
-- **Remote**: [Gitee](https://gitee.com/shouqitao/LYBTZYZS.git)
+- **Remote**: [GitHub](https://github.com/shouqitao/LYBTZYZS)（主）/ [Gitee](https://gitee.com/shouqitao/LYBTZYZS)（镜像）
 - **Branch**: `master`
 - **Commit**: `feat(模块): 描述` / `fix(模块): 描述` / `docs:` / `refactor:`
 

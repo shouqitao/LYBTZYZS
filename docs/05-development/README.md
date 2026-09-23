@@ -16,7 +16,7 @@
 ## 5 分钟快速开始
 
 ```bash
-git clone https://gitee.com/shouqitao/LYBTZYZS.git && cd LYBTZYZS
+git clone https://github.com/shouqitao/LYBTZYZS.git && cd LYBTZYZS
 dotnet restore LYBTZYZS.sln
 dotnet build LYBTZYZS.sln --no-incremental
 cd src/Server/Services/LYBT.WebAPI && dotnet run

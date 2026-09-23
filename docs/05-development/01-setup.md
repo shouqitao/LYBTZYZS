@@ -4,7 +4,7 @@
 ## 获取代码
 
 ```bash
-git clone https://gitee.com/shouqitao/LYBTZYZS.git
+git clone https://github.com/shouqitao/LYBTZYZS.git
 cd LYBTZYZS
 git checkout master
 ```
