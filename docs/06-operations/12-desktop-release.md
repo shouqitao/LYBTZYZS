@@ -5,6 +5,13 @@
 
 ---
 
+## 0. 版本策略（2026-09-24 确立，强制）
+
+- **`0.0.x` = 当前阶段**：L2 尚有 24 个 RemoteApi 用例因缺远程环境 Skip、诊所真实环境未验收 → **不得使用 `0.1.x` 及以上**。
+- **升 `0.1.x` 前提**：L2 全绿（含远程环境用例）+ 诊所真实环境验收通过；**升 `1.0.0` 前提**：155 个 US 全量验收通过、无 Skip 缺口。
+- **版本单源** = `Directory.Build.props` 的 `<VersionPrefix>`；打包省略 `-Version` 即取该值，显式 `-Version` 不得低于该值。
+- 历史遗留标签 `v1.1.0`、`v2.0.0-frontend-refactor` 为旧仓库时代产物，仅作历史记录，**不作为版本序列参考**。
+
 ## 1. 产物与组成
 
 `scripts/velopack-pack.ps1` 在 `dist/releases/` 产出：
@@ -33,18 +40,18 @@ dotnet tool install -g vpk      # Velopack CLI（本项目验证版本 1.2.0）
 # 版本取自 Directory.Build.props 的 VersionPrefix
 pwsh scripts/velopack-pack.ps1
 
-# 显式版本
-pwsh scripts/velopack-pack.ps1 -Version 1.0.1
+# 显式版本（仅在 VersionPrefix 之外的临时版本时用，不得低于 VersionPrefix）
+pwsh scripts/velopack-pack.ps1 -Version 0.0.2
 
 # 额外产出 machine-wide 引导 msi
-pwsh scripts/velopack-pack.ps1 -Version 1.0.1 -Msi
+pwsh scripts/velopack-pack.ps1 -Version 0.0.2 -Msi
 ```
 
 要点：
 
 - **版本号单源**：`-Version` 会同时以 `-p:Version`/`-p:InformationalVersion` 盖章到程序集，
   保证「安装包版本 == 应用内日志/关于页版本」。省略时取 `Directory.Build.props`
-  的 `<VersionPrefix>`（当前 `1.0.0`）。
+  的 `<VersionPrefix>`（当前 `0.0.1`）。
 - **不要用 `-Clean`**：`vpk` 依据输出目录中已存在的更早版本生成增量包；清空目录等于重发基线，
   客户端下次只能下载全量包（约 118 MB，而非约 1.5 MB）。
 - **刻意不使用 `PublishSingleFile`**：单文件会把整个应用压成一个大文件，
@@ -67,7 +74,7 @@ pwsh scripts/velopack-pack.ps1 -Version 1.0.1 -Msi
 
 GitHub 仓库：`https://github.com/shouqitao/LYBTZYZS`。
 
-1. 为版本打 tag（如 `v1.0.1`）并创建 Release（`gh release create v1.0.1 ...` 或网页操作）。
+1. 为版本打 tag（如 `v0.0.2`）并创建 Release（`gh release create v0.0.2 ...` 或网页操作）。
 2. **必须上传** `releases.<channel>.json`（默认 `releases.win.json`）为 Release 资产——
    Velopack 的 git 源**不**直接读取 `*-full.nupkg`，而是先取该清单资产，
    再依清单里的 `FileName` 逐个下载包。缺该资产时客户端日志会报
@@ -101,7 +108,7 @@ GitHub 仓库：`https://github.com/shouqitao/LYBTZYZS`。
 
 Gitee 仓库：`https://gitee.com/shouqitao/LYBTZYZS`。
 
-1. 为版本打 tag（如 `v1.0.1`）并创建 Release。
+1. 为版本打 tag（如 `v0.0.2`）并创建 Release。
 2. **必须上传** `releases.<channel>.json`（默认 `releases.win.json`）为 Release 资产——
    Velopack 的 git 源**不**直接读取 `*-full.nupkg`，而是先取该清单资产，
    再依清单里的 `FileName` 逐个下载包。缺该资产时客户端日志会报
