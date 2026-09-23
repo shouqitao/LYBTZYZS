@@ -176,9 +176,11 @@ public static class SharedHost
         services.AddMemoryCache();
         services.AddSignalR();
         services.AddHttpContextAccessor();
+        // 缓存键登记表（去反射前缀失效：写入时 Track，失效时只遍历登记表）
+        services.AddSingleton<LYBT.Infrastructure.Caching.ServerCacheKeyRegistry>();
         // 缓存失效服务（MedicalCase/Catalog 模块依赖 ICacheInvalidationService）
         // 注：原 AddOutputCache() 已移除——全仓 0 处 [OutputCache] 特性，属空转基建；
-        // CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
+        // CacheInvalidationService 已改为经 ServerCacheKeyRegistry 前缀清理（不再反射 MemoryCache 私有集合）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
         // ADR-0018: 领域事件分发器（LocalWebAPI 宿主）
         services.AddDomainEventDispatcher();

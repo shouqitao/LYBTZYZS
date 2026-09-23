@@ -9,7 +9,7 @@ Embedded ASP.NET Core WebAPI that runs inside the Desktop client process for loc
 
 ## Architecture Decision
 
-**[ADR-0010](../../../docs/03-architecture/decisions/0010-localwebapi-unified-service-layer.md)**: LocalWebAPI 统一服务层 — 文档化跨层引用例外
+**[ADR-0010](../../../../docs/03-architecture/decisions/0010-localwebapi-unified-service-layer.md)**: LocalWebAPI 统一服务层 — 文档化跨层引用例外
 
 LocalWebAPI 是 **Client → Server 唯一的跨层引用路径**。这是有意设计，不是遗漏。
 

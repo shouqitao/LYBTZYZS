@@ -9,9 +9,11 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using LYBT.Desktop.Infrastructure.Extensions;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -55,6 +57,11 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
         /// <summary>所有药材列表（用于拼音码快速匹配）</summary>
         public IEnumerable<HerbListDto> AllHerbs => _allHerbs;
+
+        /// <summary>
+        /// 重复药材剂量合并策略（F-01: US-CFG-004 功能开关 DuplicateHerbMergeStrategy → 药材列表控件）
+        /// </summary>
+        public DuplicateDosageStrategy DuplicateStrategy { get; }
 
         /// <summary>是否为验方校验模式（列表仅显示 Draft 待校验验方——US-FORM-007）</summary>
         [ObservableProperty]
@@ -108,7 +115,8 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IHerbSearchProvider herbSearchProvider,
             IDesktopCacheManager cacheManager,
             IFileDialogService fileDialogService,
-            FormulaEditorViewModel formulaEditor)
+            FormulaEditorViewModel formulaEditor,
+            IFeatureToggleService? featureToggles = null)
             : base(viewModelServices, masterDetailServices)
         {
             _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
@@ -117,6 +125,9 @@ namespace LYBT.Desktop.Catalog.ViewModels
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
             FormulaEditor = formulaEditor ?? throw new ArgumentNullException(nameof(formulaEditor));
+
+            // F-01: 配置的策略在每次导航（VM 瞬态）时读取；缺省/非法值回退 Max（服务内部已兜底）
+            DuplicateStrategy = featureToggles?.GetDuplicateMergeStrategy() ?? DuplicateDosageStrategy.Max;
 
             PageTitle = "验方管理";
         }

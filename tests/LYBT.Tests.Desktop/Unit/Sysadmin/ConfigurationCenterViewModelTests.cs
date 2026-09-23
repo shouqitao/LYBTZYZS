@@ -105,8 +105,25 @@ public class ConfigurationCenterViewModelTests
 
         await vm.SaveFeatureTogglesCommand.ExecuteAsync(null);
 
-        vm.StatusMessage.Should().Contain("Skip");
+        // 提示语必须列出真实合法值（SSOT = DuplicateDosageStrategy 枚举）
+        vm.StatusMessage.Should().Contain("Max").And.Contain("Sum");
         await _store.DidNotReceiveWithAnyArgs().SaveSectionAsync(default!, default!);
+    }
+
+    [Fact]
+    public async Task SaveFeatureTogglesAsync_EnumStrategy_IsAccepted()
+    {
+        // 回归守卫：合法值必须来自枚举（此前硬编码 Skip/Update/Error/Max，仅 Max 合法，
+        // 其余三项会被解析为非法值静默回退 Max——13c #153 修正）
+        var vm = CreateVm();
+        vm.DuplicateHerbMergeStrategy = "Sum";
+
+        await vm.SaveFeatureTogglesCommand.ExecuteAsync(null);
+
+        vm.StatusMessage.Should().Contain("即时生效");
+        await _store.Received(1).SaveSectionAsync(
+            "FeatureToggles",
+            Arg.Is<IReadOnlyDictionary<string, object>>(d => (string)d["DuplicateHerbMergeStrategy"] == "Sum"));
     }
 
     [Fact]

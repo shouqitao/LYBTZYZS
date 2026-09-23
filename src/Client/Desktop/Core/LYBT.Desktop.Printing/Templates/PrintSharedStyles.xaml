@@ -1,0 +1,100 @@
+<!--
+    PrintSharedStyles.xaml - 处方打印模板共享样式
+
+    4 个模板（A5/A4 首页 + A5/A4 续页）此前各自逐字重复 9 个键（含 PrintFont）
+    + 3 个首页专用键，共 42 处定义、36 处四方重复。
+    本字典收纳全部跨模板一致的 Setter；各模板仅保留纸张/版式差异（FontSize / Width /
+    Margin / TextTrimming）。
+
+    模板引用方式：
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/LYBT.Desktop.Printing;component/Templates/PrintSharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="TitleStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintTitleBaseStyle}">
+                <Setter Property="FontSize" Value="15" />
+            </Style>
+        </ResourceDictionary>
+
+    键名与有效 Setter 值与去重前完全一致（BasedOn 只合并 Setter，不改变渲染结果）。
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  T4-S5-04: 字体从STKaiti改为SimSun  -->
+    <FontFamily x:Key="PrintFont">SimSun, 宋体, Microsoft YaHei</FontFamily>
+
+    <!--  下划线字段容器样式（4 模板完全一致）  -->
+    <Style x:Key="FieldBorderStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+
+    <!--  诊所名称样式基类 T4-S5-06（首页专用；FontSize 按纸张）  -->
+    <Style x:Key="PrintClinicNameBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!--  诊所信息样式基类 T4-S5-06（首页专用；FontSize 按纸张）  -->
+    <Style x:Key="PrintClinicInfoBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="#333333" />
+    </Style>
+
+    <!--  标题样式基类（FontSize / Margin 按纸张与页型）  -->
+    <Style x:Key="PrintTitleBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!--  标签样式基类（FontSize 按纸张）  -->
+    <Style x:Key="PrintLabelBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+
+    <!--  字段值文本样式基类（FontSize 按纸张）  -->
+    <Style x:Key="PrintFieldValueBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Margin" Value="2,0,2,0" />
+    </Style>
+
+    <!--  诊断标签样式基类 T4-S5-07（首页专用；FontSize 按纸张）  -->
+    <Style x:Key="PrintDiagnosisLabelBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+        <Setter Property="Foreground" Value="#444444" />
+    </Style>
+
+    <!--  Rp 样式基类（FontSize / Margin 按纸张）  -->
+    <Style x:Key="PrintRpBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <!--  药材项样式基类 CODE-37（FontSize / Width / Margin / TextTrimming 按纸张与页型）  -->
+    <Style x:Key="PrintHerbItemBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+    </Style>
+
+    <!--  用法样式基类（FontSize / Margin 按纸张）  -->
+    <Style x:Key="PrintUsageBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <!--  医嘱样式基类 T4-S5-08（FontSize / Margin 按纸张）  -->
+    <Style x:Key="PrintAdviceBaseStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="#333333" />
+    </Style>
+</ResourceDictionary>

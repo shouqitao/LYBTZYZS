@@ -2,6 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Desktop.MedicalCase.ViewModels.Items;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -132,6 +133,19 @@ public partial class MedicalCaseEditControl : UserControl
     {
         get => (IEnumerable?)GetValue(AllHerbsProperty);
         set => SetValue(AllHerbsProperty, value);
+    }
+
+    /// <summary>
+    /// 重复药材剂量合并策略（F-01: 由宿主 VM 从 IFeatureToggleService.DuplicateHerbMergeStrategy 传入）
+    /// </summary>
+    public static readonly DependencyProperty DuplicateStrategyProperty =
+        DependencyProperty.Register(nameof(DuplicateStrategy), typeof(DuplicateDosageStrategy),
+            typeof(MedicalCaseEditControl), new PropertyMetadata(DuplicateDosageStrategy.Max));
+
+    public DuplicateDosageStrategy DuplicateStrategy
+    {
+        get => (DuplicateDosageStrategy)GetValue(DuplicateStrategyProperty);
+        set => SetValue(DuplicateStrategyProperty, value);
     }
 
     #endregion

@@ -48,6 +48,9 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<IAuditLogService, AuditLogService>();
 
             containerRegistry.RegisterSingleton<MedicalCaseDetailModelMapper>();
+            // F-02: 与其余 6 个模块 Mapper 统一——注册共享单例实例（静态消费方使用同一实例）
+            containerRegistry.RegisterInstance(PrescriptionMapper.Instance);
+            containerRegistry.RegisterInstance(ConsultationMapper.Instance);
             containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();
 
             containerRegistry.RegisterDialog<FormulaImportDialog, FormulaImportDialogViewModel>();

@@ -5,8 +5,10 @@ using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Extensions;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
@@ -245,6 +247,11 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         private set => SetProperty(ref _allHerbs, value);
     }
 
+    /// <summary>
+    /// 重复药材剂量合并策略（F-01: US-CFG-004 功能开关 DuplicateHerbMergeStrategy → 药材列表控件）
+    /// </summary>
+    public DuplicateDosageStrategy DuplicateStrategy { get; }
+
     #endregion
 
     #region Commands
@@ -270,7 +277,8 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         IPatientService patientService,
         IToastService toastService,
         PrescriptionPrintHandler printHandler,
-        IDialogService? dialogService = null)
+        IDialogService? dialogService = null,
+        IFeatureToggleService? featureToggles = null)
         : base(services)
     {
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
@@ -279,6 +287,9 @@ public class MedicalCaseWorkspaceViewModel : NavigableViewModelBase,
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
         _dialogService = dialogService;
+
+        // F-01: 配置的策略在每次导航（工作区 VM 不可复用）时读取；缺省/非法值回退 Max（服务内部已兜底）
+        DuplicateStrategy = featureToggles?.GetDuplicateMergeStrategy() ?? DuplicateDosageStrategy.Max;
 
         // US-MC-011: Create edit mode FSM (lifecycle tied to this VM)
         _editStateMachine = new EditModeStateMachine(services.LoggerFactory.CreateLogger<EditModeStateMachine>());

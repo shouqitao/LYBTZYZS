@@ -2,6 +2,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using LYBT.Desktop.Catalog.Models.Items;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
 
 namespace LYBT.Desktop.Catalog.Controls
@@ -86,6 +87,22 @@ namespace LYBT.Desktop.Catalog.Controls
         {
             get => (int)GetValue(HerbCountProperty);
             set => SetValue(HerbCountProperty, value);
+        }
+
+        /// <summary>
+        /// 重复药材剂量合并策略（F-01: 由宿主 VM 从 IFeatureToggleService.DuplicateHerbMergeStrategy 传入）
+        /// </summary>
+        public static readonly DependencyProperty DuplicateStrategyProperty =
+            DependencyProperty.Register(
+                nameof(DuplicateStrategy),
+                typeof(DuplicateDosageStrategy),
+                typeof(FormulaEditControl),
+                new PropertyMetadata(DuplicateDosageStrategy.Max));
+
+        public DuplicateDosageStrategy DuplicateStrategy
+        {
+            get => (DuplicateDosageStrategy)GetValue(DuplicateStrategyProperty);
+            set => SetValue(DuplicateStrategyProperty, value);
         }
 
         #endregion

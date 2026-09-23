@@ -457,6 +457,7 @@
                     <!-- 药材列表-->
                     <herbList:HerbListControl Grid.Row="0"
                         AllHerbs="{Binding AllHerbs}"
+                        DuplicateStrategy="{Binding DuplicateStrategy}"
                         HerbItems="{Binding Prescription.Items, Mode=OneWay}"
                         IsEditMode="True"
                         Columns="4"/>

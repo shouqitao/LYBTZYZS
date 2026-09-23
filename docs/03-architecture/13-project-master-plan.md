@@ -49,7 +49,7 @@
 
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
 | ---- | ------ | ------ | ------ | ------ | ------ |
-| A-01 | 文档清理 | 归档 35 个 plan、删 17 个存根、修 27 个断链 | 无 | ⬜ | 0.5d |
+| A-01 | 文档清理 | 归档 35 个 plan、删 17 个存根、修 27 个断链（**2026-09-23 核对销项**：`e21e7573b` 删除 `docs/compose/` 84 文件 + 10 个 `.hermes-task-*` + `DESIGN.md` 等共 97 文件；现存 md 275 个、本地链接 816 条实测 **0 断链**（本次补修 `src/Client/Desktop/LocalWebAPI/AGENTS.md` 指向 ADR-0010 的层级错误链接）；存根启发式扫描（正文 ≤2 行）**0 命中**——三项细目全覆盖） | 无 | ✅ `e21e7573b` | 0.5d |
 | A-02 | 死代码删除 | ~737 行零引用代码 (Server 10 + Desktop 5 + Shared 2) | 无 | ✅ | 0.5d |
 | A-03 | MediatR 简化 | 5 模块全部完成：Herbs/Formula/Patients/Users 24 Handler；MedicalCase 40 文件删除 | 无 | ✅ | 0.5d |
 | A-04 | 超大类型拆分 | 5 个 >600 行文件 | 无 | ✅ A-03 简化后全部降至 600 以下 | 0 |
@@ -82,7 +82,7 @@
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
 | ---- | ------ | ------ | ------ | ------ | ------ |
 | B-01 | P0 安全修复 | 明文密码/Shell Bug/死锁 (7 项) | 无 | ✅ | 待定 |
-| B-02 | 配置修改 API | ConfigurationController 添加 PUT | 无 | ✅ | 1d |
+| B-02 | 配置修改 API | ConfigurationController 添加 PUT（**仍有效，未废弃**：`41922a92a` 落地 `PUT /{key}` + `PUT /` + `ConfigurationWritePolicy` 白名单 + `JsonFileConfigurationStore` 覆盖文件；现由配置中心（SHELL-018 `GET/PUT sections/{section}` + `POST restart`）与配置导入导出直接消费，2026-09-23 实测 21/21 配置加载测试通过） | 无 | ✅ `41922a92a` | 1d |
 | | B-03 | Excel 导出/导入 | Herbs/Formula/Patients (前端 Excel ↔ WebApi JSON) | 无 | ✅ | 2-3d |
 | B-04 | 报表增强 | 图表/多维度/时间范围 | 无 | ✅ `cab959dc1` | 2d |
 | B-05 | 配置中心 UI | SystemSettingsView 增强（服务器配置区域） | B-02 | ✅ `c518318ed` | 1d |
@@ -103,7 +103,7 @@
 | ID | 任务 | 内容 | 依赖 | 状态 | 预估 |
 | ---- | ------ | ------ | ------ | ------ | ------ |
 | C-01 | Desktop 测试修复 | 清理22个过期测试+安装LocalDB，742通过/0失败 | 需运行中 WebAPI | ✅ | 0.5d |
-| C-02 | systemd 服务 | 开机自启 | 无 | ⬜ | 0.25d |
+| C-02 | systemd 服务 | 开机自启（**已执行待核实**：服务器侧开机自启此前会话完成，但**仓库内无执行记录**——全仓 `git log --all --grep=systemd` 无落地提交、无 `.service` 单元文件、`docs/06-operations/01-deployment.md` 仅把 systemd 作为 `Swagger__Enabled` 环境变量注入选项提及；核实方式：登录服务器 `systemctl status lybt-api` / `systemctl is-enabled`） | 无 | 🟡 已执行待核实 | 0.25d |
 | C-03 | 部署脚本清理 | 删除 .worktrees/ 7 个孤儿 checkout + 重复脚本 | 无 | ✅ `85b2d16c5` | 0.25d |
 | C-04 | NuGet 包清理 | 移除 8 个零使用废弃包 | 无 | ✅ `85b2d16c5` | 0.25d |
 | C-05 | 文档同步 | 前端文档深度审计+修正（7文件22处） | 所有代码改动后 | ✅ | 0.5d |
@@ -129,11 +129,11 @@
 
 | ID | 任务 | 内容（原 TASK） | 依赖 | 状态 | 预估 |
 | ---- | ------ | ------ | ------ | ------ | ------ |
-| F-01 | FeatureToggle 开关接入 | TASK-03：14 个功能开关仅 1 个被检查，需在各模块 Service/ViewModel 接入 | 无 | ⬜ | 4-6h |
-| F-02 | 桌面 Mapper 统一 | TASK-05：未使用的 PatientMapper + MedicalCaseMapper DI 不一致 | 无 | ⬜ | 1-2h |
-| F-03 | LocalData Mapper Target 策略 | TASK-06：统一 RequiredMappingStrategy.Target | 无 | ⬜ | 1-2h |
-| F-04 | SyncService CS8602 | TASK-07：可空引用警告 | 无 | ⬜ | 0.5h |
-| F-05 | PatientMapper 死代码 | TASK-10：删除或启用（与 A-02 相关） | A-02 | ⬜ | 0.5h |
+| F-01 | FeatureToggle 开关接入 | ~~TASK-03：14 个功能开关仅 1 个被检查~~（**2026-09-23 核实：前提不成立**——需求 US-CFG-004 业务规则 1/2 明确 v1.0 仅保留 2 键、早期 18 开关已于 2026-06-28 废弃，代码实测亦仅 2 键，全仓无 14 开关清单。**实际交付**：① `DuplicateHerbMergeStrategy` 接入真实行为——`IFeatureToggleService.GetDuplicateMergeStrategy()` 提升进契约，三个 DI 宿主 VM（Formula/MedicalCase MasterDetail + MedicalCaseWorkspace）暴露 `DuplicateStrategy`，两个编辑宿主控件新增 DP 并绑定内层 `HerbListControl`（原 DP 从未被任何 XAML 绑定），配置值防御性解析（非法/越界回退 `Max`）；② `OverwriteConflicts` 保留为预留键（离线同步未落地 B-15，无可接入行为）；③ 顺带修复配置中心取值列表错配——原硬编码 `Skip/Update/Error/Max` 中仅 `Max` 是合法剂量策略，改为 SSOT `Enum.GetNames<DuplicateDosageStrategy>()`） | 无 | ✅ 2026-09-23 | 4-6h |
+| F-02 | 桌面 Mapper 统一 | ~~TASK-05：未使用的 PatientMapper~~ + MedicalCaseMapper DI 不一致（**2026-09-23 核实与修复**：`PatientMapper` 并非未使用（Desktop 已 DI 注册且在用）；真实不一致是 `PrescriptionMapper`/`ConsultationMapper` 以 `static new()` 实例化、其余 5 个模块映射器为 DI 单例。统一为「共享实例 + DI 同源」：两映射器新增 `public static readonly X Instance`，`MedicalCaseModule` 以 `RegisterInstance(Instance)` 注册，静态消费方（`PrescriptionItemViewModel`/`ConsultationItem`）改用 `Instance`，删除过时 TODO） | 无 | ✅ 2026-09-23 | 1-2h |
+| F-03 | LocalData Mapper Target 策略 | TASK-06：统一 RequiredMappingStrategy.Target（**2026-09-23 核实：已满足，无需改动**——全仓 12 个 `[Mapper]` 特性全部已带 `RequiredMappingStrategy.Target`；且**无 LocalData 项目/映射器存在**（`find src -name "*LocalData*"` 0 命中），原条目所依据的 `15-mapperly.md` 描述已过时） | 无 | ✅ 已核实 | 0 |
+| F-04 | SyncService CS8602 | TASK-07：可空引用警告（**2026-09-23 核实：对象不存在**——全仓 `grep -rn "class SyncService"`/`find src -name "*Sync*.cs"` 均 0 命中；离线同步从未落地（B-15 ⬜），`SyncController` 亦已删除；当前 build 0 警告，无 CS8602 待修） | 无 | ❌ 对象不存在 | 0 |
+| F-05 | PatientMapper 死代码 | TASK-10：删除或启用（与 A-02 相关）（**2026-09-23 核实：非死代码，保留**——Desktop `Modules/LYBT.Desktop.Patients/Mappers/PatientMapper.cs` 已由 `PatientsModule` `RegisterSingleton` 注册且被生产代码消费；Server `Module.Patients/Application/Mappers/PatientMapper.cs` 静态映射器亦在用。真正的死物是 `15-mapperly.md` 中「PatientMapper 未使用」与 `UpdateEntityFromDetail` 的过时描述，已随本批次文档校正） | A-02 | ✅ 已核实 | 0 |
 | F-06 | 打印模板扩展 | TASK-11：诊断报告/患者摘要/医案完整打印（低优先级） | 无 | ⬜ | 4-8h |
 | F-07 | API 版本化准备 | TASK-12：v2 版本协商中间件（低优先级） | 无 | ⬜ | 2-3h |
 | F-08 | 日志归档策略 | TASK-13：LogCleanupService 按月压缩（低优先级） | 无 | ⬜ | 1-2h |
@@ -167,8 +167,8 @@
 
 | 序号 | 任务 | 预估 |
 | ------ | ------ | ------ |
-| 1 | A-01 文档清理 | 0.5d |
-| 2 | A-02 死代码删除 | 0.5d |
+| 1 | A-01 文档清理 | 0.5d | ✅ |
+| 2 | A-02 死代码删除 | 0.5d | ✅ |
 | 3 | A-07 CrossModule 死方法 | 0.25d |
 | 4 | A-10 接口下沉 | 0.5d |
 | 5 | A-11 Registration 依赖清理 | 0.25d |
@@ -204,7 +204,7 @@
 | 1 | B-08 Desktop 发布包 | 2d |
 | 2 | B-09 自动更新 | 2d |
 | 3 | B-10 SignalR | 3d | ✅ |
-| 4 | B-11 模板下载（✅ JSON 形式结案 2026-09-09）/ B-12 患者导入导出 ⬜ | 1d |
+| 4 | B-11 模板下载（✅ JSON 形式结案 2026-09-09）/ B-12 患者导入导出 ✅ `fa3eb27df` | 1d |
 | 5 | B-13 验方校验 UI（✅ 2026-09-09） | 0.5d |
 | **小计** | | **~8.5d** |
 
@@ -213,7 +213,7 @@
 | 序号 | 任务 | 预估 |
 | ------ | ------ | ------ |
 | 1 | C-01 Desktop 测试修复 | 1d |
-| 2 | C-02 systemd 服务 | 0.25d |
+| 2 | C-02 systemd 服务 | 0.25d | 🟡 已执行待核实 |
 | 3 | C-05 文档同步 | 0.5d |
 | 4 | B-16 Swagger | 0.5d |
 | **小计** | | **~2.25d** |
@@ -239,7 +239,7 @@
 
 | 任务 | 状态 | 完成日期 | Commit |
 | ------ | ------ | --------- | -------- |
-| A-01 文档清理 | 🟡 | 2026-08-03 | 待提交（断链 21→0、安全脱敏、08-03 定案传播；剩归档/存根项） |
+| A-01 文档清理 | ✅ | 2026-09-23 | `e21e7573b` — 2026-08-03 批次已完成断链清零/安全脱敏/定案传播；本次核对销项：`docs/compose/` 84 文件 + 10 `.hermes-task-*` + `DESIGN.md` 等 97 文件删除（归档项按新治理「过程文档不入库」处置）、存根扫描 0 命中、全仓 816 条本地链接实测 0 断链（补修 LocalWebAPI/AGENTS.md → ADR-0010 层级错误链接） |
 | A-02 死代码删除 | ✅ | 2026-08-05 | `5f89e58ec` — 删除 5 文件（-896 行）+ 8 死方法；保留 PasswordHelper/SystemLog/IEditable/NotSupportedException 桩 |
 | A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
 | A-04 超大类型拆分 | ⬜ | — | — |
@@ -252,7 +252,7 @@
 | A-11 Registration 依赖清理 | ✅ | 2026-08-05 | 已无跨模块依赖（A-02 清理后确认） |
 | A-12 AuthService 收敛 | ✅ | 2026-08-04 | 代码已通过 IAuthSessionRepository（RefreshTokenCommandHandler 无直接 DbContext） |
 | B-01 P0 安全修复 | ✅ | 2026-08-04 | `831702b51` `cb4d3e6b9` |
-| B-02 配置修改 API | ⬜ | — | — |
+| B-02 配置修改 API | ✅ | 2026-08-05 | `41922a92a` — `ISystemConfigurationService.SetValueAsync/UpdateConfigurationAsync` + `PUT /{key}`/`PUT /`（AdminOrSuperAdmin）+ `ConfigurationWritePolicy` 白名单 + `JsonFileConfigurationStore`（config/runtime-overrides.json，原子写）+ `Reload()` 热更新；13 单测。2026-09-23 复核：配置中心 SHELL-018 与配置导入导出仍在消费该 API，未废弃 |
 | | B-03 | Excel 导出/导入 | ✅ | 2026-08-05 | `4d70b487a` `0fdfde0d3` `bed75026e` `709bad616` `64c58c59a` `8968fd130` `1bc468851` — NPOI 2.7.2（中央版本钉）；ExcelService 通用三方法（ExportToExcel/GenerateTemplate/ParseExcel，XSSFWorkbook）+ 4 单测；WebApi 保留 JSON 批量导入端点（`POST /batch-import`），Excel 格式转换由前端 Desktop 负责；患者新增 BatchImportPatientsCommand（Skip/Update/Error 策略，与药材命令同构）；Herbs/Formulas Excel 导入复用现有 BatchImport 命令（拼音生成/药材名匹配/验方校验）；build --no-incremental 0 错误 0 警告，架构测试 92/92 |
 | B-04 报表增强 | ✅ | 2026-08-06 | `cab959dc1` — 新增 5 个端点：`GET /reports/trend/income`（挂号费/药费/合计折线，granularity=day/week/month）、`GET /reports/trend/consultations`、`GET /reports/doctor-performance`（问诊数/挂号费/药费/平均处方金额）、`GET /reports/herbs/ranking`（top 默认 10，复用药材使用聚合查询）、`GET /reports/patient-flow`（新患者/回头患者，按患者首次完成就诊归类）；新增 `ReportGranularity` 枚举 + 4 个趋势/绩效 DTO（药材排行复用 `HerbUsageItemDto`）；仓库按日 `GROUP BY CONVERT(date, CreatedAt)` 聚合下推 SQL，服务层 `ReportTimeBuckets` 按周（周一起）/月（1 号起）汇总；修复存量缺陷 `GetMedicineFeeTotalAsync` 的 `pi.Amount` 计算属性 EF 无法翻译（改 `UnitPrice * Dosage`，否则日收入药费运行时必炸）；`ReportRepository`/`ReportService` 由 internal 改 public（与 Herbs/Auth 等模块可测类惯例一致，供单测直构）；测试项目补引 `LYBT.Module.Reports`；新增 14 单测（EF InMemory 真实实现零 mock）全过 | |
 | B-05 配置中心 UI | ✅ | 2026-08-07 | `c518318ed` — 新增 `IConfigurationApi` Refit 接口（GET/PUT/validate）；`SystemSettingsViewModel` 新增服务器配置属性（ServerAppName/ServerAppVersion/ServerEnvironment）+ LoadServerConfig/SaveServerConfig/ValidateConfig 三个命令；`SystemSettingsView.xaml` 新增「服务器配置」Border 区域（应用名称可编辑、版本号/环境只读、保存/验证/刷新按钮）；`UnifiedApiClientExtensions` 注册 IConfigurationApi |
@@ -268,7 +268,7 @@
 | B-15 离线同步 v2.0 | ⬜ | — | — |
 | B-16 Swagger | ✅ | 2026-09-12 | `6792904101` — 全量端点 XML 摘要（无摘要 35→0）+ DTO 字段描述 621 条 + 逐操作 Bearer security（`[Authorize]` 声明 / `[AllowAnonymous]` 跳过）+ 生产默认 `Swagger:Enabled=false`（测试发布注入 `Swagger__Enabled=true`）+ `SwaggerAvailability` 单开关 SSOT + L3/L4 契约测试；实测：swagger.json 122 端点全有摘要、源端点 122=122（0 缺失 0 幽灵）、生产默认 401 / env 开启 200 |
 | C-01 Desktop 测试修复 | ✅ | 2026-09-13 | 2c18a3a20 |
-| C-02 systemd 服务 | ⬜ | — | — |
+| C-02 systemd 服务 | 🟡 已执行待核实 | — | 服务器侧已由此前会话完成开机自启，但仓库内无执行记录（无 commit、无 .service 文件、部署文档仅提及 systemd 环境变量注入）→ 待服务器核实：`systemctl is-enabled lybt-api` |
 | C-03 部署脚本清理 | ✅ | 2026-08-04 | 删除 `.worktrees/` 下 7 个孤儿 checkout（arch-cleanup/fix-high-issues-t1-t4/fix-high-issues-t5-t6/fix-remaining-issues/fix-remove-sync-loader/offline-sync-review/rebase-offline），内含 sync-to-server.ps1/deploy-fixed.ps1 等均为仓库根目录 `tests/newman/`、`tests/postman/` 的过期重复；目录已被 gitignore 且未注册为 worktree，代码可从 git 分支恢复 |
 | C-04 NuGet 包清理 | ✅ | 2026-08-04 | 扫描 38 个 csproj 共 76 个 PackageReference，移除 8 个代码零使用包：NPOI（Foundation/Infrastructure）、EPPlus（WebAPI/Herbs/Formula）、System.CommandLine（PasswordHashGenerator）、Bogus（Tests.Server）、Xunit.StaFact（Tests.Desktop）、Microsoft.Extensions.ObjectPool（Foundation）、Microsoft.Extensions.Logging.Debug（Shell）、Refit.HttpClientFactory（Tests.Desktop）；同步清理 Directory.Packages.props 中央版本钉。保留 SixLabors.Fonts/ImageSharp（QuestPDF 传递依赖 CVE-2025-27598/54575 的安全版本固定）与 EFCore.Tools（迁移工具）。`85b2d16c5`，构建 0 错误 0 警告 |
 | C-05 文档同步 | ✅ | 2026-09-13 | 0781c9ce0 |
@@ -280,11 +280,11 @@
 | E-03 规则体系：项目总账拆分（13a/13b/13c） | ✅ | 2026-08-04 | `1664f2ffc` |
 | E-04 规则体系：MCP 配置清理（移除 tavily 又恢复，serena/tavily 全部保留） | ✅ | 2026-08-04 | 本地修改（`.mimocode` 被 gitignore，无 commit） |
 | E-05 规则体系：「以文档为准」强制规则 + 文档目录优化（00-governance/ 归位 + 历史报告清理 + AI 查询指南） | ✅ | 2026-08-06 | 见 §九 2026-08-06；skill v0.9.0（profile 目录） |
-| F-01 FeatureToggle 开关接入 | ⬜ | — | — |
-| F-02 桌面 Mapper 统一 | ⬜ | — | — |
-| F-03 LocalData Mapper Target 策略 | ⬜ | — | — |
-| F-04 SyncService CS8602 | ⬜ | — | — |
-| F-05 PatientMapper 死代码 | ⬜ | — | — |
+| F-01 FeatureToggle 开关接入 | ✅ | 2026-09-23 | 前提更正（US-CFG-004 仅 2 键）+ `DuplicateHerbMergeStrategy` 全链接入（契约/3 VM/2 控件 DP/XAML 绑定 + 防御解析）；`OverwriteConflicts` 预留；配置中心取值列表改枚举 SSOT。新增 16+2 单测 |
+| F-02 桌面 Mapper 统一 | ✅ | 2026-09-23 | `PrescriptionMapper`/`ConsultationMapper` 统一为共享 `Instance` + DI `RegisterInstance`；`PatientMapper` 核实在用（非死代码） |
+| F-03 LocalData Mapper Target 策略 | ✅ 已核实 | 2026-09-23 | 无需改动：全仓 12 个 `[Mapper]` 均带 `RequiredMappingStrategy.Target`，且无 LocalData 项目/映射器（原依据 `15-mapperly.md` 过时） |
+| F-04 SyncService CS8602 | ❌ 对象不存在 | 2026-09-23 | 全仓无 `SyncService`/任何 `*Sync*` 类（离线同步未落地，B-15 ⬜）；build 0 警告，无 CS8602 待修 |
+| F-05 PatientMapper 死代码 | ✅ 已核实 | 2026-09-23 | Desktop/Server 两个 PatientMapper 均在用（Desktop 已 DI 注册）；死的是文档描述（`15-mapperly.md`），非代码 |
 | F-06 打印模板扩展 | ⬜ | — | — |
 | F-07 API 版本化准备 | ⬜ | — | — |
 | F-08 日志归档策略 | ⬜ | — | — |
@@ -490,3 +490,4 @@
 | 2026-09-23 | **收尾批次 2 结案（患者加密列 LIKE 搜索 500 修复 + 文件对话框收敛 + 无用 `RootDialog` 脚手架删除）**：① **患者关键词检索 500 定案（R-6 盲索引）**——`PatientRepository.GetPagedAsync` 关键词谓词对 AES-GCM 加密列 `PhoneNumber` 做 `Contains`，EF 把参数一并加密后生成 `LIKE @p ESCAPE N'<密文>'`，密文含非法转义字符即触发 SQL Server「invalid escape character … LIKE predicate」→ 患者搜索 500（**按姓名检索同样命中该谓词**，故表现为「姓名搜索也 500」）；定案采用与既有 `IdCardHash` 同构的确定性盲索引列 `PhoneSearchHash`（HMAC-SHA256，与加密同密钥）+ 非唯一筛选索引 `IX_Patients_PhoneSearchHash`，检索与查重一律走等值匹配，**语义定为「电话＝完整号码精确匹配」**（盲索引不支持前缀/片段；姓名/拼音保持前缀，见 `02-requirements/04-patients.md` 规则 5-7），手写迁移 `20260923120000_AddPatientPhoneSearchHash` + 双宿主启动回填（`DatabaseInitializationService`/`LocalWebApiSeedData`）。② **电话唯一性缺陷（潜在，同源）**——`ExistsByPhoneAsync` 原对加密列等值比较，随机 nonce 下恒不相等 → 查重恒 false（US-PAT-003/004 名义 ✅、实质失效）；改盲索引后 `PatientPhoneDuplicate`→409 恢复可达。③ **文件对话框收敛**——5 个 VM（Formula/Herb/Patient MasterDetail + Deployment + SystemSettings）的 `Microsoft.Win32.OpenFileDialog` 全部改走 `IFileDialogService.ShowOpenFileDialog`（#149 登记项闭环）。④ **无用脚手架删除**——`Shell/Views/MainWindow.xaml` 的 MDIX `DialogHost Identifier="RootDialog"` 包裹层全仓零消费者（4 个 Admin 视图各自持有自包含 DialogHost），删除；对话框统一走 Prism，不引入第二套机制。⑤ **测试基建**——`tests/LYBT.Tests.Server/_Infrastructure/IntegrationTestBase.cs` 建库前 `EnsureDeletedAsync()`，消除共享测试库 `LYBT_Test` 残留旧 schema 导致的「Invalid column name」假红（曾掩盖真实回归）；Server 851/851（+4 患者 SQL 集成测试）。 | 加密列不可做 SQL 等值/`LIKE` 是**机制性约束**：凡需按敏感字段检索/查重的场景一律补确定性盲索引列，而不是在查询侧打补丁；「删除零消费者的 XAML 脚手架」与「VM 不直触 Win32 对话框 API」两条收敛原则继续执行；集成测试库 schema 陈旧会把新列缺失伪装成业务回归，建库前重置是测试可信度的前提 | 技术总监 |
 | 2026-09-23 | **测试分层策略（L0/L1/L2）确立 + Desktop 集成测试提速（共享 LocalDB + Respawn）**：① **根因**——`LocalWebApiTestBase` 的 `IAsyncLifetime.InitializeAsync` 按测试**方法**执行，每个测试重建 LocalDB + 建表 + 4 角色种子 + Kestrel（≈11s/测试），Desktop 全量 1038 用例 25m42s。② **共享 LocalDB + Respawn**——每测试进程一库（`LYBTZYZS_LocalApiShared_{pid}`，`ProcessExit` 删除）；每测试类首次运行 Respawn 清库 + 确定性重建身份/业务种子；每测试仍独立宿主（限流桶/内存状态隔离）。实测 Integration **6m12s→23s**、E2E **19m22s→1m23s**、Desktop 全量 **25m42s→1m43s**（1014 通过/0 失败/24 Skip 不变）。③ **命名空间校正**——69 个 `Unit/**` 文件由扁平根命名空间改为 `LYBT.Tests.Desktop.Unit`，使 `--filter` 能干净切分（Unit 层 89→877 用例）。④ **collection 并行**——Desktop `parallelizeTestCollections` false→true，串行 collection 保留并注明原因。⑤ **规范落 `tests/AGENTS.md`（强制）**——L0 快速 31s（每次改动）/ L1 集成 2m42s（commit 前）/ L2 全量 3m40s（仅收尾/发布前），含可复制命令 + 切分表 + 并行说明；核查确认 E2E/LocalApi 基建无固定硬等待。**验证**：Desktop 全量 1014/0/24 Skip（1m43s）、Server 851/851、Architecture 107/107、build 0 错误 0 警告 |
 | 2026-09-23 | **新增 GitHubReleaseSource 发布源（`SourceKind=GitHub`，主渠道）**：① **扩展点落地**——`GitHubReleaseSource : GithubSource`（`Core/LYBT.Desktop.Foundation/Services/`，与 `GiteeReleaseSource` 同为薄封装；**不覆写** `GetApiBaseUrl`/`GetReleases`/`GetAssetUrlFromName`——GitHub API 主机 `api.github.com` 与 Gitee 的 `{host}/api/v5/` 拼法不同、分页参数不同（`per_page`/`page` vs `page`/`limit`），复用 Velopack 的 GitHub 原生实现最稳）+ `UpdateSourceKinds.GitHub`。② **配置**——`DesktopUpdateOptions` 增 `GitHubRepoUrl`/`GitHubToken`（可空）/`GitHubPrerelease`，**默认 `SourceKind` 保持 `Server` 不变**；`Shell/appsettings.json` + `appsettings.Production.json` 补 GitHub 示例段（三渠道字段共存，仅 `SourceKind` 决定生效项）。③ **工厂**——`UpdateSourceFactory` 增 GitHub 分支（缺 `GitHubRepoUrl` → 记 Warning 并停用；无 token → 记 Info 按公开仓库匿名访问）。④ **字段差异处理**——资产下载走 `assets[].browser_download_url`（与 Gitee 同名；`assets[].url` 是 API 资源地址不用于下载），`tag_name`/`prerelease`/`assets[]` 与 Gitee 同名（Gitee OpenAPI v5 对齐 GitHub 命名）；asset 命名沿用 `releases.{channel}.json` + `*-full.nupkg`/`*-delta.nupkg`。⑤ **测试**——新增 `GitHubReleaseSourceTests`（8 例：API 根 `https://api.github.com/repos/owner/repo/releases`、清单资产读取、`browser_download_url` 解析、清单入馈源、delta 资产、prerelease 过滤/启用、prerelease=false 不拉 rc tag）+ `DesktopUpdateServiceTests` 增 3 例（GitHub 选源/缺仓库地址返回 null/服务层不触网）。⑥ **文档**——`docs/06-operations/12-desktop-release.md` 新增「方式 C：GitHub Releases（主渠道）」并把方式 B（Gitee）标注为可选镜像、§5 客户端配置补 GitHub 字段、§10 CI 上传路径更新；`11a-shell.md` US-SHELL-012 状态同步。**验证**：相关单测 25/25 通过（GitHub 8 + Gitee 6 + 服务 11）；build 0 错误 0 警告 |
+| 2026-09-23 | **收尾批一结案（总账销项 + F-01~F-05 + 架构遗留 6 项）**：① **总账销项**——A-01 ✅ `e21e7573b`（97 文件删除；275 md / 816 条本地链接 0 断链，补修 1 处层级错误链接）、B-02 ✅ `41922a92a`（复核仍有效）、B-12 ✅ `fa3eb27df`（进度表行同步）、C-02 🟡 已执行待核实（仓库无执行记录，待 `systemctl is-enabled lybt-api` 核实）。② **五项小修（前提逐项核实）**——F-01 前提不成立（US-CFG-004 仅 2 键、18 开关已废弃）→ 交付 `DuplicateHerbMergeStrategy` 全链接入（契约 + 3 VM + 2 控件 DP + XAML 绑定 + 防御解析）+ 顺带修复配置中心取值列表错配（改枚举 SSOT）；F-02 统一 `PrescriptionMapper`/`ConsultationMapper` 为共享 `Instance` + DI `RegisterInstance`（`PatientMapper` 核实在用）；F-03 ✅ 已满足（12 个 `[Mapper]` 均 Target，无 LocalData 项目，`15-mapperly.md` 校正 v1.1）；F-04 ❌ 对象不存在（无 `SyncService`）；F-05 ✅ 已核实（非死代码）。③ **架构遗留 6 项（#144）**——i18n → 不实施（设计规范明确全中文文案 + resx 零消费者，无需求依据）；打印模板样式合并 ✅（共享 `PrintSharedStyles.xaml`，setter 逐键 0 差异）；`White` 背景逐点判定 ✅（22 处仅 2 处真缺陷）；模块仓储吞 OCE ✅ 已达成（全仓模块仓储 0 处裸 `catch (Exception)`）；Server `RemoveByPrefix` 去反射 ✅（`ServerCacheKeyRegistry` + 反射实现整体删除）；跨聚合失败注入测试 ✅（+7 用例覆盖 ADR-0030 补偿/幂等/回滚/打印事务）。**验证**：build 0/0；Architecture 107/107；Server 866/866；Desktop 1042/0/24 Skip（1m41s） |

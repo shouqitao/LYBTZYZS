@@ -2,9 +2,11 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Contracts.Repositories;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Models.Items;
@@ -89,6 +91,25 @@ public class MedicalCaseMasterDetailViewModelTests : DesktopTestBase
             _herbSearchProvider,
             _cacheManager,
             _loggerFactory);
+    }
+
+    [Fact]
+    public void Constructor_SourcesDuplicateStrategyFromFeatureToggle()
+    {
+        // F-01: US-CFG-004 DuplicateHerbMergeStrategy 必须到达宿主 VM（→ MedicalCaseEditControl → HerbListControl）
+        var featureToggles = Substitute.For<IFeatureToggleService>();
+        featureToggles.GetDuplicateMergeStrategy().Returns(DuplicateDosageStrategy.Average);
+
+        var sut = new MedicalCaseMasterDetailViewModel(
+            _viewModelServices,
+            _masterDetailServices,
+            _medicalCaseService,
+            _herbSearchProvider,
+            _cacheManager,
+            _loggerFactory,
+            featureToggles);
+
+        sut.DuplicateStrategy.Should().Be(DuplicateDosageStrategy.Average);
     }
 
     #region 构造函数和初始化

@@ -270,8 +270,8 @@ public class ArchTests
             "BaseController",           // 基础控制器
             "Controller",               // 控制器
             "Repository",               // 仓储层
-            "CacheExtensions",          // 缓存扩展
             "CacheInvalidationService", // 缓存失效服务
+            "ServerCacheKeyRegistry",   // 服务端缓存键登记表（去反射前缀失效，与 DesktopCacheKeyRegistry 同构）
             "ServiceCollectionExtensions", // 客户端服务注册
             "ServiceDiscovery"         // 客户端服务发现
         };

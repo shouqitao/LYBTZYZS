@@ -2,6 +2,7 @@ using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.Infrastructure.ViewModels.Base;
@@ -63,8 +64,13 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     /// <summary>本地模式（决策 B: 本地配置生效 = 重启内嵌 LocalWebAPI）</summary>
     [ObservableProperty] private bool _isLocalMode;
 
-    /// <summary>重复药材合并策略取值（功能开关组）</summary>
-    public static string[] MergeStrategies { get; } = { "Skip", "Update", "Error", "Max" };
+    /// <summary>
+    /// 重复药材合并策略取值（功能开关组）。
+    /// SSOT = <see cref="DuplicateDosageStrategy"/> 枚举——此前硬编码 {"Skip","Update","Error","Max"}，
+    /// 其中 Skip/Update/Error 属**导入冲突**策略、不是剂量合并策略，选中即被 <c>FeatureToggleService</c>
+    /// 解析为非法值并静默回退 Max（13c #153 修正）。
+    /// </summary>
+    public static string[] MergeStrategies { get; } = Enum.GetNames<DuplicateDosageStrategy>();
 
     public ConfigurationCenterViewModel(
         IViewModelServices services,
@@ -242,7 +248,7 @@ public partial class ConfigurationCenterViewModel : NavigableViewModelBase
     [RelayCommand]
     private async Task SaveFeatureTogglesAsync()
     {
-        var validStrategies = new[] { "Skip", "Update", "Error", "Max" };
+        var validStrategies = MergeStrategies;
         if (!validStrategies.Contains(DuplicateHerbMergeStrategy, StringComparer.OrdinalIgnoreCase))
         {
             StatusMessage = $"重复药材合并策略需为：{string.Join(" / ", validStrategies)}";

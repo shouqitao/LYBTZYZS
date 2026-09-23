@@ -87,8 +87,7 @@ LYBT.Shared.Models/
     ErrorCodes/              # ErrorCode.cs / ErrorCategory.cs / ErrorMessages.cs / ErrorCodeExtensions.cs
     Validation/              # ValidationConstants.cs
     UserConstants.cs
-  Utilities/                 # 无状态工具类（实际 4 文件）
-    Extensions/ServiceCollection/CacheExtensions.cs
+  Utilities/                 # 无状态工具类（实际 3 文件）
     Security/PasswordHelper.cs
     Security/PasswordPolicyValidator.cs
     Text/PinYinHelper.cs
@@ -98,7 +97,7 @@ LYBT.Shared.Models/
     Formula/Herbs/MedicalCase/Patients/Prescriptions/
 ```
 
-> **纠错（D2）**: 原文档声称 Utilities 含 `ConfigurationHelper/PasswordHasher/JwtHelper/PinYinConverter/StringExtensions/DateTimeHelper` — **全部不存在**。实际仅 4 文件：`CacheExtensions` / `PasswordHelper` / `PasswordPolicyValidator` / `PinYinHelper`。`PasswordHelper` 为 BCrypt 残留工具类（运行时密码哈希已统一 Identity PBKDF2，见 [00-architecture-summary.md](00-architecture-summary.md)）。
+> **纠错（D2）**: 原文档声称 Utilities 含 `ConfigurationHelper/PasswordHasher/JwtHelper/PinYinConverter/StringExtensions/DateTimeHelper` — **全部不存在**。原仅 4 文件：`CacheExtensions` / `PasswordHelper` / `PasswordPolicyValidator` / `PinYinHelper`；`CacheExtensions`（反射 `MemoryCache` 私有集合的 `IMemoryCache.RemoveByPrefix/Clear`）已随去反射改造删除（服务端改走 `LYBT.Infrastructure/Caching/ServerCacheKeyRegistry`），现为 3 文件。`PasswordHelper` 为 BCrypt 残留工具类（运行时密码哈希已统一 Identity PBKDF2，见 [00-architecture-summary.md](00-architecture-summary.md)）。
 
 ### 契约类型（Contracts/Common）
 

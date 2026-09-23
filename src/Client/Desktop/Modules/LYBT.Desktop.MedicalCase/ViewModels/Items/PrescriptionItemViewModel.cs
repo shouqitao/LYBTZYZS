@@ -30,8 +30,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Items;
 /// </summary>
 public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
-    // TODO 2026-08-21 xiao: 静态mapper与DI风格不一致，未来改为构造注入（需同步改造Mapperly生成代码的实例化路径）
-    private static readonly PrescriptionMapper s_mapper = new();
+    // F-02: 使用 PrescriptionMapper.Instance——静态消费方与 DI 注册共用同一实例
 
     /// <summary>
     /// 默认用法
@@ -381,7 +380,7 @@ public class PrescriptionItemViewModel : BindableBase, IDataProvider, IValidatab
         {
             return null;
         }
-        return s_mapper.ToInputDto(this);
+        return PrescriptionMapper.Instance.ToInputDto(this);
     }
 
     #endregion

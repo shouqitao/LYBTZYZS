@@ -60,9 +60,12 @@ public static class DatabaseServiceCollectionExtensions
         });
         services.AddMemoryCache(); // 添加IMemoryCache服务
 
+        // 缓存键登记表（去反射前缀失效：写入时 Track，失效时只遍历登记表）
+        services.AddSingleton<LYBT.Infrastructure.Caching.ServerCacheKeyRegistry>();
+
         // 缓存失效服务（MedicalCases/Catalog 模块通过 ICacheInvalidationService.InvalidateAsync 调用）
         // P-01: 原 AddOutputCache()/AddResponseCaching() 已移除——全仓 0 处 [OutputCache]/[ResponseCache] 特性，
-        // 属空转基建；CacheInvalidationService 已改为仅依赖 IMemoryCache（RemoveByPrefix）。
+        // 属空转基建；CacheInvalidationService 已改为经 ServerCacheKeyRegistry 前缀清理（不再反射 MemoryCache 私有集合）。
         services.AddSingleton<LYBT.Infrastructure.Caching.ICacheInvalidationService, LYBT.Infrastructure.Caching.CacheInvalidationService>();
 
         // ADR-0018: 领域事件分发器（WebAPI 宿主；LocalWebAPI 经 SharedHost.AddSharedInfrastructure 注册）

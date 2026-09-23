@@ -9,7 +9,9 @@ using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
 using LYBT.Desktop.Catalog.ViewModels;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -130,6 +132,35 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _cacheManager,
             Substitute.For<IFileDialogService>(),
             _formulaEditor);
+
+    [Fact]
+    public void Constructor_SourcesDuplicateStrategyFromFeatureToggle()
+    {
+        // F-01: US-CFG-004 DuplicateHerbMergeStrategy 必须到达宿主 VM（→ FormulaEditControl → HerbListControl）
+        var featureToggles = Substitute.For<IFeatureToggleService>();
+        featureToggles.GetDuplicateMergeStrategy().Returns(DuplicateDosageStrategy.Sum);
+
+        var sut = new FormulaMasterDetailViewModel(
+            _viewModelServices,
+            _masterDetailServices,
+            _formulaService,
+            _statusHandler,
+            _herbSearchProvider,
+            _cacheManager,
+            Substitute.For<IFileDialogService>(),
+            _formulaEditor,
+            featureToggles);
+
+        sut.DuplicateStrategy.Should().Be(DuplicateDosageStrategy.Sum);
+    }
+
+    [Fact]
+    public void Constructor_WithoutFeatureToggleService_FallsBackToMax()
+    {
+        var sut = CreateSut();
+
+        sut.DuplicateStrategy.Should().Be(DuplicateDosageStrategy.Max);
+    }
 
     [Fact]
     public async Task InitializeAsync_LoadsFormulaList()

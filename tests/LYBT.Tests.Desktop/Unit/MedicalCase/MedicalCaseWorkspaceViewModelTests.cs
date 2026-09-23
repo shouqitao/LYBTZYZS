@@ -3,6 +3,7 @@ using FluentAssertions;
 using LYBT.Desktop.Clinical.ViewModels;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Repositories;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
@@ -12,6 +13,7 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Events;
@@ -42,6 +44,7 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     private readonly IMedicalCaseRepository _medicalCaseRepository;
     private readonly IClinicSettingsService _clinicSettingsService;
     private readonly IPrintService<PrescriptionPrintModel> _printService;
+    private readonly IFeatureToggleService _featureToggles = Substitute.For<IFeatureToggleService>();
 
     public MedicalCaseWorkspaceViewModelTests()
     {
@@ -103,6 +106,26 @@ public class MedicalCaseWorkspaceViewModelTests : DesktopTestBase
     }
 
     #region 构造函数和初始化
+
+    [Fact]
+    public void Constructor_SourcesDuplicateStrategyFromFeatureToggle()
+    {
+        // F-01: US-CFG-004 DuplicateHerbMergeStrategy 必须到达宿主 VM（→ MedicalCaseEditControl → HerbListControl）
+        _featureToggles.GetDuplicateMergeStrategy().Returns(DuplicateDosageStrategy.Min);
+
+        var sut = new MedicalCaseWorkspaceViewModel(
+            _viewModelServices,
+            _medicalCaseService,
+            _navigationCoordinator,
+            _activeConsultationService,
+            _patientService,
+            _toastService,
+            _printHandler,
+            _dialogService,
+            _featureToggles);
+
+        sut.DuplicateStrategy.Should().Be(DuplicateDosageStrategy.Min);
+    }
 
     [Fact]
     public void Constructor_InitializesChildViewModels()

@@ -43,7 +43,7 @@
 - Logging → Models
 
 ### External
-- FluentValidation, hyjiacan.pinyin4net, Microsoft.Extensions.Caching.Memory（Models）
+- FluentValidation, hyjiacan.pinyin4net（Models）
 - Microsoft.Extensions.Options（Configuration）
 - Serilog（Logging）
 

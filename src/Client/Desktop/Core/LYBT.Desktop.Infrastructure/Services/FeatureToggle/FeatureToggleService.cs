@@ -44,7 +44,9 @@ public class FeatureToggleService : IFeatureToggleService, IDisposable
     public DuplicateDosageStrategy GetDuplicateMergeStrategy()
     {
         var value = GetValue(nameof(FeatureToggleOptions.DuplicateHerbMergeStrategy));
+        // F-01: 仅接受已定义枚举值——纯数字越界串（如 "99"）Enum.TryParse 会成功但值未定义，必须回退 Max
         return Enum.TryParse<DuplicateDosageStrategy>(value, ignoreCase: true, out var strategy)
+               && Enum.IsDefined(strategy)
             ? strategy
             : DuplicateDosageStrategy.Max;
     }

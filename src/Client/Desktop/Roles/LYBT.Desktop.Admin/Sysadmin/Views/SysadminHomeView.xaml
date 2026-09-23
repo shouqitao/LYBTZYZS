@@ -180,7 +180,7 @@
                                       IsChecked="{Binding ConfigCenter.OverwriteConflicts}"
                                       VerticalAlignment="Center" Margin="0,0,12,8" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="重复药材合并策略（Skip/Update/Error/Max）" FontSize="12" Opacity="0.7" />
+                                <TextBlock Text="重复药材合并策略（取值 = DuplicateDosageStrategy 枚举）" FontSize="12" Opacity="0.7" />
                                 <ComboBox SelectedItem="{Binding ConfigCenter.DuplicateHerbMergeStrategy}"
                                           ItemsSource="{x:Static sysadmin:ConfigurationCenterViewModel.MergeStrategies}"
                                           Padding="8,4" />

@@ -17,64 +17,52 @@
     -->
 
     <UserControl.Resources>
-        <FontFamily x:Key="PrintFont">SimSun, 宋体, Microsoft YaHei</FontFamily>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/LYBT.Desktop.Printing;component/Templates/PrintSharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <Style x:Key="TitleStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,0,6" />
-        </Style>
+            <!--  标题样式 (A5 续页 13pt)  -->
+            <Style x:Key="TitleStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintTitleBaseStyle}">
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Margin" Value="0,0,0,6" />
+            </Style>
 
-        <Style x:Key="LabelStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="10.5" />
-            <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Margin" Value="0,0,0,2" />
-        </Style>
+            <!--  标签样式 (A5 10.5pt)  -->
+            <Style x:Key="LabelStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintLabelBaseStyle}">
+                <Setter Property="FontSize" Value="10.5" />
+            </Style>
 
-        <Style x:Key="FieldBorderStyle" TargetType="Border">
-            <Setter Property="BorderBrush" Value="Black" />
-            <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Margin" Value="0,0,0,2" />
-        </Style>
+            <!--  字段值文本样式 (A5 10.5pt)  -->
+            <Style x:Key="FieldValueStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintFieldValueBaseStyle}">
+                <Setter Property="FontSize" Value="10.5" />
+            </Style>
 
-        <Style x:Key="FieldValueStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="10.5" />
-            <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Margin" Value="2,0,2,0" />
-        </Style>
+            <!--  Rp样式 (A5 11pt)  -->
+            <Style x:Key="RpStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintRpBaseStyle}">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="Margin" Value="0,6,0,4" />
+            </Style>
 
-        <Style x:Key="RpStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Margin" Value="0,6,0,4" />
-        </Style>
+            <!--  药材项样式 (A5 10.5pt, 宽 95px；续页不加 TextTrimming——与去重前一致)  -->
+            <Style x:Key="HerbItemStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintHerbItemBaseStyle}">
+                <Setter Property="FontSize" Value="10.5" />
+                <Setter Property="Width" Value="95" />
+                <Setter Property="Margin" Value="0,1,8,1" />
+            </Style>
 
-        <Style x:Key="HerbItemStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="10.5" />
-            <Setter Property="Width" Value="95" />
-            <Setter Property="Margin" Value="0,1,8,1" />
-        </Style>
+            <!--  用法样式 (A5 10.5pt)  -->
+            <Style x:Key="UsageStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintUsageBaseStyle}">
+                <Setter Property="FontSize" Value="10.5" />
+                <Setter Property="Margin" Value="0,10,0,0" />
+            </Style>
 
-        <Style x:Key="UsageStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="10.5" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Margin" Value="0,10,0,0" />
-        </Style>
-
-        <Style x:Key="AdviceStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource PrintFont}" />
-            <Setter Property="FontSize" Value="9.5" />
-            <Setter Property="Margin" Value="0,4,0,0" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Foreground" Value="#333333" />
-        </Style>
+            <!--  医嘱样式 (A5 9.5pt)  -->
+            <Style x:Key="AdviceStyle" TargetType="TextBlock" BasedOn="{StaticResource PrintAdviceBaseStyle}">
+                <Setter Property="FontSize" Value="9.5" />
+                <Setter Property="Margin" Value="0,4,0,0" />
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>

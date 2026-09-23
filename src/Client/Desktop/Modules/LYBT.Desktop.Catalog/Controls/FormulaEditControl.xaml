@@ -111,6 +111,7 @@
             <controls:InfoCard.Content>
                 <herbList:HerbListControl
                     AllHerbs="{Binding AllHerbs}"
+                    DuplicateStrategy="{Binding DuplicateStrategy}"
                     HerbItems="{Binding HerbItems, Mode=TwoWay}"
                     IsEditMode="True"
                     Columns="4"/>

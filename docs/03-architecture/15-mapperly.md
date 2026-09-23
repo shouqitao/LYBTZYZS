@@ -12,14 +12,14 @@
 
 ## 概述
 
-项目内共 23 个 Mapper 类，分布在 Server 和 Client 两端。
+项目内共 **12 个 Mapperly 映射器类**（`[Mapper]` 特性计数，2026-09-23 实测），分布在 Server 和 Client 两端。
 
 | 层 | Mapper 数量 | 位置 |
 |----|------------|------|
-| Server 模块 | 6 | `src/Server/Modules/LYBT.Module.*/Mapping/` |
-| Client LocalData | 6 | `src/Client/Desktop/Core/LYBT.Desktop.LocalData/Mappers/` |
-| Client Desktop 模块 | 10 | `src/Client/Desktop/Modules/LYBT.Desktop.*/Mappers/` |
-| Client 内联 | 1 | `PatientRepository.cs` 内 `PatientListToDetailMapper` |
+| Server 模块 | 5 | `src/Server/Modules/LYBT.Module.{Catalog,Identity,MedicalCases,Patients,Registrations}/**/Mappers/` |
+| Client Desktop 模块 | 7 | `src/Client/Desktop/Modules/LYBT.Desktop.{Catalog,MedicalCase,Patients,Users}/Mappers/`（含 `MedicalCase/ViewModels/Items/PrescriptionItemViewModel.cs` 内的映射器） |
+
+> **Client LocalData 层已不存在**（2026-09-23 核实：`find src -type d -name "*LocalData*"` 0 命中）——原表中 6 个 LocalData Mapper 与本文档「Client LocalData 映射模式」章节随之删除；本地模式映射统一走 Desktop 模块映射器。
 
 ---
 
@@ -28,14 +28,12 @@
 ### Mapper 属性配置
 
 ```csharp
-// Server 端: Target 策略 (只映射目标属性, 未匹配源不报错)
+// 全仓统一: Target 策略 (只映射目标属性, 未匹配源不报错)
+// 2026-09-23 实测: 12 个 [Mapper] 全部为 Target（10 个纯 Target + 2 个 Target + AutoUserMappings = false）
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 
-// Client LocalData: 默认 Both 策略 (源和目标都必须匹配)
-[Mapper]
-
-// Client Desktop 模块: Target 策略 (与 Server 一致)
-[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+// Server 端另有需要手写用户映射的: 追加 AutoUserMappings = false
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target, AutoUserMappings = false)]
 
 // 特殊: 深度克隆
 [Mapper(UseDeepCloning = true)]
@@ -141,37 +139,17 @@ dto.IsShared = !item.IsPersonal;
 
 ---
 
-## Client LocalData 映射模式
-
-LocalData Mapper 映射 LocalDB 实体到共享 DTO, 使用默认 `Both` 策略。MedicalCase 同样采用 **Core + Enrich** 模式:
-
-```csharp
-// 生成器方法 (忽略导航属性)
-public partial MedicalCaseDetailDto ToDetailDtoCore(MedicalCase entity);
-
-// 手写 Enrich 包装
-public MedicalCaseDetailDto ToDetailDto(MedicalCase entity)
-{
-    var dto = ToDetailDtoCore(entity);
-    // 填充 ConsultationId, PrescriptionId, Diagnosis, 嵌套 DTO
-    return dto;
-}
-```
-
----
-
 ## DI 注册
+
+Mapperly 生成的是无状态 partial class，实例化安全且高效；本仓的**统一约定**是「DI 注册的共享实例」，无 DI 容器的位置（纯模型/集合项）使用**同一个实例**的静态引用。
 
 | 模式 | 适用范围 | 说明 |
 |------|----------|------|
-| `new()` 直接实例化 | 大多数 Mapper | Mapperly 生成无状态代码, 无需 DI |
-| `AddSingleton<T>()` | MedicalCaseMapper (Server) | 已注册但部分 Service 仍用 `new()` |
+| `RegisterSingleton<T>()`（Desktop 模块） | Catalog `FormulaDetailModelMapper`/`HerbDetailModelMapper`、MedicalCase `MedicalCaseDetailModelMapper`、Patients `PatientMapper`、Users `UserMapper` | 各模块 `*Module.cs` 内注册（2026-09-23 实测 5 处注册） |
+| 静态共享实例 | MedicalCase `PrescriptionMapper`/`ConsultationMapper` | 供纯模型/集合项（`ConsultationItem`）与 VM 使用；实例与 DI 注册同源，避免「DI 单例 + 另一份 `new()`」双份实例 |
+| `new()` 内联实例化 | Server 模块映射器 | Server 端无 DI 容器注入需求 |
 
-Server 端 Mapper 使用 `new()` 内联实例化 (UserMapper, PatientMapper, HerbMapper, FormulaMapper, RegistrationMapper)。
-
-Client 端所有 Mapper 均使用 `new()` 内联实例化。
-
-> 注: Mapperly 生成的是无状态 partial class, `new()` 实例化安全且高效, DI 注册非必需。
+> 注：Desktop 模块映射器曾出现「6 个 DI 单例 vs 2 个 `static new()`」的不一致（13c F-02），2026-09-23 统一为共享实例。
 
 ---
 
@@ -184,7 +162,7 @@ Client 端所有 Mapper 均使用 `new()` 内联实例化。
 | DateTime | 所有 DateTime 存储 UTC, 显示转换在 ViewModel 层 | 全局 |
 | Nullable 引用类型 | Mapperly 尊重可空性标注, 不匹配时需显式处理 | 全局 |
 | Audit 字段 | `CreatedAt`/`UpdatedAt` 等在 `ToEntity`/`UpdateEntity` 中必须忽略 | 所有 Mapper |
-| 未使用 Mapper | Desktop `PatientMapper` (Patients 模块) 未被任何代码实例化 | LYBT.Desktop.Patients/Mappers/ |
+| ~~未使用 Mapper~~ | **已核实为误记（2026-09-23）**：Desktop `PatientMapper`（Patients 模块）由 `PatientsModule` 注册且在用；Server `Module.Patients/Application/Mappers/PatientMapper.cs` 亦在用 | — |
 
 ---
 
@@ -193,3 +171,4 @@ Client 端所有 Mapper 均使用 `new()` 内联实例化。
 | 日期 | 版本 | 变更内容 |
 |------|------|----------|
 | 2026-06-28 | v1.0 | **从 08-shared.md 外移**：Mapperly 映射规范整体迁移为独立文档（spec S3 批次2）。08-shared.md 留 Mapperly 概述 + 指向本文档。 |
+| 2026-09-23 | v1.1 | **实测校正（13c F-02/F-03/F-05 复核）**：Mapper 计数改为实测 12 个（Server 5 + Desktop 7）；删除已不存在的 Client LocalData 层章节与「默认 Both 策略」示例（全仓 12 个 `[Mapper]` 均为 `Target`）；DI 注册章节改为本仓实际约定（DI 共享实例 + 静态共享实例）；删除「Desktop PatientMapper 未被实例化」误记（已核实在用）。 |

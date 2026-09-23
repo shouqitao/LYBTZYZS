@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
+using LYBT.Desktop.Controls.Models;
 using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.Infrastructure.Services.FeatureToggle;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
@@ -45,6 +47,11 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
     /// <summary>选中项的患者姓名</summary>
     public string SelectedPatientName => SelectedItem?.PatientName ?? string.Empty;
 
+    /// <summary>
+    /// 重复药材剂量合并策略（F-01: US-CFG-004 功能开关 DuplicateHerbMergeStrategy → 药材列表控件）
+    /// </summary>
+    public DuplicateDosageStrategy DuplicateStrategy { get; }
+
     #endregion
 
     /// <summary>
@@ -57,12 +64,16 @@ public partial class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBas
         IMedicalCaseService medicalCaseService,
         IHerbSearchProvider herbSearchProvider,
         IDesktopCacheManager cacheManager,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IFeatureToggleService? featureToggles = null)
         : base(viewModelServices, masterDetailServices)
     {
         _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         _herbSearchProvider = herbSearchProvider ?? throw new ArgumentNullException(nameof(herbSearchProvider));
         _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+
+        // F-01: 配置的策略在每次导航（VM 瞬态）时读取；缺省/非法值回退 Max（服务内部已兜底）
+        DuplicateStrategy = featureToggles?.GetDuplicateMergeStrategy() ?? DuplicateDosageStrategy.Max;
 
         // Create child VMs with minimal IWorkspaceHost adapter
         var host = new MasterDetailWorkspaceHost(this);

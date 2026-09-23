@@ -25,6 +25,12 @@ namespace LYBT.Desktop.MedicalCase.Mappers;
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public partial class PrescriptionMapper
 {
+    /// <summary>
+    /// 共享单例：DI 注册与静态消费方使用同一实例（F-02，与其余 6 个模块 Mapper 一致）。
+    /// Mapperly 生成的映射无状态，单例安全。
+    /// </summary>
+    public static readonly PrescriptionMapper Instance = new();
+
     #region DTO → Item
 
     /// <summary>

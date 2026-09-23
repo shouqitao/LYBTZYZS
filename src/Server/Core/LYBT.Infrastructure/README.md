@@ -197,9 +197,8 @@ LYBT.Infrastructure/
 
 ```csharp
 // Tag 命名约定: "herbs", "formulas", "patients", "medicalcases"
-// 双缓存清理:
-//   1. OutputCache: EvictByTagAsync(tag)
-//   2. MemoryCache: RemoveByPrefix(tag) -- 约定 key 以 tag 为前缀
+// MemoryCache 前缀清理（P-01 后 OutputCache 已移除）:
+//   ServerCacheKeyRegistry.RemoveByPrefix(cache, tag) -- 约定 key 以 tag 为前缀，写入时经 registry.Track 登记
 ```
 
 ### BaseService
@@ -437,10 +436,16 @@ LYBT.Infrastructure/
 - **方法**: `InvalidateAsync(string tag)`, `InvalidateAsync(IEnumerable<string> tags)`
 - **消费者**: HerbService, FormulaService, PatientService, MedicalCaseCommandService, MedicalCaseStateService, FormulaImportExportService
 
+#### Caching/ServerCacheKeyRegistry.cs
+- **类**: `ServerCacheKeyRegistry` (sealed)
+- **用途**: 服务端缓存键登记表 —— 去反射的前缀失效（对照 DesktopCacheKeyRegistry）
+- **方法**: `Track(key, options)`（登记 + 逐出回调注销）, `RemoveByPrefix(cache, prefix)`, `Clear(cache)`, `Count`
+- **注册**: 单例（宿主 DI，与 IMemoryCache 同生命周期）
+
 #### Caching/CacheInvalidationService.cs
 - **类**: `CacheInvalidationService` : `ICacheInvalidationService` (sealed)
-- **依赖**: IOutputCacheStore, IMemoryCache
-- **实现**: EvictByTagAsync (OutputCache) + RemoveByPrefix (MemoryCache 扩展方法)
+- **依赖**: IMemoryCache, ServerCacheKeyRegistry
+- **实现**: `InvalidateAsync` → ServerCacheKeyRegistry.RemoveByPrefix（不再反射 MemoryCache 私有集合）
 
 ### Web/ -- API 基础设施
 

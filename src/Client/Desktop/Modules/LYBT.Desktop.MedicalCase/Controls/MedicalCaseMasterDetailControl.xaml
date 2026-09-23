@@ -192,6 +192,7 @@
                             ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
                             CreatedAt="{Binding CurrentDetail.CreatedAt}"
                             DoctorName="{Binding CurrentDetail.DoctorName}"
+                            DuplicateStrategy="{Binding DuplicateStrategy}"
                             ErrorsSource="{Binding CurrentDetail.Errors}"
                             FormulaSource="{Binding CurrentDetail.FormulaSource}"
                             PatientName="{Binding CurrentDetail.PatientName}"

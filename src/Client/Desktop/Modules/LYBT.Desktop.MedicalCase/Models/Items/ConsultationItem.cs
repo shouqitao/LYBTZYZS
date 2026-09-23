@@ -20,7 +20,7 @@ namespace LYBT.Desktop.MedicalCase.Models.Items;
 /// </summary>
 public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INotifyDataErrorInfo
 {
-    private static readonly ConsultationMapper s_mapper = new();
+    // F-02: 使用 ConsultationMapper.Instance——静态消费方与 DI 注册共用同一实例
 
     #region 基础标识字段
 
@@ -186,7 +186,7 @@ public class ConsultationItem : BindableBase, IDataProvider, IValidatable, INoti
     #region IDataProvider实现
 
     /// <inheritdoc />
-    public ConsultationInputDto? GetConsultationData() => s_mapper.ToInputDto(this);
+    public ConsultationInputDto? GetConsultationData() => ConsultationMapper.Instance.ToInputDto(this);
 
     /// <inheritdoc />
     public PrescriptionInputDto? GetPrescriptionData() => null;

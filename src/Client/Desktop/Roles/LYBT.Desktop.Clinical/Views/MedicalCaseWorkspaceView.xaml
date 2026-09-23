@@ -140,6 +140,7 @@
                     AllHerbs="{Binding AllHerbs}"
                     ClearAllCommand="{Binding Commands.ClearHerbsCommand}"
                     Consultation="{Binding ConsultationEditor.Consultation}"
+                    DuplicateStrategy="{Binding DuplicateStrategy}"
                     ImportFormulaCommand="{Binding Commands.ImportFormulaCommand}"
                     ImportHistoryCommand="{Binding Commands.CopyHistoryCommand}"
                     IsCompactMode="True"
