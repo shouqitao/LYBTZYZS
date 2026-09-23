@@ -51,7 +51,7 @@ LYBT.Desktop.Catalog/
 | Dialog | 0 | 本模块无对话框 |
 | ViewModel | 6 | HerbMasterDetailViewModel、HerbEditorViewModel、FormulaMasterDetailViewModel、FormulaEditorViewModel、FormulaHerbItemViewModel、FormulaValidationItemViewModel（+ 2 状态 Handler） |
 
-> 口径与数量校验见 `src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md` §13.5；全量视图清单见 `docs/compose/specs/desktop-view-inventory.md`。
+> 口径与数量校验见 `src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md` §13.5；全量视图清单见 desktop-view-inventory（已清理，git 历史可查）。
 
 ## 核心组件
 

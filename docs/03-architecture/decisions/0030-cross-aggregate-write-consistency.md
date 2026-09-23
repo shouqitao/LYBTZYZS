@@ -1,6 +1,6 @@
 # ADR: 跨聚合写入一致性策略（同上下文显式事务 + 跨上下文幂等/补偿）
 
-> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 03（`docs/compose/specs/architecture-optimization-2026-09-16/design-03-cross-aggregate-transactions.md`）、ADR-0017（模块化单体各自 DbContext）
+> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 03（设计 03 跨聚合事务设计稿（已清理，git 历史可查））、ADR-0017（模块化单体各自 DbContext）
 
 ## 背景
 

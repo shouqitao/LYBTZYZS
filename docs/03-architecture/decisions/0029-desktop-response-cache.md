@@ -1,6 +1,6 @@
 # ADR: 桌面 GET 响应缓存策略（进程内 + 传输层读写一体）
 
-> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 04（`docs/compose/specs/architecture-optimization-2026-09-16/design-04-cache-strategy.md`）、架构审查 L3「缓存策略」
+> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 04（设计 04 缓存策略设计稿（已清理，git 历史可查））、架构审查 L3「缓存策略」
 
 ## 背景
 

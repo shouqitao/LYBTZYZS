@@ -395,7 +395,7 @@ private bool CanSave() => !IsBusy && !HasErrors;
 
 ## 导航模式
 
-> 设计 SSOT：[desktop-navigation-viewmodel-design-2026-09-18.md](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)（N7 文档同步 2026-09-18）。
+> 设计 SSOT：desktop-navigation-viewmodel-design-2026-09-18.md（N7 文档同步 2026-09-18）。
 > UI 细节与 ViewRoleAccess 全表见 [desktop-ui-detailed-design.md §5](../07-ui-ux/desktop-ui-detailed-design.md#5-跨页数据流--导航契约)。
 
 ### 单一门面（强制）

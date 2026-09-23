@@ -16,7 +16,7 @@
 | A4 | 前台首页 ReceptionistHomeView | ✅ 存在 | US-SHELL-003 | `../../designs/receptionist-home.pen` |
 | A5 | 审计日志 AuditLogView | ✅ 存在（医案域，非安全审计） | US-MC-017 | `../../designs/audit-log.pen` |
 
-> 审计报告：[desktop-view-design-audit-2026-08-29.md](../compose/reports/desktop-view-design-audit-2026-08-29.md)
+> 审计报告：desktop-view-design-audit-2026-08-29.md
 
 ## B. 对话框二级界面（代码已存在，必须设计）
 

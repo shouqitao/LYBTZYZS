@@ -6,7 +6,7 @@
 ## Purpose
 Business modules for the WPF desktop client. Each module encapsulates a domain area (Auth, Patients, Catalog, MedicalCase, Registrations, Users) and follows the Prism module pattern with `IModule` registration, region-based navigation, and ViewModels inheriting from `NavigableViewModelBase` or `MasterDetailViewModelBase`. Modules are strictly isolated — cross-module references are forbidden.
 
-> Herbs 与 Formula 已合并为 **Catalog** 模块（药房目录）。Sync 模块为 v2.0 规划（v1.0 远程/本地数据孤立，见 docs/compose/specs/2026-06-28-docs-reconciliation-baseline.md §2），当前不存在。
+> Herbs 与 Formula 已合并为 **Catalog** 模块（药房目录）。Sync 模块为 v2.0 规划（v1.0 远程/本地数据孤立，见 2026-06-28-docs-reconciliation-baseline（已清理，git 历史可查） §2），当前不存在。
 
 ## Subdirectories
 | Directory | Purpose |

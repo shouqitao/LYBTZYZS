@@ -56,7 +56,7 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ✅ N5 已实现（登录后按 RoleRegistry.HomeViewName 导航已对齐；RequiredModules 已写入 Home 所属模块——Doctor/Receptionist/SuperAdmin/Admin 均含 `ClinicalModule`，架构测试 `RoleRequiredModules_ContainHomeViewModule` 入 `tests/LYBT.Tests.Architecture/`；设计见 [desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md) §2.3）
+**状态**: ✅ N5 已实现（登录后按 RoleRegistry.HomeViewName 导航已对齐；RequiredModules 已写入 Home 所属模块——Doctor/Receptionist/SuperAdmin/Admin 均含 `ClinicalModule`，架构测试 `RoleRequiredModules_ContainHomeViewModule` 入 `tests/LYBT.Tests.Architecture/`；设计见 desktop-navigation-viewmodel-design-2026-09-18 §2.3）
 
 **作为** 用户，**我想要** 登录后系统按我的角色自动加载对应功能模块，**以便** 我直接进入工作台而不需手动配置，且无越权菜单。
 
@@ -111,7 +111,7 @@
 
 **角色**: 所有用户
 **优先级**: Must
-**状态**: ⚠️ 部分实现（导航切片 N1/N3/N4/N5 已落地✅——N1 MedicalCaseNav 参数契约 + MedicalCaseWorkspace 守卫扩权、N3 VM 禁直呼 RequestNavigate 统一走 `INavigationCoordinator`、N4 后退 Journal 空 fallback 角色主页、N5 角色 RequiredModules 对齐；**N1 生产方补齐✅**：PatientSelection / PendingQueue / CardReader 已改 `MedicalCaseNav.ForExistingCase`，ReceptionistHome 新建患者改 `PatientManagementNav.AddNew()`；**N2 参数消费✅**：RegistrationList Action/PatientId/PatientName 预填 + PatientManagement Action/SearchKeyword 均已消费；**N6 对话框核心已收敛✅**：UserNotificationService→IDialogManager、NotificationService→IDialogManager+IToastService、Control/VM 层 MessageBox 已替换（ToastService 仍保留无主窗口时 MessageBox 兜底）。设计：[desktop-navigation-viewmodel-design-2026-09-18](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)）
+**状态**: ⚠️ 部分实现（导航切片 N1/N3/N4/N5 已落地✅——N1 MedicalCaseNav 参数契约 + MedicalCaseWorkspace 守卫扩权、N3 VM 禁直呼 RequestNavigate 统一走 `INavigationCoordinator`、N4 后退 Journal 空 fallback 角色主页、N5 角色 RequiredModules 对齐；**N1 生产方补齐✅**：PatientSelection / PendingQueue / CardReader 已改 `MedicalCaseNav.ForExistingCase`，ReceptionistHome 新建患者改 `PatientManagementNav.AddNew()`；**N2 参数消费✅**：RegistrationList Action/PatientId/PatientName 预填 + PatientManagement Action/SearchKeyword 均已消费；**N6 对话框核心已收敛✅**：UserNotificationService→IDialogManager、NotificationService→IDialogManager+IToastService、Control/VM 层 MessageBox 已替换（ToastService 仍保留无主窗口时 MessageBox 兜底）。设计：desktop-navigation-viewmodel-design-2026-09-18）
 
 **作为** 医生，**我想要** 在功能模块间快速切换并能回退到上一页，**以便** 高效地在患者/医案/验方间流转而不丢失上下文。
 

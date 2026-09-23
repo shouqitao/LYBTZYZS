@@ -1,7 +1,7 @@
 # Desktop UI 需求文档
 > 版本: v1.5 | 日期: 2026-09-23（收尾批次：数据导入导出独立页 `ConfigExportImportView` 已建；B-07 首次初始化向导；审计修正与计数口径见 §九）
 
-> **基于**: [desktop-design-spec.md](./desktop-design-spec.md) + [desktop-view-inventory.md](../compose/specs/desktop-view-inventory.md)（v0.1，落差已在本文件标注）+ `../../designs/*.pen` 设计稿 **36** 个
+> **基于**: [desktop-design-spec.md](./desktop-design-spec.md) + desktop-view-inventory.md（v0.1，落差已在本文件标注）+ `../../designs/*.pen` 设计稿 **36** 个
 >
 > **计数口径**: View **30** / Control **33** / Dialog **7** / ViewModel **55**（XAML 合计 **82** = 视图 **71** + 资源模板 **11**）——定义见 §九。
 

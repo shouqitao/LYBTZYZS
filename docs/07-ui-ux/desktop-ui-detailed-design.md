@@ -389,7 +389,7 @@ Login → ReceptionistHomeView (叫号横幅+挂号/患者快捷)   ← Receptio
 
 ## 5. 跨页数据流 / 导航契约
 
-> 设计 SSOT：[desktop-navigation-viewmodel-design-2026-09-18.md](../compose/specs/desktop-navigation-viewmodel-design-2026-09-18.md)（N7 文档同步 2026-09-18）。
+> 设计 SSOT：desktop-navigation-viewmodel-design-2026-09-18.md（N7 文档同步 2026-09-18）。
 
 ### 5.1 角色主页 SSOT
 
@@ -655,7 +655,7 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 2. **P2 分批**（40 项，4 周）：按页面聚合（患者/药材/医案/报表/运维）每 Sprint 10 项
 3. **验证**：`build 0/0 + arch 91/91` 为门禁，每 P1 闭合后 `grep -r` 权限/校验一致性检查
 
-> 本文档为 R01→R22 的综合（R23），可直接作为 `desktop-ui-detailed-design.md` 定版，`R01-R22` 22 份独立报告已归档于 `docs/compose/reports/ui-research-R*.md`。
+> 本文档为 R01→R22 的综合（R23），可直接作为 `desktop-ui-detailed-design.md` 定版，`R01-R22` 22 份独立报告已清理（git 历史可查）。
 
 ---
 
@@ -664,7 +664,7 @@ CurrentPatient = params.GetValue<PatientDetailDto>(MedicalCaseNav.CurrentPatient
 
 ## 附录 A：登录后统一框架（已确认）
 
-> 决策依据：`docs/compose/archive/reports/ui-layout-framework-decision.md`（12项功能需求对照，方案2得...[truncated]
+> 决策依据：ui-layout-framework-decision 报告（已清理，git 历史可查；12项功能需求对照，方案2得...[truncated]
 分11/12，方案1=8/12，方案3=8/12）
 
 ### A.1 框架结构

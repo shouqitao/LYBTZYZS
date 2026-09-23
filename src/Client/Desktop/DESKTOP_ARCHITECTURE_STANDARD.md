@@ -1721,7 +1721,7 @@ private async Task ImportDataAsync()
 
 ## 13. Shell 公共组件（2026-08-25 抽取，SSOT desktop-layout-framework）
 
-> 依据 `docs/07-ui-ux/desktop-layout-framework.md`（固化）与 `docs/compose/plans/shell-component-extraction-plan.md` 30 轮方案 A。业务 View 零改动，Shell 层仅通过纯 UserControl 组合实现三栏公共壳。
+> 依据 `docs/07-ui-ux/desktop-layout-framework.md`（固化）与 shell-component-extraction-plan（已清理，git 历史可查）30 轮方案 A。业务 View 零改动，Shell 层仅通过纯 UserControl 组合实现三栏公共壳。
 
 ### 13.1 组件清单
 

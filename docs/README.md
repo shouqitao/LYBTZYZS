@@ -27,7 +27,7 @@
 1. 每个信息点只有一个权威定义（SSOT），其他文档只引用不复制
 2. 文档与代码冲突时：先更新文档，再按文档改代码（「以文档为准」规则，见 AGENTS.md）
 3. 需求模块文档中业务规则以 `BR-*` 编号引用，US 以 `US-{DOMAIN}-{NNN}` 引用
-4. 过程文档（计划/报告/任务书）一律归档 `compose/`；正式目录（架构/需求/API）只放当前值，历史报告不删除、不放入正式目录
+4. 过程文档（计划/报告/任务书）不入库：任务完成后结论提炼进正式文档，过程稿由 git 历史承载；正式目录（架构/需求/API）只放当前值
 
 ---
 
@@ -92,7 +92,7 @@
 | [05-development](05-development/README.md) | 开发指南、编码规范、测试指南 | 18 |
 | [06-operations](06-operations/README.md) | 部署、配置、监控、备份 | 13 |
 | [07-ui-ux](07-ui-ux/README.md) | UI/UX 设计规范、桌面端需求、UX 旅程/交互/错误/加载、ViewModel 层设计 | 13 |
-| [compose](compose/README.md) | 过程文档归档：specs、报告、计划、archive | 82 |
+| compose | 过程文档归档：specs、报告、计划、archive | 82 |
 | [prompts](prompts/README.md) | Prompt 模板 | 3 |
 | [training](training/README.md) | 培训材料 | 2 |
 | [_templates](_templates/) | 文档模板 | 1 |

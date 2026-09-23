@@ -57,7 +57,7 @@
 | [shared-layer.md](shared-layer.md) | Shared 层设计（补充文档，无编号） |
 | [16-desktop-architecture-spec.md](16-desktop-architecture-spec.md) | Desktop 架构规格 |
 
-> 过程文档（审计报告、任务书、计划）不在此目录，统一归档于 [../compose/](../compose/README.md)（plans/reports/specs）。本目录只保留反映系统当前状态的文档。
+> 过程文档（审计报告、任务书、计划）不入库（结论提炼进正式文档，过程稿由 git 历史承载）。本目录只保留反映系统当前状态的文档。
 
 ## 核心架构原则
 

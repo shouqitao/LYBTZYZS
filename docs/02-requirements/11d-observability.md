@@ -56,7 +56,7 @@
 - [ ] 422 业务拒绝不产生 Error 日志（Information）
 - [ ] 403 权限拒绝产生 Warning
 
-**实现参考**: docs/compose/archive/log-level-design-2026-08-13.md（完整设计）、BaseRepository.cs（Debug 先例）
+**实现参考**: 日志分级设计稿（已清理，git 历史可查）、BaseRepository.cs（Debug 先例）
 
 ---
 ## US-LOG-001: 结构化日志

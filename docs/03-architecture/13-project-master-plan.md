@@ -427,7 +427,7 @@
 
 | 文档 | 路径 | 用途 |
 | ------ | ------ | ------ |
-| ~~产品功能清单~~ | `docs/02-requirements/archive/14-feature-inventory.md` | 已过时归档（2026-08-04），以各模块 US 需求文档为准 |
+| ~~产品功能清单~~ | （已删除，git 历史可查） | 已过时归档（2026-08-04），以各模块 US 需求文档为准 |
 | PRD | `docs/02-requirements/01-prd.md` | 产品需求文档 |
 | 数据模型 | `docs/03-architecture/13a-data-model.md` | 核心实体 + 状态枚举 |
 | API 端点 | `docs/03-architecture/13b-api-endpoints.md` | 全部模块端点 |

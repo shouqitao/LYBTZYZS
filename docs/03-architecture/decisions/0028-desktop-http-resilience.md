@@ -1,6 +1,6 @@
 # ADR: 桌面 HTTP 传输层池化与弹性（引入 IHttpClientFactory + Polly）
 
-> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 01/05（`docs/compose/specs/architecture-optimization-2026-09-16/`）、ADR-0021（SwitchingApiClient 生命周期）、`docs/00-governance/03-technical-adoption-governance.md`
+> 状态: Accepted | 日期: 2026-09-16 | 相关: 设计 01/05（架构优化设计稿（已清理，git 历史可查））、ADR-0021（SwitchingApiClient 生命周期）、`docs/00-governance/03-technical-adoption-governance.md`
 
 ## 背景
 

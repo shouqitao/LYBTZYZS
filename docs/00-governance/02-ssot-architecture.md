@@ -53,7 +53,7 @@
 | 14 | **Shared 层共享契约/DTO/实体** | `03-architecture/01-system-overview.md` §解决方案结构（SSOT；`08-shared.md` 仅为视图层，不得复制定义） |
 | 15 | **Server 模块结构与依赖** | `03-architecture/03-server.md` §模块清单/分层规则（SSOT；`01-system-overview.md` 仅引用，不复制模块细节） |
 | 16 | **授权矩阵（架构视图）** | `01-product/04-permissions.md`（SSOT；`03-architecture/12-permissions-matrix.md` 仅视图层速查，见 ADR-0026） |
-| 17 | **历史报告/审计结论** | `03-architecture/13-project-master-plan.md` §九（SSOT；`docs/compose/` 过程报告仅引用，不复制结论） |
+| 17 | **历史报告/审计结论** | `03-architecture/13-project-master-plan.md` §九（SSOT；过程报告已清理（git 历史可查），仅引用不复制结论） |
 
 ---
 
