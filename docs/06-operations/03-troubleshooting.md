@@ -10,6 +10,7 @@
 |------|------|------|
 | Server（生产/测试） | 工作目录 `logs/lybt-web-api-YYYYMMDD.log` | 主应用日志（按天滚动，保留 30 天，单文件 10MB） |
 | Server 启动阶段 | 工作目录 `logs/bootstrap-YYYYMMDD.log` | 两阶段日志（Bootstrap Logger——启动早期异常也记录） |
+| Server 归档（F-08） | 工作目录 `logs/archive/{前缀}-YYYY-MM.zip` | 已结束月份且超 7 天的日志按月打包（归档后源文件删除；`Logging:Archive` 控制） |
 | Desktop | 应用数据目录 `logs/` | 桌面端日志（同名文件，`shared: true` 多进程共享） |
 
 > **单实例日志文件（US-LOG-009）**：所有 File sink 启用 `shared: true`——多进程写同一文件（不产生 `_001` 后缀）。
@@ -61,7 +62,8 @@ tail -f logs/lybt-web-api-$(date +%Y%m%d).log
 ```
 
 - 时间不对（无今日文件）= 进程未写日志（启动失败/权限/路径问题）→ 查 `bootstrap-*.log`
-- 同天 `_001` 后缀文件 = 旧配置（无 `shared: true`）残留——新版本不再产生
+- 同天 `_001` 后缀文件 = 旧配置（无 `shared: true`）残留——新版本不再产生（残留文件仍会被归档，见上表）
+- **查历史月份日志**：源文件已被归档删除 → 从 `logs/archive/{前缀}-YYYY-MM.zip` 解包（`unzip -p logs/archive/lybt-web-api-202607.zip lybt-web-api-20260715.log | grep ...`）；当前月与 7 天内的文件仍在 `logs/` 顶层
 
 ## 生产屏蔽不破坏日志诊断
 

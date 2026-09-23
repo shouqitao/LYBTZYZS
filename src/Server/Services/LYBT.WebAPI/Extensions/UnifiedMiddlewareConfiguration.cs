@@ -177,9 +177,22 @@ public static class UnifiedMiddlewareConfiguration
         if (LYBT.WebAPI.Configuration.SwaggerAvailability.IsEnabled(app.Configuration, app.Environment))
         {
             app.UseSwagger();
+
+            // F-07: SwaggerUI 端点按发现到的 API 版本逐个注册（与 ConfigureSwaggerOptions 同一 provider）——
+            // 只有 v1 时展示名/路径与历史一致（"凌隐宝堂中医诊所 API v1" → /swagger/v1/swagger.json）
+            var versionProvider = app.Services.GetRequiredService<Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider>();
+            var swaggerConfig = new LYBT.Shared.Configuration.Options.Server.SwaggerOptions();
+            app.Configuration.GetSection(LYBT.Shared.Configuration.Options.Server.SwaggerOptions.SectionName).Bind(swaggerConfig);
+
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "凌隐宝堂中医诊所 API v1");
+                foreach (var description in versionProvider.ApiVersionDescriptions)
+                {
+                    c.SwaggerEndpoint(
+                        $"/swagger/{description.GroupName}/swagger.json",
+                        $"{swaggerConfig.Title} {description.GroupName}{(description.IsDeprecated ? " (已弃用)" : string.Empty)}");
+                }
+
                 c.RoutePrefix = "swagger";
                 c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
             });

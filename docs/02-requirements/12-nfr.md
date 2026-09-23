@@ -202,7 +202,7 @@ JWT 采用 Family-based Token Rotation 检测重放攻击（令牌族命中已�
 |----------|--------|---------|
 | 安全审计日志（SecurityAuditLog） | 365 天（可配置） | `SecurityAuditCleanupService` 定时清理 |
 | 系统日志（SystemLog） | 90 天 | `LogCleanupService`（每 24h，每批 1000 条） |
-| 文件日志（Serilog RollingFile） | 30 天 | Serilog 自动管理 |
+| 文件日志（Serilog RollingFile） | 30 天滚动 + 按月归档 | 30 天滚动由 Serilog 自动管理；`LogArchiveService`（F-08）把已结束月份的 `logs/{lybt-web-api,bootstrap}-YYYYMMDD.log` 归档为 `logs/archive/{前缀}-YYYY-MM.zip` 并删除源文件（`Logging:Archive` 节） |
 
 审计覆盖：认证事件（登录/登出/失败/锁定）、权限变更、医案编辑（20 字段差异追踪）、敏感数据访问。
 

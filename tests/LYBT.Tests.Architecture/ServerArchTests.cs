@@ -3,6 +3,7 @@ using System.Reflection;
 using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NetArchTest.Rules;
 
 namespace LYBT.Tests.Architecture;
@@ -768,8 +769,16 @@ public class ServerArchTests
             .Where(t => t.IsClass && t.Name.EndsWith("Options"))
             .ToHashSet();
 
+        // 选项配置器（IConfigureOptions<T> 实现，如 ConfigureSwaggerOptions）是配置装配代码而非设置 POCO——
+        // 它们不承载配置节绑定，故不适用「必须声明 SectionName」规则
+        var configuratorTypes = optionsTypes
+            .Where(t => t.GetInterfaces().Any(i =>
+                i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IConfigureOptions<>)))
+            .ToHashSet();
+
         var violations = optionsTypes
             .Where(t => !subConfigTypes.Contains(t))
+            .Where(t => !configuratorTypes.Contains(t))
             .Where(t =>
             {
                 var sectionField = t.GetField("SectionName", BindingFlags.Public | BindingFlags.Static);

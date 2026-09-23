@@ -42,8 +42,8 @@ public static class ApiServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection RegisterApiServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // API版本管理（MVP阶段仅v1.0，简化配置）
-        // Issue #1732 Phase 2: 移除3种版本读取器（QueryString/Header/UrlSegment），使用默认行为
+        // API版本管理（ADR-0015: 仅 URL Path 版本，当前对外仅 v1；v2 切换清单见该 ADR）
+        // Issue #1732 Phase 2: 移除 QueryString/Header 读取器——版本只来自 URL 路径段
         services.AddApiVersioning(options =>
         {
             // 默认API版本：v1.0
@@ -70,93 +70,13 @@ public static class ApiServiceCollectionExtensions
         services.AddLybtExceptionHandling();
 
         // Swagger（含 JWT）- 从配置参数获取配置
+        // F-07: 文档按发现到的 API 版本生成（ConfigureSwaggerOptions + IApiVersionDescriptionProvider），
+        // 取代原硬编码单文档 "v1"——只有 v1 时输出等价（仍是 /swagger/v1/swagger.json），新增 v2 时自动多一份文档
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(c =>
-        {
-            // unify-configuration-system: 使用强类型 SwaggerOptions
-            var swaggerConfig = new SwaggerOptions();
-            configuration.GetSection(SwaggerOptions.SectionName).Bind(swaggerConfig);
+        services.AddSwaggerGen();
+        services.AddTransient<Microsoft.Extensions.Options.IConfigureOptions<Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
-            c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-            {
-                Title = swaggerConfig.Title,
-                Version = "v1",
-                Description = swaggerConfig.Description,
-                Contact = new Microsoft.OpenApi.Models.OpenApiContact
-                {
-                    Name = swaggerConfig.ContactName,
-                    Email = swaggerConfig.ContactEmail,
-                    Url = !string.IsNullOrEmpty(swaggerConfig.ContactUrl) ? new Uri(swaggerConfig.ContactUrl) : null
-                },
-                License = new Microsoft.OpenApi.Models.OpenApiLicense
-                {
-                    Name = swaggerConfig.LicenseName,
-                    Url = !string.IsNullOrEmpty(swaggerConfig.LicenseUrl) ? new Uri(swaggerConfig.LicenseUrl) : null
-                }
-            });
-
-            // JWT Bearer security definition
-            // B-16: http/bearer（非 apiKey）——SwaggerUI 自动为输入值加 "Bearer " 前缀，
-            // 避免用户直接粘贴裸 Token 时静默 401（apiKey 类型原样发送输入值）
-            c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-                Name = "Authorization",
-                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT"
-            });
-
-            // 不添加全局安全要求（匿名端点 login/health/download 会被误标）；改为按操作声明——
-            // B-16: [Authorize] 端点由 BearerSecurityRequirementOperationFilter 标注 security，
-            // SwaggerUI 才会在 Try it out 时附加 Authorization 头（无 security 声明时仅按钮可用、请求不带 Token）
-            c.OperationFilter<BearerSecurityRequirementOperationFilter>();
-
-            // XML 注释 - 使用统一配置控制
-            if (swaggerConfig.EnableXmlComments)
-            {
-                var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
-                foreach (var xmlFile in xmlFiles)
-                    // B-16: includeControllerXmlComments → 控制器类摘要作为 SwaggerUI 分组（tag）说明
-                    c.IncludeXmlComments(xmlFile, includeControllerXmlComments: true);
-            }
-
-            // 避免 Schema ID 冲突
-            c.CustomSchemaIds(type =>
-            {
-                if (type.IsGenericType)
-                {
-                    var genericDef = type.GetGenericTypeDefinition();
-                    var genericTypeName = genericDef.FullName?.Split('`')[0]?.Replace(".", string.Empty) ?? genericDef.Name.Split('`')[0];
-
-                    var genericArgs = type.GetGenericArguments()
-                        .Select(arg => GetTypeSignature(arg))
-                        .ToArray();
-
-                    return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
-                }
-
-                return type.FullName?.Replace(".", string.Empty).Replace("+", string.Empty) ?? type.Name;
-            });
-        });
         return services;
-
-        // 生成 Schema ID 的帮助方法
-        static string GetTypeSignature(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                var genericDef = type.GetGenericTypeDefinition();
-                var genericTypeName = genericDef.Name.Split('`')[0];
-                var genericArgs = type.GetGenericArguments()
-                    .Select(arg => GetTypeSignature(arg))
-                    .ToArray();
-                return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
-            }
-
-            return type.Name.Replace("[]", "Array");
-        }
     }
 
     /// <summary>

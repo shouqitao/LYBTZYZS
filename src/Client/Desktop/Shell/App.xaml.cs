@@ -1,22 +1,10 @@
 using System.Windows;
-using LYBT.Desktop.Admin;
-using LYBT.Desktop.Auth;
-using LYBT.Desktop.Infrastructure.CardReader;
-using LYBT.Desktop.Clinical;
-using LYBT.Desktop.Catalog;
-using LYBT.Desktop.MedicalCase;
-using LYBT.Desktop.Patients;
-using LYBT.Desktop.Registrations;
-using LYBT.Desktop.MedicalCase.Reports;
 using LYBT.Desktop.Shell.Extensions;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.Startup;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
-using LYBT.Desktop.Admin.Sysadmin;
-using LYBT.Desktop.Users;
-using LYBT.Desktop.Printing;
 using LYBT.Shared.Logging.Bootstrap;
 using MaterialDesignThemes.Wpf;
 using Prism.DryIoc;
@@ -163,30 +151,9 @@ public partial class App : PrismApplication
     {
         ArgumentNullException.ThrowIfNull(moduleCatalog, nameof(moduleCatalog));
 
-        // 核心模块 - 立即加载
-        moduleCatalog.AddModule<AuthenticationModule>(InitializationMode.WhenAvailable);
-        // UsersModule 列为业务模块，按需加载（由 NavigationCoordinator 在首次导航时触发）
-        moduleCatalog.AddModule<UsersModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<SysadminModule>(InitializationMode.WhenAvailable);
-
-        // 业务模块 - 按需加载（首次导航到该模块视图时由 NavigationCoordinator 触发）
-        // ClinicalModule 含 4 个 ModuleDependency（Patients/MedicalCase/Registration/CardReader）：
-        // 保持 OnDemand，由 ModuleLazyLoader 在导航到 Clinical 视图时拉起，Prism 会先加载依赖模块。
-        moduleCatalog.AddModule<ClinicalModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<CatalogModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
-
-        // PRD: registration.md - 挂号管理模块
-        moduleCatalog.AddModule<RegistrationModule>(InitializationMode.OnDemand);
-        moduleCatalog.AddModule<CardReaderModule>(InitializationMode.OnDemand);
-
-        // 统计报表模块
-        moduleCatalog.AddModule<ReportsModule>(InitializationMode.OnDemand);
-
-        // 打印模块
-        moduleCatalog.AddModule<PrintingModule>(InitializationMode.OnDemand);
+        // 模块清单与依赖声明 SSOT：DesktopModuleCatalog.Configure
+        // （组合守卫测试 PrintingModuleCompositionTests 同源驱动，避免测试侧复制清单漂移）
+        DesktopModuleCatalog.Configure(moduleCatalog);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }

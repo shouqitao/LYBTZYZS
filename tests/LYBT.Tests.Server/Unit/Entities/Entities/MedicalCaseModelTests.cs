@@ -32,10 +32,14 @@ public class MedicalCaseModelTests
     [Fact]
     public void IsLocked_ShouldReturnFalse_WhenCompletedToday()
     {
+        // IsLocked 按「诊所本地日期」比较（ClinicTime，默认 Asia/Shanghai）。
+        // 原用 DateTime.UtcNow.Date.AddHours(1)：当 UTC ≥ 16:00 时该时刻的诊所日期已跨到次日，
+        // 于是「当天完成」被算成「昨天完成」→ 测试在下午/晚间必失败（时间相关假红）。
+        // 改为取当前 UTC 时刻本身——与实现同一时钟，任何时刻都必然同属一个诊所日期。
         var mc = new MedicalCase
         {
             CaseStatus = MedicalCaseStatus.Completed,
-            CompletedAt = DateTime.UtcNow.Date.AddHours(1)
+            CompletedAt = DateTime.UtcNow
         };
         mc.IsLocked.Should().BeFalse("当天完成的医案不应被锁定");
     }
@@ -46,7 +50,7 @@ public class MedicalCaseModelTests
         var mc = new MedicalCase
         {
             CaseStatus = MedicalCaseStatus.Completed,
-            CompletedAt = DateTime.UtcNow.Date.AddDays(-1)
+            CompletedAt = DateTime.UtcNow.AddDays(-2)
         };
         mc.IsLocked.Should().BeTrue("非当天完成的医案应该被锁定");
     }

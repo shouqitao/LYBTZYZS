@@ -5,6 +5,7 @@ using LYBT.Entities.Prescriptions;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Primitives;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
@@ -77,7 +78,8 @@ public partial class MedicalCaseCommandService
 
     private async Task<string> GenerateCaseNumberAsync(CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
+        // 编号日期段取诊所本地日（与 ClinicTime 运营日界一致；原 DateTime.Today 用宿主本地日，诊所 00:00-08:00 会落后一天）
+        var today = ClinicTime.ClinicLocalDate(DateTime.UtcNow);
         var dateStr = today.ToString("yyyyMMdd");
         var prefix = $"{LYBT.Shared.Configuration.Options.Common.MedicalCaseNumberOptions.DefaultPrefix}{dateStr}";
         var count = await _repository.CountByPrefixAsync(prefix, cancellationToken);

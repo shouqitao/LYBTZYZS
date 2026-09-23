@@ -62,6 +62,7 @@
 |------|------|------|------|
 | Console | Information+ | 标准输出 | 会话级 |
 | File | Information+ | `logs/lybt-web-api-{date}.log` | 30天轮转，单文件 10MB |
+| File 归档 | Information+ | `logs/archive/{前缀}-YYYY-MM.zip` | 按月归档（已结束月份 + 超 7 天，归档后删源；`Logging:Archive`） |
 | SQL Server | Warning+ | `SystemLogs` 表 | 可配置（默认 365天） |
 
 ### 日志格式

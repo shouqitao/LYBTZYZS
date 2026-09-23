@@ -273,7 +273,9 @@ namespace LYBT.Module.MedicalCases.Services
             MedicalCaseServiceHelper.EnsureCanOperate(medicalCase, operatorId, isAdmin, "Cancel", _logger);
 
             // T5-P2-16: 非当天本人取消需原因（US-MC-014 保留审计理由）
-            var isSameDay = medicalCase.CreatedAt.Date == DateTime.Today;
+            // 日界 = 诊所本地（与 MedicalCase.IsLocked 同源规则），非宿主本地日
+            var isSameDay = MedicalCaseTime.ClinicLocalDate(medicalCase.CreatedAt)
+                == MedicalCaseTime.ClinicLocalDate(DateTime.UtcNow);
             var isOwner = medicalCase.UserId == operatorId;
             if (!(isSameDay && isOwner) && string.IsNullOrWhiteSpace(reason))
             {

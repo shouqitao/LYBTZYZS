@@ -153,9 +153,11 @@ public class JwtOptions
 **SessionOptions** | 服务端会话配置: TimeoutMinutes(120)/AllowConcurrentSessions(false)/SlidingExpiration(true)
 
 ### Options/Server/LoggingOptions.cs
-**LoggingOptions** | 日志配置，包含清理子配置
+**LoggingOptions** | 日志配置，包含清理/归档子配置
 
 **LogCleanupOptions** | 日志清理: Enabled/RetentionDays(90)/CleanupIntervalHours(24)/InitialDelayMinutes(5)/BatchSize(1000)
+
+**LogArchiveOptions** | 文件日志归档（F-08）: Enabled/ArchiveAfterDays(7)/ArchiveDirectory(archive)/DeleteSourceAfterArchive(true)/IntervalHours(24)/InitialDelayMinutes(10)/FilePrefixes([lybt-web-api,bootstrap])/LogDirectory(logs)
 
 ### Options/Server/SystemAdminOptions.cs
 **SystemAdminOptions** | 系统管理员初始化配置: UserName/Email/DisplayName/AutoCreateOnStartup/SessionTimeoutMinutes(240)
@@ -227,7 +229,7 @@ public class JwtOptions
 | 类型/方法 | 状态 | 替代方案 | 清理计划 |
 |-----------|------|----------|----------|
 | JsonOptions | [DEAD] | 仅在 ServerConfigurationExtensions 外由 WebAPI ServiceCollectionExtensions 引用一次，但 ServerConfigurationExtensions 自身未注册此 Options | 确认 WebAPI 侧是否独立注册，若未注册则清理 |
-| LoggingOptions / LogCleanupOptions | [SUSPECT] | 仅通过 ServerConfigurationExtensions 注册，未见消费端 | 确认日志清理后台任务是否使用 |
+| LoggingOptions / LogCleanupOptions / LogArchiveOptions | [已澄清] | ServerConfigurationExtensions 注册（`Logging` 节，ValidateDataAnnotations，无 ValidateOnStart）；消费端：`LogCleanupService`（DB 清理）+ `LogArchiveService`（文件按月归档，F-08，仅 WebAPI 注册） |
 
 ## 设计分析
 

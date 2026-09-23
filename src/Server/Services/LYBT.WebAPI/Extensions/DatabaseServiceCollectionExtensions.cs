@@ -144,6 +144,9 @@ public static class DatabaseServiceCollectionExtensions
         // refactor-logging-system: 日志清理后台服务
         services.AddHostedService<LogCleanupService>();
 
+        // F-08: 文件日志按月归档后台服务（Server 专有——LocalWebAPI 不注册，US-LOG-007 本地模式不适用）
+        services.AddHostedService<LogArchiveService>();
+
         return services;
     }
 }

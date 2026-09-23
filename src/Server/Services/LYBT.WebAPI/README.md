@@ -244,6 +244,7 @@ GET    /health                         # 健康检查 (数据库 + 自定义检�
 - **文档内容**：全量端点 XML 摘要（`GenerateDocumentationFile`：WebAPI + Infrastructure + Identity/Registration/MedicalCases 模块 + Shared.Models）、控制器摘要作为分组（tag）说明、DTO DataAnnotation → `required`/`maxLength`/`range`/`enum`。
 - **认证**：`Bearer`（`http`/`bearer`）——SwaggerUI「Authorize」填入裸 Token 即可（UI 自动加 `Bearer ` 前缀）；`[Authorize]` 端点声明 `security`（Try it out 才带 Token），`[AllowAnonymous]` 端点不声明。
 - **访问**：`http://<host>:5000/swagger`（UI）/ `/swagger/v1/swagger.json`（OpenAPI 3.0.1）。生产启用步骤见 `docs/06-operations/01-deployment.md`。
+- **版本驱动（F-07 / ADR-0015）**：文档与 SwaggerUI 端点由 `IApiVersionDescriptionProvider` 逐版本生成（`Configuration/ConfigureSwaggerOptions` + `UnifiedMiddlewareConfiguration.ConfigureSwaggerMiddleware`）——文档名 = `'v'VVV` 组名（当前仅 v1 → `/swagger/v1/swagger.json`）；新增 v2 控制器后自动多出 `/swagger/v2/swagger.json` 与对应 UI 端点，无需改 Swagger 注册代码。版本化策略与切换清单见 `docs/03-architecture/decisions/0015-api-versioning-strategy.md`。
 
 ## API 统一响应格式
 
@@ -503,11 +504,12 @@ GET    /api/v1/health/details          [Authorize] 详细健康检查(含数据�
 |------|-----|------|
 | ApiLoggingFilter.cs | `ApiLoggingFilter` : IAsyncActionFilter | 全局Action过滤器: 记录每个API Action的开始/结束/耗时/参数(脱敏), 通过ServiceCollectionExtensions注册 |
 
-### Configuration/ (1 文件)
+### Configuration/ (2 文件)
 
 | 文件 | 类 | 用途 |
 |------|-----|------|
 | ProblemDetailsConfiguration.cs | `ProblemDetailsConfiguration` (static) | RFC 7807配置: 注入CorrelationId/时间戳/traceId到ProblemDetails, StatusCodePages中间件配置 |
+| ConfigureSwaggerOptions.cs | `ConfigureSwaggerOptions` : `IConfigureOptions<SwaggerGenOptions>` | F-07: Swagger 文档按发现到的 API 版本生成（`IApiVersionDescriptionProvider`）——v1 → `/swagger/v1/swagger.json`；新增 v2 自动多一份 |
 
 ### HealthCheck/ (2 文件)
 

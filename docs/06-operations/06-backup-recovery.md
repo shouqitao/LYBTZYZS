@@ -17,7 +17,7 @@
 | LocalDB 本地数据 | `(localdb)\MSSQLLocalDB` 实例，库名取连接串 `InitialCatalog`；备份文件落 `%LOCALAPPDATA%\LYBT\Desktop\Backup` | 高 | 登录触发 + 24 小时间隔 |
 | 服务端配置 | `appsettings.json` + `appsettings.Production.json` | 高 | 变更时 |
 | Desktop 用户数据 | `%LOCALAPPDATA%\LYBT\Desktop\`（凭据/照片/系统设置/首次运行标记；**位于安装目录之外**，Velopack 更新/卸载不影响） | 中 | 变更时 |
-| 服务端日志 | `logs/` + `SystemLogs` 表 | 低 | 30天轮转（自动） |
+| 服务端日志 | `logs/`（含 `archive/*.zip`）+ `SystemLogs` 表 | 低 | 30天轮转 + 按月归档（自动，`LogArchiveService`） |
 | Desktop 发布包 | `C:\Services\LYBT-releases\` | 中 | 版本发布时 |
 
 > **本地数据不复制 `.mdf`**：LocalDB 数据由实例管理，直接复制数据文件不可靠（实例锁 + 日志文件一致性）。备份统一经 T-SQL `BACKUP DATABASE`（应用内链路，见下）。

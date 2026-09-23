@@ -50,4 +50,31 @@ public static class ClinicTime
         var local = TimeZoneInfo.ConvertTimeFromUtc(utc, ResolveTimezone());
         return local.Date;
     }
+
+    /// <summary>
+    /// 诊所本地「今日」的 UTC 起点（运营日界 = 诊所本地 00:00 对应的 UTC 瞬时）。
+    /// <para>用途：EF 查询里对 UTC 存储列做「当天」过滤——必须先在 C# 侧算出区间常量再比较，
+    /// 不可对列套时区转换（EF 无法翻译）。日界语义与 <see cref="ClinicLocalDate"/> 一致。</para>
+    /// </summary>
+    public static DateTime ClinicLocalDayStartUtc(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified)
+            utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+
+        var tz = ResolveTimezone();
+        var localDate = TimeZoneInfo.ConvertTimeFromUtc(utc, tz).Date;
+        return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(localDate, DateTimeKind.Unspecified), tz);
+    }
+
+    /// <summary>
+    /// 诊所本地「今日」的 UTC 半开区间 <c>[StartUtc, EndUtc)</c>——与 <see cref="ClinicLocalDayStartUtc"/> 同源，
+    /// 逐日换算以兼容有夏令时的时区。
+    /// </summary>
+    public static (DateTime StartUtc, DateTime EndUtc) ClinicLocalDayRangeUtc(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified)
+            utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+
+        return (ClinicLocalDayStartUtc(utc), ClinicLocalDayStartUtc(utc.AddDays(1)));
+    }
 }

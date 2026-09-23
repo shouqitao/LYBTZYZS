@@ -22,6 +22,7 @@
 | `Kestrel` | Web 服务器端口和限制 | appsettings.json |
 | `SystemAdmin` | 系统管理员初始化 | appsettings.json |
 | `Serilog` | 日志级别、输出目标 | appsettings.json |
+| `Logging` | 数据库日志清理 + 文件日志按月归档（`Logging:Cleanup` / `Logging:Archive`） | appsettings.json + appsettings.Production.json |
 | `ClinicSettings` | 诊所业务参数 | appsettings.json |
 
 ---
@@ -330,7 +331,7 @@ $env:Jwt__SecretKey = "YourSecureSecretKeyAtLeast32CharactersLong"
 | 缓存不生效 | `MemoryCache.Enabled` 为 false | 确认生产配置已启用缓存 |
 | 数据库连接超时 | `ConnectionTimeoutSeconds` 过小或网络延迟 | 检查网络连通性，适当增大超时值 |
 | sysadmin 未自动创建 | `SystemAdmin.AutoCreateOnStartup` 为 false | 设为 true 并重启，首次创建后建议关闭 |
-| 日志文件过大 | 未配置日志清理 | 启用 `Logging.Cleanup` 并设置合理 `RetentionDays` |
+| 日志文件过大 | 未配置日志清理 | 启用 `Logging.Cleanup` 并设置合理 `RetentionDays`；文件侧归档见 `Logging.Archive`（默认开启，归档后源文件删除） |
 
 ### 配置变更生效方式
 

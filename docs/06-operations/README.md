@@ -38,7 +38,7 @@
 | 目标 | 级别 | 说明 |
 |------|------|------|
 | Console | Info+ | 开发调试 |
-| File | Info+ | 本地日志（30天轮转） |
+| File | Info+ | 本地日志（30天轮转 + 按月归档 zip） |
 | SQL Server | Warn+ | 数据库持久化 |
 
 日志路径：`logs/lybt-web-api-{date}.log`

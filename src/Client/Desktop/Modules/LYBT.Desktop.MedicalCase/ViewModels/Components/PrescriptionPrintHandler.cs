@@ -103,7 +103,8 @@ public class PrescriptionPrintHandler
             {
                 _medicalCaseService.RecordPrintAsync(medicalCaseId, new RecordPrintRequest
                 {
-                    PrintType = 0,
+                    // 打印类型 SSOT：PrintType.Prescription = 0（US-PRINT-004 业务规则 2；线上/持久化仍为 int）
+                    PrintType = (int)PrintType.Prescription,
                     PrinterName = null
                 }).SafeFireAndForget(ex => _logger.LogError(ex, "记录打印完成失败: {MedicalCaseId}", medicalCaseId));
             });

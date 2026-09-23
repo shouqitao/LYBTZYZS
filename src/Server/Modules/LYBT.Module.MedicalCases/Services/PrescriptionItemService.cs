@@ -4,6 +4,7 @@ using LYBT.Infrastructure.Services.CrossModule;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.ExceptionHandling.Exceptions;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Primitives;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using Microsoft.Extensions.Logging;
 
@@ -221,7 +222,8 @@ namespace LYBT.Module.MedicalCases.Services
         /// </summary>
         public async Task<string> GeneratePrescriptionNumberAsync(CancellationToken cancellationToken = default)
         {
-            var today = DateTime.Today;
+            // 编号日期段取诊所本地日（同 MedicalCase 编号；原 DateTime.Today 用宿主本地日）
+            var today = ClinicTime.ClinicLocalDate(DateTime.UtcNow);
             var dateStr = today.ToString("yyyyMMdd");
             var prefix = $"RX{dateStr}";
 

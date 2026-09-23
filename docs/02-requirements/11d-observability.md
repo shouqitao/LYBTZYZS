@@ -226,7 +226,7 @@
 
 **角色**: 运维人员
 **优先级**: Could
-**状态**: ✅ 已实现
+**状态**: ✅ 已实现（数据库清理 + 文件按月归档，F-08 2026-09-24）
 
 **作为** 运维人员，**我想要** 系统自动清理过期日志且保留 Error/Fatal，**以便** 磁盘不被过期日志耗尽，严重错误永久可查。
 
@@ -236,17 +236,23 @@
 - [ ] 90 天前的 Error/Fatal 日志保留
 - [ ] 365 天前的安全审计日志被删除
 - [ ] 清理过程数据库仍可正常读写
+- [ ] 已结束月份的日志文件按月归档为 zip，归档成功后源文件删除（`LogArchiveService`）
 
 **业务规则**:
 1. 系统日志清理（`LogCleanupService`）：每 24 小时，默认保留 90 天，仅清理 Warning 及以下，Error/Fatal 永久保留。
 2. 分批删除每批 1000 条，批间延迟 100ms，避免锁表。
 3. 安全审计清理：每日凌晨 3:00，保留 365 天（可配）。
-4. 清理失败异常隔离，不影响主流程；可通过 `Lybt:Logging:Cleanup` 禁用。
+4. 清理失败异常隔离，不影响主流程；可通过 `Logging:Cleanup` 禁用（**节名是 `Logging`，不是 `Lybt:Logging`**——配置系统已扁平化，见 07-configuration.md）。
+5. 文件日志归档（`LogArchiveService`，F-08）：每 24 小时（首次延迟 10 分钟）把「已结束月份」且超过 7 天的 `logs/{lybt-web-api|bootstrap}-YYYYMMDD.log` 打包为 `logs/archive/{前缀}-YYYY-MM.zip`，归档成功后删除源文件（`Logging:Archive` 节；`DeleteSourceAfterArchive=false` 可保留源文件）。
+   - 跳过当前月与 7 天内文件（仍在写入）、跳过被占用文件（IOException 仅告警继续）
+   - 幂等：同名归档条目已存在时不重复写入
+   - 只扫 `logs/` 顶层（不递归进 `archive/`）；仅处理 `FilePrefixes` 白名单前缀
+   - 与 Serilog 的 `retainedFileCountLimit`（30 天滚动清理）互补：归档先于滚动清理发生，zip 不受滚动删除影响
 
 **双模式**:
-模式差异：------: ------；远程: Server 自动运行；本地: 不适用（Desktop 日志由文件滚动策略管理）
+模式差异：------: ------；远程: Server 自动运行（数据库清理 + 文件归档）；本地: 不适用（Desktop 日志由文件滚动策略管理，`LogArchiveService` 不注册到 LocalWebAPI）
 
-**实现参考**: `LogCleanupService`、`SecurityOptions.AuditRetentionDays`、`Lybt:Logging:Cleanup` 配置节
+**实现参考**: `LogCleanupService`、`LogArchiveService`、`SecurityOptions.AuditRetentionDays`、`Logging:Cleanup` / `Logging:Archive` 配置节
 
 ---
 
@@ -292,6 +298,7 @@
 1. 根因：多进程各开 Serilog File sink → 同天多文件（`20260813.log` + `20260813_001.log`）
 2. 解法：Serilog File sink 的 `rollingInterval` 由「按天」保持，但**确保单实例**（进程互斥/端口检查在 start.sh，属 P2-07）——本 US 只保证「单实例时单文件」
 3. 验收方式：同实例重启后日志仍写同一文件（不产生 _001）
+4. 归档兼容（F-08）：`LogArchiveService` 的文件名解析接受 `{prefix}-YYYYMMDD[_NNN].log`——旧配置残留的 `_001` 文件会被正常按月归档（不会因后缀被漏掉而无限堆积）
 
 **双模式**: 远程/本地一致
 

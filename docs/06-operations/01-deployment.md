@@ -146,11 +146,20 @@ npx newman run tests/newman/lybt-full-api-collection.json -e tests/newman/env-fu
 
 ```bash
 ssh -p 5555 player@60.190.215.86
-ps aux | grep dotnet                         # 服务状态
+systemctl is-enabled lybt-webapi               # 开机自启状态（enabled = 已启用）
+systemctl is-active lybt-webapi                # 运行状态（active = 运行中）
+sudo systemctl status lybt-webapi              # 详情 + 最近日志
+sudo systemctl restart lybt-webapi             # 重启
+journalctl -u lybt-webapi -n 100 --no-pager    # systemd 侧日志
+ps aux | grep dotnet                         # 服务状态（进程级）
 tail -50 /home/player/lybt-api/logs/*.log   # 日志
 curl http://60.190.215.86:5000/health       # 健康检查
 ss -tlnp | grep 5000                        # 端口
 ```
+
+> **systemd 单元（C-02，2026-09-23 实测）**：真实服务名 **`lybt-webapi`**——`lybt-api` **不是**服务名，`/home/player/lybt-api` 是**部署目录**（两者勿混）。
+> 实测：`systemctl is-enabled lybt-webapi` = `enabled`、`systemctl is-active lybt-webapi` = `active`（经 `ssh lybt-server`）。
+> 单元文件在服务器侧维护、**未入库**；`start.sh`（四层防护 + PID 文件 + health 探测）仍是手工启动/热更新路径。
 
 ### ForceResetOnStartup
 
@@ -184,7 +193,7 @@ ss -tlnp | grep 5000                        # 端口
 测试服务器需在线查看 API 文档时，在启动环境注入环境变量（配置源优先级：环境变量 > JSON 文件）：
 
 ```bash
-# /home/player/lybt-api/.env（Program.cs 自动加载）或 systemd Environment=
+# /home/player/lybt-api/.env（Program.cs 自动加载）或 systemd 单元 lybt-webapi 的 Environment=
 Swagger__Enabled=true
 ```
 

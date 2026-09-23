@@ -235,7 +235,7 @@
 | US-LOG-004 | Should | ADR-0008 | — | SecurityAuditLog 表 | SecurityAuditService | A12 | ✅ 已实现 | ✅ | N/A |
 | US-LOG-005 | Could | — | — | LoggingLevelManager | LoggingLevelManager | S3 | ✅ 已实现 | ✅ | ✅ |
 | US-LOG-006 | Should | ADR-0004 | — | ApiLoggingFilter | CorrelationIdEnricher | — | ✅ 已实现 | ✅ | N/A |
-| US-LOG-007 | Could | — | — | LogCleanupService | LogCleanupService | — | ✅ 已实现 | ✅ | N/A |
+| US-LOG-007 | Could | — | — | LogCleanupService | LogCleanupService + LogArchiveService（F-08 文件归档） | — | ✅ 已实现 | ✅ | N/A |
 
 ## 十三、平台基础设施 — Health & Diagnostics（US-SYS × 9）
 

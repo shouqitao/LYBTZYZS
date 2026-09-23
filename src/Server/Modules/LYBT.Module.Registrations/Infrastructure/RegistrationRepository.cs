@@ -2,6 +2,7 @@ using LYBT.Entities.Registrations;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Registrations.Interfaces;
+using LYBT.Shared.Models.Primitives;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -91,8 +92,12 @@ public class RegistrationRepository : IRegistrationRepository
             .Where(r => !r.IsDeleted && r.Status == RegistrationStatus.Waiting);
 
         // P1 (US-REG-BR-012): 医生待诊列表仅当天（历史 Waiting 不入队）
+        // 日界 = 诊所本地（ClinicTime 既定规则），非 UTC/宿主本地——否则诊所 00:00-08:00 的挂号会漏出队列
         if (onlyToday)
-            query = query.Where(r => r.CreatedAt.Date == DateTime.Today);
+        {
+            var (dayStartUtc, dayEndUtc) = ClinicTime.ClinicLocalDayRangeUtc(DateTime.UtcNow);
+            query = query.Where(r => r.CreatedAt >= dayStartUtc && r.CreatedAt < dayEndUtc);
+        }
 
         if (doctorId.HasValue)
             query = query.Where(r => r.DoctorId == doctorId.Value);
@@ -108,13 +113,15 @@ public class RegistrationRepository : IRegistrationRepository
     /// </summary>
     public async Task<bool> HasSameDayWaitingAsync(Guid patientId, CancellationToken cancellationToken = default)
     {
-        var today = DateTime.Today;
+        // 日界 = 诊所本地（同 GetWaitingQueueAsync）
+        var (dayStartUtc, dayEndUtc) = ClinicTime.ClinicLocalDayRangeUtc(DateTime.UtcNow);
         return await _context.Registrations
             .AsNoTracking()
             .AnyAsync(r => !r.IsDeleted
                 && r.PatientId == patientId
                 && r.Status == RegistrationStatus.Waiting
-                && r.CreatedAt.Date == today, cancellationToken);
+                && r.CreatedAt >= dayStartUtc
+                && r.CreatedAt < dayEndUtc, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -129,9 +136,10 @@ public class RegistrationRepository : IRegistrationRepository
 
     public async Task<int> GetTodayMaxQueueNumberAsync(CancellationToken cancellationToken = default)
     {
-        var today = DateTime.UtcNow.Date;
+        // 日界 = 诊所本地（与队列过滤/同日查重同源；原为 UTC 日，导致日界不一致）
+        var (dayStartUtc, dayEndUtc) = ClinicTime.ClinicLocalDayRangeUtc(DateTime.UtcNow);
         var max = await _context.Registrations
-            .Where(r => !r.IsDeleted && r.CreatedAt >= today)
+            .Where(r => !r.IsDeleted && r.CreatedAt >= dayStartUtc && r.CreatedAt < dayEndUtc)
             .MaxAsync(r => (int?)r.QueueNumber, cancellationToken);
         return max ?? 0;
     }

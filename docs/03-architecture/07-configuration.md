@@ -172,6 +172,8 @@ services.AddOptions<JwtOptions>()
 |------------|----------|--------|------|
 | SecurityOptions | `AccountLockoutOptions` | `Security:AccountLockout` | 账户锁定策略: Enabled (默认 true)、MaxFailedCount (默认 5, 范围 1-100)、LockoutMinutes (默认 15, 范围 1-1440) |
 | SecurityOptions | `RateLimitOptions` | `Security:RateLimiting` | API 速率限制配置 |
+| LoggingOptions | `LogCleanupOptions` | `Logging:Cleanup` | 数据库 SystemLog 清理: Enabled/RetentionDays(90)/CleanupIntervalHours(24)/InitialDelayMinutes(5)/BatchSize(1000) |
+| LoggingOptions | `LogArchiveOptions` | `Logging:Archive` | 文件日志按月归档（F-08）: Enabled/ArchiveAfterDays(7)/ArchiveDirectory(archive)/DeleteSourceAfterArchive(true)/IntervalHours(24)/InitialDelayMinutes(10)/FilePrefixes/LogDirectory(logs) |
 
 详见 [安全与密码管理](../05-development/05-security-password-management.md)。
 

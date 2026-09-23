@@ -55,3 +55,18 @@
 |--------|--------|------|------|
 | `Serilog:MinimumLevel:Default` | `Information` | Verbose-Off | 日志级别 |
 | `Logging:LogLevel:Default` | `Warning` | Trace-None | 框架日志级别 |
+| `Logging:Cleanup:Enabled` | `true` | bool | 数据库 SystemLog 清理开关（`LogCleanupService`） |
+| `Logging:Cleanup:RetentionDays` | `90` | 1-365 | 保留天数（Error/Fatal 永久保留） |
+| `Logging:Cleanup:CleanupIntervalHours` | `24` | 1-168 | 清理间隔 |
+| `Logging:Cleanup:InitialDelayMinutes` | `5` | 1-60 | 首次执行延迟 |
+| `Logging:Cleanup:BatchSize` | `1000` | 100-10000 | 每批删除条数 |
+| `Logging:Archive:Enabled` | `true` | bool | 文件日志归档开关（`LogArchiveService`，F-08） |
+| `Logging:Archive:ArchiveAfterDays` | `7` | 1-365 | 仅归档该天数之前的文件 |
+| `Logging:Archive:ArchiveDirectory` | `archive` | 相对路径 | 归档子目录（相对 `LogDirectory`） |
+| `Logging:Archive:DeleteSourceAfterArchive` | `true` | bool | 归档成功后删除源文件 |
+| `Logging:Archive:IntervalHours` | `24` | 1-168 | 归档间隔 |
+| `Logging:Archive:InitialDelayMinutes` | `10` | 0-60 | 首次执行延迟 |
+| `Logging:Archive:FilePrefixes` | `["lybt-web-api","bootstrap"]` | 非空数组 | 参与归档的日志文件名前缀 |
+| `Logging:Archive:LogDirectory` | `logs` | 路径 | 日志目录（相对路径按进程工作目录解析，与 Serilog File sink 同基准） |
+
+> 归档仅处理**已结束月份**且超过 `ArchiveAfterDays` 天的文件；当前月与仍在写入的文件跳过。节名是 `Logging`（不是 `Lybt:Logging`）。
