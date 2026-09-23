@@ -66,6 +66,26 @@ pwsh scripts/velopack-pack.ps1 -Version 0.0.2 -Msi
 > 因此**公网分发主渠道为方式 C（GitHub Releases）**；方式 B（Gitee）保留为**可选镜像渠道**；
 > 方式 A（自建静态目录）仍是内网/离线诊所与默认配置（`SourceKind=Server`）。
 
+### 发布前门禁（标准 §4.3 机器化，强制）
+
+打包完成后、打 tag 前**必须先跑**发布前门禁——它把版本号标准 §4.3 的发布 checklist 变成一次性校验：
+
+```powershell
+pwsh scripts/release-preflight.ps1            # 可用 -OutputDir/-Channel/-Remote 覆盖默认值
+```
+
+| 校验 | 标准条款 | 失败含义与处置 |
+| --- | --- | --- |
+| ① 读版本单源 `VersionPrefix` | §1 | 单源缺失/非三段式 → 修 `Directory.Build.props` |
+| ② `releases.<channel>.json` 最新版本 == `VersionPrefix` | §4.3 | 清单与单源不一致（改版未重打包 / 未提升版本） |
+| ③ `SHA256SUMS.txt` 与输出目录**逐项一致**（无缺失、无多余、哈希相符） | §4.3 | 产物被替换或清单过期 → 重新打包 |
+| ④ `v{VersionPrefix}` 不得已存在于远端；本地同名 tag 若存在必须指向 HEAD | §3 / §4.3 | 该号**已发布**（已发布号永不复用）→ 按 §3 提升 `VersionPrefix` 后重打包；本地 tag 指错提交则先修正标签 |
+
+全部通过才放行，并打印建议的发布命令（`git tag … && git push …` 与 `gh release create …`，资产 = `Setup.exe` + `releases.<channel>.json` + `*.nupkg` + `SHA256SUMS.txt`）。
+任一失败即中止；**门禁不提供跳过开关**（标准 §4：任何角色不得绕过、不得放宽），远端不可达亦视为失败。
+
+发布顺序：`velopack-pack.ps1` → `release-preflight.ps1` → 打 tag → 创建 Release → 同步更新源。
+
 ### 方式 A：自建静态目录（默认，`SourceKind=Server`）
 
 把 `dist/releases/` **整体**同步到 `DesktopUpdate:FeedUrl` 指向的目录（HTTP 可目录访问），例如
@@ -206,6 +226,7 @@ WPF **不支持 `PublishTrimmed`**，运行时程序集无法安全裁剪；因�
 | 客户端「检查不到更新」 | Gitee Release 未上传 `releases.win.json`；或静态目录未同步 `releases.<channel>.json` | 按 §4 补齐清单资产 |
 | 更新包体积接近全量 | 输出目录被 `-Clean` 清空，或曾用 `PublishSingleFile` | 保留历史包目录，勿开单文件 |
 | 私有仓库报 `Not Found Project` | 缺 `GiteeAccessToken` | 配令牌或改用公开仓库/自建源 |
+| 门禁 ④ 报「远端已存在 tag vX.Y.Z」 | 该版本号已发布（标准 §3 永不复用） | 提升 `Directory.Build.props` 的 `VersionPrefix` → 重新打包 → 重跑门禁 |
 
 ## 10. CI（可选，当前未启用）
 
@@ -215,6 +236,7 @@ WPF **不支持 `PublishTrimmed`**，运行时程序集无法安全裁剪；因�
 ```powershell
 dotnet tool install -g vpk
 pwsh scripts/velopack-pack.ps1 -Version $env:RELEASE_VERSION
+pwsh scripts/release-preflight.ps1   # 发布前门禁（版本号标准 §4.3），失败即中止
 # 随后把 dist/releases 同步到更新源（方式 A）、用 gh CLI 上传 GitHub Release 资产（方式 C，主渠道）
 # 或用 Gitee OpenAPI 上传 Release 资产（方式 B，镜像渠道）
 ```

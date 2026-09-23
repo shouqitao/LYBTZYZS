@@ -164,6 +164,7 @@ try {
     $hasDelta = (Get-ChildItem $OutputDir -Filter "*-delta.nupkg" -File).Count -gt 0
     Write-Host "==> 增量包: $(if ($hasDelta) { '已生成' } else { '未生成（输出目录内无更早版本——首次发版属正常）' })"
     Write-Host "==> 下一步："
+    Write-Host "    · 发布前门禁（版本号标准 §4.3，强制）：pwsh scripts/release-preflight.ps1"
     Write-Host "    · 自建更新源：把 $OutputDir 整体同步到 FeedUrl 指向的目录（需可被 HTTP 目录访问）"
     Write-Host "    · GitHub Releases（主渠道）：为版本打 tag 后上传 $OutputDir 内的 releases.$Channel.json 与 *.nupkg"
     Write-Host "      （releases.$Channel.json 是必须的清单资产——Velopack 的 git 源据此枚举包）"
