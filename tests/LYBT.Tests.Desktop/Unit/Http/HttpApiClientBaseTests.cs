@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Text;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// TDD Batch 1 — HttpApiClientBase（LocalWebAPI HTTP 基类）单元测试。

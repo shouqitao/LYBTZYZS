@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class RegistrationSourceTests
 {

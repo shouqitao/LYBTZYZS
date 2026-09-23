@@ -2,7 +2,7 @@ using LYBT.Desktop.MedicalCase.Extensions;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PrescriptionImportExtensions 单元测试

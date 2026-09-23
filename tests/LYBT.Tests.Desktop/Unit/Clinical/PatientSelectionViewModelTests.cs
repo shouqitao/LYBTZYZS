@@ -13,7 +13,7 @@ using Prism.Events;
 using Prism.Regions;
 using System.Collections.ObjectModel;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PatientSelectionViewModel 单元测试

@@ -7,7 +7,7 @@ using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// B-12 患者 Excel 导入导出转换测试（真实 .xlsx 字节——验证模板/导入/导出契约与行级校验）。

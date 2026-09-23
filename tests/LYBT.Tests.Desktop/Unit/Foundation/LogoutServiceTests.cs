@@ -14,7 +14,7 @@ using NSubstitute.ExceptionExtensions;
 using Prism.Events;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// LogoutService单元测试

@@ -5,7 +5,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Refit Client 接口契约测试

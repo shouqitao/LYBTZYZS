@@ -18,7 +18,7 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// MedicalCaseWorkspaceViewModel 简化单元测试

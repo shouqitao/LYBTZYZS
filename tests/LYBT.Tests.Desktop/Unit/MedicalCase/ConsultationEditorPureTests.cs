@@ -5,7 +5,7 @@ using LYBT.Desktop.MedicalCase.ViewModels.Workspace;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class ConsultationEditorPureTests
 {

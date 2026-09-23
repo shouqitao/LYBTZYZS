@@ -17,7 +17,7 @@ using System.Net;
 using System.Net.Http;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// TDD Batch 3 — TokenRefreshHandler（DelegatingHandler，535 行）单元测试。

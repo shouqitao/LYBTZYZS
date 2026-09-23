@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// TDD Batch 6a — EntityApiClientRepositoryBase（标准 CRUD 基类）单元测试。

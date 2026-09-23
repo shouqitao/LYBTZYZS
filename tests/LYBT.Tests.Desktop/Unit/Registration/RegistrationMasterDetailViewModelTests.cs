@@ -26,7 +26,7 @@ using Prism.Services.Dialogs;
 using Xunit;
 using LYBT.Tests.Desktop.Infrastructure;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 [Collection("UserJourney")]
 public class RegistrationMasterDetailViewModelTests : DesktopTestBase

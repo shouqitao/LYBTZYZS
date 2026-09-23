@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// US-CARD-002: 读卡数据填充到患者表单

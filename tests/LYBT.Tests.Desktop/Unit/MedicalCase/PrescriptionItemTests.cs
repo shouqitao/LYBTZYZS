@@ -6,7 +6,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Phase 1.3: PrescriptionItemViewModel validation property tests

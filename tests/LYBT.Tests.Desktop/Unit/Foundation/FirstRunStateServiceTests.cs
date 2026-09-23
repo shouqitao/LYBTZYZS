@@ -4,7 +4,7 @@ using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Shared.Models.Primitives;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// B-07 首次运行状态服务单测：标记路径（沿用既有 first_run_done.flag）/ 检测 / 标记 / 重置。

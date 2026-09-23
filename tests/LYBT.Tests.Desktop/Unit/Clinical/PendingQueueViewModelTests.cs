@@ -16,7 +16,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PendingQueueViewModel 单元测试

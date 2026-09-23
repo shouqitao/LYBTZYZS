@@ -10,7 +10,7 @@ using NSubstitute;
 using Prism.Events;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// US-AUTH-013: 认证事件发布测试

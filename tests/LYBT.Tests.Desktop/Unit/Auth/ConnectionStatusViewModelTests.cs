@@ -7,7 +7,7 @@ using LYBT.Desktop.Foundation.HealthCheck;
 using NSubstitute;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 [Trait("US", "US-SHELL-007")]
 public class ConnectionStatusViewModelTests : DesktopTestBase

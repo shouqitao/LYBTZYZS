@@ -7,7 +7,7 @@ using Prism.Events;
 using System.Reflection;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// TDD Batch 7 L1 — TokenLifecycleService（Token 生命周期状态机，今天修改）单元测试。

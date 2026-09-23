@@ -11,7 +11,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PrescriptionPrintHandler 单元测试

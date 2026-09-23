@@ -9,7 +9,7 @@ using NSubstitute;
 using Prism.Regions;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Phase 2.2: NavigableViewModelBase message method tests

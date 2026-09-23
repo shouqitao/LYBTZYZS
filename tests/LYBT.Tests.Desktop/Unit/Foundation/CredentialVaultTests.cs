@@ -4,7 +4,7 @@ using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// CredentialVault单元测试

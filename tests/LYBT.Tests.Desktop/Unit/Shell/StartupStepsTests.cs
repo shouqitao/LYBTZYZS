@@ -9,7 +9,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Prism.Modularity;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// 启动步骤单元测试

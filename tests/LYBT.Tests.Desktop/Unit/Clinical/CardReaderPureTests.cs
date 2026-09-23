@@ -6,7 +6,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class CardReaderPureTests
 {

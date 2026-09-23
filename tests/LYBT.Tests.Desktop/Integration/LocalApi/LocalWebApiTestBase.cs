@@ -11,8 +11,11 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Respawn;
+using Respawn.Graph;
 using Xunit;
 
 namespace LYBT.Tests.Desktop.Integration.LocalApi;
@@ -30,12 +33,22 @@ public class LocalApiCollection
 /// </summary>
 public abstract class LocalWebApiTestBase : IAsyncLifetime
 {
-    private readonly string _dbName = $"LYBTZYZS_LocalApi_{Guid.NewGuid():N}";
+    // ── 共享 LocalDB（每测试进程一库，LocalApi/E2ELocal collection 串行复用）──
+    // 原实现每测试方法都建库+建表+种子（约 11s/测试，Desktop 集成层 6m12s）。
+    // 现改为：库+架构+身份种子只在进程内首次建立；每测试类首次运行时 Respawn 清业务表并恢复业务种子；
+    // 每个测试仍启动独立宿主（独立限流桶/内存状态），只共享数据库。
+    // collection 已 DisableParallelization => 无并发访问（门闩仅防御同进程内的串行切换）。
+    private static readonly SemaphoreSlim SharedDbGate = new(1, 1);
+    private static string? _sharedDbName;
+    private static string? _sharedConnectionString;
+    private static Type? _lastPreparedTestClass;
+    private static Respawner? _respawner;
+
     private string _connectionString = null!;
     private WebApplication? _app;
 
     /// <summary>本次测试宿主的数据库名（B-06：备份状态 DatabaseName 断言）</summary>
-    protected string CurrentDatabaseName => _dbName;
+    protected string CurrentDatabaseName => _sharedDbName ?? throw new InvalidOperationException("共享数据库尚未初始化");
 
     /// <summary>本次测试宿主的临时备份目录（B-06：InitializeAsync 生成，DisposeAsync 清理）</summary>
     protected string BackupDirectoryPath { get; private set; } = string.Empty;
@@ -52,7 +65,8 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _connectionString = $@"Server=(localdb)\MSSQLLocalDB;Database={_dbName};Trusted_Connection=True;TrustServerCertificate=True";
+        await EnsureSharedDatabaseAsync();
+        _connectionString = _sharedConnectionString!;
 
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "http://127.0.0.1:0");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
@@ -84,12 +98,121 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
         var port = new Uri(_app.Urls.First()).Port;
         Client = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}") };
 
-        using var scope = _app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.EnsureCreatedAsync();
-        await LYBT.Module.Identity.Services.IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
-        await EnsureRoleUsersAsync(scope.ServiceProvider);
-        await LocalWebApiSeedData.SeedAsync(db, scope.ServiceProvider);
+        await PrepareSharedDataAsync(GetType());
+    }
+
+    /// <summary>
+    /// 建立（进程内首次）共享数据库：建库 + 建表。身份/业务种子由首个测试宿主完成（见 PrepareSharedDataAsync）。
+    /// </summary>
+    private static async Task EnsureSharedDatabaseAsync()
+    {
+        if (_sharedConnectionString is not null)
+            return;
+
+        await SharedDbGate.WaitAsync();
+        try
+        {
+            if (_sharedConnectionString is not null)
+                return;
+
+            var dbName = $"LYBTZYZS_LocalApiShared_{Environment.ProcessId}";
+            var connectionString = $@"Server=(localdb)\MSSQLLocalDB;Database={dbName};Trusted_Connection=True;TrustServerCertificate=True";
+
+            // 同进程号残留库（上次异常退出）先删除，保证本次全新
+            await DropDatabaseAsync(connectionString);
+
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlServer(connectionString)
+                .Options;
+            await using (var context = new AppDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+
+            _sharedDbName = dbName;
+            _sharedConnectionString = connectionString;
+
+            // 进程退出时删除共享库（尽力而为；异常退出由下次同名删除兜底）
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try
+                {
+                    DropDatabaseAsync(connectionString).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    // 进程退出清理失败不影响测试结论
+                }
+            };
+        }
+        finally
+        {
+            SharedDbGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// 首个测试：写入身份 + 业务种子；同进程内后续测试类：Respawn 清业务表并恢复业务种子
+    /// （身份表在 TablesToIgnore 中保留）。同一测试类内不重复清理，类内数据互相可见（测试已用唯一数据辅助隔离）。
+    /// </summary>
+    private async Task PrepareSharedDataAsync(Type testClass)
+    {
+        await SharedDbGate.WaitAsync();
+        try
+        {
+            if (_lastPreparedTestClass == testClass)
+                return;
+
+            using var scope = _app!.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            if (_lastPreparedTestClass is not null)
+            {
+                // 清空业务数据（含 Identity 表——Respawn 的 TablesToIgnore 按 schema+name 匹配，
+                // 依赖忽略名单不可靠；改为清空后确定性重建身份种子）
+                await ResetDataAsync();
+            }
+
+            await LYBT.Module.Identity.Services.IdentitySeedData.SeedRolesAndAdminAsync(scope.ServiceProvider);
+            await EnsureRoleUsersAsync(scope.ServiceProvider);
+            await LocalWebApiSeedData.SeedAsync(db, scope.ServiceProvider);
+            _lastPreparedTestClass = testClass;
+        }
+        finally
+        {
+            SharedDbGate.Release();
+        }
+    }
+
+    /// <summary>Respawn 清空全部业务/身份表（保留 EF 迁移历史），随后由调用方重建种子。</summary>
+    private static async Task ResetDataAsync()
+    {
+        _respawner ??= await CreateRespawnerAsync();
+
+        await using var connection = new SqlConnection(_sharedConnectionString);
+        await connection.OpenAsync();
+        await _respawner.ResetAsync(connection);
+    }
+
+    private static async Task<Respawner> CreateRespawnerAsync()
+    {
+        await using var connection = new SqlConnection(_sharedConnectionString);
+        await connection.OpenAsync();
+
+        return await Respawner.CreateAsync(connection, new RespawnerOptions
+        {
+            TablesToIgnore = new Table[] { new("dbo", "__EFMigrationsHistory") },
+            WithReseed = true
+        });
+    }
+
+    private static async Task DropDatabaseAsync(string connectionString)
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlServer(connectionString)
+            .Options;
+        await using var context = new AppDbContext(options);
+        await context.Database.EnsureDeletedAsync();
     }
 
     private static async Task EnsureRoleUsersAsync(IServiceProvider serviceProvider)
@@ -135,12 +258,7 @@ public abstract class LocalWebApiTestBase : IAsyncLifetime
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", null);
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(_connectionString)
-            .Options;
-        await using var context = new AppDbContext(options);
-        await context.Database.EnsureDeletedAsync();
-
+        // 共享库由进程级清理（ProcessExit）负责，此处不再删除
         // B-06：清理本次测试的临时备份目录（尽力而为——句柄占用/权限失败不影响测试结论）
         if (!string.IsNullOrEmpty(BackupDirectoryPath))
         {

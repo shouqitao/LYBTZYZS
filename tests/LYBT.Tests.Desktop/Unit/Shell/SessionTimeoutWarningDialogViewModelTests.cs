@@ -5,7 +5,7 @@ using LYBT.Tests.Desktop.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// 会话超时预警对话框 ViewModel 契约测试（US-AUTH-014）。

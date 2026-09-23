@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Foundation.ExceptionHandling;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class ErrorTraceCodeTests : IDisposable
 {

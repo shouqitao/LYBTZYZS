@@ -9,7 +9,7 @@ using NSubstitute;
 using Prism.Events;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// I-11 回归测试：改密成功后必须发布 <see cref="AuthEvents.PasswordChangedEvent"/>。

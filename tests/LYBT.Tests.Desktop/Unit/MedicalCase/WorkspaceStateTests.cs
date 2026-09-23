@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.MedicalCase.Models;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class WorkspaceStateTests
 {

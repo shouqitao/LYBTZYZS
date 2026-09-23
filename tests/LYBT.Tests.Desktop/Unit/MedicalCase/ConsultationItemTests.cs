@@ -4,7 +4,7 @@ using LYBT.Desktop.MedicalCase.Models.Items;
 using LYBT.Tests.Desktop.Infrastructure;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Phase 1.3: ConsultationItem validation property tests

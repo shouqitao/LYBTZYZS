@@ -3,7 +3,7 @@ using LYBT.Shared.Logging.Management;
 using Serilog.Events;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// US-LOG-004: 系统应支持运行时动态调整日志级别，以便在不重启系统的情况下进行调试。

@@ -16,7 +16,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using System.Windows.Input;
 using System.Threading.Tasks;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// LoginViewModel 单元测试

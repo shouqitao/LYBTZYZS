@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Infrastructure.ExceptionHandling;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class NotificationTypeMappingTests
 {

@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Contracts.Results;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class CommandResultTests
 {

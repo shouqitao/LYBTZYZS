@@ -13,7 +13,7 @@ using Prism.Events;
 using Prism.Regions;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 [Trait("US", "US-MC-008")]
 public class HistoryCopyDialogViewModelTests : DesktopTestBase

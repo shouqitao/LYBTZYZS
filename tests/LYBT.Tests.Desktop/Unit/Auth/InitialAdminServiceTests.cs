@@ -8,7 +8,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// B-07 初始管理员服务单测：用户名存在性（精确匹配）/ 探测失败 / 创建成功与失败 / 请求载荷（Admin 角色 + 确认口令）。

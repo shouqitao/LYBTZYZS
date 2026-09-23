@@ -6,7 +6,7 @@ using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// B-07 本地数据库配置服务单测：默认值 / 落盘回读 / 口令 DPAPI 保护 / 损坏文件降级 / 连接串形态。

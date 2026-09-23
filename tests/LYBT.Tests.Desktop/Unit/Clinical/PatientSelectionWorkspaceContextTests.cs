@@ -4,7 +4,7 @@ using LYBT.Desktop.Contracts.Enums;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.MedicalCase.Models;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PatientSelectionWorkspaceContext 单元测试

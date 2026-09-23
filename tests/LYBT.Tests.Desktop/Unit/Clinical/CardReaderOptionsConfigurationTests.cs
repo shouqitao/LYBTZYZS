@@ -1,7 +1,7 @@
 using LYBT.Shared.Configuration.Options.Client;
 using Microsoft.Extensions.Configuration;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// PRD-13: CardReaderOptions 从 appsettings.json 读取配置

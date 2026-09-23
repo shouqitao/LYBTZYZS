@@ -14,7 +14,7 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// B-07 初始化向导 ViewModel 单测（US-SHELL-011）。

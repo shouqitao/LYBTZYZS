@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Web;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Tests for SwitchingApiClient proxy — URL-driven routing between

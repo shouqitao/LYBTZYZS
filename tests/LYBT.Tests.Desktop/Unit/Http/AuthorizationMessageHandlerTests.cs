@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// TDD Batch 2 — AuthorizationMessageHandler（DelegatingHandler）单元测试。

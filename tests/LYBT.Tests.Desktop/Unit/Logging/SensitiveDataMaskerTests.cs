@@ -3,7 +3,7 @@ using LYBT.Shared.Logging.Masking;
 using LYBT.Shared.Models.Attributes;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// US-LOG-003: 系统应对日志中的敏感数据进行脱敏处理，防止敏感信息泄露到日志文件。

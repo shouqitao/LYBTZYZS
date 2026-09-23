@@ -1,7 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Controls.Models;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 public class NavigationItemTests
 {

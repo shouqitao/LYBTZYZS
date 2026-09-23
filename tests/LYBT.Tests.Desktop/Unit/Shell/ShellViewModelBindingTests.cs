@@ -14,7 +14,7 @@ using LYBT.Desktop.Shell.ViewModels;
 using NSubstitute;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// Shell 三控件（Header/SideNav/Footer）ViewModel 绑定契约测试。

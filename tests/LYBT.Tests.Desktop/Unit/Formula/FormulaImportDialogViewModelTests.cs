@@ -14,7 +14,7 @@ using Prism.Events;
 using Prism.Regions;
 using Xunit;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 [Trait("US", "US-FORM-006")]
 public class FormulaImportDialogViewModelTests : DesktopTestBase

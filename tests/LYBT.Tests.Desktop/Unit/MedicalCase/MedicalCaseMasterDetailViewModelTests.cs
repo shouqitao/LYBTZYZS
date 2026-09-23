@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Prism.Regions;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// MedicalCaseMasterDetailViewModel 单元测试

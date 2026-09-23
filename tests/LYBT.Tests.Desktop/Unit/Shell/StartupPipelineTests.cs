@@ -6,7 +6,7 @@ using LYBT.Desktop.Shell.Services.Startup;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// StartupPipeline 单元测试

@@ -4,7 +4,7 @@ using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Tests.Desktop;
+namespace LYBT.Tests.Desktop.Unit;
 
 /// <summary>
 /// US-MC-011: EditModeStateMachine 状态转换全覆盖测试 (~82 tests).
