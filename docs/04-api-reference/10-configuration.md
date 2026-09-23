@@ -220,9 +220,9 @@ curl -X POST http://localhost:5000/api/v1/configuration/validate \
 
 ---
 
-## GET 脱敏说明 🧲 v1.0 待实现
+## GET 脱敏说明 ✅ 已实现
 
-> 🚧 **v1.0 待实现**（见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)）。当前 GET 端点返回原始值；脱敏展示属待实施范围。
+> ✅ **已实现**（SHELL-018 Phase 1，见 [ADR-0014](../03-architecture/decisions/0014-sysadmin-config-dual-mode.md)；`ConfigurationController.cs:97` 敏感键掩码脱敏。2026-09-24 校准）。
 
 GET `/configuration` 与 `/configuration/{section}` 响应中敏感字段将掩码展示（与 PUT 黑名单对应）：
 

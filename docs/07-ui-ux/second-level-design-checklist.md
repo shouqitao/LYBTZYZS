@@ -1,5 +1,7 @@
 # Desktop 二级界面设计清单
 
+> 版本: v1.0 | 日期: 2026-09-24（头登记日）
+
 > **日期**: 2026-09-13（首版）| **更新**: 2026-09-23（B-07：`FirstRunSetupView` → `InitializationWizardView` 更名同步；收尾批次：`ConfigExportImportView` + `SessionTimeoutWarningDialog` 已建）| **基准**: [desktop-design-tokens.md](./desktop-design-tokens.md)
 > **范围**: 一级页面 + 二级界面 + 需求驱动新增页面；**逐项判定见 §F（View 30 + Dialog 7 全量）**
 > **计数口径**: View **30** / Control **33** / Dialog **7** / ViewModel **55**（XAML 合计 82 = 视图 71 + 资源模板 11）——定义见 §G

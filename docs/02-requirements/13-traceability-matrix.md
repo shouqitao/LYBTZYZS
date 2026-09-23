@@ -183,7 +183,7 @@
 | US-SHELL-007 | Must | ADR-0002/0009 | Flow 3 | SwitchingApiClient + ModeSwitchValidator | IConnectionModeProvider.SwitchModeAsync | D18/D19/S5/X1.1 | ⚠️ 部分实现（双模路由✅/NO_REMOTE_URL 阻断✅；ERR-70506 未完成医案守卫仅日志未阻断——2026-09-14 E2E 取证 `ModeSwitchE2ETests`） | ⚠️ | ✅ |
 | US-SHELL-010 | Must | — | — | GET / 下载页 + /releases/ + Setup.exe + 更新源 | DownloadController.cs + DesktopUpdateService.cs + scripts/velopack-pack.ps1 | — | ✅ 已实现（决策 A + VELOPACK：下载页公开/静态服务/打包脚本/sync 脚本/客户端更新检查 Velopack 1.2.0/部署文档——打包产物需实机运行 velopack-pack.ps1 验证） | ✅ | ✅ |
 | US-SHELL-011 | Must | ADR-0006 | — | `InitializationWizardView`（`RegisterForNavigation` + `RegisterDialog`）+ `local-database.json` + `first_run_done.flag` | InitializationWizardViewModel + IInitialAdminService + ILocalDatabaseSettingsService + IFirstRunStateService | S1/S2 | ✅ 已实现（2026-09-23 B-07：5 步向导——欢迎+模式选择/模式配置（含测试连接）/诊所信息/初始 Admin/校验完成；sysadmin 登录后触发 + `SysadminHomeView` 手动入口；未完成不阻塞主界面，见 13c #147） | N/A | ✅ |
-| US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | v2.0 规划 | ⚠️ | ✅ |
+| US-SHELL-012 | Should | ADR-0006 | — | UpdateManager | UpdateManager.CheckForUpdatesAsync | — | ✅ 已实现（2026-09-16 B-09 随 B-08 落地；2026-09-23 增 GitHubReleaseSource 主渠道） | ⚠️ | ✅ |
 | US-SHELL-013 | Should | ADR-0010 | — | 双端 `/api/v1/backup`（列表/状态/表清单/创建/恢复/删除/清理/auto，8 端点） | SqlServerBackupService + BaseBackupController + BackupManagementView | S4/X3.2 | ✅ 已实现（2026-09-22 B-06：共享 SQL Server 备份引擎 + 双端 BackupController——全量/差异/加密/选择性恢复/删除/清理/进度；旧 ILocalDbBackupService 迁移移除，见 13c #146） | ✅ | ✅ |
 | US-SHELL-014 | Should | ADR-0008 | — | SecurityAuditController + SecurityAuditLogView | SysadminHome 安全审计卡 | A12 | ✅ 2026-08-29 查询 API + Desktop 页（仅远程） | ✅ | ✅ |
 | US-SHELL-016 | Could | — | — | `ConfigExportImportView` + `IConfigurationPackageService`（单 JSON 配置包） | ConfigExportImportViewModel.cs + ConfigurationPackageService.cs | X3.2 | ✅ 已实现（2026-09-23 收尾批次：导出/导入单 JSON 包，密钥永不导出，权限快照只校验不应用，见 13c #149） | N/A | ✅ |
@@ -192,8 +192,8 @@
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | CardReaderDiagnosticsService.cs + CardReaderDiagnosticsViewModel.cs | S3 | ✅ 已实现（8/8 AC：厂家选择/探测/读卡测试/固件（驱动未暴露→提示）/手动参数覆盖/持久化/医生无感；串口测试=USB 链路握手——HD100 无独立串口协议）——**硬件实测待办（2026-08-11 标注：华大 HD100 硬件到位后，sysadmin 配置中心→读卡器诊断→实测 9 AC；单测 4/4 已过）** | N/A | ✅ |
 | US-SHELL-020 | Must | — | — | POST /api/v1/deploy/upload + restart | DeployController.cs | — | ✅ 已实现（DEPLOY-PERM：双端类级 `SysAdminOnly`——Admin 业务管理员无部署能力，AC 注闭环） | ✅ | ✅ |
 | US-SHELL-021 | Should | — | — | 上线数据迁移（Excel 模板/分批/回滚） | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） | N/A | 🧲 |
-| US-SHELL-022 | Should | — | — | 上线检查清单 + 回滚方案 | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） | N/A | 🧲 |
-| US-SHELL-023 | Could | — | — | 培训材料 + FAQ + 支持流程 | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） | N/A | 🧲 |
+| US-SHELL-022 | Should | — | — | 上线检查清单 + 回滚方案 | 08-deployment-rollback.md | — | ⚠️ 部分实现（回滚方案✅/检查清单未见，2026-09-24 校准） | N/A | ⚠️ |
+| US-SHELL-023 | Could | — | — | 培训材料 + FAQ + 支持流程 | training/clinician-training-guide.md | — | ⚠️ 部分实现（培训材料✅/FAQ+支持流程未见，2026-09-24 校准） | N/A | ⚠️ |
 | US-SHELL-024 | Should | — | — | Server 单实例与端口防护（PID 文件 + 端口释放 + health 探测 + Mutex） | start.sh + Program.cs | — | ✅ 已实现（2026-08-13 P2-07：start.sh 四层防护 + Program.cs Mutex `Global\LYBTZYZS_WebAPI_Instance`——真机单进程 + 双开拒绝 exit 1；见 13c #116） | ✅ | N/A |
 | US-SHELL-025 | Should | — | — | HTTP/HTTPS 双协议（Kestrel 多端点 5000+5001，配置开关） | Program.cs + config/appsettings.Production.json | — | ✅ 已实现（2026-08-14 P2-09：Http 默认开/Https 默认关——Server:Endpoints 段；真机 health 200 + Listening 日志；见 13c #121） | ✅ | N/A |
 
