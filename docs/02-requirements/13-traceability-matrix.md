@@ -192,8 +192,8 @@
 | US-SHELL-019 | Should | — | — | ICardReaderDiagnostics | CardReaderDiagnosticsService.cs + CardReaderDiagnosticsViewModel.cs | S3 | ✅ 已实现（8/8 AC：厂家选择/探测/读卡测试/固件（驱动未暴露→提示）/手动参数覆盖/持久化/医生无感；串口测试=USB 链路握手——HD100 无独立串口协议）——**硬件实测待办（2026-08-11 标注：华大 HD100 硬件到位后，sysadmin 配置中心→读卡器诊断→实测 9 AC；单测 4/4 已过）** | N/A | ✅ |
 | US-SHELL-020 | Must | — | — | POST /api/v1/deploy/upload + restart | DeployController.cs | — | ✅ 已实现（DEPLOY-PERM：双端类级 `SysAdminOnly`——Admin 业务管理员无部署能力，AC 注闭环） | ✅ | ✅ |
 | US-SHELL-021 | Should | — | — | 上线数据迁移（Excel 模板/分批/回滚） | — | — | 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编） | N/A | 🧲 |
-| US-SHELL-022 | Should | — | — | 上线检查清单 + 回滚方案 | 08-deployment-rollback.md | — | ⚠️ 部分实现（回滚方案✅/检查清单未见，2026-09-24 校准） | N/A | ⚠️ |
-| US-SHELL-023 | Could | — | — | 培训材料 + FAQ + 支持流程 | training/clinician-training-guide.md | — | ⚠️ 部分实现（培训材料✅/FAQ+支持流程未见，2026-09-24 校准） | N/A | ⚠️ |
+| US-SHELL-022 | Should | — | — | 上线检查清单 + 回滚方案 | 13-go-live-checklist.md + 08-deployment-rollback.md | — | ✅ 已实现（2026-09-24 交付 go-live 清单） | N/A | ✅ |
+| US-SHELL-023 | Could | — | — | 培训材料 + FAQ + 支持流程 | training/{faq,support-process,quick-start,clinician-training-guide}.md | — | ✅ 已实现（2026-09-24 交付 FAQ+支持流程+三角色快速上手） | N/A | ✅ |
 | US-SHELL-024 | Should | — | — | Server 单实例与端口防护（PID 文件 + 端口释放 + health 探测 + Mutex） | start.sh + Program.cs | — | ✅ 已实现（2026-08-13 P2-07：start.sh 四层防护 + Program.cs Mutex `Global\LYBTZYZS_WebAPI_Instance`——真机单进程 + 双开拒绝 exit 1；见 13c #116） | ✅ | N/A |
 | US-SHELL-025 | Should | — | — | HTTP/HTTPS 双协议（Kestrel 多端点 5000+5001，配置开关） | Program.cs + config/appsettings.Production.json | — | ✅ 已实现（2026-08-14 P2-09：Http 默认开/Https 默认关——Server:Endpoints 段；真机 health 200 + Listening 日志；见 13c #121） | ✅ | N/A |
 
