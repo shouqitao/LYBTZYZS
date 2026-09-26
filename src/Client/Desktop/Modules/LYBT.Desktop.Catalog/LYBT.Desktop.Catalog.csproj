@@ -70,6 +70,11 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Data Processing">
+    <!-- US-SHELL-021 AC①: 药材/验方导入导出 Excel 化（.xlsx 读写；后端 JSON 契约不变） -->
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+
   <ItemGroup Label="Desktop Core">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
   </ItemGroup>

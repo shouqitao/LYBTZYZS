@@ -6,6 +6,7 @@ using LYBT.Infrastructure.Extensions;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Infrastructure.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Patients.Infrastructure;
@@ -144,6 +145,10 @@ public class PatientRepository : BaseRepository<Patient, PatientsDbContext>, IPa
             .ToListAsync(cancellationToken);
         return legacyWithoutHash.FirstOrDefault(p => p.IdNumber == idNumber);
     }
+
+    /// <inheritdoc/>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+        => await _context.Database.BeginTransactionAsync(ct);
 
     /// <summary>
     /// 回填存量患者的 IdCardHash（R-6 迁移后一次性执行）。

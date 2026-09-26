@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Models.Navigation;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Desktop.Patients.Mappers;
@@ -58,6 +60,28 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>状态选项</summary>
         public ObservableCollection<CommonStatus> StatusOptions { get; } = new(CommonOptions.StatusOptions);
+
+        /// <summary>批量导入重复处理策略选项（AC②：跳过/更新/报错）</summary>
+        public ReadOnlyCollection<DuplicateStrategyOption> ImportDuplicateStrategyOptions => DuplicateStrategyOptions.All;
+
+        /// <summary>批量导入重复处理策略（AC②，随请求 DTO 传给服务端）</summary>
+        [ObservableProperty]
+        private DuplicateStrategy _importDuplicateStrategy = DuplicateStrategy.Skip;
+
+        /// <summary>当前/最近一次批量导入进度（AC③：如「已导入 1000/2500 行」）</summary>
+        public ImportProgressInfo ImportProgress { get; } = new();
+
+        /// <summary>最近一次批量导入报告（AC⑤）；null 表示无可显示报告</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasImportReport))]
+        private ImportReport? _importReport;
+
+        /// <summary>是否存在可显示的导入报告（控制报告面板可见性）</summary>
+        public bool HasImportReport => ImportReport != null;
+
+        /// <summary>关闭导入报告面板</summary>
+        [RelayCommand]
+        private void CloseImportReport() => ImportReport = null;
 
         #endregion
 
@@ -398,7 +422,10 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>批量导入患者（US-PAT-011/003——Excel 文件 → 批量导入 DTO）</summary>
+        /// <summary>
+        /// 批量导入患者（US-PAT-011/003 / US-SHELL-021 AC③⑤）：
+        /// Excel 文件 → 批量导入 DTO（重复策略取自界面选择）→ 每批 ≤1000 行顺序提交 → 汇总导入报告。
+        /// </summary>
         [RelayCommand]
         private async Task ImportPatientsAsync()
         {
@@ -414,6 +441,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     request = _patientExcelService.ParseImportFile(stream);
                 }
 
+                // AC②：解析器不决定策略，由界面选择（Skip/Update/Error）
+                request.Strategy = ImportDuplicateStrategy;
+
                 if (request.Patients.Count == 0)
                 {
                     await MasterDetailServices.Dialog.ShowErrorAsync("文件中没有患者数据，请检查格式", "导入失败");
@@ -421,19 +451,25 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
 
                 var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(
-                    $"将导入 {request.Patients.Count} 条患者记录（重复策略：{request.Strategy}），是否继续？", "确认导入");
+                    $"将导入 {request.Patients.Count} 条患者记录（{ImportBatchRunner.CountBatches(request.Patients.Count)} 批，重复策略：{DuplicateStrategyOptions.GetDisplay(ImportDuplicateStrategy)}），是否继续？",
+                    "确认导入");
                 if (!confirmed) return;
 
-                var result = await _patientService.BatchImportAsync(request);
-                if (!result.Success || result.Data == null)
+                var report = await ImportPatientsInBatchesAsync(request.Patients);
+                ImportReport = report;
+
+                Logger.LogInformation("患者批量导入完成: 总 {Total} 行, 成功 {Success}, 失败 {Failure}, 跳过 {Skipped}, 批 {Batches}, 中止 {Aborted}",
+                    report.TotalCount, report.SuccessCount, report.FailureCount, report.SkippedCount, report.BatchCount, report.IsAborted);
+
+                if (report.HasFailures)
                 {
-                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "批量导入失败", "操作失败");
-                    return;
+                    await MasterDetailServices.Dialog.ShowWarningAsync(report.Summary, "导入报告");
+                }
+                else
+                {
+                    await MasterDetailServices.Dialog.ShowSuccessAsync(report.Summary, "导入报告");
                 }
 
-                var data = result.Data;
-                var msg = $"导入完成：成功 {data.SuccessCount} 条，失败 {data.FailureCount} 条，跳过 {data.SkippedCount} 条";
-                await MasterDetailServices.Dialog.ShowSuccessAsync(msg, "导入结果");
                 _cacheManager.InvalidatePatientCaches();
                 await RefreshAsync();
             }
@@ -447,6 +483,64 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogError(ex, "批量导入患者失败: {File}", filePath);
                 await MasterDetailServices.Dialog.ShowErrorAsync(ClientErrorMessageMapper.GetSafeOperationFailureMessage("导入患者", ex), "操作失败");
             }
+        }
+
+        /// <summary>
+        /// 按 ≤1000 行分批提交并汇总为一份报告（AC③ 进度、AC⑤ 报告）。
+        /// 服务端失败行号是**批内相对行号**（首数据行 = 2），此处加批次偏移还原为文件行号（AC②）。
+        /// </summary>
+        private async Task<ImportReport> ImportPatientsInBatchesAsync(IReadOnlyList<PatientInputDto> rows)
+        {
+            var report = new ImportReport();
+            var totalBatches = ImportBatchRunner.CountBatches(rows.Count);
+            var completedBatches = 0;
+
+            ImportProgress.Reset(rows.Count);
+            MasterDetailServices.Loading.BeginLoading(ImportProgress.Message);
+            try
+            {
+                await ImportBatchRunner.RunAsync(
+                    rows,
+                    async (batch, offset) =>
+                    {
+                        var result = await _patientService.BatchImportAsync(new PatientBatchImportInputDto
+                        {
+                            Patients = batch,
+                            Strategy = ImportDuplicateStrategy
+                        });
+
+                        if (!result.Success || result.Data == null)
+                        {
+                            // 整批失败（服务端已回滚该批——AC④）→ 记入报告并停止后续批次
+                            report.Abort(batch.Count, offset + 2, result.Error ?? "批量导入失败");
+                            return false;
+                        }
+
+                        var data = result.Data;
+                        report.AddBatch(batch.Count, data.SuccessCount, data.FailureCount, data.SkippedCount);
+                        foreach (var failure in data.Failures)
+                        {
+                            var reason = string.IsNullOrWhiteSpace(failure.FieldName)
+                                ? failure.FailureReason
+                                : $"{failure.FailureReason}（字段：{failure.FieldName}）";
+                            report.AddFailure(offset + failure.OriginalRowNumber, failure.DataSnapshot?.Name ?? failure.OriginalValue, reason);
+                        }
+
+                        return true;
+                    },
+                    (processed, _) =>
+                    {
+                        completedBatches++;
+                        ImportProgress.Report(processed, $"第 {completedBatches}/{totalBatches} 批");
+                        MasterDetailServices.Loading.BusyMessage = ImportProgress.Message;
+                    });
+            }
+            finally
+            {
+                MasterDetailServices.Loading.EndLoading();
+            }
+
+            return report;
         }
 
         /// <summary>导出患者数据（US-PAT-012——服务端 JSON 导出 → 本地生成 .xlsx）</summary>

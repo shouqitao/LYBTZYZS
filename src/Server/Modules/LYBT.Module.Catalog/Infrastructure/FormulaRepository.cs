@@ -150,6 +150,13 @@ public class FormulaRepository : CatalogRepositoryBase<Formula>, IFormulaReposit
         => ExistsAsync(f => f.Name == name, excludeId, ct);
 
     /// <inheritdoc/>
+    public async Task<Formula?> GetByNameAsync(string name, CancellationToken ct = default)
+    {
+        return await _context.Formulas
+            .FirstOrDefaultAsync(f => f.Name == name && !f.IsDeleted, ct);
+    }
+
+    /// <inheritdoc/>
     /// P2-12: 导出专用查询——不分页，直接 ToListAsync（可选 Include Herbs 供明细导出）
     public override async Task<List<Formula>> GetAllForExportAsync(
         string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false,

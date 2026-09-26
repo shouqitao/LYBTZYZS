@@ -2,6 +2,7 @@ using LYBT.Entities.Patients;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Infrastructure.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LYBT.Module.Patients.Interfaces;
 
@@ -37,4 +38,9 @@ public interface IPatientRepository : IRepository<Patient>
     /// 根据ID获取患者（含已删除）。
     /// </summary>
     Task<Patient?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken ct);
+
+    /// <summary>
+    /// 开启本模块 DbContext 的显式事务（ADR-0030：同上下文事务——批量导入的原子边界由调用方控制提交/回滚）。
+    /// </summary>
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
 }

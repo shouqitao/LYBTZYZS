@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using LYBT.Module.Catalog.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 using Xunit;
 
 namespace LYBT.Tests.Server;
@@ -128,6 +129,8 @@ internal sealed class FakeHerbRepository : IHerbRepository
         => Task.FromResult(new List<Herb>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(Exists);
     public Task<Herb?> GetByNameAsync(string name, CancellationToken ct = default) => Task.FromResult(ExistingHerb);
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+        => throw new NotSupportedException("fake 仓储不提供事务（导入事务测试走真实 SQLite 仓储）");
 }
 
 internal sealed class FakeHerbReferenceRepository : IHerbReferenceRepository

@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
+using Microsoft.EntityFrameworkCore.Storage;
 using Xunit;
 
 namespace LYBT.Tests.Server;
@@ -174,5 +175,44 @@ public class PatientPhoneUniqueTests
         public Task<Patient?> GetExactByNameAsync(string name, CancellationToken ct = default) => Task.FromResult<Patient?>(null);
         public Task<Patient?> GetByIdNumberAsync(string idNumber, CancellationToken ct) => Task.FromResult<Patient?>(null);
         public Task<Patient?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken ct) => Task.FromResult<Patient?>(null);
+
+        // 本 fake 服务于「行级电话去重」语义（非事务语义）——提供 no-op 事务使批量导入走完整流程；
+        // 事务原子性/提交-回滚由 BatchImportTransactionTests（真实 SQLite 仓储）覆盖。
+        public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+            => Task.FromResult<IDbContextTransaction>(new NoopDbContextTransaction());
+
+        private sealed class NoopDbContextTransaction : IDbContextTransaction
+        {
+            public Guid TransactionId { get; } = Guid.NewGuid();
+
+            public bool SupportsSavepoints => false;
+
+            public void Commit() { }
+
+            public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+            public void Rollback() { }
+
+            public Task RollbackAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+            public void CreateSavepoint(string name) => throw new NotSupportedException();
+
+            public Task CreateSavepointAsync(string name, CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
+
+            public void RollbackToSavepoint(string name) => throw new NotSupportedException();
+
+            public Task RollbackToSavepointAsync(string name, CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
+
+            public void ReleaseSavepoint(string name) => throw new NotSupportedException();
+
+            public Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
+
+            public void Dispose() { }
+
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        }
     }
 }

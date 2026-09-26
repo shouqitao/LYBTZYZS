@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using MediatR;
 
 namespace LYBT.Module.Catalog.Application.Commands;
@@ -9,5 +10,7 @@ namespace LYBT.Module.Catalog.Application.Commands;
 /// </summary>
 public record BatchImportFormulasCommand(
     List<FormulaImportItemDto> Formulas,
-    string? FileName
+    string? FileName,
+    DuplicateStrategy Strategy = DuplicateStrategy.Skip,
+    Guid CurrentUserId = default
 ) : IRequest<Result<FormulaBatchImportResultDto>>;

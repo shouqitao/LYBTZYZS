@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Catalog.Infrastructure;
@@ -29,4 +30,8 @@ public abstract class CatalogRepositoryBase<TEntity> : BaseRepository<TEntity, C
 
     /// <inheritdoc/>
     public abstract Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
+
+    /// <inheritdoc/>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+        => await _context.Database.BeginTransactionAsync(ct);
 }

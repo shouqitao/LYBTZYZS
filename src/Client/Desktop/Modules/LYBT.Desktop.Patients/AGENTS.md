@@ -8,7 +8,7 @@
 LYBT.Desktop.Patients/
 ├── Controls/            # PatientMasterDetailControl, PatientEditControl, PatientSelectionControl, PatientViewControl
 ├── Mappers/             # PatientMapper (Mapperly, DTO↔Model↔InputDto)
-├── Models/              # PatientDetailModel, ImportWizardStep, Items/PatientEditContext
+├── Models/              # PatientDetailModel, Items/PatientEditContext (导入进度模型在 Desktop.Infrastructure/Models)
 ├── Repositories/        # PatientRepository (EntityApiClientRepositoryBase + IApiClientPatients)
 ├── Services/            # PatientService, PatientCardReaderIntegration, PatientExcelService (B-12)
 ├── ViewModels/          # PatientMasterDetailViewModel, PatientEditorViewModel, PatientCardReaderViewModel, Handlers/

@@ -184,7 +184,7 @@ JSON 批量导入药材（直接 DTO 数组，非 Excel）。
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `herbs` | HerbInputDto[] | 是 | 药材列表，最多 10000 条 |
-| `strategy` | enum | 是 | 重复策略: `Skip` / `Overwrite` / `Error` |
+| `strategy` | enum | 是 | 重复策略: `Skip` / `Update` / `Error`（`DuplicateStrategy`） |
 
 ```json
 {

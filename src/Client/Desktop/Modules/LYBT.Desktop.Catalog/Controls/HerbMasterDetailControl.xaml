@@ -55,6 +55,17 @@
                     RefreshCommand="{Binding RefreshCommand}">
                     <controls:DataGridToolbar.AdditionalContent>
                         <StackPanel Orientation="Horizontal">
+                            <!--  重复处理策略（US-SHELL-021 AC②：跳过/更新/报错）  -->
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="重复策略" />
+                            <ComboBox
+                                Width="130"
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="Display"
+                                ItemsSource="{Binding ImportDuplicateStrategyOptions}"
+                                SelectedValue="{Binding ImportDuplicateStrategy, Mode=TwoWay}"
+                                SelectedValuePath="Value"
+                                ToolTip="导入时遇到重复数据的处理方式" />
                             <!--  批量导入操作（US-HERB-006/013）  -->
                             <Button
                                 Margin="8,0,0,0"
@@ -205,6 +216,74 @@
                     PreviousPageCommand="{Binding GoToPreviousPageCommand}"
                     NextPageCommand="{Binding GoToNextPageCommand}"
                     LastPageCommand="{Binding GoToLastPageCommand}" />
+
+                <!--
+                    导入报告（US-SHELL-021 AC⑤：总数/成功/失败/跳过 + 失败明细行号）
+                    进度（AC③）：导入进行中由遮罩显示「已导入 X/Y 行」，此处保留最后一次进度
+                -->
+                <Border
+                    Grid.RowSpan="4"
+                    Margin="16"
+                    Padding="16"
+                    Background="#FFFFFF"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Visibility="{Binding HasImportReport, Converter={x:Static converters:Cvt.BoolToVis}}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Text="导入报告" />
+                            <Button
+                                Margin="16,0,0,0"
+                                Padding="12,4"
+                                Command="{Binding CloseImportReportCommand}"
+                                Content="关闭"
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                        </StackPanel>
+                        <TextBlock
+                            DockPanel.Dock="Top"
+                            Margin="0,8,0,0"
+                            Text="{Binding ImportReport.Summary}"
+                            TextWrapping="Wrap" />
+                        <ProgressBar
+                            DockPanel.Dock="Top"
+                            Height="6"
+                            Margin="0,8,0,0"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{Binding ImportProgress.PercentComplete}" />
+                        <TextBlock
+                            DockPanel.Dock="Top"
+                            Margin="0,8,0,0"
+                            Foreground="#757575"
+                            Text="{Binding ImportProgress.Message}" />
+                        <DataGrid
+                            Margin="0,12,0,0"
+                            AutoGenerateColumns="False"
+                            BorderThickness="0"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            GridLinesVisibility="Horizontal"
+                            HeadersVisibility="Column"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding ImportReport.Failures}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="Auto" MinWidth="60"
+                                    Binding="{Binding RowNumberText}"
+                                    Header="行号" />
+                                <DataGridTextColumn
+                                    Width="Auto" MinWidth="90"
+                                    Binding="{Binding Identifier}"
+                                    Header="记录" />
+                                <DataGridTextColumn
+                                    Width="*" MinWidth="160"
+                                    Binding="{Binding Reason}"
+                                    Header="失败原因" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
 
                 <!--  加载遮罩  -->
                 <controls:LoadingOverlay

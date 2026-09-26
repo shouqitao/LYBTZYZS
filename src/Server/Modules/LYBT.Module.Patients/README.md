@@ -120,9 +120,8 @@ DTO返回方法:
 | UpdateAsync(Guid id, PatientInputDto) | 更新患者 |
 | DeleteAsync(Guid id) | 软删除患者(含引用检查) |
 | SearchAsync(string keyword) | 搜索患者 |
-| BatchImportAsync(Stream, string? fileName) | Excel批量导入患者(Epic #1934) |
-| ExportTemplateAsync(ExportTemplateDto) | 导出导入模板Excel |
-| ExportPatientsAsync(string? keyword) | 导出患者数据到Excel |
+| ~~BatchImportAsync(Stream, string? fileName)~~ | **已迁移 MediatR**（A-03）：`BatchImportPatientsCommand`/`Handler`，入参 `PatientBatchImportInputDto`（JSON，非 Excel——Excel 由 Desktop 负责，见 B-12/US-SHELL-021） |
+| ~~ExportTemplateAsync / ExportPatientsAsync~~ | **已迁移控制器端点**：`GET /patients/import-template`（JSON 模板）+ `GET /patients/export`（JSON 数据）；Desktop 端渲染为 .xlsx |
 | ToggleStatusAsync(Guid id) | 切换启用/禁用状态 |
 | RestoreAsync(Guid id) | 恢复软删除的患者 |
 | BatchDeleteAsync(List\<Guid\> ids) | 批量删除患者(含逐个引用检查) |
@@ -191,9 +190,9 @@ Entity直接返回方法:
 
 删除流程: 引用检查(CheckReferenceAsync) -> 有引用则拒绝 -> 软删除 -> 缓存失效
 
-批量导入(BatchImportAsync): Excel解析(EPPlus) -> 逐行FluentValidation -> 批量内手机号/身份证号去重 -> DB重复检查 -> 批量AddRangeAsync保存，支持部分成功模式
+批量导入(`BatchImportPatientsCommandHandler`): 逐行 FluentValidation -> 批量内手机号/身份证号去重 -> DB 重复检查 -> 按 `Strategy`(Skip/Update/Error) 处理重复 -> 保存（**入参为 JSON DTO；Excel 解析在 Desktop**——`PatientExcelService`，ClosedXML）
 
-导出: EPPlus生成Excel文件流，模板支持示例数据，数据导出最大10000条
+导出: 服务端返回 JSON（模板含字段说明与示例）；Excel 文件由 Desktop `PatientExcelService.GenerateExportFile` 生成（ClosedXML）
 
 引用检查(CheckReferenceAsync): 查询MedicalCases表关联计数，返回最近5条引用详情
 
@@ -225,4 +224,4 @@ Entity直接返回方法:
 | 批量导入内去重基于HashSet | 手机号和身份证号在本次导入批次内用HashSet去重 | 仅同批次内去重，不同批次的重复由DB查询检查 |
 | EF Core 8 FindAsync与软删除 | FindAsync在实体不在ChangeTracker中时会应用全局查询过滤器(IsDeleted) | Restore操作使用GetByIdIncludingDeletedAsync(IgnoreQueryFilters) |
 | 删除前必须通过引用检查 | 有MedicalCase关联的患者不可删除(X7规则) | DeleteAsync和BatchDeleteAsync都先查询MedicalCases计数 |
-| EPPlus需要LicenseContext设置 | EPPlus 5.x+ 需要显式设置LicenseContext | 每个使用EPPlus的方法入口都设置LicenseContext = NonCommercial |
+| ~~EPPlus需要LicenseContext设置~~ | **已不适用**：EPPlus/NPOI 已于 C-04/#112 全仓移除；服务端只做 JSON，Excel 统一走 Desktop ClosedXML（B-12） |

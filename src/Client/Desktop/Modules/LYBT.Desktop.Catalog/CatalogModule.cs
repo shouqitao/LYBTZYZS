@@ -33,6 +33,10 @@ namespace LYBT.Desktop.Catalog
             containerRegistry.Register<IHerbService, Services.HerbService>();
             containerRegistry.Register<IFormulaService, Services.FormulaService>();
 
+            // US-SHELL-021 AC①: 药材/验方导入导出 Excel 化（无状态转换服务——后端 JSON 契约不变）
+            containerRegistry.RegisterSingleton<Services.IHerbExcelService, Services.HerbExcelService>();
+            containerRegistry.RegisterSingleton<Services.IFormulaExcelService, Services.FormulaExcelService>();
+
             // D5-3: 跨模块搜索提供者，供 MedicalCase 模块使用
             containerRegistry.Register<IHerbSearchProvider, Services.HerbSearchProvider>();
             containerRegistry.Register<IFormulaSearchProvider, Services.FormulaSearchProvider>();

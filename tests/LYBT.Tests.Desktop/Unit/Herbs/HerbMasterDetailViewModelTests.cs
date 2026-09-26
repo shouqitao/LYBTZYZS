@@ -8,6 +8,7 @@ using LYBT.Desktop.Contracts.Results;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
+using LYBT.Desktop.Catalog.Services;
 using LYBT.Desktop.Catalog.ViewModels;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
 using LYBT.Desktop.Infrastructure.Services;
@@ -40,8 +41,9 @@ public class HerbMasterDetailViewModelTests : DesktopTestBase, IDisposable
             IDesktopCacheManager cacheManager,
             HerbDetailModelMapper herbMapper,
             IFileDialogService fileDialogService,
+            IHerbExcelService herbExcelService,
             HerbEditorViewModel herbEditor)
-            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbMapper, fileDialogService, herbEditor)
+            : base(viewModelServices, masterDetailServices, herbService, statusHandler, cacheManager, herbMapper, fileDialogService, herbExcelService, herbEditor)
         {
         }
 
@@ -70,6 +72,7 @@ public class HerbMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _cacheManager,
             new HerbDetailModelMapper(),
             Substitute.For<IFileDialogService>(),
+            Substitute.For<IHerbExcelService>(),
             _herbEditor);
     }
 

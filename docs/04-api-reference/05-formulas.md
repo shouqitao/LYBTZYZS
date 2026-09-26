@@ -159,6 +159,7 @@ JSON 批量导入验方（Server 端只处理 DTO，Excel 解析由 Client 端�
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `formulas` | array | 是 | 验方列表（含 name/effect/usage/herbs 等） |
+| `strategy` | enum | 否 | 重复策略: `Skip`（默认）/ `Update` / `Error`（`DuplicateStrategy`；重复键 = 验方名称，2026-09-26 补齐 US-SHELL-021 AC②） |
 | `fileName` | string | 否 | 原始文件名（用于日志） |
 
 ```json

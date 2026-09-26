@@ -1,14 +1,15 @@
 // P2-14-3 Herb/Formula BatchImport 命令抽取评估：已 via MasterDetailCommandGroup 抽公共命令，CanExecute 仍各VM重复已评估参数化收益<独立演进成本
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
+using LYBT.Desktop.Catalog.Services;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
 using LYBT.Desktop.Foundation.ExceptionHandling;
+using LYBT.Desktop.Infrastructure.Models;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Infrastructure.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -33,6 +34,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
         private readonly IDesktopCacheManager _cacheManager;
         private readonly HerbDetailModelMapper _herbMapper;
         private readonly IFileDialogService _fileDialogService;
+        private readonly IHerbExcelService _herbExcelService;
 
         /// <summary>药材编辑子 VM</summary>
         public HerbEditorViewModel HerbEditor { get; }
@@ -51,6 +53,28 @@ namespace LYBT.Desktop.Catalog.ViewModels
         /// <summary>状态选项</summary>
         public ObservableCollection<CommonStatus> StatusOptions { get; }
 
+        /// <summary>批量导入重复处理策略选项（AC②：跳过/更新/报错）</summary>
+        public ReadOnlyCollection<DuplicateStrategyOption> ImportDuplicateStrategyOptions => DuplicateStrategyOptions.All;
+
+        /// <summary>批量导入重复处理策略（AC②，随请求 DTO 传给服务端）</summary>
+        [ObservableProperty]
+        private DuplicateStrategy _importDuplicateStrategy = DuplicateStrategy.Skip;
+
+        /// <summary>当前/最近一次批量导入进度（AC③：如「已导入 1000/2500 行」）</summary>
+        public ImportProgressInfo ImportProgress { get; } = new();
+
+        /// <summary>最近一次批量导入报告（AC⑤）；null 表示无可显示报告</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasImportReport))]
+        private ImportReport? _importReport;
+
+        /// <summary>是否存在可显示的导入报告（控制报告面板可见性）</summary>
+        public bool HasImportReport => ImportReport != null;
+
+        /// <summary>关闭导入报告面板</summary>
+        [RelayCommand]
+        private void CloseImportReport() => ImportReport = null;
+
         #endregion
 
         /// <summary>
@@ -64,6 +88,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             IDesktopCacheManager cacheManager,
             HerbDetailModelMapper herbMapper,
             IFileDialogService fileDialogService,
+            IHerbExcelService herbExcelService,
             HerbEditorViewModel herbEditor)
             : base(viewModelServices, masterDetailServices)
         {
@@ -72,6 +97,7 @@ namespace LYBT.Desktop.Catalog.ViewModels
             _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
             _herbMapper = herbMapper ?? throw new ArgumentNullException(nameof(herbMapper));
             _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
+            _herbExcelService = herbExcelService ?? throw new ArgumentNullException(nameof(herbExcelService));
             HerbEditor = herbEditor ?? throw new ArgumentNullException(nameof(herbEditor));
 
             PageTitle = "药材管理";
@@ -321,14 +347,9 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
         #region 批量导入/导出命令
 
-        /// <summary>导入 JSON 文件反序列化选项（camelCase + 枚举字符串，ADR-0022 对齐）</summary>
-        private static readonly JsonSerializerOptions ImportJsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter() }
-        };
-
-        /// <summary>下载导入模板（US-HERB-013）</summary>
+        /// <summary>
+        /// 下载导入模板（US-HERB-013 / US-SHELL-021 AC①）：服务端 JSON 字段定义 → 本地 Excel 模板（.xlsx）。
+        /// </summary>
         [RelayCommand]
         private async Task DownloadImportTemplateAsync()
         {
@@ -343,13 +364,15 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
                 var dialog = new SaveFileDialog
                 {
-                    Filter = "JSON 文件|*.json",
-                    FileName = "药材导入模板.json",
+                    Filter = "Excel 文件|*.xlsx",
+                    FileName = "药材导入模板.xlsx",
                     Title = "保存导入模板"
                 };
                 if (dialog.ShowDialog() != true) return;
 
-                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
+                // AC①：列定义以服务端 import-template 为权威，仅表现层渲染为 .xlsx（后端契约不变）
+                var workbook = _herbExcelService.GenerateTemplate(result.Data);
+                await File.WriteAllBytesAsync(dialog.FileName, workbook);
                 await MasterDetailServices.Dialog.ShowSuccessAsync($"模板已保存到：{dialog.FileName}", "下载成功");
             }
             catch (Exception ex)
@@ -359,45 +382,62 @@ namespace LYBT.Desktop.Catalog.ViewModels
             }
         }
 
-        /// <summary>批量导入药材（US-HERB-006）</summary>
+        /// <summary>
+        /// 批量导入药材（US-HERB-006 / US-SHELL-021 AC③⑤）：
+        /// .xlsx → 批量导入 DTO（重复策略取自界面选择）→ 每批 ≤1000 行顺序提交 → 汇总导入报告。
+        /// </summary>
         [RelayCommand]
         private async Task ImportHerbsAsync()
         {
             // P2-4: 经 IFileDialogService 抽象弹出打开对话框（原 Microsoft.Win32.OpenFileDialog，标题「选择药材导入文件」）
-            var filePath = _fileDialogService.ShowOpenFileDialog("JSON 文件|*.json", ".json");
+            var filePath = _fileDialogService.ShowOpenFileDialog("Excel 文件|*.xlsx", ".xlsx");
             if (filePath == null) return;
 
             try
             {
-                var json = await File.ReadAllTextAsync(filePath);
-                var request = JsonSerializer.Deserialize<HerbBatchImportInputDto>(json, ImportJsonOptions);
-                if (request?.Herbs == null || request.Herbs.Count == 0)
+                HerbBatchImportInputDto request;
+                await using (var stream = File.OpenRead(filePath))
+                {
+                    // AC①：Excel 列定义以服务端 import-template 为准；解析失败消息含行号+列名（AC②）
+                    request = _herbExcelService.ParseImportFile(stream);
+                }
+
+                // AC②：解析器不决定策略，由界面选择（Skip/Update/Error）
+                request.Strategy = ImportDuplicateStrategy;
+
+                if (request.Herbs.Count == 0)
                 {
                     await MasterDetailServices.Dialog.ShowErrorAsync("文件中没有药材数据，请检查格式", "导入失败");
                     return;
                 }
 
                 var confirmed = await MasterDetailServices.Dialog.ShowConfirmAsync(
-                    $"将导入 {request.Herbs.Count} 条药材记录（重复策略：{request.Strategy}），是否继续？", "确认导入");
+                    $"将导入 {request.Herbs.Count} 条药材记录（{ImportBatchRunner.CountBatches(request.Herbs.Count)} 批，重复策略：{DuplicateStrategyOptions.GetDisplay(ImportDuplicateStrategy)}），是否继续？",
+                    "确认导入");
                 if (!confirmed) return;
 
-                var result = await _herbService.BatchImportAsync(request);
-                if (!result.Success || result.Data == null)
+                var report = await ImportHerbsInBatchesAsync(request.Herbs);
+                ImportReport = report;
+
+                Logger.LogInformation("药材批量导入完成: 总 {Total} 行, 成功 {Success}, 失败 {Failure}, 跳过 {Skipped}, 批 {Batches}, 中止 {Aborted}",
+                    report.TotalCount, report.SuccessCount, report.FailureCount, report.SkippedCount, report.BatchCount, report.IsAborted);
+
+                if (report.HasFailures)
                 {
-                    await MasterDetailServices.Dialog.ShowErrorAsync(result.Error ?? "批量导入失败", "操作失败");
-                    return;
+                    await MasterDetailServices.Dialog.ShowWarningAsync(report.Summary, "导入报告");
+                }
+                else
+                {
+                    await MasterDetailServices.Dialog.ShowSuccessAsync(report.Summary, "导入报告");
                 }
 
-                var data = result.Data;
-                var msg = $"导入完成：成功 {data.SuccessCount} 条，失败 {data.FailureCount} 条，跳过 {data.SkippedCount} 条";
-                await MasterDetailServices.Dialog.ShowSuccessAsync(msg, "导入结果");
                 _cacheManager.InvalidateHerbCaches();
                 await RefreshAsync();
             }
-            catch (JsonException ex)
+            catch (InvalidDataException ex)
             {
                 Logger.LogError(ex, "解析药材导入文件失败: {File}", filePath);
-                await MasterDetailServices.Dialog.ShowErrorAsync("文件格式错误，请使用下载的 JSON 模板", "导入失败");
+                await MasterDetailServices.Dialog.ShowErrorAsync($"文件格式错误：{ex.Message}", "导入失败");
             }
             catch (Exception ex)
             {
@@ -406,7 +446,65 @@ namespace LYBT.Desktop.Catalog.ViewModels
             }
         }
 
-        /// <summary>导出药材数据（US-HERB-007/013）</summary>
+        /// <summary>
+        /// 按 ≤1000 行分批提交并汇总为一份报告（AC③ 进度、AC⑤ 报告）。
+        /// 服务端失败行号是**批内相对行号**（首数据行 = 2），此处加批次偏移还原为文件行号（AC②）。
+        /// </summary>
+        private async Task<ImportReport> ImportHerbsInBatchesAsync(IReadOnlyList<HerbInputDto> rows)
+        {
+            var report = new ImportReport();
+            var totalBatches = ImportBatchRunner.CountBatches(rows.Count);
+            var completedBatches = 0;
+
+            ImportProgress.Reset(rows.Count);
+            MasterDetailServices.Loading.BeginLoading(ImportProgress.Message);
+            try
+            {
+                await ImportBatchRunner.RunAsync(
+                    rows,
+                    async (batch, offset) =>
+                    {
+                        var result = await _herbService.BatchImportAsync(new HerbBatchImportInputDto
+                        {
+                            Herbs = batch,
+                            Strategy = ImportDuplicateStrategy
+                        });
+
+                        if (!result.Success || result.Data == null)
+                        {
+                            // 整批失败（服务端已回滚该批——AC④）→ 记入报告并停止后续批次
+                            report.Abort(batch.Count, offset + 2, result.Error ?? "批量导入失败");
+                            return false;
+                        }
+
+                        var data = result.Data;
+                        report.AddBatch(batch.Count, data.SuccessCount, data.FailureCount, data.SkippedCount);
+                        foreach (var failure in data.Failures)
+                        {
+                            var details = failure.ErrorDetails.Count > 0
+                                ? $"（{string.Join("；", failure.ErrorDetails)}）"
+                                : string.Empty;
+                            report.AddFailure(offset + failure.RowNumber, failure.HerbName, $"{failure.Reason}{details}");
+                        }
+
+                        return true;
+                    },
+                    (processed, _) =>
+                    {
+                        completedBatches++;
+                        ImportProgress.Report(processed, $"第 {completedBatches}/{totalBatches} 批");
+                        MasterDetailServices.Loading.BusyMessage = ImportProgress.Message;
+                    });
+            }
+            finally
+            {
+                MasterDetailServices.Loading.EndLoading();
+            }
+
+            return report;
+        }
+
+        /// <summary>导出药材数据（US-HERB-007/013 / US-SHELL-021 AC①）：服务端 JSON → 本地 Excel（.xlsx）。</summary>
         [RelayCommand]
         private async Task ExportHerbsAsync()
         {
@@ -421,14 +519,16 @@ namespace LYBT.Desktop.Catalog.ViewModels
 
                 var dialog = new SaveFileDialog
                 {
-                    Filter = "JSON 文件|*.json",
-                    FileName = $"药材导出_{DateTime.Now:yyyyMMddHHmmss}.json",
+                    Filter = "Excel 文件|*.xlsx",
+                    FileName = $"药材导出_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
                     Title = "保存导出文件"
                 };
                 if (dialog.ShowDialog() != true) return;
 
-                await File.WriteAllBytesAsync(dialog.FileName, result.Data);
-                await MasterDetailServices.Dialog.ShowSuccessAsync($"已导出 {result.Data.Length} 字节到：{dialog.FileName}", "导出成功");
+                // AC①：列定义以服务端 export 为权威，仅表现层渲染为 .xlsx（后端契约不变）
+                var workbook = _herbExcelService.GenerateExportFile(result.Data);
+                await File.WriteAllBytesAsync(dialog.FileName, workbook);
+                await MasterDetailServices.Dialog.ShowSuccessAsync($"药材数据已导出到：{dialog.FileName}", "导出成功");
             }
             catch (Exception ex)
             {

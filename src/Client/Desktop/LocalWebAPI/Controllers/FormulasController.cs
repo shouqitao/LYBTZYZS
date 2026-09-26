@@ -347,19 +347,25 @@ public class FormulasController : BaseCrudController
     }
 
     /// <summary>
-    /// 批量导入验方
+    /// 批量导入验方（JSON）
+    /// 契约：请求体为 FormulaBatchImportInputDto 信封（与 Remote FormulasController.ImportFormulas、
+    /// Desktop IFormulaApi.BatchImportAsync 一致）——原绑定 List&lt;FormulaImportItemDto&gt; 与客户端契约不符。
     /// </summary>
     [Authorize(Policy = PolicyConstants.AdminOrSuperAdmin)]
     [HttpPost("/api/v1/formulas/batch-import")]
     [EnableRateLimiting("ApiCalls")]
     public async Task<IActionResult> BatchImportFormulas(
-        [FromBody] List<FormulaImportItemDto> formulas,
+        [FromBody] FormulaBatchImportInputDto request,
         CancellationToken ct
     )
     {
-        if (formulas == null || formulas.Count == 0)
+        if (request?.Formulas == null || request.Formulas.Count == 0)
             return ValidationFail("导入列表不能为空");
-        var result = await Sender.Send(new BatchImportFormulasCommand(formulas, null), ct);
+        var (operatorId, _, _) = GetOperator();
+        var result = await Sender.Send(
+            new BatchImportFormulasCommand(request.Formulas, request.FileName, request.Strategy, operatorId),
+            ct
+        );
         if (!result.IsSuccess || result.Value == null)
             return BusinessFail(result.Error ?? "导入失败");
         return Success(result.Value, result.Value.Message);

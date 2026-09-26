@@ -1,6 +1,7 @@
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LYBT.Module.Catalog.Interfaces;
 
@@ -32,4 +33,9 @@ public interface ICatalogRepository<TEntity> : IRepository<TEntity>
     /// 检查实体名称是否已存在。
     /// </summary>
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// 开启本模块 DbContext 的显式事务（ADR-0030：同上下文事务——批量导入的原子边界由调用方控制提交/回滚）。
+    /// </summary>
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
 }

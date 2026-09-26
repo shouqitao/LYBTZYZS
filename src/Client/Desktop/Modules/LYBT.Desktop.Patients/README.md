@@ -19,10 +19,9 @@ LYBT.Desktop.Patients/
 ├── Mappers/
 │   └── PatientMapper.cs                           # Mapperly 编译时映射器（DTO↔Model↔InputDto）
 ├── Models/
-│   ├── Items/
-│   │   └── PatientEditContext.cs                  # 编辑上下文模型（ValidatableModelBase）
-│   ├── ImportWizardStep.cs                        # 导入向导枚举 + ImportProgressInfo
-│   └── PatientDetailModel.cs                      # Detail 编辑模型（ValidatableModelBase）
+│   ├── PatientDetailModel.cs                      # Detail 编辑模型（ValidatableModelBase）
+│   └── Items/PatientEditContext.cs                # 编辑上下文模型（ValidatableModelBase）
+│       （导入进度模型 ImportProgressInfo 已迁至 LYBT.Desktop.Infrastructure/Models，供三类导入共用）
 ├── Repositories/
 │   └── PatientRepository.cs                       # 仓储实现（Repository 抽象层）
 ├── Services/

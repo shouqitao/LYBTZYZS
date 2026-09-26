@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LYBT.Tests.Server.Unit.Catalog;
@@ -112,6 +113,8 @@ internal sealed class FakeHerbRepository : IHerbRepository
         => Task.FromResult(new List<Herb>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);
     public Task<Herb?> GetByNameAsync(string name, CancellationToken ct = default) => Task.FromResult(ExistingHerb);
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+        => throw new NotSupportedException("fake 仓储不提供事务（导入事务测试走真实 SQLite 仓储）");
 }
 
 internal sealed class FakeFormulaRepository : IFormulaRepository
@@ -131,6 +134,9 @@ internal sealed class FakeFormulaRepository : IFormulaRepository
     public Task<List<Formula>> GetAllForExportAsync(string? keyword, string? category, Guid? operatorId = null, bool isAdmin = false, CancellationToken ct = default, bool includeChildren = false)
         => Task.FromResult(new List<Formula>());
     public Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken ct = default) => Task.FromResult(false);
+    public Task<Formula?> GetByNameAsync(string name, CancellationToken ct = default) => Task.FromResult<Formula?>(null);
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+        => throw new NotSupportedException("fake 仓储不提供事务（导入事务测试走真实 SQLite 仓储）");
     public Task<List<Formula>> FindWithHerbsAsync(
         System.Linq.Expressions.Expression<Func<Formula, bool>> predicate, CancellationToken ct = default)
         => Task.FromResult(new List<Formula>());

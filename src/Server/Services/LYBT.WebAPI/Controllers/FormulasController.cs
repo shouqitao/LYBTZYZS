@@ -365,8 +365,9 @@ public class FormulasController : BaseCrudController
                 return ValidationFail("导入数据不能为空");
             }
 
+            var (operatorId, _, _) = GetOperator();
             var result = await Sender.Send(
-                new BatchImportFormulasCommand(request.Formulas, request.FileName),
+                new BatchImportFormulasCommand(request.Formulas, request.FileName, request.Strategy, operatorId),
                 ct
             );
 
@@ -380,8 +381,10 @@ public class FormulasController : BaseCrudController
                 new
                 {
                     FileName = request.FileName,
+                    request.Strategy,
                     TotalCount = result.Value.TotalCount,
                     SuccessCount = result.Value.SuccessCount,
+                    SkippedCount = result.Value.SkippedCount,
                 },
                 null
             );

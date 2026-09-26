@@ -7,6 +7,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Contracts.Services.CrossModule;
 using LYBT.Desktop.Catalog.Mappers;
 using LYBT.Desktop.Catalog.Models;
+using LYBT.Desktop.Catalog.Services;
 using LYBT.Desktop.Catalog.ViewModels;
 using LYBT.Desktop.Catalog.ViewModels.Handlers;
 using LYBT.Desktop.Controls.Models;
@@ -131,6 +132,7 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _herbSearchProvider,
             _cacheManager,
             Substitute.For<IFileDialogService>(),
+            Substitute.For<IFormulaExcelService>(),
             _formulaEditor);
 
     [Fact]
@@ -148,6 +150,7 @@ public class FormulaMasterDetailViewModelTests : DesktopTestBase, IDisposable
             _herbSearchProvider,
             _cacheManager,
             Substitute.For<IFileDialogService>(),
+            Substitute.For<IFormulaExcelService>(),
             _formulaEditor,
             featureToggles);
 

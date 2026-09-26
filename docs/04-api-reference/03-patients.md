@@ -191,6 +191,23 @@ Doctor 只能操作自己创建的患者，Admin 可操作全部（详见 [04-pa
 
 ---
 
+### POST /patients/batch-import
+
+JSON 批量导入患者（Server 端只处理 DTO；Excel 解析由 Desktop 负责——`PatientExcelService`，US-SHELL-021）。
+
+- **权限**: `AdminOrSuperAdmin`
+
+**请求体** (`PatientBatchImportInputDto`):
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `patients` | array | 是 | 患者列表（`PatientInputDto`） |
+| `strategy` | enum | 否 | 重复策略: `Skip`（默认）/ `Update` / `Error`（`DuplicateStrategy`） |
+
+**响应** (`ApiResponse<PatientBatchImportResultDto>`): 含 `totalCount`/`successCount`/`failureCount`/`skippedCount`/`duplicateCount`/`importBatchId` + `failures`（行号 + 字段 + 原因）。整请求在**单事务**内提交，行级失败按策略计入结果（不中断），仅逃逸性失败回滚整个请求（US-SHELL-021 AC④）。
+
+---
+
 ### GET /patients/export
 
 导出患者 JSON 数组（按筛选条件，敏感字段自动脱敏）。

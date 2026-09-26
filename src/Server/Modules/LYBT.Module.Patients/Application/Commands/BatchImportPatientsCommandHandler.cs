@@ -28,7 +28,8 @@ public class BatchImportPatientsCommandHandler : IRequestHandler<BatchImportPati
 
         var result = new PatientBatchImportResultDto
         {
-            ImportTime = DateTime.UtcNow
+            ImportTime = DateTime.UtcNow,
+            TotalCount = request.Patients.Count
         };
 
         if (request.Patients.Count > MAX_IMPORT_SIZE)
@@ -39,122 +40,139 @@ public class BatchImportPatientsCommandHandler : IRequestHandler<BatchImportPati
         // 行内电话互查（US-PAT-导入：同批重复电话 → 该行失败，其余继续）——同名去重沿用既有 Strategy
         var seenPhones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        for (var i = 0; i < request.Patients.Count; i++)
+        // AC④（US-SHELL-021）：整次请求一个显式事务（ADR-0030：同 PatientsDbContext 事务）。
+        // 逐行的 Skip/Update/Error 与校验失败仍按行写入 result.Failures（既有部分成功语义不变）；
+        // 事务保证：中途取消（循环顶部 ThrowIfCancellationRequested）或提交失败 → 本次请求已写入的行整体回滚，不留半批数据。
+        await using var transaction = await _patientRepository.BeginTransactionAsync(cancellationToken);
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var dto = request.Patients[i];
-            var rowNumber = i + 2;
-
-            try
+            for (var i = 0; i < request.Patients.Count; i++)
             {
-                if (string.IsNullOrWhiteSpace(dto.Name))
+                cancellationToken.ThrowIfCancellationRequested();
+                var dto = request.Patients[i];
+                var rowNumber = i + 2;
+
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(dto.Name))
+                    {
+                        result.FailureCount++;
+                        result.Failures.Add(new PatientImportFailureDto
+                        {
+                            OriginalRowNumber = rowNumber,
+                            FailureReason = "患者姓名不能为空",
+                            FieldName = "Name",
+                            OriginalValue = dto.Name,
+                            SuggestedFix = "填写患者姓名",
+                            DataSnapshot = dto
+                        });
+                        continue;
+                    }
+
+                    var exists = await _patientRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken);
+
+                    if (exists)
+                    {
+                        switch (request.Strategy)
+                        {
+                            case DuplicateStrategy.Skip:
+                                result.SkippedCount++;
+                                continue;
+
+                            case DuplicateStrategy.Update:
+                                var existing = await _patientRepository.GetExactByNameAsync(dto.Name, cancellationToken);
+                                if (existing != null)
+                                {
+                                    existing.UpdateProfile(
+                                        dto.Name, dto.Gender, dto.BirthDate,
+                                        dto.PhoneNumber, dto.IdNumber, dto.PinYinCode,
+                                        request.CurrentUserId);
+                                    await _patientRepository.UpdateAsync(existing, cancellationToken);
+                                    result.SuccessCount++;
+                                    result.SuccessfulIds.Add(existing.Id);
+                                }
+                                continue;
+
+                            case DuplicateStrategy.Error:
+                                result.FailureCount++;
+                                result.Failures.Add(new PatientImportFailureDto
+                                {
+                                    OriginalRowNumber = rowNumber,
+                                    FailureReason = "患者姓名重复",
+                                    FieldName = "Name",
+                                    OriginalValue = dto.Name,
+                                    SuggestedFix = "修改姓名或调整导入策略",
+                                    DataSnapshot = dto
+                                });
+                                continue;
+                        }
+                    }
+
+                    // US-PAT-导入：电话唯一——行内重复或与系统已有患者重复 → 失败（该行），其余行继续
+                    if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                    {
+                        if (!seenPhones.Add(dto.PhoneNumber))
+                        {
+                            result.FailureCount++;
+                            result.Failures.Add(new PatientImportFailureDto
+                            {
+                                OriginalRowNumber = rowNumber,
+                                FailureReason = "电话重复（同一批次内）",
+                                FieldName = "PhoneNumber",
+                                OriginalValue = dto.PhoneNumber,
+                                SuggestedFix = "修改电话或去除重复行",
+                                DataSnapshot = dto
+                            });
+                            continue;
+                        }
+
+                        if (await _patientRepository.ExistsByPhoneAsync(dto.PhoneNumber, ct: cancellationToken))
+                        {
+                            result.FailureCount++;
+                            result.Failures.Add(new PatientImportFailureDto
+                            {
+                                OriginalRowNumber = rowNumber,
+                                FailureReason = "电话与系统已有患者重复",
+                                FieldName = "PhoneNumber",
+                                OriginalValue = dto.PhoneNumber,
+                                SuggestedFix = "修改电话或先处理已有患者",
+                                DataSnapshot = dto
+                            });
+                            continue;
+                        }
+                    }
+
+                    // 拼音码兜底（对齐 B-03：未传则按姓名自动生成）
+                    if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+                        dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
+
+                    var patient = PatientMapper.ToEntity(dto, request.CurrentUserId);
+                    await _patientRepository.AddAsync(patient, cancellationToken);
+                    result.SuccessCount++;
+                    result.SuccessfulIds.Add(patient.Id);
+                }
+                catch
                 {
                     result.FailureCount++;
                     result.Failures.Add(new PatientImportFailureDto
                     {
                         OriginalRowNumber = rowNumber,
-                        FailureReason = "患者姓名不能为空",
+                        FailureReason = "导入失败",
                         FieldName = "Name",
                         OriginalValue = dto.Name,
-                        SuggestedFix = "填写患者姓名",
+                        SuggestedFix = "数据处理异常，请检查数据格式",
                         DataSnapshot = dto
                     });
-                    continue;
                 }
-
-                var exists = await _patientRepository.ExistsByNameAsync(dto.Name, ct: cancellationToken);
-
-                if (exists)
-                {
-                    switch (request.Strategy)
-                    {
-                        case DuplicateStrategy.Skip:
-                            result.SkippedCount++;
-                            continue;
-
-                        case DuplicateStrategy.Update:
-                            var existing = await _patientRepository.GetExactByNameAsync(dto.Name, cancellationToken);
-                            if (existing != null)
-                            {
-                                existing.UpdateProfile(
-                                    dto.Name, dto.Gender, dto.BirthDate,
-                                    dto.PhoneNumber, dto.IdNumber, dto.PinYinCode,
-                                    request.CurrentUserId);
-                                await _patientRepository.UpdateAsync(existing, cancellationToken);
-                                result.SuccessCount++;
-                            }
-                            continue;
-
-                        case DuplicateStrategy.Error:
-                            result.FailureCount++;
-                            result.Failures.Add(new PatientImportFailureDto
-                            {
-                                OriginalRowNumber = rowNumber,
-                                FailureReason = "患者姓名重复",
-                                FieldName = "Name",
-                                OriginalValue = dto.Name,
-                                SuggestedFix = "修改姓名或调整导入策略",
-                                DataSnapshot = dto
-                            });
-                            continue;
-                    }
-                }
-
-                // US-PAT-导入：电话唯一——行内重复或与系统已有患者重复 → 失败（该行），其余行继续
-                if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
-                {
-                    if (!seenPhones.Add(dto.PhoneNumber))
-                    {
-                        result.FailureCount++;
-                        result.Failures.Add(new PatientImportFailureDto
-                        {
-                            OriginalRowNumber = rowNumber,
-                            FailureReason = "电话重复（同一批次内）",
-                            FieldName = "PhoneNumber",
-                            OriginalValue = dto.PhoneNumber,
-                            SuggestedFix = "修改电话或去除重复行",
-                            DataSnapshot = dto
-                        });
-                        continue;
-                    }
-
-                    if (await _patientRepository.ExistsByPhoneAsync(dto.PhoneNumber, ct: cancellationToken))
-                    {
-                        result.FailureCount++;
-                        result.Failures.Add(new PatientImportFailureDto
-                        {
-                            OriginalRowNumber = rowNumber,
-                            FailureReason = "电话与系统已有患者重复",
-                            FieldName = "PhoneNumber",
-                            OriginalValue = dto.PhoneNumber,
-                            SuggestedFix = "修改电话或先处理已有患者",
-                            DataSnapshot = dto
-                        });
-                        continue;
-                    }
-                }
-
-                // 拼音码兜底（对齐 B-03：未传则按姓名自动生成）
-                if (string.IsNullOrWhiteSpace(dto.PinYinCode))
-                    dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
-
-                var patient = PatientMapper.ToEntity(dto, request.CurrentUserId);
-                await _patientRepository.AddAsync(patient, cancellationToken);
-                result.SuccessCount++;
             }
-            catch
-            {
-                result.FailureCount++;
-                result.Failures.Add(new PatientImportFailureDto
-                {
-                    OriginalRowNumber = rowNumber,
-                    FailureReason = "导入失败",
-                    FieldName = "Name",
-                    OriginalValue = dto.Name,
-                    SuggestedFix = "数据处理异常，请检查数据格式",
-                    DataSnapshot = dto
-                });
-            }
+
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            // 请求级失败（取消/提交失败等）：整批回滚——回滚不依赖可能已取消的令牌
+            await transaction.RollbackAsync(CancellationToken.None);
+            throw;
         }
 
         return Result<PatientBatchImportResultDto>.Success(result);

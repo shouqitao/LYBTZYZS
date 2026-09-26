@@ -8,6 +8,11 @@ namespace LYBT.Module.Catalog.Interfaces;
 public interface IFormulaRepository : ICatalogRepository<Formula>
 {
     /// <summary>
+    /// 根据名称精确获取验方（批量导入重复策略 Update 用；已软删同名视为不存在）。
+    /// </summary>
+    Task<Formula?> GetByNameAsync(string name, CancellationToken ct = default);
+
+    /// <summary>
     /// 按条件查询验方（含药材组成）。
     /// </summary>
     Task<List<Formula>> FindWithHerbsAsync(

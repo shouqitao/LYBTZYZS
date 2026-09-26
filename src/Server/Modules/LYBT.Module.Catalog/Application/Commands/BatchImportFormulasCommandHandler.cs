@@ -3,6 +3,7 @@ using LYBT.Entities.Formulas;
 using LYBT.Module.Catalog.Application.Validators;
 using LYBT.Module.Catalog.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Primitives.ErrorCodes;
 using LYBT.Shared.Models.Contracts.Formula;
 using MediatR;
@@ -47,116 +48,177 @@ public class BatchImportFormulasCommandHandler(
             .GroupBy(h => h.PinYinCode!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First());
 
-        // T4.2: 分批 500 条 per 事务，避免 10000 ChangeTracker 超时
-        const int BatchSize = 500;
-        int index = 0;
-        for (int batchStart = 0; batchStart < request.Formulas.Count; batchStart += BatchSize)
+        // 药材组成构建（新增与 Update 复用：名称/拼音码匹配药材库，未匹配计入 UnmatchedHerbsCount 待人工校验）
+        List<FormulaHerbItem> BuildHerbItems(FormulaImportItemDto item, Guid formulaId)
         {
-            var batch = request.Formulas.Skip(batchStart).Take(BatchSize).ToList();
-            foreach (var item in batch)
-        {
-            index++;
-            try
+            var items = new List<FormulaHerbItem>(item.Herbs.Count);
+            foreach (var herbDto in item.Herbs)
             {
-                // P1-5：批量路径补 <> 校验（与单体一致）
-                var formulaItemValidator = new FormulaImportItemDtoValidator();
-                var fv = await formulaItemValidator.ValidateAsync(item, cancellationToken);
-                if (!fv.IsValid)
+                LYBT.Entities.Herbs.Herb? matchedHerb = null;
+                if (herbDto.HerbName != null)
                 {
-                    result.FailureCount++;
-                    result.Failures.Add(new FormulaImportFailureDto
-                    {
-                        RowIndex = index,
-                        FormulaName = item.Name ?? string.Empty,
-                        ErrorMessage = string.Join("; ", fv.Errors.Select(e => e.ErrorMessage))
-                    });
-                    continue;
-                }
-                if (string.IsNullOrWhiteSpace(item.Name))
-                {
-                    result.FailureCount++;
-                    result.Failures.Add(new FormulaImportFailureDto
-                    {
-                        RowIndex = index,
-                        FormulaName = item.Name ?? string.Empty,
-                        ErrorMessage = "验方名称不能为空"
-                    });
-                    continue;
+                    if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))
+                        herbByPinyin.TryGetValue(herbDto.HerbName, out matchedHerb);
                 }
 
-                // P1-15/P1-8：ExistsByNameAsync 带 [IsDeleted]=0 过滤，已软删同名视为不存在（过滤唯一索引允许重建）
-                if (await repository.ExistsByNameAsync(item.Name, null, cancellationToken))
-                {
-                    result.FailureCount++;
-                    result.Failures.Add(new FormulaImportFailureDto
-                    {
-                        RowIndex = index,
-                        FormulaName = item.Name,
-                        ErrorMessage = $"验方名称 '{item.Name}' 已存在"
-                    });
-                    continue;
-                }
+                items.Add(FormulaHerbItem.Create(
+                    formulaId: formulaId,
+                    herbName: herbDto.HerbName ?? string.Empty,
+                    dosage: herbDto.Dosage,
+                    unit: herbDto.Unit ?? "g",
+                    herbId: matchedHerb?.Id,
+                    originalHerbName: herbDto.HerbName,
+                    usage: herbDto.Usage,
+                    processingMethod: herbDto.Preparation));
 
-                var formula = Formula.Create(
-                    name: item.Name,
-                    category: item.Category,
-                    effect: item.Effect,
-                    usage: item.Usage,
-                    property: item.Property,
-                    isShared: item.IsShared,
-                    remark: item.Remark);
-
-                foreach (var herbDto in item.Herbs)
-                {
-                    LYBT.Entities.Herbs.Herb? matchedHerb = null;
-                    if (herbDto.HerbName != null)
-                    {
-                        if (!herbByName.TryGetValue(herbDto.HerbName, out matchedHerb))
-                            herbByPinyin.TryGetValue(herbDto.HerbName, out matchedHerb);
-                    }
-                    var herbItem = FormulaHerbItem.Create(
-                        formulaId: formula.Id,
-                        herbName: herbDto.HerbName ?? string.Empty,
-                        dosage: herbDto.Dosage,
-                        unit: herbDto.Unit ?? "g",
-                        herbId: matchedHerb?.Id,
-                        originalHerbName: herbDto.HerbName,
-                        usage: herbDto.Usage,
-                        processingMethod: herbDto.Preparation);
-
-                    formula.AddHerb(herbItem);
-
-                    if (matchedHerb != null)
-                        result.MatchedHerbsCount++;
-                    else
-                        result.UnmatchedHerbsCount++;
-                }
-
-                if (formula.Herbs.Any() && formula.Herbs.All(h => h.IsValidated))
-                    formula.Validate();
-
-                await repository.AddAsync(formula, cancellationToken);
-
-                result.SuccessCount++;
-                result.SuccessfulIds.Add(formula.Id);
+                if (matchedHerb != null)
+                    result.MatchedHerbsCount++;
+                else
+                    result.UnmatchedHerbsCount++;
             }
-            catch (Exception ex)
-            {
-                result.FailureCount++;
-                result.Failures.Add(new FormulaImportFailureDto
-                {
-                    RowIndex = index,
-                    FormulaName = item.Name ?? string.Empty,
-                    ErrorMessage = "数据处理异常"
-                });
-                logger.LogError(ex, "[CMD] FormulaImport → ItemError - FormulaName={FormulaName}", item.Name);
-            }
+
+            return items;
         }
+
+        // AC④（US-SHELL-021）：整次请求一个显式事务（ADR-0030：同 CatalogDbContext 事务）。
+        // 逐行的 Skip/Update/Error 与校验失败仍按行写入 result.Failures（既有部分成功语义不变）；
+        // 事务保证：中途取消（循环顶部 ThrowIfCancellationRequested）或提交失败 → 本次请求已写入的行整体回滚，不留半批数据。
+        await using var transaction = await repository.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            // T4.2: 分批 500 条限制单批 ChangeTracker 规模（避免 10000 条一次性跟踪过重）；
+            // 事务边界不在批次上，而是整次请求（见上）——批次内失败由 result 透出。
+            const int BatchSize = 500;
+            for (int batchStart = 0; batchStart < request.Formulas.Count; batchStart += BatchSize)
+            {
+                var batch = request.Formulas.Skip(batchStart).Take(BatchSize).ToList();
+                for (int j = 0; j < batch.Count; j++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var item = batch[j];
+                    var rowNumber = batchStart + j + 2;
+
+                    try
+                    {
+                        // P1-5：批量路径补 <> 校验（与单体一致）
+                        var formulaItemValidator = new FormulaImportItemDtoValidator();
+                        var fv = await formulaItemValidator.ValidateAsync(item, cancellationToken);
+                        if (!fv.IsValid)
+                        {
+                            result.FailureCount++;
+                            result.Failures.Add(new FormulaImportFailureDto
+                            {
+                                RowIndex = rowNumber,
+                                FormulaName = item.Name,
+                                ErrorMessage = string.Join("; ", fv.Errors.Select(e => e.ErrorMessage))
+                            });
+                            continue;
+                        }
+                        if (string.IsNullOrWhiteSpace(item.Name))
+                        {
+                            result.FailureCount++;
+                            result.Failures.Add(new FormulaImportFailureDto
+                            {
+                                RowIndex = rowNumber,
+                                FormulaName = item.Name,
+                                ErrorMessage = "验方名称不能为空"
+                            });
+                            continue;
+                        }
+
+                        // P1-15/P1-8：ExistsByNameAsync 带 [IsDeleted]=0 过滤，已软删同名视为不存在（过滤唯一索引允许重建）
+                        // AC②（US-SHELL-021）：重复键 = 验方名称；重复按 request.Strategy 处理（Skip/Update/Error）
+                        if (await repository.ExistsByNameAsync(item.Name, null, cancellationToken))
+                        {
+                            switch (request.Strategy)
+                            {
+                                case DuplicateStrategy.Skip:
+                                    result.SkippedCount++;
+                                    continue;
+
+                                case DuplicateStrategy.Update:
+                                    var existingFormula = await repository.GetByNameAsync(item.Name, cancellationToken);
+                                    if (existingFormula != null)
+                                    {
+                                        existingFormula.UpdateProfile(
+                                            name: item.Name,
+                                            effect: item.Effect,
+                                            indication: item.Indication,
+                                            usage: item.Usage,
+                                            remark: item.Remark,
+                                            property: item.Property,
+                                            category: item.Category,
+                                            isShared: item.IsShared,
+                                            updatedBy: request.CurrentUserId);
+                                        var updatedHerbs = BuildHerbItems(item, existingFormula.Id);
+                                        existingFormula.ReplaceHerbs(updatedHerbs);
+                                        if (updatedHerbs.Count > 0 && updatedHerbs.All(h => h.IsValidated))
+                                            existingFormula.Validate();
+                                        existingFormula.DegradeToDraftIfAnyHerbUnvalidated();
+                                        await repository.UpdateAsync(existingFormula, cancellationToken);
+                                        result.SuccessCount++;
+                                        result.SuccessfulIds.Add(existingFormula.Id);
+                                    }
+                                    continue;
+
+                                case DuplicateStrategy.Error:
+                                    result.FailureCount++;
+                                    result.Failures.Add(new FormulaImportFailureDto
+                                    {
+                                        RowIndex = rowNumber,
+                                        FormulaName = item.Name,
+                                        ErrorMessage = $"验方名称 '{item.Name}' 已存在"
+                                    });
+                                    continue;
+                            }
+                        }
+
+                        var formula = Formula.Create(
+                            name: item.Name,
+                            category: item.Category,
+                            effect: item.Effect,
+                            usage: item.Usage,
+                            property: item.Property,
+                            isShared: item.IsShared,
+                            remark: item.Remark);
+
+                        foreach (var herbItem in BuildHerbItems(item, formula.Id))
+                            formula.AddHerb(herbItem);
+
+                        if (formula.Herbs.Any() && formula.Herbs.All(h => h.IsValidated))
+                            formula.Validate();
+
+                        await repository.AddAsync(formula, cancellationToken);
+
+                        result.SuccessCount++;
+                        result.SuccessfulIds.Add(formula.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.Failures.Add(new FormulaImportFailureDto
+                        {
+                            RowIndex = rowNumber,
+                            FormulaName = item.Name,
+                            ErrorMessage = "数据处理异常"
+                        });
+                        logger.LogError(ex, "[CMD] FormulaImport → ItemError - FormulaName={FormulaName}", item.Name);
+                    }
+                }
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            // 请求级失败（取消/提交失败等）：整批回滚——回滚不依赖可能已取消的令牌
+            await transaction.RollbackAsync(CancellationToken.None);
+            throw;
         }
 
         result.EndTime = DateTime.UtcNow;
         result.IsSuccess = true;
-        result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
+        result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，跳过 {result.SkippedCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
 
         return Result<FormulaBatchImportResultDto>.Success(result);
     }

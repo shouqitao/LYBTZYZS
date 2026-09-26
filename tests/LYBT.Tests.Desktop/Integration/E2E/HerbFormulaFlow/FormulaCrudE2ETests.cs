@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------
 // FormulaCrudE2ETests — US-FORM-001 验方 CRUD + 克隆 + 导入 全链路
 // 真实链路：桌面 IApiClientFormulas → LocalWebAPI FormulasController → LocalDB
-// 注：批量导入经原始 HTTP 直连（桌面 FormulasHttpApiClient 传 FormulaBatchImportInputDto
-// 信封，而本地控制器契约收 List<FormulaImportItemDto>——既有客户端契约偏差，不改客户端层）
+// 注：批量导入经原始 HTTP 直连，请求体为 FormulaBatchImportInputDto 信封
+// （US-SHELL-021 已修复 Local 控制器原先绑定 List<FormulaImportItemDto> 的契约偏差，
+//  现双端与桌面客户端统一为信封）
 // ---------------------------------------------------------------------------
 
 using LYBT.Shared.Models.Contracts.Common;
@@ -256,18 +257,23 @@ public class FormulaCrudE2ETests : E2ETestBase
         var herbId = await CreateHerbAsync(UniqueName("白芍"));
         var importName = UniqueName("导入方");
 
-        // 本地控制器契约：List<FormulaImportItemDto>（与桌面客户端信封契约不同——直连原始 HTTP）
-        var body = new List<FormulaImportItemDto>
+        // 契约：Local 控制器现绑定 FormulaBatchImportInputDto 信封（与 Remote/桌面客户端一致）
+        var body = new FormulaBatchImportInputDto
         {
-            new()
+            FileName = "e2e-formulas.json",
+            Strategy = DuplicateStrategy.Skip,
+            Formulas = new List<FormulaImportItemDto>
             {
-                Name = importName,
-                Category = "导入类",
-                Effect = "导入功效",
-                Usage = "水煎服",
-                Herbs = new List<FormulaHerbImportItemDto>
+                new()
                 {
-                    new() { HerbName = "白芍", Dosage = 12, Unit = "克" }
+                    Name = importName,
+                    Category = "导入类",
+                    Effect = "导入功效",
+                    Usage = "水煎服",
+                    Herbs = new List<FormulaHerbImportItemDto>
+                    {
+                        new() { HerbName = "白芍", Dosage = 12, Unit = "克" }
+                    }
                 }
             }
         };

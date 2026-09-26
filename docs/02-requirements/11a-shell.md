@@ -553,17 +553,17 @@ SysadminHomeView 按连接模式区分面板布局——配置对象在双模式
 
 **角色**: 管理员
 **优先级**: Should
-**状态**: 🧲 v1.0 待实现（2026-08-11 补 US——产品盲区收编）
+**状态**: ✅ 已实现（2026-09-26 交付：三类 Excel 模板 + 行校验/错误行定位 + ≤1000 行分批与进度 + 单请求事务回滚 + 导入报告；Desktop `HerbExcelService`/`FormulaExcelService` 与 `PatientExcelService` 同构（ClosedXML，列定义以服务端 JSON 模板为权威），`ImportBatchRunner` 分批、`ImportReport` 报告面板；服务端三导入处理器加单事务（ADR-0030 同上下文）+ 验方补 `DuplicateStrategy`（Skip/Update/Error）+ 双端契约修正（LocalWebAPI 验方批量导入绑定 `FormulaBatchImportInputDto`））
 
 **作为** 诊所管理员，**我想要** 从纸质/Excel 记录批量导入初始患者/药材/验方数据，**以便** 系统上线时无需逐条手工录入。
 
 **验收标准**:
 
-- [ ] 提供标准 Excel 模板（患者/药材/验方三类）
-- [ ] 校验模板行（必填字段/格式/重复策略），错误行报错定位
-- [ ] 分批导入（每批 ≤1000 行），进度可追踪
-- [ ] 导入失败可回滚（事务性）
-- [ ] 导入完成后生成导入报告（成功/失败/跳过统计）
+- [x] 提供标准 Excel 模板（患者/药材/验方三类）——`PatientExcelService`（B-12）+ `HerbExcelService`/`FormulaExcelService`（2026-09-26），三模板同构（数据页 + 填写说明页，列定义由服务端 `import-template` JSON 驱动）
+- [x] 校验模板行（必填字段/格式/重复策略），错误行报错定位——解析错误抛 `InvalidDataException`（消息含行号 + 列名，如「第 3 行「单价」格式无效」）；服务端行级失败返回 `failures[].rowNumber`，客户端按批偏移换算为文件行号；重复策略 Skip/Update/Error 三类齐备（验方于本批补齐）
+- [x] 分批导入（每批 ≤1000 行），进度可追踪——`ImportBatchRunner`（MaxRowsPerBatch=1000）顺序提交，`ImportProgressInfo` 暴露 已处理/总数/百分比，经既有 Loading 机制显示「已导入 X/Y 行」
+- [x] 导入失败可回滚（事务性）——服务端三个导入处理器在请求级单事务内提交（同模块 DbContext，ADR-0030），行级失败按策略计入结果不中断，逃逸性失败/取消回滚整请求；客户端遇失败批次即中止后续批次
+- [x] 导入完成后生成导入报告（成功/失败/跳过统计）——`ImportReport` 聚合各批结果（总数/成功/失败/跳过/批次数 + 失败明细含行号），以对话框摘要 + 页内面板（含失败 DataGrid）呈现
 
 **业务规则**:
 
