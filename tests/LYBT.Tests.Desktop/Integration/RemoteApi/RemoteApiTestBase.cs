@@ -22,7 +22,28 @@ public class RemoteApiCollection
 
 public abstract class RemoteApiTestBase : IAsyncLifetime
 {
-    protected const string BaseUrl = "http://60.190.215.86:5000";
+    /// <summary>
+    /// 远端测试目标（未配置时的最后回退值；**未配置环境变量时不会执行任何请求——见 <see cref="InitializeAsync"/> 的 Skip**）。
+    /// </summary>
+    private const string DefaultBaseUrl = "http://60.190.215.86:5000";
+
+    /// <summary>远端测试目标环境变量名：配置为独立测试实例地址即可把 24 项 RemoteApi 用例转正。</summary>
+    internal const string TargetUrlEnvironmentVariable = "LYBT_REMOTE_TEST_URL";
+
+    /// <summary>
+    /// 已配置的远端目标；环境变量未设/空白 → <c>null</c>（= 安全默认：整类 Skip，不发任何请求）。
+    /// </summary>
+    protected static string? ConfiguredBaseUrl
+    {
+        get
+        {
+            var url = Environment.GetEnvironmentVariable(TargetUrlEnvironmentVariable);
+            return string.IsNullOrWhiteSpace(url) ? null : url.Trim();
+        }
+    }
+
+    /// <summary>实际使用的远端地址（仅在 <see cref="ConfiguredBaseUrl"/> 非空时才会被使用）。</summary>
+    protected static string BaseUrl => ConfiguredBaseUrl ?? DefaultBaseUrl;
     protected const string SysAdminUser = "sysadmin";
     protected const string SysAdminPass = "SysAdmin@2026!";
     protected const string RolePassword = "E2EPass123!";
@@ -56,6 +77,12 @@ public abstract class RemoteApiTestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
+        // 安全默认：远端测试目标未配置 → 整类 Skip（不发任何请求、不改任何断言）
+        // Xunit.SkippableFact 的 API 为 Skip.If/Skip.IfNot（无 SkipUnless）
+        Skip.IfNot(
+            ConfiguredBaseUrl is not null,
+            $"Remote E2E 目标未配置：set {TargetUrlEnvironmentVariable}=http://<独立测试实例>（未配置=安全默认 Skip）");
+
         HttpClient = new HttpClient
         {
             BaseAddress = new Uri(BaseUrl),

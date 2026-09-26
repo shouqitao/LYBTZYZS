@@ -69,6 +69,23 @@ dotnet test tests/LYBT.Tests.Desktop/ --no-build
   - Desktop `RemoteApi`：依赖外部 localhost:5000。
   - Server `EnvIsolated` / `ConfigClosure` / `ForceResetTests`：进程级环境变量 / 配置文件 / 静态状态（`DatabaseInitializationService` 强制重置）。
 
+### RemoteApi 目标配置（24 项条件用例，2026-09-26 改造）
+
+`Integration/RemoteApi/**` 的 **24 个用例**（Admin 7 / Doctor 7 / Receptionist 4 / Sysadmin 6）默认 **Skip**——安全默认：**未配置目标即不发任何请求**（基类 `RemoteApiTestBase.InitializeAsync` 首行 `Skip.Unless`，条件跳过由 `Xunit.SkippableFact` 提供；断言与业务流程未改）。
+
+```powershell
+# 转正：指向「独立测试实例」（勿用生产/诊所实例——用例会创建并清理角色账号/患者/药材/验方/挂号/医案）
+$env:LYBT_REMOTE_TEST_URL = "http://<独立测试实例>:5000"
+dotnet test tests/LYBT.Tests.Desktop/ --no-build --filter "FullyQualifiedName~LYBT.Tests.Desktop.Integration.RemoteApi"
+```
+```bash
+LYBT_REMOTE_TEST_URL=http://<独立测试实例>:5000 dotnet test tests/LYBT.Tests.Desktop/ --no-build --filter "FullyQualifiedName~Integration.RemoteApi"
+```
+
+- 未设置/空白 → 24 项仍显示 **Skipped**（Desktop 全量总数不变：1073 = 1049 通过 + 24 Skip）；设置后即真实执行。
+- 地址来源：`LYBT_REMOTE_TEST_URL`；未配置时保留 `http://60.190.215.86:5000` 仅作**最后回退**，但此时必然 Skip（不会误连该地址）。
+- **升 `0.1.x` 门槛**（版本号标准 §2）：这 24 项在独立测试实例上**转正**且 L2 全绿 + 诊所真实环境验收通过。
+
 ### 提速措施（2026-09-23，不破坏隔离）
 
 1. **共享 LocalDB + Respawn 清理**（`Integration/LocalApi/LocalWebApiTestBase.cs`）——原每测试方法建库+建表+身份种子；现每测试进程一库（`LYBTZYZS_LocalApiShared_{pid}`，`ProcessExit` 删除），每测试类首次运行时 Respawn 清库并确定性重建身份/业务种子；**每个测试仍启动独立宿主**（独立限流桶/内存状态，登录限流 5 次/分钟不受跨测试影响）。实测：Desktop Integration **6m12s → 23s**、E2E **19m22s → 1m23s**。

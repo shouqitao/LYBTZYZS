@@ -87,6 +87,8 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
+    <!-- 条件跳过（RemoteApi 目标未配置=安全默认 Skip）：xunit 2.x 线的 Xunit.SkippableFact（无 2.x 包版本线，1.5.85 即当前稳定版） -->
+    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.85" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <!-- 性能测试框架 -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />

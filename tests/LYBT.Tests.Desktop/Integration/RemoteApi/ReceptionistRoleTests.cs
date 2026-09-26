@@ -34,7 +34,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         await LoginAsAsync(_receptionistName, RolePassword);
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-PAT-003")]
     public async Task CreatePatient_AsReceptionist_Succeeds()
     {
@@ -54,7 +54,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         }
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-REG-002")]
     public async Task CreateRegistration_Succeeds()
     {
@@ -88,7 +88,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         CreatedPatientIds.Add(patientId);
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-REG-003")]
     public async Task GetPendingQueue_ReturnsData()
     {
@@ -99,7 +99,7 @@ public class ReceptionistRoleTests : RemoteApiTestBase
         resp.Data.Should().NotBeNull();
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-PAT-005")]
     public async Task GetPatientByIdNumber_FindsPatient()
     {

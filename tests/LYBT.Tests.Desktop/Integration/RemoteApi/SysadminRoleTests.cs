@@ -12,7 +12,7 @@ public class SysadminRoleTests : RemoteApiTestBase
 {
     protected override Task SetupRoleAsync() => Task.CompletedTask; // 直接使用 sysadmin
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-AUTH-001")]
     public void Login_AsSysadmin_ReturnsToken()
     {
@@ -20,7 +20,7 @@ public class SysadminRoleTests : RemoteApiTestBase
         Username.Should().Be(SysAdminUser);
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-SYS-001")]
     public async Task GetSystemHealth_ReturnsHealthy()
     {
@@ -32,7 +32,7 @@ public class SysadminRoleTests : RemoteApiTestBase
         resp.Data!.Status.Should().Be("Healthy");
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-SHELL-003")]
     public async Task GetClinicSettings_ReturnsData()
     {
@@ -51,7 +51,7 @@ public class SysadminRoleTests : RemoteApiTestBase
         resp.Success.Should().BeTrue(resp.Message);
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-SHELL-004")]
     public async Task UpdateClinicSettings_Succeeds()
     {
@@ -76,7 +76,7 @@ public class SysadminRoleTests : RemoteApiTestBase
         }
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-USER-001")]
     public async Task GetUsers_ReturnsPaged()
     {
@@ -87,7 +87,7 @@ public class SysadminRoleTests : RemoteApiTestBase
         resp.Data.Should().NotBeNull();
     }
 
-    [Fact(Skip = "PRE-EXISTING: Remote E2E requires live remote WebAPI (localhost:5000 / production host); not started locally")]
+    [SkippableFact]
     [Trait("US", "US-USER-003")]
     public async Task CreateUser_AsSysadmin_Succeeds()
     {
