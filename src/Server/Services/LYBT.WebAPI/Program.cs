@@ -36,6 +36,26 @@ public class Program
     private static Mutex? _instanceMutex;
     internal const string InstanceMutexName = @"Global\LYBTZYZS_WebAPI_Instance";
 
+    /// <summary>
+    /// 覆盖单实例 mutex 基名的环境变量（**多实例部署**用）。
+    /// 未配置 = 使用 <see cref="InstanceMutexName"/>（零行为变更）。
+    /// </summary>
+    internal const string InstanceMutexNameEnvironmentVariable = "WebAPI__InstanceMutexName";
+
+    /// <summary>
+    /// 解析实际使用的 mutex 基名：环境变量 <c>WebAPI__InstanceMutexName</c> 优先，未设/空白回退
+    /// <see cref="InstanceMutexName"/>。
+    /// </summary>
+    /// <remarks>
+    /// <para>为什么需要它：单实例保护按「基名_环境名」命名，同一环境下第二个实例必被拒绝。
+    /// 生产服务器上若需并存**E2E 专用实例**（独立数据库 + 独立端口），必须让该实例用独立 mutex 名，
+    /// 否则它会因「已有实例在运行」而拒绝启动。部署方式：给该实例注入
+    /// <c>WebAPI__InstanceMutexName=LYBTZYZS_WebAPI_E2E_Instance</c>（配合独立连接串与端口）。</para>
+    /// <para>默认路径不受影响：未配置时解析结果就是原常量，单实例语义与日志文案均不变。</para>
+    /// </remarks>
+    internal static string ResolveInstanceMutexBaseName(string? configuredName)
+        => string.IsNullOrWhiteSpace(configuredName) ? InstanceMutexName : configuredName.Trim();
+
     public static async Task Main(string[] args)
     {
         // 修复Windows控制台中文乱码问题
@@ -54,16 +74,22 @@ public class Program
 
         // P2-2-3 Mutex 全环境：原仅 Production 生效，Development 可多开致端口/DB 锁冲突；现全环境生效，
         // 通过 Environment 后缀隔离（testhost 单进程多 host 测试不误判，2026-08-13 实证保留）
+        // 基名可经 WebAPI__InstanceMutexName 覆盖：多实例部署（如 E2E 专用实例，独立 DB + 端口）
+        // 必须各用独立 mutex 名，否则同环境的第二个实例会被单实例保护拒绝；未配置 = 原常量，零行为变更
         var isTestHost = System.Diagnostics.Process.GetCurrentProcess().ProcessName.Contains(
             "testhost", StringComparison.OrdinalIgnoreCase);
-        if (!isTestHost && !TryAcquireSingleInstance($"{InstanceMutexName}_{environment}"))
+        var mutexBaseName = ResolveInstanceMutexBaseName(
+            Environment.GetEnvironmentVariable(InstanceMutexNameEnvironmentVariable));
+        var mutexName = $"{mutexBaseName}_{environment}";
+        if (!isTestHost && !TryAcquireSingleInstance(mutexName))
         {
             Log.Fatal(
-                "[启动] 检测到已有 LYBT.WebAPI 实例在运行（Mutex={InstanceMutexName}）——拒绝启动（US-SHELL-024 单实例保护）",
-                InstanceMutexName
+                "[启动] 检测到已有 LYBT.WebAPI 实例在运行（Mutex={MutexName}）——拒绝启动（US-SHELL-024 单实例保护）",
+                mutexName
             );
             Console.Error.WriteLine(
-                "[启动] 已有实例在运行，拒绝启动（单实例保护——请先停止旧进程或用 start.sh 重启）"
+                "[启动] 已有实例在运行，拒绝启动（单实例保护——请先停止旧进程或用 start.sh 重启；" +
+                "若为并存实例请设置 WebAPI__InstanceMutexName 使用独立 mutex 名）"
             );
             Environment.Exit(1);
         }

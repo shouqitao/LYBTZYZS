@@ -258,6 +258,7 @@ pwsh scripts/velopack-pack.ps1 -Version 0.0.2
 | `Jwt__AccessTokenExpirationMinutes` | `480` | Access Token 有效期 |
 | `DefaultPasswords__SysAdminPassword` | — | sysadmin 默认密码 |
 | `DefaultPasswords__NewUserPassword` | — | 新用户默认密码 |
+| `WebAPI__InstanceMutexName` | `Global\LYBTZYZS_WebAPI_Instance` | **多实例部署**：单实例保护（US-SHELL-024）的 mutex 基名，实际名为 `{基名}_{环境名}`。同机需并存第二个实例（如 E2E 专用实例：独立 DB + 独立端口）时**必须**为它设独立值，否则会被单实例保护拒绝启动；未设 = 默认值（零行为变更） |
 
 > **双下划线约定**: `__` 分隔层级覆盖 JSON 配置。如 `ConnectionStrings__DefaultConnection` 覆盖 `ConnectionStrings:DefaultConnection`。
 

@@ -45,7 +45,62 @@ public class SingleInstanceMutexTests
         Release();
     }
 
+    // ============ Mutex 基名可配置（多实例部署）============
+
+    [Fact]
+    public void ResolveInstanceMutexBaseName_Unset_ReturnsOriginalConstant()
+    {
+        // 未配置（null / 空 / 空白）必须回退原常量——零行为变更的守卫
+        ResolveBaseName(null).Should().Be(DefaultInstanceMutexName,
+            "未设 WebAPI__InstanceMutexName 时解析结果必须等于原常量（默认路径零行为变更）");
+        ResolveBaseName(string.Empty).Should().Be(DefaultInstanceMutexName);
+        ResolveBaseName("   ").Should().Be(DefaultInstanceMutexName);
+    }
+
+    [Fact]
+    public void ResolveInstanceMutexBaseName_Configured_ReturnsConfiguredNameTrimmed()
+    {
+        ResolveBaseName(@"Global\LYBTZYZS_WebAPI_E2E_Instance").Should().Be(@"Global\LYBTZYZS_WebAPI_E2E_Instance");
+        ResolveBaseName("  Global\\LYBTZYZS_WebAPI_E2E_Instance  ").Should().Be(@"Global\LYBTZYZS_WebAPI_E2E_Instance",
+            "前后空白应被裁剪（避免因空白产生看似相同却不同的 mutex 名）");
+    }
+
+    [Fact]
+    public void ResolveInstanceMutexBaseName_Configured_YieldsDistinctMutexNameForSameEnvironment()
+    {
+        // 多实例部署的核心断言：同环境下并存实例的 mutex 名必须不同，否则第二实例会被单实例保护拒绝。
+        // 只做纯字符串断言（不实际获取固定名 mutex——本机若真在跑 WebAPI 会干扰，既有测试同样用唯一名避让）
+        const string environment = "Production";
+        var defaultName = $"{DefaultInstanceMutexName}_{environment}";
+        var e2eName = $"{ResolveBaseName(@"Global\LYBTZYZS_WebAPI_E2E_Instance")}_{environment}";
+
+        e2eName.Should().NotBe(defaultName);
+        e2eName.Should().EndWith($"_{environment}", "环境后缀隔离保持不变（同机多环境仍互不干扰）");
+    }
+
     // ============ 反射访问 internal Program.TryAcquireSingleInstance ============
+
+    /// <summary>反射读取 Program.InstanceMutexName（原常量）。</summary>
+    private static string DefaultInstanceMutexName =>
+        (string)typeof(Program)
+            .GetField("InstanceMutexName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .GetValue(null)!;
+
+    /// <summary>反射调用 Program.ResolveInstanceMutexBaseName(string?)（internal，多实例部署支持）。</summary>
+    private static string ResolveBaseName(string? configuredName)
+    {
+        var method = typeof(Program).GetMethod(
+            "ResolveInstanceMutexBaseName",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+            null,
+            new[] { typeof(string) },
+            null
+        );
+        method
+            .Should()
+            .NotBeNull("Program.ResolveInstanceMutexBaseName(string) 应存在（多实例部署支持）");
+        return (string)method!.Invoke(null, new object?[] { configuredName })!;
+    }
 
     private static bool Acquire(string name)
     {
