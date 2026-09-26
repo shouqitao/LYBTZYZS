@@ -16,9 +16,9 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| LYBT.Tests.Server/ | Server 单元测试 — 359 方法/571 用例，EF InMemory + 手写 fake，零 mock（AntiMock 规则强制）；全量 **847/847 pass**（2026-09-23 实测） |
-|LYBT.Tests.Desktop/|Desktop 测试 — 1038 用例，纯 VM 单元测试（NSubstitute mock，无 DB）+ LocalWebAPI 控制器集成测试（LocalDB）+ E2E（本地模式自举；RemoteApi 需 localhost:5000，未启动则 Skip）；全量 **1014/0 失败/24 Skip**（2026-09-23 实测，共享 LocalDB 提速后 **~2m30s**，原 25m40s；分层见下）|
-| LYBT.Tests.Architecture/ | Architecture guard tests — **107/107 pass**（2026-09-23 实测），enforcing dependency rules, naming conventions, anti-mock policies |
+| LYBT.Tests.Server/ | Server 单元测试 — 359 方法/571 用例，EF InMemory + 手写 fake，零 mock（AntiMock 规则强制）；全量 **891/891 pass**（2026-09-26 实测） |
+| LYBT.Tests.Desktop/|Desktop 测试 — 1101 用例，纯 VM 单元测试（NSubstitute mock，无 DB）+ LocalWebAPI 控制器集成测试（LocalDB）+ E2E（本地模式自举；RemoteApi 需 localhost:5000，未启动则 Skip）；全量 **1077/0 失败/24 Skip**（2026-09-26 实测，共享 LocalDB 提速后 **~2m**，原 25m40s；分层见下）|
+| LYBT.Tests.Architecture/ | Architecture guard tests — **112/112 pass**（2026-09-26 实测），enforcing dependency rules, naming conventions, anti-mock policies |
 | postman/ | Postman/Newman API test collections |
 
 ## 分层测试策略（L0/L1/L2，2026-09-23 确立，强制）
@@ -29,9 +29,9 @@ Test projects for the LYBTZYZS solution. Implements a Testing Trophy architectur
 
 | 层 | 范围 | 验证时机 | 目标 | 实测 |
 |---|---|---|---|---|
-| **L0 快速** | Architecture + Desktop Unit | 每次代码改动后自检 | ≤30s | Architecture 107 用例 **10s** + Desktop Unit 877 用例 **17s**（墙钟约 31s） |
-| **L1 集成** | L0 + Server 全量 + Desktop Integration(LocalWebAPI) | **commit 前** | ≤3min | Server 851 用例 **1m46s** + Desktop Integration 34 通过/24 Skip **23s** → 含 L0 约 **2m42s** |
-| **L2 全量** | L0+L1 + Desktop E2E + 其余全部 | **仅任务收尾/发布前** | — | Desktop 全量 1038 用例（1014 通过/24 Skip）**1m43s**（原 25m42s）；L2 总耗时（Arch+Server+Desktop）约 **3m40s** |
+| **L0 快速** | Architecture + Desktop Unit | 每次代码改动后自检 | ≤30s | Architecture 112 用例 **11s** + Desktop Unit 940 用例 **16s**（墙钟约 31s） |
+| **L1 集成** | L0 + Server 全量 + Desktop Integration(LocalWebAPI) | **commit 前** | ≤4min | Server 891 用例 **3m07s** + Desktop Integration 34 通过/24 Skip **24s** → 含 L0 约 **3m50s** |
+| **L2 全量** | L0+L1 + Desktop E2E + 其余全部 | **仅任务收尾/发布前** | — | Desktop 全量 1101 用例（1077 通过/24 Skip）**1m46s**（原 25m42s）；L2 总耗时（Arch+Server+Desktop）约 **5m20s** |
 
 ### 可直接复制的命令
 
