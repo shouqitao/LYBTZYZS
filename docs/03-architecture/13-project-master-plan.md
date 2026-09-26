@@ -242,7 +242,7 @@
 | A-01 文档清理 | ✅ | 2026-09-23 | `e21e7573b` — 2026-08-03 批次已完成断链清零/安全脱敏/定案传播；本次核对销项：`docs/compose/` 84 文件 + 10 `.hermes-task-*` + `DESIGN.md` 等 97 文件删除（归档项按新治理「过程文档不入库」处置）、存根扫描 0 命中、全仓 816 条本地链接实测 0 断链（补修 LocalWebAPI/AGENTS.md → ADR-0010 层级错误链接） |
 | A-02 死代码删除 | ✅ | 2026-08-05 | `5f89e58ec` — 删除 5 文件（-896 行）+ 8 死方法；保留 PasswordHelper/SystemLog/IEditable/NotSupportedException 桩 |
 | A-03 MediatR 简化 | ✅ | 2026-08-05 | `29a4675af` `c5aca4e04` `741ca8735` `4b97bcfde` `5172ff9ca` — MedicalCase 全部 Handler/Command/Query/Validator 删除（40 文件，-1285 行）；Server/LocalWebAPI/Base controller 直连 Service；AddMediatR 移除；架构测试更新为断言统一验证器 |
-| A-04 超大类型拆分 | ⬜ | — | — |
+| A-04 超大类型拆分 | ✅ | 2026-09-26 | `935350449` — 全仓 1233 个 .cs 按 LOC 扫描（排除生成物）→ 手工类 top5；保守职责提取 3 处（SqlServerBackupService→BackupSqlIntrospection+BackupManifestCatalog 1127→949、TokenRefreshHandler→TokenRefreshErrorClassifier 575→487）；剩余大 VM（Formula/InitWizard/MedicalCaseWorkspace）与 XAML 绑定/编辑态强耦合且回归网薄弱→不迁（结论+证据见 §六 A-04 行、13c #156） |
 | A-05 实体源统一 | ✅ | 2026-08-05 | 已由 A-02/A-03 覆盖（勘察确认：无 Domain 项目、Server 模块无实体定义、Desktop 用 DTO，Shared/LYBT.Entities 为唯一实体源） |
 | A-06 Repository 泛型化 | ✅ | 2026-08-05 | `d379f4a9d` — 方案 B 收敛版：新增 `IEntityApiSegment<TList,TDetail,TInput>` 泛型段（5 标准 CRUD）+ `EntityApiClientRepositoryBase<TList,TDetail,TInput>` 派生基类（用段实现 CRUD，失败抛 InvalidOperationException、GetPaged Data==null 空分页，语义与现状一致）；4 段接口以 DIM 默认实现转发到现有实体命名方法（8 个实现类零改动）；新增 `IEntityInputDto` 约束接口（Shared）供基类提取更新 ID；Patient/Formula/Herb/User 4 仓储删标准 CRUD 样板（-340/+22，净 -318 行），Patient/User 因接口无 category 保留 1 行 GetPagedAsync 薄包装；Registration/MedicalCase 与 2 参旧基类保持原样。build --no-incremental 0 错误 0 警告；架构测试 92/92 |
 | A-07 CrossModule 死方法 | ✅ | 2026-08-05 | 已由 A-02 覆盖（`5f89e58ec` 删除 8 个死方法） |
