@@ -8,6 +8,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static LYBT.Infrastructure.Services.Backup.BackupSqlIntrospection;
 
 namespace LYBT.Infrastructure.Services.Backup;
 
@@ -35,7 +36,8 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
     private readonly BackupJobTracker _tracker;
     private readonly ILogger<SqlServerBackupService> _logger;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private bool? _supportsBackupCompression;
+    private readonly BackupSqlIntrospection _sql;
+    private readonly BackupManifestCatalog _catalog;
 
     public SqlServerBackupService(
         IOptions<BackupOptions> options,
@@ -49,6 +51,10 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // A-04 职责提取：服务器内省/DDL 辅助（连接串按次取值，保留运行时可被配置覆盖的语义）
+        _sql = new BackupSqlIntrospection(() => ConnectionString, () => MasterConnectionString, logger);
+        _catalog = new BackupManifestCatalog(() => BackupDirectory, () => DatabaseName);
     }
 
     /// <inheritdoc />
@@ -117,7 +123,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         try
         {
             var options = _options.Value;
-            var entries = ReadEntries();
+            var entries = _catalog.List();
             var last = entries.Count > 0 ? entries.Max(e => e.CreatedAt) : (DateTime?)null;
 
             if (last.HasValue && DateTime.Now - last.Value < TimeSpan.FromHours(options.AutoBackup.IntervalHours))
@@ -157,7 +163,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
     /// <inheritdoc />
     public Task<IReadOnlyList<BackupFileDto>> ListAsync(CancellationToken ct = default)
     {
-        var entries = ReadEntries();
+        var entries = _catalog.List();
         var fileNames = entries.Select(e => e.FileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         IReadOnlyList<BackupFileDto> result = entries
@@ -174,7 +180,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
     public Task<BackupStatusDto> GetStatusAsync(CancellationToken ct = default)
     {
         var options = _options.Value;
-        var entries = ReadEntries();
+        var entries = _catalog.List();
         var job = _tracker.Current;
 
         var status = new BackupStatusDto
@@ -220,7 +226,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         await _gate.WaitAsync(ct);
         try
         {
-            var entries = ReadEntries();
+            var entries = _catalog.List();
             var target = entries.FirstOrDefault(e => e.Id == backupId);
             if (target == null)
                 return Failure($"未找到指定的备份（Id={backupId}）");
@@ -342,7 +348,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             var directory = BackupDirectory;
             Directory.CreateDirectory(directory);
 
-            var entries = ReadEntries();
+            var entries = _catalog.List();
             BackupManifestEntry? baseFull = null;
             if (sqlKind == BackupKind.Differential)
             {
@@ -367,7 +373,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             rawBackupPath = fullPath;
 
             // 备份压缩能力探测：Express/LocalDB 实例不支持 WITH COMPRESSION（请求压缩时降级为未压缩并提示）
-            var useCompression = compress && await SupportsBackupCompressionAsync(ct);
+            var useCompression = compress && await _sql.SupportsBackupCompressionAsync(ct);
             string? compressionWarning = null;
             if (compress && !useCompression)
             {
@@ -462,12 +468,12 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         try
         {
             var options = _options.Value;
-            var entries = ReadEntries();
+            var entries = _catalog.List();
             var target = entries.FirstOrDefault(e => e.Id == request.BackupId);
             if (target == null)
                 return FailureWithTracker($"未找到指定的备份（Id={request.BackupId}）");
 
-            var chain = BuildRestoreChain(entries, target);
+            var chain = BackupManifestCatalog.BuildRestoreChain(entries, target);
             if (chain == null)
                 return FailureWithTracker($"备份 {target.FileName} 的基准全量备份缺失，无法恢复");
 
@@ -596,7 +602,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         catch
         {
             // 恢复中断时数据库可能停留在 SINGLE_USER/RESTORING——尽力恢复多用户可用性
-            await TrySetMultiUserAsync(database, ct);
+            await _sql.TrySetMultiUserAsync(database, ct);
             throw;
         }
         finally
@@ -619,12 +625,12 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
 
         // 1. 逻辑文件名（取基准全量，差异恢复沿用同一组文件）
         _tracker.Report("读取备份文件清单", 15);
-        var logicalFiles = await ReadLogicalFileNamesAsync(diskPaths[0], ct);
+        var logicalFiles = await _sql.ReadLogicalFileNamesAsync(diskPaths[0], ct);
         if (logicalFiles.Count == 0)
             return FailureWithTracker("无法读取备份文件的逻辑文件清单");
 
-        var dataDirectory = await ReadServerPropertyAsync("InstanceDefaultDataPath", ct) ?? Path.GetTempPath();
-        var logDirectory = await ReadServerPropertyAsync("InstanceDefaultLogPath", ct) ?? dataDirectory;
+        var dataDirectory = await _sql.ReadServerPropertyAsync("InstanceDefaultDataPath", ct) ?? Path.GetTempPath();
+        var logDirectory = await _sql.ReadServerPropertyAsync("InstanceDefaultLogPath", ct) ?? dataDirectory;
 
         var moves = new List<string>();
         var dataIndex = 0;
@@ -660,7 +666,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             // 3. 表/记录回写
             var copied = 0;
             var total = tables.Count;
-            await SetAllConstraintsAsync(disable: true, ct);
+            await _sql.SetAllConstraintsAsync(disable: true, ct);
             try
             {
                 foreach (var table in tables)
@@ -670,7 +676,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
                     if (tableName.Length == 0)
                         continue;
 
-                    var exists = await TableExistsAsync(tableName, tempDatabase, ct);
+                    var exists = await _sql.TableExistsAsync(tableName, tempDatabase, ct);
                     if (!exists)
                         return FailureWithTracker($"备份中不存在表 {tableName}，已中止选择性恢复");
 
@@ -681,7 +687,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             }
             finally
             {
-                await SetAllConstraintsAsync(disable: false, ct);
+                await _sql.SetAllConstraintsAsync(disable: false, ct);
             }
 
             _tracker.Complete($"选择性恢复完成（{copied} 张表）");
@@ -697,7 +703,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         }
         finally
         {
-            await DropDatabaseIfExistsAsync(tempDatabase, ct);
+            await _sql.DropDatabaseIfExistsAsync(tempDatabase, ct);
             SqlConnection.ClearAllPools();
         }
     }
@@ -707,7 +713,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         var qualified = $"[dbo].[{EscapeIdentifier(tableName)}]";
         var tempQualified = $"[{tempDatabase}].[dbo].[{EscapeIdentifier(tableName)}]";
 
-        var columns = await ReadCopyableColumnsAsync(tableName, ct);
+        var columns = await _sql.ReadCopyableColumnsAsync(tableName, ct);
         if (columns.Count == 0)
             return;
 
@@ -766,148 +772,6 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         }
     }
 
-    private async Task SetAllConstraintsAsync(bool disable, CancellationToken ct)
-    {
-        var action = disable ? "NOCHECK CONSTRAINT ALL" : "WITH NOCHECK CHECK CONSTRAINT ALL";
-        var sql = $"""
-            DECLARE @sql nvarchar(max) = N'';
-            SELECT @sql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N' {action};'
-            FROM sys.tables t
-            JOIN sys.schemas s ON s.schema_id = t.schema_id
-            WHERE t.is_ms_shipped = 0;
-            EXEC sp_executesql @sql;
-            """;
-
-        await using var connection = new SqlConnection(ConnectionString);
-        await connection.OpenAsync(ct);
-        await using var command = new SqlCommand(sql, connection) { CommandTimeout = CommandTimeoutSeconds };
-        await command.ExecuteNonQueryAsync(ct);
-    }
-
-    private async Task<List<CopyColumn>> ReadCopyableColumnsAsync(string tableName, CancellationToken ct)
-    {
-        const string sql = """
-            SELECT c.name, c.is_identity, c.is_computed, ty.name AS TypeName
-            FROM sys.columns c
-            JOIN sys.types ty ON ty.user_type_id = c.user_type_id
-            WHERE c.object_id = OBJECT_ID(@qualified)
-            ORDER BY c.column_id
-            """;
-
-        var columns = new List<CopyColumn>();
-        await using var connection = new SqlConnection(ConnectionString);
-        await connection.OpenAsync(ct);
-        await using var command = new SqlCommand(sql, connection) { CommandTimeout = 60 };
-        command.Parameters.Add(new SqlParameter("@qualified", $"[dbo].[{tableName}]"));
-        await using var reader = await command.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct))
-        {
-            var isComputed = reader.GetBoolean(2);
-            var typeName = reader.GetString(3);
-            if (isComputed ||
-                string.Equals(typeName, "timestamp", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(typeName, "rowversion", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            columns.Add(new CopyColumn(reader.GetString(0), reader.GetBoolean(1)));
-        }
-
-        return columns;
-    }
-
-    private async Task<bool> TableExistsAsync(string tableName, string database, CancellationToken ct)
-    {
-        var sql = $"SELECT CASE WHEN OBJECT_ID(N'[{EscapeIdentifier(database)}].[dbo].[{EscapeIdentifier(tableName)}]') IS NULL THEN 0 ELSE 1 END";
-        await using var connection = new SqlConnection(ConnectionString);
-        await connection.OpenAsync(ct);
-        await using var command = new SqlCommand(sql, connection) { CommandTimeout = 60 };
-        var value = await command.ExecuteScalarAsync(ct);
-        return Convert.ToInt32(value, CultureInfo.InvariantCulture) == 1;
-    }
-
-    private async Task<List<(string LogicalName, string FileType)>> ReadLogicalFileNamesAsync(string backupPath, CancellationToken ct)
-    {
-        var sql = $"RESTORE FILELISTONLY FROM DISK = N'{EscapeSqlLiteral(backupPath)}'";
-        var files = new List<(string, string)>();
-        await using var connection = new SqlConnection(ConnectionString);
-        await connection.OpenAsync(ct);
-        await using var command = new SqlCommand(sql, connection) { CommandTimeout = CommandTimeoutSeconds };
-        await using var reader = await command.ExecuteReaderAsync(ct);
-        var logicalNameIndex = reader.GetOrdinal("LogicalName");
-        var typeIndex = reader.GetOrdinal("Type");
-        while (await reader.ReadAsync(ct))
-        {
-            files.Add((reader.GetString(logicalNameIndex), reader.GetString(typeIndex)));
-        }
-
-        return files;
-    }
-
-    /// <summary>
-    /// 备份压缩能力探测（进程内缓存）：SQL Server Express / LocalDB 不支持
-    /// <c>BACKUP DATABASE ... WITH COMPRESSION</c>，请求压缩时须降级为未压缩而非直接失败。
-    /// </summary>
-    private async Task<bool> SupportsBackupCompressionAsync(CancellationToken ct)
-    {
-        if (_supportsBackupCompression.HasValue)
-            return _supportsBackupCompression.Value;
-
-        var edition = await ReadServerPropertyAsync("Edition", ct) ?? string.Empty;
-        var supported = !edition.Contains("Express", StringComparison.OrdinalIgnoreCase);
-        _supportsBackupCompression = supported;
-        return supported;
-    }
-
-    private async Task<string?> ReadServerPropertyAsync(string property, CancellationToken ct)
-    {
-        var sql = $"SELECT CAST(SERVERPROPERTY('{EscapeIdentifier(property)}') AS nvarchar(4000))";
-        await using var connection = new SqlConnection(ConnectionString);
-        await connection.OpenAsync(ct);
-        await using var command = new SqlCommand(sql, connection) { CommandTimeout = 60 };
-        var value = await command.ExecuteScalarAsync(ct);
-        return value == null || value == DBNull.Value ? null : (string)value;
-    }
-
-    private async Task DropDatabaseIfExistsAsync(string database, CancellationToken ct)
-    {
-        try
-        {
-            var sql = $"""
-                IF DB_ID(N'{EscapeSqlLiteral(database)}') IS NOT NULL
-                BEGIN
-                    ALTER DATABASE [{database}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                    DROP DATABASE [{database}];
-                END
-                """;
-            await using var connection = new SqlConnection(ConnectionString);
-            await connection.OpenAsync(ct);
-            await using var command = new SqlCommand(sql, connection) { CommandTimeout = CommandTimeoutSeconds };
-            await command.ExecuteNonQueryAsync(ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[BACKUP] 清理临时库失败：{Database}", database);
-        }
-    }
-
-    private async Task TrySetMultiUserAsync(string database, CancellationToken ct)
-    {
-        try
-        {
-            // 恢复中断时目标库可能处于 RESTORING/SINGLE_USER——须从 master 连接重置
-            await using var connection = new SqlConnection(MasterConnectionString);
-            await connection.OpenAsync(ct);
-            await using var command = new SqlCommand($"ALTER DATABASE [{database}] SET MULTI_USER", connection)
-            {
-                CommandTimeout = 60
-            };
-            await command.ExecuteNonQueryAsync(ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[BACKUP] 恢复中断后重置多用户模式失败：{Database}", database);
-        }
-    }
 
     // ------------------------------------------------------------------
     // 清理
@@ -920,7 +784,7 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             return 0;
 
         var options = _options.Value;
-        var entries = ReadEntries();
+        var entries = _catalog.List();
         if (entries.Count == 0)
             return 0;
 
@@ -973,42 +837,6 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
     // ------------------------------------------------------------------
     // 基础设施
     // ------------------------------------------------------------------
-
-    private List<BackupManifestEntry> ReadEntries()
-    {
-        var directory = BackupDirectory;
-        if (!Directory.Exists(directory))
-            return new List<BackupManifestEntry>();
-
-        var database = DatabaseName;
-        return Directory
-            .EnumerateFiles(directory, "*" + BackupManifestStore.BackupFileSuffixes[0] + "*")
-            .Where(BackupManifestStore.IsBackupFile)
-            .Select(path => BackupManifestStore.ResolveEntry(path, database))
-            .OrderByDescending(e => e.CreatedAt)
-            .ToList();
-    }
-
-    private BackupManifestEntry? FindEntry(string backupId)
-        => ReadEntries().FirstOrDefault(e => e.Id == backupId);
-
-    /// <summary>解析恢复链：整库/差异备份 → [基准全量] 或 [基准全量, 差异]</summary>
-    private static List<BackupManifestEntry>? BuildRestoreChain(
-        IReadOnlyList<BackupManifestEntry> entries,
-        BackupManifestEntry target)
-    {
-        if (target.Kind != BackupKind.Differential)
-            return new List<BackupManifestEntry> { target };
-
-        var baseEntry = !string.IsNullOrEmpty(target.BaseFullBackupFileName)
-            ? entries.FirstOrDefault(e => string.Equals(e.FileName, target.BaseFullBackupFileName, StringComparison.OrdinalIgnoreCase))
-            : entries.FirstOrDefault(e => e.Id == target.BaseFullBackupId);
-
-        if (baseEntry == null)
-            return null;
-
-        return new List<BackupManifestEntry> { baseEntry, target };
-    }
 
     private string? ResolvePassword(bool encrypt, string? password)
     {
@@ -1082,10 +910,6 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
         Message = error
     };
 
-    private static string EscapeSqlLiteral(string value) => value.Replace("'", "''");
-
-    private static string EscapeIdentifier(string value) => value.Replace("]", "]]");
-
     private static string FormatSize(long bytes) => bytes switch
     {
         >= 1024L * 1024 * 1024 => $"{bytes / (1024.0 * 1024 * 1024):F1} GB",
@@ -1121,6 +945,4 @@ public sealed class SqlServerBackupService : IBackupService, IDisposable
             // 忽略清理失败
         }
     }
-
-    private readonly record struct CopyColumn(string Name, bool IsIdentity);
 }
